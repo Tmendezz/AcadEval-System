@@ -69,7 +69,7 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
             {
                 var competencies = GetCompetencies();
                 dbContext.Competencies.AddRange(competencies);
-                await dbContext.SaveChangesAsync(); // Guardar para obtener los IDs generados
+                await dbContext.SaveChangesAsync();
 
                 // Obtener las competencias desde la base con IDs generados
                 var insertedCompetencies = await dbContext.Competencies.ToListAsync();
@@ -78,13 +78,11 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
                 dbContext.CompetencyLevelDescriptions.AddRange(descriptions);
                 await dbContext.SaveChangesAsync();
 
-                // Crear preguntas para las competencias
-                var formQuestions = GetFormQuestions(insertedCompetencies, adminId);
-                dbContext.FormQuestions.AddRange(formQuestions);
+              
                 await dbContext.SaveChangesAsync();
             }
 
-            // AHORA crear las materias (después de crear Professor)
+            // Crear las materias
             if (!dbContext.Subjects.Any())
             {
                 var subjects = GetSubjects(dbContext.TechnicalCareers.First().Id.ToString(), professorId);
@@ -92,7 +90,7 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
                 await dbContext.SaveChangesAsync();
             }
 
-            // Asignar estudiante a materia (StudentSubject) - DESPUÉS de crear Student y Subjects
+            // Asignar estudiante a materia
             if (!dbContext.StudentSubjects.Any())
             {
                 var studentSubject = new StudentSubject
@@ -105,28 +103,38 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
                 await dbContext.SaveChangesAsync();
             }
 
-            // Crear período de evaluación
+            // Crear UNA SOLA instancia de evaluación para testear
             if (!dbContext.CompetencyEvaluationInstances.Any())
             {
-                var competencyEvaluationInstance = new CompetencyEvaluationInstance
+                var evaluationInstance = new CompetencyEvaluationInstance
                 {
-                    Title = "Período de Evaluación Primer Semestre 2024",
-                    Description = "Evaluación de competencias blandas para el primer semestre del año académico 2024",
-                    PeriodFrom = DateTime.UtcNow.AddDays(-30),
-                    PeriodTo = DateTime.UtcNow.AddDays(30),
+                    Title = "Evaluación de Competencias - Test Finalize",
+                    Description = "Instancia de evaluación para testear la funcionalidad de finalización y generación de reportes",
+                    PeriodFrom = DateTime.UtcNow.AddDays(-7),
+                    PeriodTo = DateTime.UtcNow.AddDays(7),
+                    Status = EvaluationStatus.Pending,
                     CreatedByUserId = adminId
                 };
-                dbContext.CompetencyEvaluationInstances.Add(competencyEvaluationInstance);
+                dbContext.CompetencyEvaluationInstances.Add(evaluationInstance);
                 await dbContext.SaveChangesAsync();
 
-                // Asignar competencias al profesor para este período (ProfessorCompetencyAssignment)
-                var professorCompetencyAssignments = GetProfessorCompetencyAssignments(
-                    competencyEvaluationInstance.Id,
+                // Crear asignaciones de competencias al profesor (UNA por cada competencia)
+                var professorAssignments = CreateProfessorCompetencyAssignments(
+                    evaluationInstance.Id,
                     dbContext.Competencies.ToList(),
                     dbContext.Subjects.First().Id,
                     adminId);
 
-                dbContext.ProfessorCompetencyAssignments.AddRange(professorCompetencyAssignments);
+                dbContext.ProfessorCompetencyAssignments.AddRange(professorAssignments);
+                await dbContext.SaveChangesAsync();
+
+                // Crear assessments para el estudiante (UNO por cada competencia)
+                var studentAssessments = CreateStudentCompetencyAssessments(
+                    professorAssignments,
+                    studentId,
+                    adminId);
+
+                dbContext.StudentCompetencyAssessments.AddRange(studentAssessments);
                 await dbContext.SaveChangesAsync();
             }
         }
@@ -376,64 +384,8 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
         };
     }
 
-    private IEnumerable<FormQuestion> GetFormQuestions(IEnumerable<Competency> competencies, string createdByUserId)
-    {
-        var questions = new List<FormQuestion>();
-
-        foreach (var competency in competencies)
-        {
-            var competencyQuestions = competency.Name switch
-            {
-                "Liderazgo" => new[]
-                {
-                    "¿Con qué frecuencia toma la iniciativa para liderar proyectos o actividades grupales?",
-                    "¿Cómo motiva y guía a sus compañeros durante el trabajo en equipo?",
-                    "¿De qué manera comunica su visión y objetivos al grupo?"
-                },
-                "Comunicación Efectiva" => new[]
-                {
-                    "¿Con qué claridad expresa sus ideas en presentaciones orales?",
-                    "¿Cómo adapta su comunicación según el contexto y la audiencia?",
-                    "¿De qué manera escucha activamente las opiniones de otros?"
-                },
-                "Gestión Emocional" => new[]
-                {
-                    "¿Cómo maneja la presión y el estrés en situaciones académicas?",
-                    "¿De qué manera controla sus emociones en situaciones de conflicto?",
-                    "¿Cómo demuestra empatía hacia las emociones de sus compañeros?"
-                },
-                "Proactividad" => new[]
-                {
-                    "¿Con qué frecuencia anticipa problemas y propone soluciones?",
-                    "¿Cómo toma la iniciativa para mejorar procesos o metodologías?",
-                    "¿De qué manera busca oportunidades de aprendizaje adicionales?"
-                },
-                "Trabajo en Equipo" => new[]
-                {
-                    "¿Cómo colabora efectivamente con compañeros de diferentes estilos de trabajo?",
-                    "¿De qué manera contribuye a resolver conflictos dentro del grupo?",
-                    "¿Cómo promueve la participación equitativa de todos los miembros?"
-                },
-                _ => new[] { "Pregunta por defecto para esta competencia." }
-            };
-
-            for (int i = 0; i < competencyQuestions.Length; i++)
-            {
-                questions.Add(new FormQuestion
-                {
-                    Text = competencyQuestions[i],
-                    Order = i + 1,
-                    IsRequired = true,
-                    CreatedByUserId = createdByUserId
-                });
-            }
-        }
-
-        return questions;
-    }
-
-    private IEnumerable<ProfessorCompetencyAssignment> GetProfessorCompetencyAssignments(
-        Guid competencyEvaluationInstanceId,
+    private IEnumerable<ProfessorCompetencyAssignment> CreateProfessorCompetencyAssignments(
+        Guid evaluationInstanceId,
         IEnumerable<Competency> competencies,
         Guid subjectId,
         string createdByUserId)
@@ -444,13 +396,48 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
         {
             assignments.Add(new ProfessorCompetencyAssignment
             {
-                CompetencyEvaluationInstanceId = competencyEvaluationInstanceId,
+                CompetencyEvaluationInstanceId = evaluationInstanceId,
                 CompetencyId = competency.Id,
                 SubjectId = subjectId,
+                Status = ProfessorAssignmentStatus.Pending, // Activo para que se pueda evaluar
                 CreatedByUserId = createdByUserId
             });
         }
 
         return assignments;
+    }
+
+    private IEnumerable<StudentCompetencyAssessment> CreateStudentCompetencyAssessments(
+        IEnumerable<ProfessorCompetencyAssignment> professorAssignments,
+        string studentId,
+        string createdByUserId)
+    {
+        var assessments = new List<StudentCompetencyAssessment>();
+        var competencyLevels = new[] 
+        { 
+            CompetencyLevel.Avanzado,    // Liderazgo
+            CompetencyLevel.Excelente,   // Comunicación Efectiva  
+            CompetencyLevel.Intermedio,  // Gestión Emocional
+            CompetencyLevel.Avanzado,    // Proactividad
+            CompetencyLevel.Excelente    // Trabajo en Equipo
+        };
+
+        int levelIndex = 0;
+        foreach (var assignment in professorAssignments)
+        {
+            assessments.Add(new StudentCompetencyAssessment
+            {
+                ProfessorCompetencyAssignmentId = assignment.Id,
+                StudentId = studentId,
+                CompetencyLevel = competencyLevels[levelIndex % competencyLevels.Length],
+                Status = AssessmentStatus.Completed, // YA COMPLETADO para poder finalizar
+                CompletedAt = DateTime.UtcNow.AddHours(-1), // Completado hace 1 hora
+                CreatedByUserId = createdByUserId,
+                UpdatedAt = DateTime.UtcNow.AddHours(-1)
+            });
+            levelIndex++;
+        }
+
+        return assessments;
     }
 }

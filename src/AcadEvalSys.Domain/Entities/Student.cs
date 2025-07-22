@@ -19,5 +19,6 @@ namespace AcadEvalSys.Domain.Entities
         public virtual ICollection<StudentSubject>? StudentSubjects { get; set; } = new List<StudentSubject>();
         public virtual ICollection<StudentCompetencyAssessment>? StudentCompetencyAssessments { get; set; } = [];
         public virtual ICollection<StudentEvaluationReport>? EvaluationReports { get; set; } = new List<StudentEvaluationReport>();
+
     }
 }

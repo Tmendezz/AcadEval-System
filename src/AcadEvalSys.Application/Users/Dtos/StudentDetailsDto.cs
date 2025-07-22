@@ -1,11 +1,8 @@
-using AcadEvalSys.Domain.Enums;
+using AcadEvalSys.Application.Subjects.Dtos;
 
 namespace AcadEvalSys.Application.Users.Dtos;
 
-public record StudentDetailsDto
+public class StudentDetailsDto
 {
-    public Guid? TechnicalCareerId { get; set; }
-    public string? TechnicalCareerName { get; set; }
-    public CareerYear CurrentYear { get; set; }
-    public IEnumerable<SubjectDetailsDto> Subjects { get; set; } = new List<SubjectDetailsDto>();
+    public IEnumerable<SubjectDto> Subjects { get; set; }
 }

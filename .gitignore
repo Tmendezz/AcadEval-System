@@ -460,9 +460,13 @@ Temporary Items
 Thumbs.db
 ehthumbs.db
 ehthumbs_vista.db
-
+appsettings.Development.json
 # Dump file
 *.stackdump
+
+# App settings
+src/AcadEvalSys.WEB/AcadEvalSys.WEB.Server/appsettings.Development.json
+src/AcadEvalSys.WEB/AcadEvalSys.WEB.Server/appsettings.json
 
 # Folder config file
 [Dd]esktop.ini

@@ -31,7 +31,7 @@ public class CreateCompetencyCommandHandler(ILogger<CreateCompetencyCommandHandl
 
         var competency = mapper.Map<Competency>(request);
         competency.CreatedByUserId = user.Id ?? String.Empty;
-        var id = await competencyRepository.CreateCompetencyAsync(competency);
+        var id = await competencyRepository.CreateAsync(competency);
 
         logger.LogInformation("Competency created successfully with ID: {Id}", id);
         

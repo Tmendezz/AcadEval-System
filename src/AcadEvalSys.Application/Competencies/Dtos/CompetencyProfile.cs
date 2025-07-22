@@ -1,4 +1,3 @@
-using AcadEvalSys.Application.Career.Commands;
 using AcadEvalSys.Application.Competencies.Commands.CreateCompetency;
 using AcadEvalSys.Application.Competencies.Commands.UpdateCompetency;
 using AcadEvalSys.Domain.Entities;

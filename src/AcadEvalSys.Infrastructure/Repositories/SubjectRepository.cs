@@ -94,18 +94,17 @@ public class SubjectRepository(ApplicationDbContext dbContext) : ISubjectReposit
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task DeleteSubjectAsync(Guid id, string? updatedByUserId = null)
+    public async Task DeleteSubjectAsync(Subject subject)
     {
-        var subject = await dbContext.Subjects.FirstOrDefaultAsync(s => s.Id == id);
-        if (subject != null)
+        var existingSubject = await dbContext.Subjects.FirstOrDefaultAsync(s => s.Id == subject.Id && s.IsActive);
+        if (existingSubject != null)
         {
-            subject.IsActive = false;
-            subject.UpdatedAt = DateTime.UtcNow;
-            subject.UpdatedByUserId = updatedByUserId;
+            existingSubject.IsActive = false;
+            existingSubject.UpdatedAt = DateTime.UtcNow;
+            existingSubject.UpdatedByUserId = subject.UpdatedByUserId;
             await dbContext.SaveChangesAsync();
         }
     }
-
     public async Task<bool> ExistsByNameAndCareerAsync(string name, Guid technicalCareerId)
     {
         return await dbContext.Subjects
@@ -118,69 +117,12 @@ public class SubjectRepository(ApplicationDbContext dbContext) : ISubjectReposit
             .AnyAsync(tc => tc.Id == technicalCareerId && tc.IsActive);
     }
 
-    public async Task<bool> ProfessorExistsAsync(string professorId)
-    {
-        return await dbContext.Professors
-            .AnyAsync(p => p.UserId == professorId);
-    }
-
     public async Task<bool> ExistsByIdAsync(Guid id)
     {
         return await dbContext.Subjects
             .AnyAsync(s => s.Id == id && s.IsActive);
     }
 
-    // Métodos para estudiantes
-    public async Task<bool> StudentExistsAsync(string studentId)
-    {
-        return await dbContext.Students
-            .AnyAsync(s => s.UserId == studentId);
-    }
-
-    public async Task<bool> IsStudentEnrolledInSubjectAsync(string studentId, Guid subjectId)
-    {
-        return await dbContext.StudentSubjects
-            .AnyAsync(ss => ss.StudentId == studentId && ss.SubjectId == subjectId && ss.IsActive);
-    }
-
-    public async Task EnrollStudentInSubjectAsync(string studentId, Guid subjectId)
-    {
-        var studentSubject = new StudentSubject
-        {
-            StudentId = studentId,
-            SubjectId = subjectId
-        };
-
-        dbContext.StudentSubjects.Add(studentSubject);
-        await dbContext.SaveChangesAsync();
-    }
-
-    public async Task UnenrollStudentFromSubjectAsync(string studentId, Guid subjectId)
-    {
-        var studentSubject = await dbContext.StudentSubjects
-            .FirstOrDefaultAsync(ss => ss.StudentId == studentId && ss.SubjectId == subjectId && ss.IsActive);
-
-        if (studentSubject != null)
-        {
-            studentSubject.IsActive = false;
-            studentSubject.UpdatedAt = DateTime.UtcNow;
-            await dbContext.SaveChangesAsync();
-        }
-    }
-
-    public async Task<IEnumerable<Student>> GetStudentsInSubjectAsync(Guid subjectId)
-    {
-        return await dbContext.StudentSubjects
-            .Where(ss => ss.SubjectId == subjectId && ss.IsActive)
-            .Include(ss => ss.Student)
-                .ThenInclude(s => s!.User)
-            .Include(ss => ss.Student)
-                .ThenInclude(s => s!.TechnicalCareer)
-            .Select(ss => ss.Student!)
-            .ToListAsync();
-    }
-
-    // Métodos para profesores
     public async Task AssignProfessorToSubjectAsync(Guid subjectId, string professorId)
     {
         var subject = await dbContext.Subjects.FirstOrDefaultAsync(s => s.Id == subjectId && s.IsActive);

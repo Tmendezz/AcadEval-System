@@ -10,11 +10,24 @@
       <PackageReference Include="AutoMapper" Version="14.0.0" />
       <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.1" />
       <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
+      <PackageReference Include="Handlebars.Net" Version="2.1.6" />
       <PackageReference Include="MediatR" Version="12.5.0" />
+      <PackageReference Include="PuppeteerSharp" Version="20.2.2" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\AcadEvalSys.Domain\AcadEvalSys.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Evaluations\Commands\CreateInstance\" />
+      <Folder Include="Evaluations\Commands\DeleteInstance\" />
+      <Folder Include="Evaluations\Commands\UpdateProfessorAssignment\" />
+      <Folder Include="Evaluations\Dtos\" />
+      <Folder Include="Evaluations\Queries\GetAllEvaluationInstanceById\" />
+      <Folder Include="Evaluations\Queries\GetAllEvaluationInstances\" />
+      <Folder Include="StudentCompetencyAssessments\" />
+      <Folder Include="TechnicalCareers\" />
     </ItemGroup>
 
 </Project>

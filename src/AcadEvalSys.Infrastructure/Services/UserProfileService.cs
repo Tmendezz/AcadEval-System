@@ -1,3 +1,4 @@
+using AcadEvalSys.Application.Subjects.Dtos;
 using AcadEvalSys.Application.Users.Dtos;
 using AcadEvalSys.Application.Users.Services;
 using AcadEvalSys.Domain.Enums;
@@ -22,13 +23,13 @@ public class UserProfileService(ApplicationDbContext dbContext, IMapper mapper) 
 
         var result = mapper.Map<StudentDetailsDto>(student);
         
-        result.Subjects = student.StudentSubjects?.Select(ss => new SubjectDetailsDto
+        result.Subjects = student.StudentSubjects?.Select(ss => new SubjectDto()
         {
             Id = ss.Subject!.Id,
             Name = ss.Subject.Name!,
             Year = ss.Subject.Year,
-            TechnicalCareerName = ss.Subject.TechnicalCareer?.Name
-        }) ?? Enumerable.Empty<SubjectDetailsDto>();
+            TechnicalCareer = ss.Subject.TechnicalCareer?.Name
+        }) ?? [];
 
         return result;
     }
@@ -45,13 +46,13 @@ public class UserProfileService(ApplicationDbContext dbContext, IMapper mapper) 
         var result = mapper.Map<ProfessorDetailsDto>(professor);
         
         // Mapear las materias del profesor
-        result.Subjects = professor.Subjects?.Select(s => new SubjectDetailsDto
+        result.Subjects = professor.Subjects?.Select(s => new SubjectDto
         {
             Id = s.Id,
             Name = s.Name!,
             Year = s.Year,
-            TechnicalCareerName = s.TechnicalCareer?.Name
-        }) ?? Enumerable.Empty<SubjectDetailsDto>();
+            TechnicalCareer = s.TechnicalCareer?.Name
+        }) ?? [];
 
         return result;
     }

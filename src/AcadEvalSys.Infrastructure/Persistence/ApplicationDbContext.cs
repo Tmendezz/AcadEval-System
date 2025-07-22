@@ -4,15 +4,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AcadEvalSys.Infrastructure.Persistence;
 
-public class ApplicationDbContext : IdentityDbContext<User>
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<User>(options)
 {
-
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options)
-    {
-
-    }
-
     public DbSet<Student> Students { get; set; }
     public DbSet<Professor> Professors { get; set; }
     public DbSet<Coordinator> Coordinators { get; set; }

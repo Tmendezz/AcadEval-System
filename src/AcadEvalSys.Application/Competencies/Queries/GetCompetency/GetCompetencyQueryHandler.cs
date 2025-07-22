@@ -13,7 +13,7 @@ public class GetCompetencyQueryHandler(ILogger<GetCompetencyQueryHandler> logger
     {
         logger.LogInformation("Getting competency with ID: {Id}", request.Id);
         
-        var competency = await competencyRepository.GetCompetencyByIdAsync(request.Id);
+        var competency = await competencyRepository.GetByIdAsync(request.Id);
         
         if (competency == null)
         {
