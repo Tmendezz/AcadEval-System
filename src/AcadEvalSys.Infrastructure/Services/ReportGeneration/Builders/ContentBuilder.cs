@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using AcadEvalSys.Domain.Enums;
 using AcadEvalSys.Domain.Interfaces;
 using AcadEvalSys.Infrastructure.Services.ReportGeneration.Factories;
@@ -5,6 +6,7 @@ using AcadEvalSys.Infrastructure.Services.ReportGeneration.Styles;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using IContainer = QuestPDF.Infrastructure.IContainer;
 
 
 namespace AcadEvalSys.Infrastructure.Services.ReportGeneration.Builders;
