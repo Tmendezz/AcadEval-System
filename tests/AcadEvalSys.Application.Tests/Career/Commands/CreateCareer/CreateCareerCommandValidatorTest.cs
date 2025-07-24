@@ -1,22 +1,22 @@
-﻿using AcadEvalSys.Application.Career.Commands.CreateCareer;
+﻿using AcadEvalSys.Application.TechnicalCareers.Commands.CreateTechnicalCareer;
 using FluentValidation.TestHelper;
 using Xunit;
 
 namespace AcadEvalSys.Application.Tests.Career.Commands.CreateCareer;
 
-public class CreateCareerCommandValidatorTests
+public class CreateTechnicalCareerCommandValidatorTests
 {
-    private readonly CreateCareerCommandValidator _validator;
+    private readonly CreateTechnicalCareerCommandValidator _validator;
 
-    public CreateCareerCommandValidatorTests()
+    public CreateTechnicalCareerCommandValidatorTests()
     {
-        _validator = new CreateCareerCommandValidator();
+        _validator = new CreateTechnicalCareerCommandValidator();
     }
 
     [Fact]
-    public void Validator_ForValidCommnad_ShouldNotHaveValidationErrors()
+    public void Validator_ForValidCommand_ShouldNotHaveValidationErrors()
     {
-        var command = new CreateCareerCommand()
+        var command = new CreateTechnicalCareerCommand()
         {
             Name = "Test Career"
         };
@@ -28,7 +28,7 @@ public class CreateCareerCommandValidatorTests
     [Fact]
     public void Validator_ForInvalidName_ShouldHaveValidationErrors()
     {
-        var command = new CreateCareerCommand()
+        var command = new CreateTechnicalCareerCommand()
         {
             Name = string.Empty // Invalid name
         };
@@ -39,7 +39,7 @@ public class CreateCareerCommandValidatorTests
     [Fact]
     public void Validator_ForTooLongName_ShouldHaveValidationErrors()
     {
-        var command = new CreateCareerCommand()
+        var command = new CreateTechnicalCareerCommand()
         {
             Name = new string('a', 200)
         };
@@ -50,14 +50,12 @@ public class CreateCareerCommandValidatorTests
     [Fact]
     public void Validator_ForNullName_ShouldHaveValidationErrors()
     {
-        var command = new CreateCareerCommand()
+        var command = new CreateTechnicalCareerCommand()
         {
-            Name = null // Invalid name
+            Name = null! // Invalid name
         };
         
         var result = _validator.TestValidate(command);
         result.ShouldHaveValidationErrorFor(c => c.Name);
     }
-    
-    
 }

@@ -1,4 +1,3 @@
-
 using AcadEvalSys.Application.TechnicalCareers.Commands.CreateTechnicalCareer;
 using AcadEvalSys.Application.TechnicalCareers.Commands.DeleteTechnicalCareer;
 using AcadEvalSys.Application.TechnicalCareers.Commands.UpdateTechnicalCareer;
@@ -37,7 +36,7 @@ public class TechnicalCareerController(IMediator mediator) : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id }, null);
     }
 
-    [HttpPatch("{id}")]
+    [HttpPut("{id}")]
     public async Task<IActionResult> UpdateCareer([FromRoute] Guid id, [FromBody] UpdateTechnicalCareerCommand command)
     {
         command.Id = id;

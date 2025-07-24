@@ -1,5 +1,4 @@
 using FluentAssertions;
-using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,11 +8,8 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Xunit;
 using AcadEvalSys.Application.Competencies.Dtos;
-using AcadEvalSys.Application.Users;
-using AcadEvalSys.Domain.Constants.Constants;
 using AcadEvalSys.Domain.Entities;
 using AcadEvalSys.Domain.Enums;
 using AcadEvalSys.Domain.Repositories;
@@ -53,7 +49,7 @@ public class CompetencyControllerTests : BaseIntegrationTest
             new() { Id = Guid.NewGuid(), Name = "Test Competency 2", Description = "Description 2", Type = CompetencyType.Soft }
         };
 
-        _competencyRepositoryMock.Setup(m => m.GetAllCompetenciesAsync()).ReturnsAsync(competencies);
+        _competencyRepositoryMock.Setup(m => m.GetAllAsync()).ReturnsAsync(competencies);
 
         // Act
         var response = await Client.GetAsync("/competencies");
@@ -75,7 +71,7 @@ public class CompetencyControllerTests : BaseIntegrationTest
             Type = CompetencyType.Technical
         };
 
-        _competencyRepositoryMock.Setup(m => m.GetCompetencyByIdAsync(competencyId)).ReturnsAsync(competency);
+        _competencyRepositoryMock.Setup(m => m.GetByIdAsync(competencyId)).ReturnsAsync(competency);
 
         // Act
         var response = await Client.GetAsync($"/competencies/{competencyId}");
@@ -95,7 +91,7 @@ public class CompetencyControllerTests : BaseIntegrationTest
         // Arrange
         var competencyId = Guid.NewGuid();
 
-        _competencyRepositoryMock.Setup(m => m.GetCompetencyByIdAsync(competencyId)).ReturnsAsync((Competency?)null);
+        _competencyRepositoryMock.Setup(m => m.GetByIdAsync(competencyId)).ReturnsAsync((Competency?)null);
 
         // Act
         var response = await Client.GetAsync($"/competencies/{competencyId}");
@@ -118,7 +114,7 @@ public class CompetencyControllerTests : BaseIntegrationTest
         var expectedId = Guid.NewGuid();
 
         _competencyRepositoryMock.Setup(m => m.ExistsByNameAsync(competency.Name)).ReturnsAsync(false);
-        _competencyRepositoryMock.Setup(m => m.CreateCompetencyAsync(It.IsAny<Competency>())).ReturnsAsync(expectedId);
+        _competencyRepositoryMock.Setup(m => m.CreateAsync(It.IsAny<Competency>())).ReturnsAsync(expectedId);
 
         var json = JsonSerializer.Serialize(competency, JsonOptions);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -176,6 +172,27 @@ public class CompetencyControllerTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task CreateCompetency_WithTooLongName_ShouldReturn400BadRequest()
+    {
+        // Arrange
+        var invalidCompetency = new
+        {
+            Name = new string('a', 200), // Too long name
+            Description = "Valid description",
+            Type = CompetencyType.Technical
+        };
+
+        var json = JsonSerializer.Serialize(invalidCompetency, JsonOptions);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        // Act
+        var response = await Client.PostAsync("/competencies", content);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task UpdateCompetency_WithValidData_ShouldReturn204NoContent()
     {
         // Arrange
@@ -195,8 +212,9 @@ public class CompetencyControllerTests : BaseIntegrationTest
             Type = CompetencyType.Soft
         };
 
-        _competencyRepositoryMock.Setup(m => m.GetCompetencyByIdAsync(competencyId)).ReturnsAsync(existingCompetency);
+        _competencyRepositoryMock.Setup(m => m.GetByIdAsync(competencyId)).ReturnsAsync(existingCompetency);
         _competencyRepositoryMock.Setup(m => m.ExistsByNameAsync(updatedCompetency.Name)).ReturnsAsync(false);
+        _competencyRepositoryMock.Setup(m => m.UpdateAsync(It.IsAny<Competency>())).Returns(Task.CompletedTask);
 
         var json = JsonSerializer.Serialize(updatedCompetency, JsonOptions);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -220,7 +238,7 @@ public class CompetencyControllerTests : BaseIntegrationTest
             Type = CompetencyType.Technical
         };
 
-        _competencyRepositoryMock.Setup(m => m.GetCompetencyByIdAsync(competencyId)).ReturnsAsync((Competency?)null);
+        _competencyRepositoryMock.Setup(m => m.GetByIdAsync(competencyId)).ReturnsAsync((Competency?)null);
 
         var json = JsonSerializer.Serialize(updatedCompetency, JsonOptions);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -239,7 +257,7 @@ public class CompetencyControllerTests : BaseIntegrationTest
         var competencyId = Guid.NewGuid();
         var invalidCompetency = new
         {
-            Name = "AB", 
+            Name = "AB", // Too short name
             Description = "Valid description",
             Type = CompetencyType.Technical
         };
@@ -255,12 +273,80 @@ public class CompetencyControllerTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task UpdateCompetency_WithDuplicateName_ShouldReturn500InternalServerError()
+    {
+        // Arrange
+        var competencyId = Guid.NewGuid();
+        var existingCompetency = new Competency
+        {
+            Id = competencyId,
+            Name = "Original Name",
+            Description = "Original description",
+            Type = CompetencyType.Technical
+        };
+
+        var updatedCompetency = new
+        {
+            Name = "Duplicate Name",
+            Description = "Updated description",
+            Type = CompetencyType.Soft
+        };
+
+        _competencyRepositoryMock.Setup(m => m.GetByIdAsync(competencyId)).ReturnsAsync(existingCompetency);
+        _competencyRepositoryMock.Setup(m => m.ExistsByNameAsync(updatedCompetency.Name)).ReturnsAsync(true);
+
+        var json = JsonSerializer.Serialize(updatedCompetency, JsonOptions);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        // Act
+        var response = await Client.PutAsync($"/competencies/{competencyId}", content);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+    }
+
+    [Fact]
+    public async Task UpdateCompetency_WithSameName_ShouldNotCheckDuplicates()
+    {
+        // Arrange
+        var competencyId = Guid.NewGuid();
+        var sameName = "Same Competency Name";
+        var existingCompetency = new Competency
+        {
+            Id = competencyId,
+            Name = sameName,
+            Description = "Original description",
+            Type = CompetencyType.Technical
+        };
+
+        var updatedCompetency = new
+        {
+            Name = sameName, // Same name as existing
+            Description = "Updated description",
+            Type = CompetencyType.Soft
+        };
+
+        _competencyRepositoryMock.Setup(m => m.GetByIdAsync(competencyId)).ReturnsAsync(existingCompetency);
+        _competencyRepositoryMock.Setup(m => m.UpdateAsync(It.IsAny<Competency>())).Returns(Task.CompletedTask);
+
+        var json = JsonSerializer.Serialize(updatedCompetency, JsonOptions);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        // Act
+        var response = await Client.PutAsync($"/competencies/{competencyId}", content);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        _competencyRepositoryMock.Verify(m => m.ExistsByNameAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
     public async Task DeleteCompetency_ForExistingId_ShouldReturn204NoContent()
     {
         // Arrange
         var competencyId = Guid.NewGuid();
 
-        _competencyRepositoryMock.Setup(m => m.DeleteCompetencyAsync(competencyId, It.IsAny<string>()))
+        _competencyRepositoryMock.Setup(m => m.DeleteAsync(competencyId, It.IsAny<string>()))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -276,7 +362,7 @@ public class CompetencyControllerTests : BaseIntegrationTest
         // Arrange
         var competencyId = Guid.NewGuid();
 
-        _competencyRepositoryMock.Setup(m => m.DeleteCompetencyAsync(competencyId, It.IsAny<string>()))
+        _competencyRepositoryMock.Setup(m => m.DeleteAsync(competencyId, It.IsAny<string>()))
             .ThrowsAsync(new InvalidOperationException($"Competency with ID {competencyId} was not found."));
 
         // Act
