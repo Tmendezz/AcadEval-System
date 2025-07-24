@@ -55,12 +55,12 @@ public class EvaluationCompletionService(
                 Competencies = assessments.Select(a => new CompetencyReportDto
                 {
                     Name = a.ProfessorCompetencyAssignment.Competency.Name,
-                    CompetencyLevel = a.CompetencyLevel,
+                    CompetencyLevel = a.CompetencyLevel.Value,
                     Subject = a.ProfessorCompetencyAssignment.Subject.Name,
                     Professor = a.ProfessorCompetencyAssignment.Subject.Professor.User.Name,
-                    // ✅ MUCHO MÁS SIMPLE: Navegación directa
                     Description = a.ProfessorCompetencyAssignment.Competency.LevelDescriptions
-                        .First(ld => ld.Level == a.CompetencyLevel).Description
+                        .FirstOrDefault(ld => ld.Level == a.CompetencyLevel)?.Description
+                        ?? $"No description available for level {a.CompetencyLevel}"
                 }).ToList()
             };
 
@@ -93,7 +93,7 @@ public class EvaluationCompletionService(
 
             await reportRepository.CreateAsync(evaluationReport);
 
-            logger.LogInformation("Successfully generated, uploaded and saved report for student {StudentId}. BlobName: {BlobName}, Size: {Size} bytes, ReportId: {ReportId}", 
+            logger.LogInformation("Successfully generated, uploaded and saved report for student {StudentId}. BlobName: {BlobName}, Size: {Size} bytes, ReportId: {ReportId}",
                 studentId, blobName, pdfStream.Length, evaluationReport.Id);
 
         }

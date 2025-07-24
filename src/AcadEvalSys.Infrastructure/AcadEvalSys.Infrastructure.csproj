@@ -19,10 +19,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Storage\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\AcadEvalSys.Application\AcadEvalSys.Application.csproj" />
     </ItemGroup>
 

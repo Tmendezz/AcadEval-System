@@ -1,4 +1,3 @@
-
 using AcadEvalSys.Domain.Entities;
 using AcadEvalSys.Domain.Exceptions;
 using AcadEvalSys.Domain.Interfaces;
@@ -19,7 +18,7 @@ namespace AcadEvalSys.Application.StudentCompetencyAssessments.Commands.Evaluate
 
             if (assessment == null)
             {
-                throw new NotFoundException(nameof(StudentCompetencyAssessment), assessment.Id.ToString());
+                throw new NotFoundException(nameof(StudentCompetencyAssessment), $"StudentId: {request.StudentId}, ProfessorCompetencyAssignmentId: {request.ProfessorCompetencyAssignmentId}");
             }
 
             assessment.CompetencyLevel = request.CompetencyLevel;

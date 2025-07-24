@@ -25,6 +25,11 @@ public class CreateEvaluationInstanceCommandHandler(
 
         await ValidateAssignmentsAsync(request.CompetencyAssignments);
         var user = userContext.GetCurrentUser();
+        
+        if (user == null)
+        {
+            throw new UnauthorizedAccessException("Current user context is not available. User must be authenticated to create evaluation instances.");
+        }
        
         var competencyEvaluationInstance = mapper.Map<CompetencyEvaluationInstance>(request);
         competencyEvaluationInstance.Status = EvaluationStatus.Pending;

@@ -8,6 +8,6 @@ public class StudentCompetencyEvaluationDto
     public string StudentName { get; set; } = string.Empty;
     public string StudentEmail { get; set; } = string.Empty;
     public string CompetencyLevelDescription { get; set; } = string.Empty;
-    public CompetencyLevel CompetencyLevel { get; set; }
+    public CompetencyLevel? CompetencyLevel { get; set; }
     public AssessmentStatus Status { get; set; }
 }
