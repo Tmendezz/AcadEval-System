@@ -25,11 +25,16 @@ public class StudentProfile : Profile
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.User!.Name))
             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User!.Email))
             .ForMember(dest => dest.TechnicalCareerName, opt => opt.MapFrom(src => src.TechnicalCareer!.Name))
-            .ForMember(dest => dest.EnrolledSubjects, opt => opt.MapFrom(src => src.StudentSubjects.Select(es => new SubjectDto()
-            {
-                Id = es.Subject.Id,
-                Name = es.Subject.Name,
-                Year = es.Subject.Year
-            })));
+            .ForMember(dest => dest.EnrolledSubjects, opt => opt.MapFrom(src =>
+                (src.StudentSubjects ?? new List<StudentSubject>())
+                    .Where(es => es.Subject != null)
+                    .Select(es => new SubjectDto
+                    {
+                        Id = es.Subject!.Id,
+                        Name = es.Subject.Name ?? string.Empty,
+                        Year = es.Subject.Year,
+                        TechnicalCareer = es.Subject.TechnicalCareer != null ? es.Subject.TechnicalCareer.Name : null
+                    })
+            ));
     }
 }

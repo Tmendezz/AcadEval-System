@@ -47,9 +47,14 @@ public class StudentRepository(ApplicationDbContext dbContext) : IStudentReposit
         throw new NotImplementedException();
     }
 
-    public Task DeleteAsync(string id)
+    public async Task DeleteAsync(string id)
     {
-        throw new NotImplementedException();
+        var student = await dbContext.Students.FindAsync(id);
+        if (student != null)
+        {
+            dbContext.Students.Remove(student);
+            await dbContext.SaveChangesAsync();
+        }
     }
 
     public Task<bool> IsEnrolledInSubjectAsync(string studentId, Guid subjectId)
@@ -94,7 +99,7 @@ public class StudentRepository(ApplicationDbContext dbContext) : IStudentReposit
             .Select(ss => ss.Student!)
             .ToListAsync();
     }
-    
+
     public async Task<Student?> GetForReportGenerationAsync(string studentId)
     {
         return await dbContext.Students

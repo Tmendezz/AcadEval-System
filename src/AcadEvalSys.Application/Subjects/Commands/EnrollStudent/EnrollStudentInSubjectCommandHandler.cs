@@ -15,21 +15,22 @@ public class EnrollStudentInSubjectCommandHandler(
     {
         logger.LogInformation("Enrolling student {StudentId} in subject {SubjectId}", request.StudentId, request.SubjectId);
 
-        // validar que existe la materia
         var subject = await subjectRepository.GetSubjectByIdAsync(request.SubjectId);
         if (subject == null)
-        {
-            logger.LogWarning("Subject with ID {SubjectId} not found", request.SubjectId);
             throw new NotFoundException(nameof(Subject), request.SubjectId.ToString());
-        }
 
-        var studentExists = await studentRepository.ExistsAsync(request.StudentId);
-        if (!studentExists)
-        {
-            logger.LogWarning("Student with ID {StudentId} not found", request.StudentId);
+        var student = await studentRepository.GetByIdAsync(request.StudentId);
+        if (student == null)
             throw new NotFoundException(nameof(Student), request.StudentId);
-        }
-        
+
+        // Validar que el estudiante pertenece a la carrera de la materia
+        if (student.TechnicalCareerId != subject.TechnicalCareerId)
+            throw new InvalidOperationException("El estudiante no pertenece a la carrera técnica de la materia.");
+
+        // Prevenir inscripciones duplicadas
+        if (await studentRepository.IsEnrolledInSubjectAsync(request.StudentId, request.SubjectId))
+            throw new InvalidOperationException("El estudiante ya está inscrito en esta materia.");
+
         try
         {
             await studentRepository.EnrollInSubjectAsync(request.StudentId, request.SubjectId);
