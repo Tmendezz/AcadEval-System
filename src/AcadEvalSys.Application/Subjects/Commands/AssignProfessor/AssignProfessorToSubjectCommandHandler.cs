@@ -25,7 +25,7 @@ public class AssignProfessorToSubjectCommandHandler(
         }
 
         // validar que el profesor existe y está activo
-        var professor = await professorRepository.GetProfessorByIdAsync(request.ProfessorId);
+        var professor = await professorRepository.GetByIdAsync(request.ProfessorId);
         if (professor == null)
         {
             logger.LogWarning("Professor with ID {ProfessorId} not found or not active", request.ProfessorId);
