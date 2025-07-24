@@ -1,14 +1,14 @@
 using AcadEvalSys.Domain.Entities;
+using AcadEvalSys.Domain.Enums;
 
 namespace AcadEvalSys.Domain.Repositories;
 
 public interface ICompetencyEvaluationInstanceRepository
 {
-    Task<Guid> CreateCompetencyEvaluationInstanceAsync(CompetencyEvaluationInstance competencyEvaluationInstance);
-    Task<CompetencyEvaluationInstance?> GetCompetencyEvaluationInstanceByIdAsync(Guid id);
-    Task<IEnumerable<CompetencyEvaluationInstance>> GetAllCompetencyEvaluationInstancesAsync();
-    Task UpdateCompetencyEvaluationInstanceAsync(CompetencyEvaluationInstance competencyEvaluationInstance);
-    Task DeleteCompetencyEvaluationInstanceAsync(Guid id);
-    Task<bool> ExistsByTitleAsync(string title);
-    Task<IEnumerable<CompetencyEvaluationInstance>> GetActiveCompetencyEvaluationInstancesAsync();
+    Task<Guid> CreateAsync(CompetencyEvaluationInstance instance);
+    Task<CompetencyEvaluationInstance?> GetByIdAsync(Guid id);
+    Task<IEnumerable<CompetencyEvaluationInstance>> GetAllAsync();
+    Task UpdateAsync(CompetencyEvaluationInstance instance);
+    Task DeleteAsync(Guid id);
+    Task<CompetencyEvaluationInstance?> GetForReportGenerationAsync(Guid id);
 }

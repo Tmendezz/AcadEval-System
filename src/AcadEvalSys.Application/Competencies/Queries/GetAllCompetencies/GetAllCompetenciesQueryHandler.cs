@@ -12,7 +12,7 @@ public class GetAllCompetenciesQueryHandler(ILogger<GetAllCompetenciesQuery> log
     {
         logger.LogInformation("Getting all competencies");
 
-        var competencies = await competencyRepository.GetAllCompetenciesAsync();
+        var competencies = await competencyRepository.GetAllAsync();
 
         var competenciesDto = mapper.Map<IEnumerable<CompetencyDto>>(competencies);
 

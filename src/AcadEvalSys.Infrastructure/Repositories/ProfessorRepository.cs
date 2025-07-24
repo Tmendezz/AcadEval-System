@@ -7,7 +7,7 @@ namespace AcadEvalSys.Infrastructure.Repositories;
 
 public class ProfessorRepository(ApplicationDbContext dbContext) : IProfessorRepository
 {
-    public async Task<Professor?> GetProfessorByIdAsync(string professorId)
+    public async Task<Professor?> GetByIdAsync(string professorId)
     {
         return await dbContext.Professors
             .Include(p => p.User)
@@ -18,11 +18,10 @@ public class ProfessorRepository(ApplicationDbContext dbContext) : IProfessorRep
 
     public async Task<bool> ExistsAsync(string professorId)
     {
-        var professor = await GetProfessorByIdAsync(professorId);
-        return professor != null;
+        return await dbContext.Professors.AnyAsync(p => p.UserId == professorId);
     }
 
-    public async Task<IEnumerable<Professor>> GetAllProfessorsAsync()
+    public async Task<IEnumerable<Professor>> GetAllAsync()
     {
         return await dbContext.Professors
             .Include(p => p.User)

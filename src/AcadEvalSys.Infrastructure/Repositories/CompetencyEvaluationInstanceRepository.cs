@@ -1,4 +1,5 @@
 using AcadEvalSys.Domain.Entities;
+using AcadEvalSys.Domain.Enums;
 using AcadEvalSys.Domain.Repositories;
 using AcadEvalSys.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -7,14 +8,14 @@ namespace AcadEvalSys.Infrastructure.Repositories;
 
 public class CompetencyEvaluationInstanceRepository(ApplicationDbContext dbContext) : ICompetencyEvaluationInstanceRepository
 {
-    public async Task<Guid> CreateCompetencyEvaluationInstanceAsync(CompetencyEvaluationInstance competencyEvaluationInstance)
+    public async Task<Guid> CreateAsync(CompetencyEvaluationInstance instance)
     {
-        var result = dbContext.CompetencyEvaluationInstances.Add(competencyEvaluationInstance);
+        var result = dbContext.CompetencyEvaluationInstances.Add(instance);
         await dbContext.SaveChangesAsync();
         return result.Entity.Id;
     }
 
-    public Task<CompetencyEvaluationInstance?> GetCompetencyEvaluationInstanceByIdAsync(Guid id)
+    public Task<CompetencyEvaluationInstance?> GetByIdAsync(Guid id)
     {
         var competencyEvaluationInstance = dbContext.CompetencyEvaluationInstances
             .Include(ep => ep.TechnicalCareers)
@@ -27,14 +28,19 @@ public class CompetencyEvaluationInstanceRepository(ApplicationDbContext dbConte
             .Include(ep => ep.ProfessorCompetencyAssignments)
                 .ThenInclude(pca => pca.Subject)
                     .ThenInclude(s => s.TechnicalCareer)
+            .Include(ep => ep.ProfessorCompetencyAssignments)
+                .ThenInclude(pca => pca.StudentCompetencyAssessments)
+                    .ThenInclude(sca => sca.Student)
+                        .ThenInclude(s => s.User)
             .Include(ep => ep.StudentEvaluationReports)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(ep => ep.Id == id && ep.IsActive);
         return competencyEvaluationInstance;
     }
 
-    public async Task<IEnumerable<CompetencyEvaluationInstance>> GetAllCompetencyEvaluationInstancesAsync()
+    public async Task<IEnumerable<CompetencyEvaluationInstance>> GetAllAsync()
     {
-        var competencyEvaluationInstances = await dbContext.CompetencyEvaluationInstances
+        return await dbContext.CompetencyEvaluationInstances
             .Include(ep => ep.TechnicalCareers)
             .Include(ep => ep.ProfessorCompetencyAssignments)
                 .ThenInclude(pca => pca.Competency)
@@ -45,26 +51,40 @@ public class CompetencyEvaluationInstanceRepository(ApplicationDbContext dbConte
             .Include(ep => ep.ProfessorCompetencyAssignments)
                 .ThenInclude(pca => pca.Subject)
                     .ThenInclude(s => s.TechnicalCareer)
+            .Include(ep => ep.ProfessorCompetencyAssignments)
+                .ThenInclude(pca => pca.StudentCompetencyAssessments)
+                    .ThenInclude(sca => sca.Student)
+                        .ThenInclude(s => s.User)
             .Include(ep => ep.StudentEvaluationReports)
+            .AsSplitQuery()
             .Where(ep => ep.IsActive)
             .ToListAsync();
-
-        return competencyEvaluationInstances;
     }
 
-    public async Task UpdateCompetencyEvaluationInstanceAsync(CompetencyEvaluationInstance competencyEvaluationInstance)
+    public async Task UpdateAsync(CompetencyEvaluationInstance instance)
     {
-        dbContext.CompetencyEvaluationInstances.Update(competencyEvaluationInstance);
+        dbContext.CompetencyEvaluationInstances.Update(instance);
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task DeleteCompetencyEvaluationInstanceAsync(Guid id)
+    public async Task DeleteAsync(Guid id)
     {
-        var competencyEvaluationInstance = await dbContext.CompetencyEvaluationInstances.FirstOrDefaultAsync(ep => ep.Id == id);
-        if (competencyEvaluationInstance != null)
+        var instance = await dbContext.CompetencyEvaluationInstances.FirstOrDefaultAsync(ep => ep.Id == id);
+        if (instance != null)
         {
-            competencyEvaluationInstance.IsActive = false;
-            competencyEvaluationInstance.UpdatedAt = DateTime.UtcNow;
+            instance.IsActive = false;
+            instance.UpdatedAt = DateTime.UtcNow;
+            await dbContext.SaveChangesAsync();
+        }
+    }
+
+    public async Task UpdateStatusAsync(Guid id, EvaluationStatus status)
+    {
+        var instance = await dbContext.CompetencyEvaluationInstances.FirstOrDefaultAsync(ep => ep.Id == id);
+        if (instance != null)
+        {
+            instance.Status = status;
+            instance.UpdatedAt = DateTime.UtcNow;
             await dbContext.SaveChangesAsync();
         }
     }
@@ -73,11 +93,37 @@ public class CompetencyEvaluationInstanceRepository(ApplicationDbContext dbConte
     {
         return await dbContext.CompetencyEvaluationInstances.AnyAsync(ep => ep.Title == title && ep.IsActive);
     }
-
-    public async Task<IEnumerable<CompetencyEvaluationInstance>> GetActiveCompetencyEvaluationInstancesAsync()
+    
+    
+    public async Task<CompetencyEvaluationInstance?> GetForReportGenerationAsync(Guid id)
     {
         return await dbContext.CompetencyEvaluationInstances
-            .Where(ep => ep.IsActive)
-            .ToListAsync();
+            .Include(ep => ep.TechnicalCareers)
+            .Include(ep => ep.ProfessorCompetencyAssignments)
+                .ThenInclude(pca => pca.Competency)
+                    .ThenInclude(c => c.LevelDescriptions)  // ← CLAVE: Incluir LevelDescriptions
+            .Include(ep => ep.ProfessorCompetencyAssignments)
+                .ThenInclude(pca => pca.Subject)
+                    .ThenInclude(s => s.Professor)
+                        .ThenInclude(p => p.User)
+            .Include(ep => ep.ProfessorCompetencyAssignments)
+                .ThenInclude(pca => pca.StudentCompetencyAssessments)
+                    .ThenInclude(sca => sca.Student)
+                        .ThenInclude(s => s.User)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(ep => ep.Id == id && ep.IsActive);
+    }
+
+    public async Task<CompetencyEvaluationInstance?> GetByIdWithDetailsAsync(Guid id)
+    {
+        return await dbContext.CompetencyEvaluationInstances
+            .Include("TechnicalCareers")
+            .Include("ProfessorCompetencyAssignments.Competency")
+            .Include("ProfessorCompetencyAssignments.Subject.Professor.User")
+            .Include("ProfessorCompetencyAssignments.Subject.TechnicalCareer")
+            .Include("ProfessorCompetencyAssignments.StudentCompetencyAssessments.Student.User")
+            .Include("StudentEvaluationReports")
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(ep => ep.Id == id && ep.IsActive);
     }
 }

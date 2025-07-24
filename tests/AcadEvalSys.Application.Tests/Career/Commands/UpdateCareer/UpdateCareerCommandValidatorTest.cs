@@ -1,22 +1,22 @@
-﻿using AcadEvalSys.Application.Career.Commands.UpdateCareer;
+﻿using AcadEvalSys.Application.TechnicalCareers.Commands.UpdateTechnicalCareer;
 using FluentValidation.TestHelper;
 using Xunit;
 
 namespace AcadEvalSys.Application.Tests.Career.Commands.UpdateCareer;
 
-public class UpdateCareerCommandValidatorTest
+public class UpdateTechnicalCareerCommandValidatorTest
 {
-    private readonly UpdateCareerCommandValidator _validator;
+    private readonly UpdateTechnicalCareerCommandValidator _validator;
 
-    public UpdateCareerCommandValidatorTest()
+    public UpdateTechnicalCareerCommandValidatorTest()
     {
-        _validator = new UpdateCareerCommandValidator();
+        _validator = new UpdateTechnicalCareerCommandValidator();
     }
     
     [Fact]
     public void Validator_ForValidCommand_ShouldNotHaveValidationErrors()
     {
-        var command = new UpdateCareerCommand
+        var command = new UpdateTechnicalCareerCommand
         {
             Id = Guid.NewGuid(),
             Name = "Updated Career"
@@ -29,7 +29,7 @@ public class UpdateCareerCommandValidatorTest
     [Fact]
     public void Validator_ForInvalidName_ShouldHaveValidationErrors()
     {
-        var command = new UpdateCareerCommand
+        var command = new UpdateTechnicalCareerCommand
         {
             Id = Guid.NewGuid(),
             Name = string.Empty // Invalid name
@@ -42,7 +42,7 @@ public class UpdateCareerCommandValidatorTest
     [Fact]
     public void Validator_ForTooLongName_ShouldHaveValidationErrors()
     {
-        var command = new UpdateCareerCommand
+        var command = new UpdateTechnicalCareerCommand
         {
             Id = Guid.NewGuid(),
             Name = new string('a', 200) // Too long name
@@ -55,10 +55,10 @@ public class UpdateCareerCommandValidatorTest
     [Fact]
     public void Validator_ForNullName_ShouldHaveValidationErrors()
     {
-        var command = new UpdateCareerCommand
+        var command = new UpdateTechnicalCareerCommand
         {
             Id = Guid.NewGuid(),
-            Name = null // Invalid name
+            Name = null! // Invalid name
         };
         
         var result = _validator.TestValidate(command);

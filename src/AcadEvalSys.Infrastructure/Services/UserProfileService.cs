@@ -28,7 +28,7 @@ public class UserProfileService(ApplicationDbContext dbContext, IMapper mapper) 
             Id = ss.Subject!.Id,
             Name = ss.Subject.Name!,
             Year = ss.Subject.Year,
-            TechnicalCareerName = ss.Subject.TechnicalCareer?.Name
+            TechnicalCareer = ss.Subject.TechnicalCareer?.Name
         }) ?? [];
 
         return result;
@@ -51,7 +51,7 @@ public class UserProfileService(ApplicationDbContext dbContext, IMapper mapper) 
             Id = s.Id,
             Name = s.Name!,
             Year = s.Year,
-            TechnicalCareerName = s.TechnicalCareer?.Name
+            TechnicalCareer = s.TechnicalCareer?.Name
         }) ?? [];
 
         return result;

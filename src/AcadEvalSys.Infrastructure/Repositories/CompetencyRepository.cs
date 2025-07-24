@@ -7,57 +7,56 @@ namespace AcadEvalSys.Infrastructure.Repositories;
 
 public class CompetencyRepository(ApplicationDbContext dbContext) : ICompetencyRepository
 {
-    public async Task<IEnumerable<Competency>> GetAllCompetenciesAsync()
+    public async Task<IEnumerable<Competency>> GetAllAsync()
     {
-        var competencies = await dbContext.Competencies.Where(c => c.IsActive)
-            .Include(l => l.LevelDescriptions!.OrderBy(ld => ld.Level))
+        return await dbContext.Competencies
+            .Where(c => c.IsActive)
+            .Include(c => c.LevelDescriptions!.OrderBy(ld => ld.Level))
             .ToListAsync();
-        return competencies;
     }
 
-    public async Task<Competency?> GetCompetencyByIdAsync(Guid id)
+    public async Task<Competency?> GetByIdAsync(Guid id)
     {
-        var competency = await dbContext.Competencies
-            .Include(l => l.LevelDescriptions!.OrderBy(ld => ld.Level))
-            .FirstOrDefaultAsync(c => c.Id == id);
-        return competency;
+        return await dbContext.Competencies
+            .Include(c => c.LevelDescriptions!.OrderBy(ld => ld.Level))
+            .FirstOrDefaultAsync(c => c.Id == id && c.IsActive);
     }
 
-    public async Task<Guid> CreateCompetencyAsync(Competency competency)
+    public async Task<Guid> CreateAsync(Competency competency)
     {
         var result = dbContext.Competencies.Add(competency);
         await dbContext.SaveChangesAsync();
         return result.Entity.Id;
     }
 
-    public async Task UpdateCompetencyAsync(Competency competency)
+    public async Task UpdateAsync(Competency competency)
     {
         dbContext.Competencies.Update(competency);
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task DeleteCompetencyAsync(Guid id, string? updatedByUserId = null)
+    public async Task DeleteAsync(Guid id, string? updatedByUserId = null)
     {
-        var competencyToDelete = await dbContext.Competencies.FirstOrDefaultAsync(c => c.Id == id);
+        var competency = await dbContext.Competencies.FirstOrDefaultAsync(c => c.Id == id);
 
-        if (competencyToDelete == null)
+        if (competency == null)
         {
             throw new InvalidOperationException($"Competency with ID {id} was not found.");
         }
 
-        competencyToDelete.IsActive = false;
-        competencyToDelete.UpdatedAt = DateTime.UtcNow;
-        competencyToDelete.UpdatedByUserId = updatedByUserId ?? String.Empty;
+        competency.IsActive = false;
+        competency.UpdatedAt = DateTime.UtcNow;
+        competency.UpdatedByUserId = updatedByUserId ?? string.Empty;
 
         await dbContext.SaveChangesAsync();
     }
 
     public Task<bool> ExistsByNameAsync(string name)
     {
-        return dbContext.Competencies.AnyAsync(c => c.Name == name);
+        return dbContext.Competencies.AnyAsync(c => c.Name == name && c.IsActive);
     }
 
-    public Task<bool> ExistsByIdAsync(Guid id)
+    public Task<bool> ExistsAsync(Guid id)
     {
         return dbContext.Competencies.AnyAsync(c => c.Id == id && c.IsActive);
     }

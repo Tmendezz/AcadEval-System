@@ -18,7 +18,7 @@ public class DeleteCompetencyCommandHandler(ILogger<DeleteCompetencyCommandHandl
             throw new InvalidOperationException("User context not found");
         }
 
-        await competencyRepository.DeleteCompetencyAsync(request.Id, user.Id);
+        await competencyRepository.DeleteAsync(request.Id, user.Id);
         
         logger.LogInformation("Competency with ID: {Id} deleted successfully", request.Id);
     }

@@ -13,3 +13,4 @@ namespace AcadEvalSys.Domain.Entities
         public virtual ICollection<QuestionResponse>? QuestionResponses { get; set; } = new List<QuestionResponse>();
     }
 }
+    

@@ -10,7 +10,7 @@ public class SubjectProfile : Profile
     public SubjectProfile()
     {
         CreateMap<Subject, SubjectDto>()
-            .ForMember(dest => dest.TechnicalCareerName, opt => opt.MapFrom(src => src.TechnicalCareer.Name))
+            .ForMember(dest => dest.TechnicalCareer, opt => opt.MapFrom(src => src.TechnicalCareer.Name))
             .ForMember(dest => dest.Year, opt => opt.MapFrom(src => src.Year));
 
         CreateMap<CreateSubjectCommand, Subject>();

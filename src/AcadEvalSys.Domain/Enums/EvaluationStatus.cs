@@ -2,7 +2,7 @@ namespace AcadEvalSys.Domain.Enums
 {
     public enum EvaluationStatus
     {
-        Active,
+        Pending,
         Completed,
         Upcoming,
         Cancelled

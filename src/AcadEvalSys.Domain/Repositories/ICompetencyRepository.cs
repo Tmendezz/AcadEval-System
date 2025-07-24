@@ -4,11 +4,11 @@ namespace AcadEvalSys.Domain.Repositories;
 
 public interface ICompetencyRepository
 {
-    Task<IEnumerable<Competency>> GetAllCompetenciesAsync();
-    Task<Competency?> GetCompetencyByIdAsync(Guid id);
-    Task<Guid> CreateCompetencyAsync(Competency competency);
-    Task UpdateCompetencyAsync(Competency competency);
-    Task DeleteCompetencyAsync(Guid id, string? updatedByUserId = null);
+    Task<IEnumerable<Competency>> GetAllAsync();
+    Task<Competency?> GetByIdAsync(Guid id);
+    Task<Guid> CreateAsync(Competency competency);
+    Task UpdateAsync(Competency competency);
+    Task DeleteAsync(Guid id, string? updatedByUserId = null);
     Task<bool> ExistsByNameAsync(string name);
-    Task<bool> ExistsByIdAsync(Guid id);
+    Task<bool> ExistsAsync(Guid id);
 }

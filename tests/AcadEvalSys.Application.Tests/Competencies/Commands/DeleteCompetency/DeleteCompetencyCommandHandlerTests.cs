@@ -40,14 +40,14 @@ public class DeleteCompetencyCommandHandlerTests
         var competencyId = Guid.NewGuid();
         var command = new DeleteCompetencyCommand(competencyId);
 
-        _competencyRepositoryMock.Setup(repo => repo.DeleteCompetencyAsync(competencyId, _currentUser.Id))
+        _competencyRepositoryMock.Setup(repo => repo.DeleteAsync(competencyId, _currentUser.Id))
             .Returns(Task.CompletedTask);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _competencyRepositoryMock.Verify(repo => repo.DeleteCompetencyAsync(competencyId, _currentUser.Id), Times.Once);
+        _competencyRepositoryMock.Verify(repo => repo.DeleteAsync(competencyId, _currentUser.Id), Times.Once);
         _userContextMock.Verify(uc => uc.GetCurrentUser(), Times.Once);
     }
 
@@ -58,7 +58,7 @@ public class DeleteCompetencyCommandHandlerTests
         var competencyId = Guid.NewGuid();
         var command = new DeleteCompetencyCommand(competencyId);
 
-        _competencyRepositoryMock.Setup(repo => repo.DeleteCompetencyAsync(competencyId, _currentUser.Id))
+        _competencyRepositoryMock.Setup(repo => repo.DeleteAsync(competencyId, _currentUser.Id))
             .ThrowsAsync(new InvalidOperationException($"Competency with ID {competencyId} was not found."));
 
         // Act & Assert
@@ -67,7 +67,5 @@ public class DeleteCompetencyCommandHandlerTests
         );
 
         exception.Message.Should().Be($"Competency with ID {competencyId} was not found.");
-        
     }
-    
-} 
+}

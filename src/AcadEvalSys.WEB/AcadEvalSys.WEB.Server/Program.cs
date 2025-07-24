@@ -1,14 +1,14 @@
 using AcadEvalSys.Application.Extensions;
 using AcadEvalSys.Domain.Entities;
 using AcadEvalSys.Infrastructure.Extensions;
+using AcadEvalSys.Infrastructure.Seeders;
 using AcadEvalSys.WEB.Server.Extensions;
 using AcadEvalSys.WEB.Server.Middlewares;
+using Hangfire;
 using Serilog;
 
 try
 {
-    // SEED
-    
     var builder = WebApplication.CreateBuilder(args);
 
     builder.AddPresentation();
@@ -25,17 +25,25 @@ try
                 .AllowCredentials());
     });
 
-
     var app = builder.Build();
 
     app.UseSerilogRequestLogging();
     app.UseMiddleware<ErrorHandlingMiddleware>();
 
-
+    // Configurar el dashboard de Hangfire (solo en desarrollo)
     if (app.Environment.IsDevelopment())
     {
+        //seed
+        using (var scope = app.Services.CreateScope())
+        {
+            var seeder = scope.ServiceProvider.GetRequiredService<IDbSeeder>();
+            await seeder.Seed();
+        }
         app.UseSwagger();
         app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "AcadEval API v1"));
+        
+        // Dashboard de Hangfire para monitorear trabajos
+        app.UseHangfireDashboard("/hangfire");
     }
 
     app.UseHttpsRedirection();
@@ -66,7 +74,6 @@ try
         serverAddress, machineName, environment);
 
     app.Run();
-
 }
 catch (Exception ex)
 {

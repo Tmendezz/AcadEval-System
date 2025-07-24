@@ -31,6 +31,8 @@
 
     <ItemGroup>
       <Folder Include="Competencies\Commands\" />
+      <Folder Include="ProfessorCompetencyAssignments\" />
+      <Folder Include="StudentCompetencyAssessments\" />
     </ItemGroup>
 
 </Project>

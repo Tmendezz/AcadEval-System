@@ -1,9 +1,0 @@
-using AcadEvalSys.Application.CompetenciesEvaluationInstances.Dtos;
-using AcadEvalSys.Application.CompetencyEvaluationInstances.Dtos;
-using MediatR;
-
-namespace AcadEvalSys.Application.CompetenciesEvaluationInstances.Queries.GetAllCompetenciesEvaluationInstances;
-
-public class GetAllCompetencyEvaluationInstancesQuery : IRequest<IEnumerable<CompetencyEvaluationInstanceDetailDto>>
-{
-}

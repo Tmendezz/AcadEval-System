@@ -15,29 +15,21 @@ public class EnrollStudentInSubjectCommandHandler(
     {
         logger.LogInformation("Enrolling student {StudentId} in subject {SubjectId}", request.StudentId, request.SubjectId);
 
-        // validar que existe la materia
         var subject = await subjectRepository.GetSubjectByIdAsync(request.SubjectId);
         if (subject == null)
-        {
-            logger.LogWarning("Subject with ID {SubjectId} not found", request.SubjectId);
             throw new NotFoundException(nameof(Subject), request.SubjectId.ToString());
-        }
 
-        var studentBelongsToCareer = await studentRepository.ExistsInCareerAsync(request.StudentId, subject.TechnicalCareerId!.Value);
-        if (!studentBelongsToCareer)
-        {
-            logger.LogWarning("Student with ID {StudentId} does not belong to career {TechnicalCareerId} for subject {SubjectId}",
-                request.StudentId, subject.TechnicalCareerId, request.SubjectId);
+        var student = await studentRepository.GetByIdAsync(request.StudentId);
+        if (student == null)
             throw new NotFoundException(nameof(Student), request.StudentId);
-        }
 
-        // validar que el estudiante no esté ya inscrito
-        var isAlreadyEnrolled = await studentRepository.IsEnrolledInSubjectAsync(request.StudentId, request.SubjectId);
-        if (isAlreadyEnrolled)
-        {
-            logger.LogInformation("Student {StudentId} is already enrolled in subject {SubjectId}", request.StudentId, request.SubjectId);
-            return true; // Ya está inscrito, no es necesario hacer nada
-        }
+        // Validar que el estudiante pertenece a la carrera de la materia
+        if (student.TechnicalCareerId != subject.TechnicalCareerId)
+            throw new InvalidOperationException("El estudiante no pertenece a la carrera técnica de la materia.");
+
+        // Prevenir inscripciones duplicadas
+        if (await studentRepository.IsEnrolledInSubjectAsync(request.StudentId, request.SubjectId))
+            throw new InvalidOperationException("El estudiante ya está inscrito en esta materia.");
 
         try
         {

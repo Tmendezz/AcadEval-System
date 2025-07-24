@@ -63,7 +63,7 @@ public class UpdateCompetencyCommandHandlerTests
             IsActive = true
         };
 
-        _competencyRepositoryMock.Setup(repo => repo.GetCompetencyByIdAsync(competencyId))
+        _competencyRepositoryMock.Setup(repo => repo.GetByIdAsync(competencyId))
             .ReturnsAsync(existingCompetency);
         
         _competencyRepositoryMock.Setup(repo => repo.ExistsByNameAsync(command.Name))
@@ -77,7 +77,7 @@ public class UpdateCompetencyCommandHandlerTests
         existingCompetency.UpdatedByUserId.Should().Be(_currentUser.Id);
         
         _mapperMock.Verify(m => m.Map(command, existingCompetency), Times.Once);
-        _competencyRepositoryMock.Verify(repo => repo.UpdateCompetencyAsync(existingCompetency), Times.Once);
+        _competencyRepositoryMock.Verify(repo => repo.UpdateAsync(existingCompetency), Times.Once);
     }
 
     [Fact]
@@ -93,7 +93,7 @@ public class UpdateCompetencyCommandHandlerTests
             Type = CompetencyType.Technical
         };
 
-        _competencyRepositoryMock.Setup(repo => repo.GetCompetencyByIdAsync(competencyId))
+        _competencyRepositoryMock.Setup(repo => repo.GetByIdAsync(competencyId))
             .ReturnsAsync((Competency?)null);
 
         // Act & Assert
@@ -103,7 +103,7 @@ public class UpdateCompetencyCommandHandlerTests
 
         exception.Message.Should().Be($"Competency with ID {competencyId} was not found.");
         
-        _competencyRepositoryMock.Verify(repo => repo.UpdateCompetencyAsync(It.IsAny<Competency>()), Times.Never);
+        _competencyRepositoryMock.Verify(repo => repo.UpdateAsync(It.IsAny<Competency>()), Times.Never);
     }
 
     [Fact]
@@ -127,7 +127,7 @@ public class UpdateCompetencyCommandHandlerTests
             Type = CompetencyType.Soft
         };
 
-        _competencyRepositoryMock.Setup(repo => repo.GetCompetencyByIdAsync(competencyId))
+        _competencyRepositoryMock.Setup(repo => repo.GetByIdAsync(competencyId))
             .ReturnsAsync(existingCompetency);
         
         _competencyRepositoryMock.Setup(repo => repo.ExistsByNameAsync(command.Name))
@@ -140,7 +140,7 @@ public class UpdateCompetencyCommandHandlerTests
 
         exception.Message.Should().Be($"A competency with the name '{command.Name}' already exists.");
         
-        _competencyRepositoryMock.Verify(repo => repo.UpdateCompetencyAsync(It.IsAny<Competency>()), Times.Never);
+        _competencyRepositoryMock.Verify(repo => repo.UpdateAsync(It.IsAny<Competency>()), Times.Never);
     }
 
     [Fact]
@@ -165,7 +165,7 @@ public class UpdateCompetencyCommandHandlerTests
             Type = CompetencyType.Soft
         };
 
-        _competencyRepositoryMock.Setup(repo => repo.GetCompetencyByIdAsync(competencyId))
+        _competencyRepositoryMock.Setup(repo => repo.GetByIdAsync(competencyId))
             .ReturnsAsync(existingCompetency);
 
         // Act
@@ -173,7 +173,7 @@ public class UpdateCompetencyCommandHandlerTests
 
         // Assert
         _competencyRepositoryMock.Verify(repo => repo.ExistsByNameAsync(It.IsAny<string>()), Times.Never);
-        _competencyRepositoryMock.Verify(repo => repo.UpdateCompetencyAsync(existingCompetency), Times.Once);
+        _competencyRepositoryMock.Verify(repo => repo.UpdateAsync(existingCompetency), Times.Once);
     }
 
     [Fact]
@@ -201,7 +201,7 @@ public class UpdateCompetencyCommandHandlerTests
             UpdatedByUserId = null
         };
 
-        _competencyRepositoryMock.Setup(repo => repo.GetCompetencyByIdAsync(competencyId))
+        _competencyRepositoryMock.Setup(repo => repo.GetByIdAsync(competencyId))
             .ReturnsAsync(existingCompetency);
         
         _competencyRepositoryMock.Setup(repo => repo.ExistsByNameAsync(command.Name))
@@ -224,4 +224,4 @@ public class UpdateCompetencyCommandHandlerTests
         existingCompetency.CreatedAt.Should().BeBefore(beforeUpdate);
         existingCompetency.CreatedByUserId.Should().Be("original-user");
     }
-} 
+}

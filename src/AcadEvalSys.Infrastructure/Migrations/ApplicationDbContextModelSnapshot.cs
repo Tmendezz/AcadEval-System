@@ -87,6 +87,12 @@ namespace AcadEvalSys.Infrastructure.Migrations
                     b.Property<DateTime>("PeriodTo")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("Semester")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Title")
                         .HasColumnType("text");
 
@@ -244,6 +250,9 @@ namespace AcadEvalSys.Infrastructure.Migrations
                     b.Property<string>("ProfessorUserId")
                         .HasColumnType("text");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
                     b.Property<Guid>("SubjectId")
                         .HasColumnType("uuid");
 
@@ -361,8 +370,8 @@ namespace AcadEvalSys.Infrastructure.Migrations
                     b.Property<Guid>("ProfessorCompetencyAssignmentId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Status")
-                        .HasColumnType("text");
+                    b.Property<int?>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<string>("StudentId")
                         .HasColumnType("text");
@@ -397,11 +406,18 @@ namespace AcadEvalSys.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("CompetenciesEvaluationInstanceId")
+                    b.Property<string>("BlobName")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("CompetencyEvaluationInstanceId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("CompetencyEvaluationInstanceId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("ContainerName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ContentType")
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -409,11 +425,20 @@ namespace AcadEvalSys.Infrastructure.Migrations
                     b.Property<string>("CreatedByUserId")
                         .HasColumnType("text");
 
+                    b.Property<long?>("FileSizeBytes")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTime>("GeneratedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("GeneratedByUserId")
+                        .HasColumnType("text");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("Observation")
+                        .HasColumnType("text");
 
                     b.Property<string>("StudentId")
                         .IsRequired()
@@ -638,21 +663,6 @@ namespace AcadEvalSys.Infrastructure.Migrations
                     b.HasIndex("TechnicalCareersId");
 
                     b.ToTable("CompetencyEvaluationInstanceTechnicalCareer");
-                });
-
-            modelBuilder.Entity("CompetencyTechnicalCareer", b =>
-                {
-                    b.Property<Guid>("CompetenciesId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TechnicalCareersId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("CompetenciesId", "TechnicalCareersId");
-
-                    b.HasIndex("TechnicalCareersId");
-
-                    b.ToTable("CompetencyTechnicalCareer");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -991,7 +1001,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("AcadEvalSys.Domain.Entities.Subject", "Subject")
+                    b.HasOne("AcadEvalSys.Domain.Entities.Subject", null)
                         .WithMany("StudentCompetencyAssessments")
                         .HasForeignKey("SubjectId");
 
@@ -1005,8 +1015,6 @@ namespace AcadEvalSys.Infrastructure.Migrations
 
                     b.Navigation("Student");
 
-                    b.Navigation("Subject");
-
                     b.Navigation("UpdatedByUser");
                 });
 
@@ -1014,7 +1022,9 @@ namespace AcadEvalSys.Infrastructure.Migrations
                 {
                     b.HasOne("AcadEvalSys.Domain.Entities.CompetencyEvaluationInstance", "CompetencyEvaluationInstance")
                         .WithMany("StudentEvaluationReports")
-                        .HasForeignKey("CompetencyEvaluationInstanceId");
+                        .HasForeignKey("CompetencyEvaluationInstanceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("AcadEvalSys.Domain.Entities.User", "CreatedByUser")
                         .WithMany()
@@ -1115,21 +1125,6 @@ namespace AcadEvalSys.Infrastructure.Migrations
                     b.HasOne("AcadEvalSys.Domain.Entities.CompetencyEvaluationInstance", null)
                         .WithMany()
                         .HasForeignKey("CompetencyEvaluationInstancesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AcadEvalSys.Domain.Entities.TechnicalCareer", null)
-                        .WithMany()
-                        .HasForeignKey("TechnicalCareersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("CompetencyTechnicalCareer", b =>
-                {
-                    b.HasOne("AcadEvalSys.Domain.Entities.Competency", null)
-                        .WithMany()
-                        .HasForeignKey("CompetenciesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

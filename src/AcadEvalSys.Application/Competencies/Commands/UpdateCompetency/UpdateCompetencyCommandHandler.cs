@@ -20,7 +20,7 @@ public class UpdateCompetencyCommandHandler(ILogger<UpdateCompetencyCommandHandl
             throw new InvalidOperationException("User context not found");
         }
 
-        var existingCompetency = await competencyRepository.GetCompetencyByIdAsync(request.Id);
+        var existingCompetency = await competencyRepository.GetByIdAsync(request.Id);
         
         if (existingCompetency == null)
         {
@@ -43,7 +43,7 @@ public class UpdateCompetencyCommandHandler(ILogger<UpdateCompetencyCommandHandl
         existingCompetency.UpdatedAt = DateTime.UtcNow;
         existingCompetency.UpdatedByUserId = user.Id ?? String.Empty;
 
-        await competencyRepository.UpdateCompetencyAsync(existingCompetency);
+        await competencyRepository.UpdateAsync(existingCompetency);
 
         logger.LogInformation("Competency with ID: {Id} updated successfully", request.Id);
     }

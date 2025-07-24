@@ -17,7 +17,6 @@ namespace AcadEvalSys.WEB.Server.Controllers;
 [Authorize(Roles = UserRoles.Admin)]
 public class SubjectController(IMediator mediator) : ControllerBase
 {
-
     [HttpPost]
     public async Task<IActionResult> CreateSubject([FromBody] CreateSubjectCommand command)
     {
