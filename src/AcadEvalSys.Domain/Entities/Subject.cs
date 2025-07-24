@@ -7,6 +7,7 @@ namespace AcadEvalSys.Domain.Entities
     public class Subject : BaseEntity
     {
         public string? Name { get; set; }
+        public string? Description { get; set; }
         public Guid? TechnicalCareerId { get; set; }
         public CareerYear Year { get; set; }
         public string? ProfessorId { get; set; }
