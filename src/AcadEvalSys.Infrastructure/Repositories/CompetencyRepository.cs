@@ -29,26 +29,16 @@ public class CompetencyRepository(ApplicationDbContext dbContext) : ICompetencyR
         return result.Entity.Id;
     }
 
-    public async Task UpdateAsync(Competency competency)
+    public async Task DeleteAsync(Guid id, string userId)
     {
-        dbContext.Competencies.Update(competency);
-        await dbContext.SaveChangesAsync();
-    }
-
-    public async Task DeleteAsync(Guid id, string? updatedByUserId = null)
-    {
-        var competency = await dbContext.Competencies.FirstOrDefaultAsync(c => c.Id == id);
-
-        if (competency == null)
+        var competency = await dbContext.Competencies.FirstOrDefaultAsync(c => c.Id == id && c.IsActive);
+        if (competency != null)
         {
-            throw new InvalidOperationException($"Competency with ID {id} was not found.");
+            competency.IsActive = false;
+            competency.UpdatedByUserId = userId;
+            competency.UpdatedAt = DateTime.UtcNow;
+            await dbContext.SaveChangesAsync();
         }
-
-        competency.IsActive = false;
-        competency.UpdatedAt = DateTime.UtcNow;
-        competency.UpdatedByUserId = updatedByUserId ?? string.Empty;
-
-        await dbContext.SaveChangesAsync();
     }
 
     public Task<bool> ExistsByNameAsync(string name)
@@ -59,5 +49,11 @@ public class CompetencyRepository(ApplicationDbContext dbContext) : ICompetencyR
     public Task<bool> ExistsAsync(Guid id)
     {
         return dbContext.Competencies.AnyAsync(c => c.Id == id && c.IsActive);
+    }
+
+    public async Task UpdateAsync(Competency competency)
+    {
+        dbContext.Competencies.Update(competency);
+        await dbContext.SaveChangesAsync();
     }
 }

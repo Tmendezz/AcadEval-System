@@ -20,5 +20,10 @@ public class UpdateCompetencyCommandValidator : AbstractValidator<UpdateCompeten
         RuleFor(x => x.Type)
             .IsInEnum()
             .WithMessage("Invalid competency type.");
+
+        RuleFor(x => x.CompetencyLevelDescriptions)
+            .NotNull()
+            .Must(dict => dict.Count == 4 && System.Enum.GetValues(typeof(AcadEvalSys.Domain.Enums.CompetencyLevel)).Cast<AcadEvalSys.Domain.Enums.CompetencyLevel>().All(l => dict.ContainsKey(l)))
+            .WithMessage("Se deben especificar exactamente los 4 niveles de competencia: Inicial, Intermedio, Avanzado y Excelente.");
     }
 }

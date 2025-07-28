@@ -78,7 +78,7 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
                 dbContext.CompetencyLevelDescriptions.AddRange(descriptions);
                 await dbContext.SaveChangesAsync();
 
-              
+
                 await dbContext.SaveChangesAsync();
             }
 
@@ -413,8 +413,8 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
         string createdByUserId)
     {
         var assessments = new List<StudentCompetencyAssessment>();
-        var competencyLevels = new[] 
-        { 
+        var competencyLevels = new[]
+        {
             CompetencyLevel.Avanzado,    // Liderazgo
             CompetencyLevel.Excelente,   // Comunicación Efectiva  
             CompetencyLevel.Intermedio,  // Gestión Emocional

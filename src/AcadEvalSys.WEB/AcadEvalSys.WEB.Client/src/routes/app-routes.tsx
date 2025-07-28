@@ -2,37 +2,50 @@ import { Route, Switch } from "wouter";
 import { AppLayout } from "../shared/components/layout";
 import { DashboardPage } from "../features/dashboard";
 import {
-  CompetenciasPage,
-  EvaluacionesPage,
-  NuevaEvaluacionPage,
+  CompetenciesPage,
+  EvaluationsPage,
   CompetencyDetailPage,
-} from "../features/evaluaciones";
+  CreateEvaluationPage,
+} from "../features/evaluations";
 import {
-  CrearEncuestaPage,
-  EncuestasPage,
-  PlantillasPage,
-} from "../features/encuestas";
-import { PersonalPage, TecnicaturasPage } from "../features/administracion";
+  CreateSurveyPage,
+  SurveysPage,
+  TemplatesPage,
+} from "../features/surveys";
+import { PersonalPage } from "../features/administration";
+import { SubjectDetailPage, SubjectsPage } from "../features/careers";
 
 export function AppRoutes() {
   return (
     <AppLayout>
       <Switch>
+        {/* Encuestas academicas*/}
         <Route path="/" component={DashboardPage} />
-        <Route path="/surveys" component={EncuestasPage} />
-        <Route path="/surveys/templates" component={PlantillasPage} />
-        <Route path="/surveys/new" component={CrearEncuestaPage} />
+        <Route path="/surveys" component={SurveysPage} />
+        <Route path="/surveys/templates" component={TemplatesPage} />
+        <Route path="/surveys/new" component={CreateSurveyPage} />
+
+        {/* Evaluaciones */}
+        <Route path="/evaluations/competencies" component={CompetenciesPage} />
+        <Route path="/evaluations" component={EvaluationsPage} />
+        <Route path="/evaluations/new" component={CreateEvaluationPage} />
         <Route
-          path="/evaluations/competencies/:name"
+          path="/evaluations/competencies/:id"
           component={CompetencyDetailPage}
         />
-        <Route path="/evaluations/competencies" component={CompetenciasPage} />
-        <Route path="/evaluations" component={EvaluacionesPage} />
-        <Route path="/evaluations/new" component={NuevaEvaluacionPage} />
+
+        {/* Carreras */}
         <Route
-          path="/administration/tecnicaturas"
-          component={TecnicaturasPage}
+          path="/tecnicaturas/:careerId/asignaturas"
+          component={SubjectsPage}
         />
+        <Route path="/tecnicaturas/:careerId" component={SubjectsPage} />
+        <Route
+          path="/tecnicaturas/:careerId/asignaturas/:subjectId"
+          component={SubjectDetailPage}
+        />
+
+        {/* Administración */}
         <Route path="/administration/personal" component={PersonalPage} />
         <Route path="/:rest*">
           <div className="flex items-center justify-center min-h-[400px]">

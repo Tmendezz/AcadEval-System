@@ -116,7 +116,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         
         // Evaluation Completion
-        services.AddScoped<IEvaluationCompletionService, EvaluationCompletionService>();
+        services.AddScoped<IStudentReportGenerationService, StudentReportGenerationService>();
         
         // Student Reports - NUEVO
         services.AddScoped<IStudentEvaluationReportRepository, StudentEvaluationReportRepository>();

@@ -1,5 +1,6 @@
 using AcadEvalSys.Application.Users;
 using AcadEvalSys.Domain.Entities;
+using AcadEvalSys.Domain.Enums;
 using AcadEvalSys.Domain.Exceptions;
 using AcadEvalSys.Domain.Repositories;
 using AutoMapper;
@@ -22,19 +23,32 @@ public class CreateCompetencyCommandHandler(ILogger<CreateCompetencyCommandHandl
         }
 
         var existingCompetency = await competencyRepository.ExistsByNameAsync(request.Name);
-       
+
         if (existingCompetency)
         {
             logger.LogWarning("Competency with name '{Name}' already exists", request.Name);
             throw new DuplicateResourceException(nameof(Competency), request.Name);
         }
 
+
         var competency = mapper.Map<Competency>(request);
         competency.CreatedByUserId = user.Id ?? String.Empty;
+
+        if (request.CompetencyLevelDescriptions != null && request.CompetencyLevelDescriptions.Count > 0)
+        {
+            competency.LevelDescriptions = request.CompetencyLevelDescriptions
+                .Select(kvp => new CompetencyLevelDescription
+                {
+                    Level = kvp.Key,
+                    Description = kvp.Value
+                })
+                .ToList();
+        }
+
         var id = await competencyRepository.CreateAsync(competency);
 
         logger.LogInformation("Competency created successfully with ID: {Id}", id);
-        
+
         return id;
     }
 }

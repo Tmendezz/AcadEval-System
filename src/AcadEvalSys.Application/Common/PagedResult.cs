@@ -2,19 +2,17 @@ namespace AcadEvalSys.Application.Common;
 
 public class PagedResult<T>
 {
-    public PagedResult(IEnumerable<T> items, int totalCount, int? pageSize, int? pageNumber)
+    public PagedResult(IEnumerable<T> items, int totalCount, int pageNumber, int pageSize)
     {
         Items = items;
         TotalItemsCount = totalCount;
 
-        var currentPageNumber = pageNumber ?? 1;
-        var currentPageSize = pageSize ?? (totalCount > 0 ? totalCount : 10); // Default to totalCount or 10 if totalCount is 0
+        var currentPageNumber = pageNumber;
+        var currentPageSize = pageSize;
 
-        TotalPages =
-            (int)Math.Ceiling(totalCount / (double)currentPageSize); // calculo la cantidad de pag redondeando para arriba
-        ItemsFrom = (currentPageSize * (currentPageNumber - 1) + 1); //el primer elemento de la pagina
-        ItemsTo = Math.Min((ItemsFrom + currentPageSize - 1),
-            TotalItemsCount); // ultimo elemento de la pagina. el mat min es en el caso de que en la ultima pagina haya menos elementos que el size
+        TotalPages = (int)Math.Ceiling(totalCount / (double)currentPageSize);
+        ItemsFrom = totalCount > 0 ? (currentPageSize * (currentPageNumber - 1) + 1) : 0;
+        ItemsTo = totalCount > 0 ? Math.Min((ItemsFrom + currentPageSize - 1), TotalItemsCount) : 0;
     }
 
     public IEnumerable<T> Items { get; set; }

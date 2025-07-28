@@ -20,12 +20,10 @@ public class StudentCompetencyAssessmentProfile : Profile
                 src.Student!.User!.Name))
             .ForMember(dest => dest.StudentEmail, opt => opt.MapFrom(src => src.Student!.User!.Email))
             .ForMember(dest => dest.CompetencyLevelDescription, opt => opt.MapFrom(src =>
-                src.CompetencyLevel.HasValue 
-                    ? (src.ProfessorCompetencyAssignment.Competency.LevelDescriptions
-                        .Where(ld => ld.Level == src.CompetencyLevel.Value)
-                        .Select(ld => ld.Description)
-                        .FirstOrDefault() ?? "No description available")
-                    : "Not evaluated"))
+                src.ProfessorCompetencyAssignment.Competency.LevelDescriptions
+                    .Where(ld => ld.Level == src.CompetencyLevel)
+                    .Select(ld => ld.Description)
+                    .FirstOrDefault() ?? "Sin Evaluar"))
             .ForMember(dest => dest.CompetencyLevel, opt => opt.MapFrom(src => src.CompetencyLevel))
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status));
 

@@ -13,7 +13,7 @@ public class CompleteStudentAssessmentCommandHandler(ILogger<CompleteStudentAsse
     IMapper mapper,
     IStudentCompetencyAssessmentsRepository studentCompetencyAssessmentRepository,
     IProfessorCompetencyAssignmentRepository professorCompetencyAssignmentRepository,
-    IEvaluationCompletionService evaluationCompletionService
+    IStudentReportGenerationService evaluationCompletionService
     ) : IRequestHandler<CompleteStudentAssessmentCommand, Guid>
 {
     public async Task<Guid> Handle(CompleteStudentAssessmentCommand request, CancellationToken cancellationToken)

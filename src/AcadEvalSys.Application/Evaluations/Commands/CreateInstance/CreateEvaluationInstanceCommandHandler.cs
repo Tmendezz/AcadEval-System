@@ -19,23 +19,23 @@ public class CreateEvaluationInstanceCommandHandler(
     IMapper mapper,
     IUserContext userContext) : IRequestHandler<CreateEvaluationInstanceCommand, Guid>
 {
-  public async Task<Guid> Handle(CreateEvaluationInstanceCommand request, CancellationToken cancellationToken)
+    public async Task<Guid> Handle(CreateEvaluationInstanceCommand request, CancellationToken cancellationToken)
     {
         logger.LogInformation("Creating CompetencyEvaluationInstance with title: {Title}", request.Title);
 
         await ValidateAssignmentsAsync(request.CompetencyAssignments);
         var user = userContext.GetCurrentUser();
-        
+
         if (user == null)
         {
             throw new UnauthorizedAccessException("Current user context is not available. User must be authenticated to create evaluation instances.");
         }
-       
+
         var competencyEvaluationInstance = mapper.Map<CompetencyEvaluationInstance>(request);
         competencyEvaluationInstance.Status = EvaluationStatus.Pending;
         competencyEvaluationInstance.CreatedAt = DateTime.UtcNow;
         competencyEvaluationInstance.CreatedByUserId = user.Id;
-        
+
         var competencyEvaluationInstanceId = await competencyEvaluationInstanceRepository.CreateAsync(competencyEvaluationInstance);
 
         logger.LogInformation("CompetencyEvaluationInstance created with ID: {Id}", competencyEvaluationInstanceId);
@@ -58,7 +58,6 @@ public class CreateEvaluationInstanceCommandHandler(
             {
                 assignment.CreatedAt = DateTime.UtcNow;
                 assignment.CreatedByUserId = user.Id;
-                
                 // Usar el método que genera automáticamente los StudentCompetencyAssessments
                 await professorCompetencyAssignmentRepository.CreateAsync(assignment);
             }

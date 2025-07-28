@@ -35,7 +35,7 @@ public class FinalizeEvaluationInstanceCommandHandler(
             throw new NotFoundException(nameof(CompetencyEvaluationInstance), request.EvaluationInstanceId.ToString());
         }
 
-        // Verificar si ya está completada
+        // TODO -> Descomentars
         /*
         if (instance.Status == EvaluationStatus.Completed)
         {
@@ -44,24 +44,8 @@ public class FinalizeEvaluationInstanceCommandHandler(
         }
         */
 
-        // Obtener estadísticas de asignaciones
-        var allAssignments = instance.ProfessorCompetencyAssignments?.ToList() ?? new List<ProfessorCompetencyAssignment>();
-        var completedAssignments = allAssignments.Count(a => a.Status == ProfessorAssignmentStatus.Completed);
-        var totalAssignments = allAssignments.Count;
-        
-        logger.LogInformation("Evaluation instance {InstanceId} statistics: {Completed}/{Total} professor assignments completed", 
-            request.EvaluationInstanceId, completedAssignments, totalAssignments);
-
         // Verificar condiciones de finalización
-        var allProfessorsCompleted = completedAssignments == totalAssignments && totalAssignments > 0;
-        
-        if (!allProfessorsCompleted && !request.ForceClose)
-        {
-            logger.LogWarning("Cannot finalize evaluation instance {InstanceId}: Not all professors completed ({Completed}/{Total}) and ForceClose is false", 
-                request.EvaluationInstanceId, completedAssignments, totalAssignments);
-            
-            throw new InvalidOperationException($"Cannot finalize evaluation: {completedAssignments} of {totalAssignments} professor assignments completed. Use ForceClose=true to override.");
-        }
+        var (completedAssignments, totalAssignments, allProfessorsCompleted) = ValidateAssignmentCompletion(instance, request.ForceClose, request.EvaluationInstanceId);
 
         // Finalizar la instancia
         instance.Status = EvaluationStatus.Completed;
@@ -83,9 +67,32 @@ public class FinalizeEvaluationInstanceCommandHandler(
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to enqueue report generation for evaluation instance {InstanceId}", request.EvaluationInstanceId);
-            // No fallar la finalización si no se puede encolar la generación de reportes
         }
 
         return true;
+    }
+
+    private (int CompletedAssignments, int TotalAssignments, bool AllProfessorsCompleted) ValidateAssignmentCompletion(CompetencyEvaluationInstance instance, bool forceClose, Guid evaluationInstanceId)
+    {
+        // Obtener estadísticas de asignaciones
+        var allAssignments = instance.ProfessorCompetencyAssignments?.ToList() ?? new List<ProfessorCompetencyAssignment>();
+        var completedAssignments = allAssignments.Count(a => a.Status == ProfessorAssignmentStatus.Completed);
+        var totalAssignments = allAssignments.Count;
+        
+        logger.LogInformation("Evaluation instance {InstanceId} statistics: {Completed}/{Total} professor assignments completed", 
+            evaluationInstanceId, completedAssignments, totalAssignments);
+
+        // Verificar condiciones de finalización
+        var allProfessorsCompleted = completedAssignments == totalAssignments && totalAssignments > 0;
+        
+        if (!allProfessorsCompleted && !forceClose)
+        {
+            logger.LogWarning("Cannot finalize evaluation instance {InstanceId}: Not all professors completed ({Completed}/{Total}) and ForceClose is false", 
+                evaluationInstanceId, completedAssignments, totalAssignments);
+            
+            throw new InvalidOperationException($"Cannot finalize evaluation: {completedAssignments} of {totalAssignments} professor assignments completed. Use ForceClose=true to override.");
+        }
+
+        return (completedAssignments, totalAssignments, allProfessorsCompleted);
     }
 }

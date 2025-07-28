@@ -1,3 +1,5 @@
+using AcadEvalSys.Domain.Enums;
+
 namespace AcadEvalSys.Domain.Interfaces;
 
 public interface IReportService
@@ -15,6 +17,13 @@ public interface IReportService
     /// <param name="evaluationInstanceId">ID of the evaluation instance</param>
     /// <returns>Stream containing the generated PDF</returns>
     Task<Stream> GenerateEvaluationSummaryReportAsync(Guid evaluationInstanceId);
+    
+    /// <summary>
+    /// Generates a summary PDF report for a specific student's completed evaluations
+    /// </summary>
+    /// <param name="reportData">Data needed to generate the student summary report</param>
+    /// <returns>Stream containing the generated PDF</returns>
+    Task<Stream> GenerateStudentEvaluationSummaryReportAsync(StudentSummaryReportData reportData);
 }
 
 public class StudentCompetencyReportData
@@ -42,5 +51,25 @@ public class ProfessorEvaluationDto
     public Enums.CompetencyLevel Level { get; set; }
     public string SubjectName { get; set; } = string.Empty;
     public string ProfessorName { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+}
+
+public class StudentSummaryReportData
+{
+    public string StudentName { get; set; } = null!;
+    public string CareerName { get; set; } = null!;
+    public DateTime GeneratedDate { get; set; }
+    public ICollection<CompetencyReportDto> Competencies { get; set; } = new List<CompetencyReportDto>();
+}
+
+/// <summary>
+/// DTO para las competencias evaluadas en el reporte de resumen del estudiante
+/// </summary>
+public class CompetencyReportDto
+{
+    public string Name { get; set; } = string.Empty;
+    public CompetencyLevel CompetencyLevel { get; set; }
+    public string Subject { get; set; } = string.Empty;
+    public string Professor { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
 }

@@ -8,4 +8,5 @@ public class CreateCompetencyCommand : IRequest<Guid>
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public CompetencyType Type { get; set; }
+    public IDictionary<CompetencyLevel, string> CompetencyLevelDescriptions { get; set; } = new Dictionary<CompetencyLevel, string>();
 }

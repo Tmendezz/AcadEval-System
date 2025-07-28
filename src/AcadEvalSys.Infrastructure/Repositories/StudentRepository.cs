@@ -7,12 +7,37 @@ namespace AcadEvalSys.Infrastructure.Repositories;
 
 public class StudentRepository(ApplicationDbContext dbContext) : IStudentRepository
 {
-    public async Task<IEnumerable<Student>> GetAllAsync()
+    public async Task<(IEnumerable<Student> Students, int TotalCount)> GetAllAsync(int pageNumber, int pageSize, string? searchTerm = null, Guid? technicalCareerId = null, AcadEvalSys.Domain.Enums.CareerYear? currentYear = null)
     {
-        return await dbContext.Students
+        var query = dbContext.Students
             .Include(s => s.User)
             .Include(s => s.TechnicalCareer)
+            .AsQueryable();
+
+        if (!string.IsNullOrEmpty(searchTerm))
+        {
+            query = query.Where(s => s.User!.Name.Contains(searchTerm) || 
+                                   s.User!.Email!.Contains(searchTerm));
+        }
+
+        if (technicalCareerId.HasValue)
+        {
+            query = query.Where(s => s.TechnicalCareerId == technicalCareerId);
+        }
+
+        if (currentYear.HasValue)
+        {
+            query = query.Where(s => s.CurrentYear == currentYear);
+        }
+
+        var totalCount = await query.CountAsync();
+        
+        var students = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
+
+        return (students, totalCount);
     }
 
     public async Task<Student?> GetByIdAsync(string studentId)
@@ -26,14 +51,12 @@ public class StudentRepository(ApplicationDbContext dbContext) : IStudentReposit
             .FirstOrDefaultAsync(s => s.UserId == studentId);
     }
 
-    public Task<Student?> GetByIdWithDetailsAsync(string id)
+    public async Task<Student?> GetByUserIdAsync(string userId)
     {
-        throw new NotImplementedException();
-    }
-
-    public Task<bool> ExistsAsync(string studentId)
-    {
-        return dbContext.Students.AnyAsync(s => s.UserId == studentId);
+        return await dbContext.Students
+            .Include(s => s.User)
+            .Include(s => s.TechnicalCareer)
+            .FirstOrDefaultAsync(s => s.UserId == userId);
     }
 
     public async Task CreateAsync(Student student)
@@ -42,36 +65,51 @@ public class StudentRepository(ApplicationDbContext dbContext) : IStudentReposit
         await dbContext.SaveChangesAsync();
     }
 
-    public Task UpdateAsync(Student student)
+    public async Task UpdateAsync(Student student)
     {
-        throw new NotImplementedException();
+        dbContext.Students.Update(student);
+        await dbContext.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(string id)
     {
-        var student = await dbContext.Students.FindAsync(id);
+        var student = await dbContext.Students.FirstOrDefaultAsync(s => s.UserId == id);
         if (student != null)
         {
+            // Borrado físico - las entidades Student no tienen IsActive
             dbContext.Students.Remove(student);
             await dbContext.SaveChangesAsync();
         }
     }
 
-    public Task<bool> IsEnrolledInSubjectAsync(string studentId, Guid subjectId)
+    public async Task<bool> IsEnrolledInSubjectAsync(string studentId, Guid subjectId)
     {
-        return dbContext.StudentSubjects
+        return await dbContext.StudentSubjects
             .AnyAsync(ss => ss.StudentId == studentId && ss.SubjectId == subjectId && ss.IsActive);
     }
 
     public async Task EnrollInSubjectAsync(string studentId, Guid subjectId)
     {
-        var studentSubject = new StudentSubject
-        {
-            StudentId = studentId,
-            SubjectId = subjectId
-        };
+        var existingEnrollment = await dbContext.StudentSubjects
+            .FirstOrDefaultAsync(ss => ss.StudentId == studentId && ss.SubjectId == subjectId);
 
-        dbContext.StudentSubjects.Add(studentSubject);
+        if (existingEnrollment != null)
+        {
+            existingEnrollment.IsActive = true;
+            existingEnrollment.UpdatedAt = DateTime.UtcNow;
+        }
+        else
+        {
+            var studentSubject = new StudentSubject
+            {
+                StudentId = studentId,
+                SubjectId = subjectId,
+                CreatedAt = DateTime.UtcNow,
+                IsActive = true
+            };
+            dbContext.StudentSubjects.Add(studentSubject);
+        }
+
         await dbContext.SaveChangesAsync();
     }
 
@@ -83,28 +121,7 @@ public class StudentRepository(ApplicationDbContext dbContext) : IStudentReposit
         if (studentSubject != null)
         {
             studentSubject.IsActive = false;
-            studentSubject.UpdatedAt = DateTime.UtcNow;
             await dbContext.SaveChangesAsync();
         }
-    }
-
-    public async Task<IEnumerable<Student>> GetStudentsInSubjectAsync(Guid subjectId)
-    {
-        return await dbContext.StudentSubjects
-            .Where(ss => ss.SubjectId == subjectId && ss.IsActive)
-            .Include(ss => ss.Student!)
-                .ThenInclude(s => s.User)
-            .Include(ss => ss.Student!)
-                .ThenInclude(s => s.TechnicalCareer)
-            .Select(ss => ss.Student!)
-            .ToListAsync();
-    }
-
-    public async Task<Student?> GetForReportGenerationAsync(string studentId)
-    {
-        return await dbContext.Students
-            .Include(s => s.User)
-            .Include(s => s.TechnicalCareer)
-            .FirstOrDefaultAsync(s => s.UserId == studentId);
     }
 }

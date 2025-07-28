@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using System.Reflection;
 using AcadEvalSys.WEB.Server.Middlewares;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -30,6 +31,9 @@ public static class WebApplicationBuilderExtensions
         builder.Services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo() { Title = "AcadEval ITEC API", Version = "v1" });
+            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            c.IncludeXmlComments(xmlPath);
             c.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme()
             {
                 Type = SecuritySchemeType.Http,

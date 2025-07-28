@@ -2,14 +2,8 @@ using MediatR;
 
 namespace AcadEvalSys.Application.Evaluations.Commands.FinalizeEvaluationInstance;
 
-public class FinalizeEvaluationInstanceCommand : IRequest<bool>
+public class FinalizeEvaluationInstanceCommand(Guid evaluationInstanceId, bool forceClose = false) : IRequest<bool>
 {
-    public Guid EvaluationInstanceId { get; set; }
-    public bool ForceClose { get; set; }
-
-    public FinalizeEvaluationInstanceCommand(Guid evaluationInstanceId, bool forceClose = false)
-    {
-        EvaluationInstanceId = evaluationInstanceId;
-        ForceClose = forceClose;
-    }
+    public Guid EvaluationInstanceId { get; set; } = evaluationInstanceId;
+    public bool ForceClose { get; set; } = forceClose;
 }

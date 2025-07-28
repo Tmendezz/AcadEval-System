@@ -14,13 +14,10 @@ public class CreateSubjectCommandValidator : AbstractValidator<CreateSubjectComm
             .NotEmpty().WithMessage("Description is required.")
             .MaximumLength(250).WithMessage("Description must not exceed 250 characters.");
 
-        RuleFor(x => x.TechnicalCareerId)
-            .NotEmpty().WithMessage("Technical Career ID is required.");
-
         RuleFor(x => x.Year)
             .IsInEnum().WithMessage("Year must be a valid enum value.");
 
-        RuleFor(x => x.ProfessorId)
-            .NotEmpty().WithMessage("Professor ID is required.");
+        // ProfessorId es opcional, no requiere validación
+        // TechnicalCareerId viene del path, no requiere validación
     }
 }

@@ -33,7 +33,6 @@ public class StudentProfile : Profile
                         Id = es.Subject!.Id,
                         Name = es.Subject.Name ?? string.Empty,
                         Year = es.Subject.Year,
-                        TechnicalCareer = es.Subject.TechnicalCareer != null ? es.Subject.TechnicalCareer.Name : null
                     })
             ));
     }

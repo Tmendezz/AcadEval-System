@@ -4,5 +4,5 @@ export { SidebarNavGroup } from "./sidebar-nav-group";
 export { NavMenuItem } from "./nav-menu-item";
 export { UserDropdown } from "./user-dropdown";
 export { AvatarDropdown } from "./avatar-dropdown";
-export { sidebarConfig } from "./sidebar-config";
+export { useSidebarConfig } from "./sidebar-config";
 export * from "./types";

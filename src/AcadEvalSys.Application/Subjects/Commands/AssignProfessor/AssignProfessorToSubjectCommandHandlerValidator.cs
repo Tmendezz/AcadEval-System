@@ -6,8 +6,8 @@ public class AssignProfessorToSubjectCommandHandlerValidator : AbstractValidator
 {
     public AssignProfessorToSubjectCommandHandlerValidator()
     {
-        RuleFor(command => command.SubjectId)
-            .NotEmpty().WithMessage("Subject ID cannot be empty.");
+        // SubjectId viene del path, no requiere validación
+        // TechnicalCareerId viene del path, no requiere validación
 
         RuleFor(command => command.ProfessorId)
             .NotEmpty().WithMessage("Professor ID cannot be empty.");

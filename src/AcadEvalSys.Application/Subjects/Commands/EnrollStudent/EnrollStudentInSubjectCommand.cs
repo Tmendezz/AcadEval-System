@@ -7,5 +7,7 @@ public class EnrollStudentInSubjectCommand(Guid subjectId) : IRequest<bool>
 {
     [JsonIgnore]
     public Guid SubjectId { get; set; } = subjectId;
+    [JsonIgnore]
+    public Guid TechnicalCareerId { get; set; }
     public string StudentId { get; set; } = string.Empty;
 }

@@ -16,9 +16,9 @@ public class StudentEvaluationReportRepository : IStudentEvaluationReportReposit
 
     public async Task<StudentEvaluationReport> CreateAsync(StudentEvaluationReport report)
     {
-        _context.StudentEvaluationReports.Add(report);
+        var result = _context.StudentEvaluationReports.Add(report);
         await _context.SaveChangesAsync();
-        return report;
+        return result.Entity;
     }
 
     public async Task<StudentEvaluationReport?> GetByIdAsync(Guid reportId)
@@ -28,14 +28,6 @@ public class StudentEvaluationReportRepository : IStudentEvaluationReportReposit
                 .ThenInclude(s => s.User)
             .Include(r => r.CompetencyEvaluationInstance)
             .FirstOrDefaultAsync(r => r.Id == reportId);
-    }
-
-    public async Task<StudentEvaluationReport?> GetByStudentAndInstanceAsync(string studentId, Guid evaluationInstanceId)
-    {
-        return await _context.StudentEvaluationReports
-            .Include(r => r.Student)
-            .Include(r => r.CompetencyEvaluationInstance)
-            .FirstOrDefaultAsync(r => r.StudentId == studentId && r.CompetencyEvaluationInstanceId == evaluationInstanceId);
     }
 
     public async Task<IEnumerable<StudentEvaluationReport>> GetByStudentIdAsync(string studentId)

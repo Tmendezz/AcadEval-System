@@ -24,7 +24,7 @@ public class GetAllStudentCompetencyAssessmentQueryHandler(
             assessmentsList.Count, request.AssignmentId);
 
         var assessmentsDto = mapper.Map<CompetencyAssessmentGroupDto>(assessmentsList);
-        
+
         logger.LogInformation("Assignment progress: {EvaluatedCount}/{TotalCount} students evaluated ({ProgressPercentage}%)",
             assessmentsDto.EvaluatedStudentsCount, assessmentsDto.TotalStudentsCount, assessmentsDto.ProgressPercentage);
 

@@ -15,7 +15,8 @@ public class GetSubjectByIdQueryHandler(
 {
     public async Task<SubjectDto> Handle(GetSubjectByIdQuery request, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Getting subject with ID: {Id}", request.Id);
+        logger.LogInformation("Getting subject with ID: {Id} for career {CareerId} with enrolled students: {IncludeStudents}",
+            request.Id, request.TechnicalCareerId, request.IncludeEnrolledStudents);
 
         var subject = await subjectRepository.GetSubjectByIdAsync(request.Id);
 
@@ -25,9 +26,20 @@ public class GetSubjectByIdQueryHandler(
             throw new NotFoundException(nameof(Subject), request.Id.ToString());
         }
 
+        if (subject.TechnicalCareerId != request.TechnicalCareerId)
+        {
+            logger.LogWarning("Subject with ID: {Id} does not belong to career {CareerId}", request.Id, request.TechnicalCareerId);
+            throw new NotFoundException(nameof(Subject), request.Id.ToString());
+        }
+
+        if (!request.IncludeEnrolledStudents)
+        {
+            subject.StudentSubjects = null;
+        }
+
         var result = mapper.Map<SubjectDto>(subject);
 
-        logger.LogInformation("Subject with ID: {Id} retrieved successfully", request.Id);
+        logger.LogInformation("Subject with ID: {Id} retrieved successfully for career {CareerId}", request.Id, request.TechnicalCareerId);
 
         return result;
     }

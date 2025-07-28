@@ -1,13 +1,4 @@
-import { ElementType } from "react";
+import { NavItem, NavGroup } from "@/shared/types";
 
-export interface NavItem {
-  href: string;
-  icon: ElementType;
-  label: string;
-}
-
-export interface NavGroup {
-  title: string;
-  items: NavItem[];
-  className?: string;
-}
+// Re-export for convenience
+export type { NavItem, NavGroup };

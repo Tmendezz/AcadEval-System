@@ -1,3 +1,4 @@
+using AcadEvalSys.Domain.Interfaces;
 using AcadEvalSys.Infrastructure.Services.ReportGeneration.Factories;
 using AcadEvalSys.Infrastructure.Services.ReportGeneration.Styles;
 using QuestPDF.Fluent;

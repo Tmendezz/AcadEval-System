@@ -12,11 +12,12 @@ import {
   SidebarBrand,
   SidebarNavGroup,
   UserDropdown,
-  sidebarConfig,
+  useSidebarConfig,
 } from "@/shared/components/sidebar";
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const sidebarConfig = useSidebarConfig();
 
   return (
     <Sidebar className="overflow-x-hidden">

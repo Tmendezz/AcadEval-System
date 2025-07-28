@@ -1,4 +1,5 @@
 using AcadEvalSys.Domain.Entities;
+using AcadEvalSys.Domain.Enums;
 using AcadEvalSys.Domain.Repositories;
 using AcadEvalSys.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -7,51 +8,42 @@ namespace AcadEvalSys.Infrastructure.Repositories;
 
 public class StudentCompetencyAssessmentsRepository(ApplicationDbContext context) : IStudentCompetencyAssessmentsRepository
 {
-    public async Task<StudentCompetencyAssessment?> GetByStudentAndInstanceAsync(string studentId, Guid evaluationInstanceId)
-    {
-        return await context.StudentCompetencyAssessments
-            .Include(a => a.ProfessorCompetencyAssignment)
-            .Include(a => a.Student)
-                .ThenInclude(s => s.User)
-            .FirstOrDefaultAsync(a => a.StudentId == studentId && 
-                a.ProfessorCompetencyAssignment.CompetencyEvaluationInstanceId == evaluationInstanceId);
-    }
-
     public async Task<StudentCompetencyAssessment?> GetByStudentAndAssignmentAsync(string studentId, Guid professorCompetencyAssignmentId)
     {
         return await context.StudentCompetencyAssessments
-            .Include(a => a.ProfessorCompetencyAssignment)
-                .ThenInclude(pca => pca.StudentCompetencyAssessments)
-            .Include(a => a.Student)
+            .Include(sca => sca.Student!)
                 .ThenInclude(s => s.User)
-            .FirstOrDefaultAsync(a => a.StudentId == studentId && 
-                a.ProfessorCompetencyAssignmentId == professorCompetencyAssignmentId);
+            .Include(sca => sca.ProfessorCompetencyAssignment!)
+                .ThenInclude(pca => pca.Competency)
+            .Include(sca => sca.ProfessorCompetencyAssignment!)
+                .ThenInclude(pca => pca.Subject)
+            .FirstOrDefaultAsync(sca => sca.StudentId == studentId &&
+                                      sca.ProfessorCompetencyAssignmentId == professorCompetencyAssignmentId);
     }
 
-    public async Task<IEnumerable<StudentCompetencyAssessment>> GetByEvaluationInstanceAsync(Guid evaluationInstanceId)
+    public async Task<StudentCompetencyAssessment?> GetByStudentAndInstanceAsync(string studentId, Guid evaluationInstanceId)
     {
         return await context.StudentCompetencyAssessments
-            .Include(a => a.ProfessorCompetencyAssignment)
-                .ThenInclude(pca => pca.Competency)
-            .Include(a => a.ProfessorCompetencyAssignment)
-                .ThenInclude(pca => pca.Subject)
-            .Include(a => a.Student)
+            .Include(sca => sca.Student!)
                 .ThenInclude(s => s.User)
-            .Where(a => a.ProfessorCompetencyAssignment.CompetencyEvaluationInstanceId == evaluationInstanceId)
-            .ToListAsync();
+            .Include(sca => sca.ProfessorCompetencyAssignment!)
+                .ThenInclude(pca => pca.Competency)
+            .Include(sca => sca.ProfessorCompetencyAssignment!)
+                .ThenInclude(pca => pca.Subject)
+            .FirstOrDefaultAsync(sca => sca.StudentId == studentId &&
+                                      sca.ProfessorCompetencyAssignment!.CompetencyEvaluationInstanceId == evaluationInstanceId);
     }
 
     public async Task<IEnumerable<StudentCompetencyAssessment>> GetByAssignmentAsync(Guid professorCompetencyAssignmentId)
     {
         return await context.StudentCompetencyAssessments
-            .Include(a => a.Student)
+            .Include(sca => sca.Student!)
                 .ThenInclude(s => s.User)
-            .Include(a => a.ProfessorCompetencyAssignment)
-                .ThenInclude(pca => pca.Subject)
-            .Include(a => a.ProfessorCompetencyAssignment)
+            .Include(sca => sca.ProfessorCompetencyAssignment!)
                 .ThenInclude(pca => pca.Competency)
-                    .ThenInclude(c => c.LevelDescriptions)
-            .Where(a => a.ProfessorCompetencyAssignmentId == professorCompetencyAssignmentId)
+            .Include(sca => sca.ProfessorCompetencyAssignment!)
+                .ThenInclude(pca => pca.Subject)
+            .Where(sca => sca.ProfessorCompetencyAssignmentId == professorCompetencyAssignmentId)
             .ToListAsync();
     }
 
@@ -59,5 +51,20 @@ public class StudentCompetencyAssessmentsRepository(ApplicationDbContext context
     {
         context.StudentCompetencyAssessments.Update(assessment);
         await context.SaveChangesAsync();
+    }
+
+    public async Task<IEnumerable<StudentCompetencyAssessment>> GetCompletedByStudentAndInstanceAsync(string studentId, Guid evaluationInstanceId)
+    {
+        return await context.StudentCompetencyAssessments
+            .Include(sca => sca.Student!)
+                .ThenInclude(s => s.User)
+            .Include(sca => sca.ProfessorCompetencyAssignment!)
+                .ThenInclude(pca => pca.Competency).ThenInclude(pca => pca!.LevelDescriptions)
+            .Include(sca => sca.ProfessorCompetencyAssignment!)
+                .ThenInclude(pca => pca.Subject)
+            .Where(sca => sca.StudentId == studentId &&
+                          sca.ProfessorCompetencyAssignment!.CompetencyEvaluationInstanceId == evaluationInstanceId &&
+                          sca.Status == AssessmentStatus.Completed)
+            .ToListAsync();
     }
 }

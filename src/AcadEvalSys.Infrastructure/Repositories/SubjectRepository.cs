@@ -68,53 +68,16 @@ public class SubjectRepository(ApplicationDbContext dbContext) : ISubjectReposit
         return subjects;
     }
 
-    public async Task<IEnumerable<Subject>> GetSubjectsByCareerAsync(Guid technicalCareerId)
-    {
-        return await dbContext.Subjects
-            .Include(s => s.TechnicalCareer)
-            .Include(s => s.Professor)
-                .ThenInclude(p => p!.User)
-            .Where(s => s.TechnicalCareerId == technicalCareerId && s.IsActive)
-            .ToListAsync();
-    }
-
-    public async Task<IEnumerable<Subject>> GetSubjectsByProfessorAsync(string professorId)
-    {
-        return await dbContext.Subjects
-            .Include(s => s.TechnicalCareer)
-            .Include(s => s.Professor)
-                .ThenInclude(p => p!.User)
-            .Where(s => s.ProfessorId == professorId && s.IsActive)
-            .ToListAsync();
-    }
-
     public async Task UpdateSubjectAsync(Subject subject)
     {
         dbContext.Subjects.Update(subject);
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task DeleteSubjectAsync(Subject subject)
-    {
-        var existingSubject = await dbContext.Subjects.FirstOrDefaultAsync(s => s.Id == subject.Id && s.IsActive);
-        if (existingSubject != null)
-        {
-            existingSubject.IsActive = false;
-            existingSubject.UpdatedAt = DateTime.UtcNow;
-            existingSubject.UpdatedByUserId = subject.UpdatedByUserId;
-            await dbContext.SaveChangesAsync();
-        }
-    }
     public async Task<bool> ExistsByNameAndCareerAsync(string name, Guid technicalCareerId)
     {
         return await dbContext.Subjects
             .AnyAsync(s => s.Name == name && s.TechnicalCareerId == technicalCareerId && s.IsActive);
-    }
-
-    public async Task<bool> TechnicalCareerExistsAsync(Guid technicalCareerId)
-    {
-        return await dbContext.TechnicalCareers
-            .AnyAsync(tc => tc.Id == technicalCareerId && tc.IsActive);
     }
 
     public async Task<bool> ExistsByIdAsync(Guid id)
@@ -129,7 +92,6 @@ public class SubjectRepository(ApplicationDbContext dbContext) : ISubjectReposit
         if (subject != null)
         {
             subject.ProfessorId = professorId;
-            subject.UpdatedAt = DateTime.UtcNow;
             await dbContext.SaveChangesAsync();
         }
     }
@@ -140,8 +102,13 @@ public class SubjectRepository(ApplicationDbContext dbContext) : ISubjectReposit
         if (subject != null)
         {
             subject.ProfessorId = null;
-            subject.UpdatedAt = DateTime.UtcNow;
             await dbContext.SaveChangesAsync();
         }
+    }
+
+    public async Task DeleteAsync(Subject subject)
+    {
+        dbContext.Subjects.Update(subject);
+        await dbContext.SaveChangesAsync();
     }
 }

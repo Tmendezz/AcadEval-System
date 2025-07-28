@@ -10,23 +10,6 @@ using Document = QuestPDF.Fluent.Document;
 
 namespace AcadEvalSys.Infrastructure.Services.ReportGeneration.Factories;
 
-public record CompetencyReportDto
-{
-    public string Name { get; set; } = string.Empty;
-    public string Subject { get; set; } = string.Empty;
-    public string Professor { get; set; } = string.Empty;
-    public CompetencyLevel CompetencyLevel { get; set; }
-    public string Description { get; set; } = null;
-}
-
-public record StudentSummaryReportData
-{
-    public string StudentName { get; set; } = string.Empty;
-    public string CareerName { get; set; } = string.Empty;
-    public DateTime GeneratedDate { get; set; }
-    public ICollection<CompetencyReportDto> Competencies { get; set; } = new List<CompetencyReportDto>();
-}
-
 public interface IDocumentFactory
 {
     Document CreateStudentSummaryDocument(StudentSummaryReportData reportData);

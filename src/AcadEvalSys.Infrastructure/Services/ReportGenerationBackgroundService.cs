@@ -1,3 +1,5 @@
+using AcadEvalSys.Domain.Entities;
+using AcadEvalSys.Domain.Enums;
 using AcadEvalSys.Domain.Interfaces;
 using AcadEvalSys.Domain.Repositories;
 using Microsoft.Extensions.Logging;
@@ -7,7 +9,7 @@ namespace AcadEvalSys.Infrastructure.Services;
 
 public class ReportGenerationBackgroundService(
     ILogger<ReportGenerationBackgroundService> logger,
-    IEvaluationCompletionService evaluationCompletionService,
+    IStudentReportGenerationService studentReportService,
     ICompetencyEvaluationInstanceRepository instanceRepository)
     : IReportGenerationBackgroundService
 {
@@ -28,59 +30,53 @@ public class ReportGenerationBackgroundService(
 
         try
         {
-            // Obtener la instancia con todos los datos necesarios
-            var instance = await instanceRepository.GetByIdAsync(evaluationInstanceId);
-            if (instance == null)
+            // 1. Obtener la instancia una sola vez con todos los datos necesarios
+            var evaluationInstance = await instanceRepository.GetForReportGenerationAsync(evaluationInstanceId);
+            if (evaluationInstance == null)
             {
                 logger.LogWarning("Evaluation instance {InstanceId} not found", evaluationInstanceId);
                 return;
             }
 
-            // Obtener todos los estudiantes únicos
-            var studentIds = instance.ProfessorCompetencyAssignments?
-                .SelectMany(pca => pca.StudentCompetencyAssessments)
+            // 2. Obtener estudiantes con evaluaciones completadas
+            var studentsWithCompletedAssessments = evaluationInstance.ProfessorCompetencyAssignments?
+                .SelectMany(pca => pca.StudentCompetencyAssessments ?? Enumerable.Empty<StudentCompetencyAssessment>())
+                .Where(sca => sca.Status == AssessmentStatus.Completed)
                 .Select(sca => sca.StudentId)
                 .Distinct()
                 .ToList() ?? new List<string>();
 
-            if (!studentIds.Any())
+            if (!studentsWithCompletedAssessments.Any())
             {
-                logger.LogWarning("No students found for evaluation instance {InstanceId}", evaluationInstanceId);
+                logger.LogWarning("No students with completed assessments found for evaluation instance {InstanceId}", evaluationInstanceId);
                 return;
             }
 
             logger.LogInformation("Processing report generation for {StudentCount} students in instance {InstanceId}", 
-                studentIds.Count, evaluationInstanceId);
+                studentsWithCompletedAssessments.Count, evaluationInstanceId);
 
-            var successCount = 0;
-            var failureCount = 0;
-
-            foreach (var studentId in studentIds)
+            // 3. Generar reportes para cada estudiante 
+            foreach (var studentId in studentsWithCompletedAssessments)
             {
                 try
                 {
-                    await evaluationCompletionService.ProcessCompletedEvaluationAsync(studentId, evaluationInstanceId);
-                    successCount++;
-                    
-                    logger.LogDebug("Report generated successfully for student {StudentId} in instance {InstanceId}", 
-                        studentId, evaluationInstanceId);
+                    await studentReportService.GenerateStudentReportAsync(studentId, evaluationInstance.Id);
                 }
-                catch (Exception studentEx)
+                catch (Exception ex)
                 {
-                    failureCount++;
-                    logger.LogError(studentEx, "Failed to generate report for student {StudentId} in instance {InstanceId}", 
+                    logger.LogError(ex, "Failed to generate report for student {StudentId} in instance {InstanceId}", 
                         studentId, evaluationInstanceId);
-                    // Continuar con el siguiente estudiante
+                    // Continuar con el siguiente estudiante en caso de error
                 }
             }
 
-            logger.LogInformation("Report generation completed for evaluation instance {InstanceId}. Success: {SuccessCount}, Failures: {FailureCount}", 
-                evaluationInstanceId, successCount, failureCount);
+            logger.LogInformation("Completed report generation for evaluation instance {InstanceId}. Processed {StudentCount} students", 
+                evaluationInstanceId, studentsWithCompletedAssessments.Count);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Critical error during background report generation for evaluation instance {InstanceId}", evaluationInstanceId);
-            throw; // Re-throw para que Hangfire maneje el retry
+            logger.LogError(ex, "Error in background report generation for evaluation instance {InstanceId}", evaluationInstanceId);
+            throw;
         }
     }
 }

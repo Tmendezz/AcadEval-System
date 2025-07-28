@@ -22,13 +22,12 @@ public class UserProfileService(ApplicationDbContext dbContext, IMapper mapper) 
         if (student is null) return null;
 
         var result = mapper.Map<StudentDetailsDto>(student);
-        
+
         result.Subjects = student.StudentSubjects?.Select(ss => new SubjectDto()
         {
             Id = ss.Subject!.Id,
             Name = ss.Subject.Name!,
             Year = ss.Subject.Year,
-            TechnicalCareer = ss.Subject.TechnicalCareer?.Name
         }) ?? [];
 
         return result;
@@ -44,14 +43,13 @@ public class UserProfileService(ApplicationDbContext dbContext, IMapper mapper) 
         if (professor is null) return null;
 
         var result = mapper.Map<ProfessorDetailsDto>(professor);
-        
+
         // Mapear las materias del profesor
         result.Subjects = professor.Subjects?.Select(s => new SubjectDto
         {
             Id = s.Id,
             Name = s.Name!,
             Year = s.Year,
-            TechnicalCareer = s.TechnicalCareer?.Name
         }) ?? [];
 
         return result;
@@ -67,4 +65,4 @@ public class UserProfileService(ApplicationDbContext dbContext, IMapper mapper) 
 
         return mapper.Map<CoordinatorDetailsDto>(coordinator);
     }
-} 
+}
