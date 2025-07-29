@@ -23,7 +23,14 @@ public class UpdateCompetencyCommandValidatorTests
             Id = Guid.NewGuid(),
             Name = "Updated Competency",
             Description = "This is an updated competency.",
-            Type = CompetencyType.Soft
+            Type = CompetencyType.Soft,
+            CompetencyLevelDescriptions =  new Dictionary<CompetencyLevel, string>
+            {
+                { CompetencyLevel.Inicial, "Beginner" },
+                { CompetencyLevel.Intermedio, "Intermediate" },
+                { CompetencyLevel.Avanzado, "Advanced" },
+                { CompetencyLevel.Excelente, "Expert" }
+            }
         };
 
         // Act & Assert
