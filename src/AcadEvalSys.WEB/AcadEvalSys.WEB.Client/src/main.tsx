@@ -37,9 +37,7 @@ if (!rootElement) {
 }
 
 createRoot(rootElement).render(
-  <StrictMode>
-    <AppProviders>
-      <AppRouter />
-    </AppProviders>
-  </StrictMode>
+  <AppProviders>
+    <AppRouter />
+  </AppProviders>
 );

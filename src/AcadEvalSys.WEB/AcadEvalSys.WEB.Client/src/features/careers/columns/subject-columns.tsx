@@ -1,6 +1,14 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { Users, GraduationCap, BookOpen } from "lucide-react";
+import {
+  Users,
+  GraduationCap,
+  BookOpen,
+  Edit,
+  Trash2,
+  Eye,
+} from "lucide-react";
 import { Subject } from "@/shared/types";
+import { Button } from "@/shared/components/ui/button";
 import { navigate } from "wouter/use-browser-location";
 
 export const createSubjectColumns = (
@@ -59,21 +67,51 @@ export const createSubjectColumns = (
     cell: ({ row }) => {
       const subject = row.original;
 
-      const handleClick = () => {
+      const handleEdit = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        // TODO: Implementar lógica de edición
+        console.log("Editar asignatura:", subject.id);
+      };
+
+      const handleDelete = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        // TODO: Implementar lógica de eliminación
+        console.log("Eliminar asignatura:", subject.id);
+      };
+
+      const handleView = (e: React.MouseEvent) => {
+        e.stopPropagation();
         if (careerId) {
           navigate(`/tecnicaturas/${careerId}/asignaturas/${subject.id}`);
         }
       };
 
       return (
-        <div className="flex justify-end">
-          <button
-            onClick={handleClick}
-            disabled={!careerId}
-            className="text-sm text-primary font-medium hover:text-primary/80 transition-colors disabled:opacity-50"
+        <div className="flex gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleView}
+            className="h-7 w-7 p-0"
           >
-            Ver detalle
-          </button>
+            <Eye className="w-3 h-3" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleEdit}
+            className="h-7 w-7 p-0"
+          >
+            <Edit className="w-3 h-3" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDelete}
+            className="h-7 w-7 p-0"
+          >
+            <Trash2 className="w-3 h-3" />
+          </Button>
         </div>
       );
     },

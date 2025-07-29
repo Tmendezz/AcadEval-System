@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Assignment } from "../../../types/evaluation-form";
 import { useTechnicalCareers } from "@/shared/hooks/use-technical-careers";
 import { useSubjectsByCareer } from "@/shared/hooks/use-subjects";
@@ -78,9 +78,6 @@ export function CareerCompetencyAssignmentsStep({
   };
 
   const renderYearContent = (careerId: string, year: number) => {
-    const { data: yearSubjects = [], isLoading: subjectsLoading } =
-      useSubjectsByCareer(careerId, year.toString(), false);
-
     const yearAssignments = getAssignmentsForCareerAndYear(
       assignments,
       careerId,
@@ -89,61 +86,26 @@ export function CareerCompetencyAssignmentsStep({
     const yearKey = `${careerId}-${year}`;
     const isYearExpanded = expandedYears.has(yearKey);
 
-    if (subjectsLoading) {
-      return (
-        <YearSection
-          careerId={careerId}
-          year={year}
-          subjectCount={0}
-          assignmentCount={yearAssignments.length}
-          isExpanded={isYearExpanded}
-          onToggle={() => toggleYear(careerId, year)}
-          onAddAssignment={() => addAssignment(careerId, year)}
-        >
-          <div className="text-center py-4 text-sm text-muted-foreground">
-            Cargando asignaturas...
-          </div>
-        </YearSection>
-      );
-    }
-
     return (
       <YearSection
         careerId={careerId}
         year={year}
-        subjectCount={yearSubjects.length}
+        subjectCount={0} // Se calculará cuando se expanda
         assignmentCount={yearAssignments.length}
         isExpanded={isYearExpanded}
         onToggle={() => toggleYear(careerId, year)}
         onAddAssignment={() => addAssignment(careerId, year)}
       >
-        {yearAssignments.map((assignment, index) => {
-          const assignmentIndex = assignments.findIndex(
-            (a) =>
-              a.careerId === careerId &&
-              a.year === year &&
-              a.competencyId === assignment.competencyId &&
-              a.subjectId === assignment.subjectId
-          );
-
-          return (
-            <AssignmentForm
-              key={index}
-              assignment={assignment}
-              competencies={competencies}
-              subjects={yearSubjects}
-              onUpdate={(field, value) =>
-                updateAssignment(assignmentIndex, field, value)
-              }
-              onRemove={() => removeAssignment(assignmentIndex)}
-            />
-          );
-        })}
-
-        {yearAssignments.length === 0 && (
-          <div className="text-center py-4 text-sm text-muted-foreground">
-            No hay asignaciones para este año
-          </div>
+        {isYearExpanded && (
+          <YearSubjectsContent
+            careerId={careerId}
+            year={year}
+            yearAssignments={yearAssignments}
+            competencies={competencies}
+            onUpdateAssignment={updateAssignment}
+            onRemoveAssignment={removeAssignment}
+            assignments={assignments}
+          />
         )}
       </YearSection>
     );
@@ -199,5 +161,72 @@ export function CareerCompetencyAssignmentsStep({
         ))}
       </div>
     </div>
+  );
+}
+
+// Componente separado para manejar las asignaturas de un año específico
+function YearSubjectsContent({
+  careerId,
+  year,
+  yearAssignments,
+  competencies,
+  onUpdateAssignment,
+  onRemoveAssignment,
+  assignments,
+}: {
+  careerId: string;
+  year: number;
+  yearAssignments: Assignment[];
+  competencies: any[];
+  onUpdateAssignment: (
+    index: number,
+    field: "competencyId" | "subjectId",
+    value: string
+  ) => void;
+  onRemoveAssignment: (index: number) => void;
+  assignments: Assignment[];
+}) {
+  const { data: yearSubjects = [], isLoading: subjectsLoading } =
+    useSubjectsByCareer(careerId, year.toString(), false);
+
+  if (subjectsLoading) {
+    return (
+      <div className="text-center py-4 text-sm text-muted-foreground">
+        Cargando asignaturas...
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {yearAssignments.map((assignment, index) => {
+        const assignmentIndex = assignments.findIndex(
+          (a) =>
+            a.careerId === careerId &&
+            a.year === year &&
+            a.competencyId === assignment.competencyId &&
+            a.subjectId === assignment.subjectId
+        );
+
+        return (
+          <AssignmentForm
+            key={index}
+            assignment={assignment}
+            competencies={competencies}
+            subjects={yearSubjects}
+            onUpdate={(field, value) =>
+              onUpdateAssignment(assignmentIndex, field, value)
+            }
+            onRemove={() => onRemoveAssignment(assignmentIndex)}
+          />
+        );
+      })}
+
+      {yearAssignments.length === 0 && (
+        <div className="text-center py-4 text-sm text-muted-foreground">
+          No hay asignaciones para este año
+        </div>
+      )}
+    </>
   );
 }

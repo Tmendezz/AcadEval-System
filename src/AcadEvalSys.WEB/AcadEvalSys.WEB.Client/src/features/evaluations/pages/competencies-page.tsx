@@ -10,10 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { StatCard } from "@/shared/components/ui/stat-card";
-import { ContainerPage } from "@/shared/components/container-page";
-import { SkeletonWrapper } from "@/shared/components/skeleton-wrapper";
-import { Target, Brain, Code, Search, Plus } from "lucide-react";
+import { Target, Search, Plus } from "lucide-react";
 import { Competency } from "@/shared/types";
 import { getCompetencies } from "@/shared/services/competency-service";
 import {
@@ -22,8 +19,7 @@ import {
   PageContent,
   PageSection,
 } from "@/shared/components/layout/page-layout";
-import { LoadingState } from "@/shared/components/ui/loading-state";
-import { DataTable } from "@/shared/components/data-table/data-table";
+import { DataSection } from "@/shared/components/ui/data-section";
 import { competencyColumns } from "../columns/competency-columns";
 
 export default function CompetenciesPage() {
@@ -46,29 +42,6 @@ export default function CompetenciesPage() {
     return matchesSearch && matchesType;
   });
 
-  // Estadísticas
-  const competencyStats = [
-    {
-      key: "totalCompetencies",
-      label: "Total Competencias",
-      value: competencies.length,
-      icon: <Target className="h-4 w-4" />,
-    },
-    {
-      key: "softCompetencies",
-      label: "Competencias Blandas",
-      value: competencies.filter((c: Competency) => c.type === "Soft").length,
-      icon: <Brain className="h-4 w-4" />,
-    },
-    {
-      key: "technicalCompetencies",
-      label: "Competencias Técnicas",
-      value: competencies.filter((c: Competency) => c.type === "Technical")
-        .length,
-      icon: <Code className="h-4 w-4" />,
-    },
-  ];
-
   const handleRowClick = (competencyId: string) => {
     navigate(`/evaluations/competencies/${competencyId}`);
   };
@@ -90,21 +63,6 @@ export default function CompetenciesPage() {
       </PageHeader>
 
       <PageContent>
-        {/* Estadísticas */}
-        <PageSection>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {competencyStats.map((stat) => (
-              <StatCard
-                key={stat.key}
-                title={stat.label}
-                value={stat.value}
-                icon={stat.icon}
-              />
-            ))}
-          </div>
-        </PageSection>
-
-        {/* Filtros */}
         <PageSection>
           <div className="flex flex-col md:flex-row gap-4 items-start md:items-center mb-6">
             <div className="relative w-full md:w-auto flex-1">
@@ -132,15 +90,17 @@ export default function CompetenciesPage() {
         </PageSection>
 
         {/* Tabla de competencias */}
-        <PageSection>
-          <SkeletonWrapper isLoading={isLoading}>
-            <DataTable
-              columns={competencyColumns}
-              data={filteredCompetencies}
-              onRowClick={handleRowClick}
-            />
-          </SkeletonWrapper>
-        </PageSection>
+        <DataSection
+          title="Lista de Competencias"
+          description="Gestión de competencias para evaluaciones"
+          data={filteredCompetencies}
+          columns={competencyColumns}
+          isLoading={isLoading}
+          emptyMessage="No se encontraron competencias"
+          emptyIcon={<Target className="w-8 h-8" />}
+          onRowClick={handleRowClick}
+          className="mb-6"
+        />
       </PageContent>
     </PageLayout>
   );

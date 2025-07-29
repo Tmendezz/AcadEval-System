@@ -30,7 +30,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               orientation="vertical"
               className="mr-2 data-[orientation=vertical]:h-4"
             />
-            Evaluaciones y Competencias Académicas
+            Evaluaciones y Encuestas Académicas
           </div>
           <div className="flex items-center gap-2 mr-4">
             <ThemeToggle />

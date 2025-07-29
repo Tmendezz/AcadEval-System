@@ -1,53 +1,26 @@
-import { Button } from "@/shared/components/ui/button";
-import {
-  Plus,
-  ArrowLeft,
-  BookOpen,
-  Users,
-  GraduationCap,
-  Building,
-} from "lucide-react";
-import { useGetTechnicalCareers } from "../hooks/use-technical-careers";
-import { useGetTechnicalCareerById } from "../hooks/use-technical-careers";
-import { useSubjectsByYear } from "../hooks/use-subjects-by-year";
 import { useParams } from "wouter";
-import { navigate } from "wouter/use-browser-location";
-import { CareerYear, CareerYearLabels } from "@/shared/types/enums";
+import { Button } from "@/shared/components/ui/button";
+import { ArrowLeft, BookOpen, Plus, Search } from "lucide-react";
+import { Input } from "@/shared/components/ui/input";
 import {
   PageLayout,
   PageHeader,
   PageContent,
   PageSection,
 } from "@/shared/components/layout/page-layout";
-import { StatCard } from "@/shared/components/ui/stat-card";
+import { CareerCoordinatorCard } from "../components/career-coordinator-card";
+import { DataSection } from "@/shared/components/ui/data-section";
+import { useGetTechnicalCareerById, useSubjectsByYear } from "../hooks";
+import { createSubjectColumns } from "../columns";
 import { LoadingState } from "@/shared/components/ui/loading-state";
-import { DataTable } from "@/shared/components/data-table/data-table";
-import { createSubjectColumns } from "../columns/subject-columns";
-import { CareerCoordinatorCard, ImportStudentsButton } from "../components";
-import { Input } from "@/shared/components/ui/input";
-import { Search } from "lucide-react";
-import { YearFilterBadges } from "../components/year-filter-badges";
-import { useQueryClient } from "@tanstack/react-query";
+import { ImportStudentsButton, YearFilterBadges } from "../components";
 
 export default function SubjectsPage() {
   const { careerId } = useParams();
-  const queryClient = useQueryClient();
-
-  // Obtener datos de la carrera desde el caché
-  const career = queryClient.getQueryData([
-    "technical-career",
-    careerId,
-  ]) as any;
-
-  // Si no hay datos en caché, hacer la consulta
   const { data: careerData } = useGetTechnicalCareerById(careerId || "");
-
-  // Usar datos del caché o de la consulta
-  const careerInfo = career || careerData;
 
   const {
     filteredSubjects,
-    totalStats,
     selectedYear,
     searchTerm,
     changeYear,
@@ -69,26 +42,14 @@ export default function SubjectsPage() {
   return (
     <PageLayout>
       <PageHeader
-        title={
-          careerId ? `Asignaturas - ${careerInfo?.name || ""}` : "Asignaturas"
-        }
+        title={careerId ? `${careerData?.name || ""}` : "Asignaturas"}
         description={
           careerId
-            ? `Gestión de asignaturas para ${careerInfo?.name || ""}`
+            ? `Gestión de asignaturas para ${careerData?.name || ""}`
             : "Gestión de asignaturas"
         }
       >
         <div className="flex gap-2">
-          {careerId && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.history.back()}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Volver
-            </Button>
-          )}
           <Button>
             <Plus className="w-4 h-4 mr-2" />
             Nueva asignatura
@@ -99,16 +60,11 @@ export default function SubjectsPage() {
       <PageContent>
         {careerId && (
           <CareerCoordinatorCard
-            careerName={careerInfo?.name || ""}
+            careerName={careerData?.name || ""}
             coordinator={undefined} // TODO: Get real coordinator
             professors={[]} // TODO: Get professor list
             onAssignCoordinator={async (professorId) => {
-              console.log(
-                "Assign coordinator:",
-                professorId,
-                "for career:",
-                careerId
-              );
+              // TODO: Implementar lógica de asignación de coordinador
             }}
           />
         )}
@@ -138,9 +94,19 @@ export default function SubjectsPage() {
             </div>
           )}
 
-          <DataTable
-            columns={createSubjectColumns(careerId)}
+          <DataSection
+            title="Lista de Asignaturas"
+            description={
+              careerId
+                ? `Asignaturas de ${careerData?.name || ""}`
+                : "Todas las asignaturas del sistema"
+            }
             data={filteredSubjects}
+            columns={createSubjectColumns(careerId)}
+            isLoading={isLoading}
+            emptyMessage="No se encontraron asignaturas"
+            emptyIcon={<BookOpen className="w-8 h-8" />}
+            className="mb-6"
           />
         </PageSection>
       </PageContent>

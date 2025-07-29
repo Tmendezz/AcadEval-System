@@ -68,11 +68,11 @@ export function CareerCoordinatorCard({
       <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
         <div className="p-6 flex flex-col space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium leading-none tracking-tight">
+            <span className="text-2xl font-bold leading-none tracking-tight">
               Coordinador
             </span>
-            <div className="h-4 w-4 rounded-full bg-primary/10 flex items-center justify-center">
-              <UserCheck className="h-2.5 w-2.5 text-primary" />
+            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <UserCheck className="h-6 w-6 text-primary" />
             </div>
           </div>
           <div className="text-2xl font-bold">
