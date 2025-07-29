@@ -19,7 +19,6 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
 
         if (await dbContext.Database.CanConnectAsync())
         {
-            // Primero creamos roles si no existen
             if (!dbContext.Roles.Any())
             {
                 var roles = GetRoles();
@@ -27,7 +26,6 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
                 await dbContext.SaveChangesAsync();
             }
 
-            // Después creamos los usuarios
             var adminId = await EnsureAdminUser();
             var professorId = await EnsureProfessorUser();
             var studentId = await EnsureStudentUser();
@@ -51,7 +49,6 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
                 await dbContext.SaveChangesAsync();
             }
 
-            // Crear entidad Student ANTES de crear StudentSubject
             if (!dbContext.Students.Any())
             {
                 var student = new Student
@@ -64,14 +61,12 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
                 await dbContext.SaveChangesAsync();
             }
 
-            // Competencies
             if (!dbContext.Competencies.Any())
             {
                 var competencies = GetCompetencies();
                 dbContext.Competencies.AddRange(competencies);
                 await dbContext.SaveChangesAsync();
 
-                // Obtener las competencias desde la base con IDs generados
                 var insertedCompetencies = await dbContext.Competencies.ToListAsync();
 
                 var descriptions = GetCompetencyLevelDescriptions(insertedCompetencies);
@@ -82,7 +77,6 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
                 await dbContext.SaveChangesAsync();
             }
 
-            // Crear las materias
             if (!dbContext.Subjects.Any())
             {
                 var subjects = GetSubjects(dbContext.TechnicalCareers.First().Id.ToString(), professorId);
@@ -90,7 +84,6 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
                 await dbContext.SaveChangesAsync();
             }
 
-            // Asignar estudiante a materia
             if (!dbContext.StudentSubjects.Any())
             {
                 var studentSubject = new StudentSubject
@@ -103,7 +96,6 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
                 await dbContext.SaveChangesAsync();
             }
 
-            // Crear UNA SOLA instancia de evaluación para testear
             if (!dbContext.CompetencyEvaluationInstances.Any())
             {
                 var evaluationInstance = new CompetencyEvaluationInstance
@@ -118,7 +110,6 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
                 dbContext.CompetencyEvaluationInstances.Add(evaluationInstance);
                 await dbContext.SaveChangesAsync();
 
-                // Crear asignaciones de competencias al profesor (UNA por cada competencia)
                 var professorAssignments = CreateProfessorCompetencyAssignments(
                     evaluationInstance.Id,
                     dbContext.Competencies.ToList(),
@@ -128,7 +119,6 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
                 dbContext.ProfessorCompetencyAssignments.AddRange(professorAssignments);
                 await dbContext.SaveChangesAsync();
 
-                // Crear assessments para el estudiante (UNO por cada competencia)
                 var studentAssessments = CreateStudentCompetencyAssessments(
                     professorAssignments,
                     studentId,
