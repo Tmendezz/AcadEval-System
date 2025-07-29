@@ -5,54 +5,26 @@ import {
   PageSection,
 } from "@/shared/components/layout/page-layout";
 import { useGetEvaluations, useEvaluationFilters } from "../hooks";
-import {
-  EvaluationList,
-  EvaluationFilters,
-  EvaluationStatistics,
-} from "../components";
+import { EvaluationFilters } from "../components";
 import { navigate } from "wouter/use-browser-location";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import { Evaluation } from "../types/types";
+import { evaluationColumns } from "../columns";
+import { DataSection } from "@/shared/components/ui/data-section";
 
 export default function EvaluationsPage() {
-  const { data: evaluations = [], isLoading, error } = useGetEvaluations();
+  const { data: evaluations = [], isLoading } = useGetEvaluations();
 
-  // Filtros usando hook global
   const {
     filteredData: filteredEvaluations,
     searchTerm,
     setSearchTerm,
     activeFilters,
     updateFilter,
-    clearFilters,
   } = useEvaluationFilters(evaluations);
 
-  // Calcular estadísticas
-  const totalEvaluations = evaluations.length;
-  const activeEvaluations = evaluations.filter((e: Evaluation) => {
-    const now = new Date();
-    const from = new Date(e.periodFrom);
-    const to = new Date(e.periodTo);
-    return now >= from && now <= to;
-  }).length;
-  const completedEvaluations = evaluations.filter((e: Evaluation) => {
-    const now = new Date();
-    const to = new Date(e.periodTo);
-    return now > to;
-  }).length;
-  const upcomingEvaluations = evaluations.filter((e: Evaluation) => {
-    const now = new Date();
-    const from = new Date(e.periodFrom);
-    return now < from;
-  }).length;
-
   const handleNewEvaluation = () => {
-    navigate("/evaluations/new");
-  };
-
-  const handleEvaluationClick = (evaluation: Evaluation) => {
-    navigate(`/evaluaciones/${evaluation.id}`);
+    navigate("/evaluaciones/nueva");
   };
 
   return (
@@ -71,15 +43,6 @@ export default function EvaluationsPage() {
 
       <PageContent>
         <PageSection>
-          <EvaluationStatistics
-            totalEvaluations={totalEvaluations}
-            activeEvaluations={activeEvaluations}
-            completedEvaluations={completedEvaluations}
-            upcomingEvaluations={upcomingEvaluations}
-          />
-        </PageSection>
-
-        <PageSection>
           <EvaluationFilters
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
@@ -90,10 +53,15 @@ export default function EvaluationsPage() {
             className="mb-6"
           />
 
-          <EvaluationList
-            evaluations={filteredEvaluations}
+          <DataSection
+            title="Lista de Evaluaciones"
+            description="Gestiona las evaluaciones por competencias"
+            data={filteredEvaluations}
+            columns={evaluationColumns}
             isLoading={isLoading}
-            onEvaluationClick={handleEvaluationClick}
+            emptyMessage="No se encontraron evaluaciones"
+            emptyIcon="FileBarChart"
+            className="mb-6"
           />
         </PageSection>
       </PageContent>

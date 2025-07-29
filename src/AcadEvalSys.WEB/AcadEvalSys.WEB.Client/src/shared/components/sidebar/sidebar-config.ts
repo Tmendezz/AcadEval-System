@@ -46,12 +46,12 @@ export function useSidebarConfig() {
       title: "Evaluaciones por Competencias",
       items: [
         {
-          href: "/evaluations",
+          href: "/evaluaciones",
           icon: Settings,
           label: "Evaluaciones",
         },
         {
-          href: "/evaluations/competencies",
+          href: "/evaluaciones/competencias",
           icon: GraduationCap,
           label: "Competencias",
         },
@@ -71,7 +71,7 @@ export function useSidebarConfig() {
       title: "Administración",
       items: [
         {
-          href: "/administration/personal",
+          href: "/administradores",
           icon: Users,
           label: "Personal",
         },

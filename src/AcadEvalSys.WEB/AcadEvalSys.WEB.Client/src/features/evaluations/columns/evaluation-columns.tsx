@@ -1,14 +1,12 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { PencilIcon, TrashIcon } from "lucide-react";
+import { PencilIcon, TrashIcon, Eye } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/shared/components/ui/button";
 
-import { Evaluation } from "../../../types";
-
-// navegar al clickear fila a la ruta /evaluaciones/:id
-// usar useRouter
+import { Evaluation } from "@/shared/types";
+import { Badge } from "@/shared/components/ui/badge";
 
 export const columns: ColumnDef<Evaluation>[] = [
   {
@@ -28,6 +26,20 @@ export const columns: ColumnDef<Evaluation>[] = [
         <div className="text-sm text-muted-foreground truncate">
           {row.original.description}
         </div>
+      );
+    },
+  },
+  {
+    id: "semester",
+    accessorKey: "semester",
+    header: "Semestre",
+    cell: ({ row }) => {
+      return (
+        <Badge variant="outline">
+          {row.original.semester === "First"
+            ? "Primer Semestre"
+            : "Segundo Semestre"}
+        </Badge>
       );
     },
   },
@@ -71,13 +83,37 @@ export const columns: ColumnDef<Evaluation>[] = [
         console.log("Eliminar evaluación:", row.original.id);
       };
 
+      const handleView = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        // TODO: Implementar lógica de ver detalle
+        console.log("Ver detalle evaluación:", row.original.id);
+      };
+
       return (
-        <div className="flex gap-2">
-          <Button variant="outline" size="icon" onClick={handleEdit}>
-            <PencilIcon className="w-4 h-4" />
+        <div className="flex gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleView}
+            className="h-7 w-7 p-0"
+          >
+            <Eye className="w-3 h-3" />
           </Button>
-          <Button variant="outline" size="icon" onClick={handleDelete}>
-            <TrashIcon className="w-4 h-4" />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleEdit}
+            className="h-7 w-7 p-0"
+          >
+            <PencilIcon className="w-3 h-3" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDelete}
+            className="h-7 w-7 p-0"
+          >
+            <TrashIcon className="w-3 h-3" />
           </Button>
         </div>
       );

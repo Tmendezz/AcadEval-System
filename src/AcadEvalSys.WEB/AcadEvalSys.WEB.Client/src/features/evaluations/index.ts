@@ -4,11 +4,7 @@ export { default as EvaluationsPage } from "./pages/evaluations-page";
 export { default as CompetencyDetailPage } from "./pages/competency-detail-page";
 
 // Componentes reutilizables
-export {
-  EvaluationList,
-  EvaluationFilters,
-  EvaluationStatistics,
-} from "./components";
+export { EvaluationFilters } from "./components";
 
 // Columnas
 export * from "./columns";

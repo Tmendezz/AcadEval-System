@@ -14,9 +14,9 @@ import {
   PageSection,
 } from "@/shared/components/layout/page-layout";
 import { LoadingState } from "@/shared/components/ui/loading-state";
-import { DataTable } from "@/shared/components/data-table/data-table";
 import { competencyColumns } from "../columns/competency-columns";
 import { columns as evaluationColumns } from "../columns/evaluation-columns";
+import { DataSection } from "@/shared/components/ui/data-section";
 
 export default function EvaluationsDashboard() {
   // Queries
@@ -166,25 +166,30 @@ export default function EvaluationsDashboard() {
           </div>
         </PageSection>
 
-        {/* Competencias Recientes */}
-        <PageSection>
-          <h2 className="text-xl font-semibold mb-4">Competencias Recientes</h2>
-          <DataTable
-            columns={competencyColumns}
-            data={competencies.slice(0, 5)}
-            onRowClick={handleCompetencyClick}
-          />
-        </PageSection>
+        <DataSection
+          title="Competencias Recientes"
+          description="Últimas competencias creadas"
+          data={competencies.slice(0, 5)}
+          columns={competencyColumns}
+          isLoading={isLoadingCompetencies}
+          emptyMessage="No hay competencias recientes"
+          emptyIcon={<Target className="w-8 h-8" />}
+          onRowClick={handleCompetencyClick}
+          className="mb-6"
+        />
 
         {/* Evaluaciones Recientes */}
-        <PageSection>
-          <h2 className="text-xl font-semibold mb-4">Evaluaciones Recientes</h2>
-          <DataTable
-            columns={evaluationColumns}
-            data={evaluations.slice(0, 5)}
-            onRowClick={handleEvaluationClick}
-          />
-        </PageSection>
+        <DataSection
+          title="Evaluaciones Recientes"
+          description="Últimas evaluaciones creadas"
+          data={evaluations.slice(0, 5)}
+          columns={evaluationColumns}
+          isLoading={isLoadingEvaluations}
+          emptyMessage="No hay evaluaciones recientes"
+          emptyIcon={<FileBarChart className="w-8 h-8" />}
+          onRowClick={handleEvaluationClick}
+          className="mb-6"
+        />
       </PageContent>
     </PageLayout>
   );

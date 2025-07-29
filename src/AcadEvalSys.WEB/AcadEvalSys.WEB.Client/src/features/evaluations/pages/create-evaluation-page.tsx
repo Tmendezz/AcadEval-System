@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { ContainerPage } from "@/shared/components/container-page";
 import {
+  PageLayout,
   PageContent,
   PageHeader,
   PageSection,
@@ -35,7 +35,7 @@ export default function CreateEvaluationPage() {
   };
 
   return (
-    <ContainerPage>
+    <PageLayout>
       <PageHeader title="Crear Evaluación" />
       <PageContent>
         <PageSection>
@@ -45,6 +45,6 @@ export default function CreateEvaluationPage() {
           />
         </PageSection>
       </PageContent>
-    </ContainerPage>
+    </PageLayout>
   );
 }

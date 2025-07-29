@@ -26,11 +26,11 @@ export function AppRoutes() {
         <Route path="/surveys/new" component={CreateSurveyPage} />
 
         {/* Evaluaciones */}
-        <Route path="/evaluations/competencies" component={CompetenciesPage} />
-        <Route path="/evaluations" component={EvaluationsPage} />
-        <Route path="/evaluations/new" component={CreateEvaluationPage} />
+        <Route path="/evaluaciones/competencias" component={CompetenciesPage} />
+        <Route path="/evaluaciones" component={EvaluationsPage} />
+        <Route path="/evaluaciones/nueva" component={CreateEvaluationPage} />
         <Route
-          path="/evaluations/competencies/:id"
+          path="/evaluaciones/competencias/:id"
           component={CompetencyDetailPage}
         />
 
@@ -46,7 +46,7 @@ export function AppRoutes() {
         />
 
         {/* Administración */}
-        <Route path="/administration/personal" component={PersonalPage} />
+        <Route path="/administradores" component={PersonalPage} />
         <Route path="/:rest*">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">

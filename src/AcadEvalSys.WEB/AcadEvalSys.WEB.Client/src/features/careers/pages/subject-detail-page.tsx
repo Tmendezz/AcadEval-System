@@ -1,15 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
+import { useParams } from "wouter";
+import { navigate } from "wouter/use-browser-location";
 import { Button } from "@/shared/components/ui/button";
 import {
-  ArrowLeft,
-  Users,
-  GraduationCap,
-  Plus,
-  UserPlus,
-  Pencil,
-} from "lucide-react";
-
-import { EnrolledStudent } from "@/shared/types";
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import {
   PageLayout,
   PageHeader,
@@ -17,18 +14,17 @@ import {
   PageSection,
 } from "@/shared/components/layout/page-layout";
 import { LoadingState } from "@/shared/components/ui/loading-state";
-import { DataTable } from "@/shared/components/data-table/data-table";
-import { Badge } from "@/shared/components/ui/badge";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+  ArrowLeft,
+  GraduationCap,
+  Pencil,
+  Plus,
+  UserPlus,
+  Users,
+} from "lucide-react";
+import { useSubject } from "../hooks";
 import { studentColumns } from "../columns";
-import { useSubject, useSubjectsByYear } from "../hooks";
-import { useParams } from "wouter";
-import { navigate } from "wouter/use-browser-location";
+import { DataSection } from "@/shared/components/ui/data-section";
 
 export default function SubjectDetailPage() {
   const { careerId, subjectId } = useParams();
@@ -125,37 +121,16 @@ export default function SubjectDetailPage() {
         </PageSection>
 
         {/* Lista de Estudiantes */}
-        <PageSection>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Estudiantes Inscritos</h3>
-            <Badge variant="outline">
-              {subject.enrolledStudents?.length} estudiantes
-            </Badge>
-          </div>
-
-          {subject.enrolledStudents && subject.enrolledStudents.length > 0 ? (
-            <DataTable
-              columns={studentColumns}
-              data={subject.enrolledStudents}
-            />
-          ) : (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-8">
-                <Users className="w-12 h-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">
-                  No hay estudiantes inscritos
-                </h3>
-                <p className="text-muted-foreground text-center mb-4">
-                  Esta asignatura aún no tiene estudiantes inscritos.
-                </p>
-                <Button>
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Inscribir Primer Estudiante
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-        </PageSection>
+        <DataSection
+          title="Estudiantes Inscritos"
+          description={`Estudiantes inscritos en ${subject.name}`}
+          data={subject.enrolledStudents || []}
+          columns={studentColumns}
+          isLoading={false}
+          emptyMessage="No hay estudiantes inscritos"
+          emptyIcon={<Users className="w-8 h-8" />}
+          className="mb-6"
+        />
       </PageContent>
     </PageLayout>
   );

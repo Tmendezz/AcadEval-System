@@ -1,6 +1,7 @@
 import { CareerYear } from "./enums";
 
 export interface Evaluation {
+  semester: Semester;
   id: string;
   title: string;
   description: string;
@@ -8,6 +9,8 @@ export interface Evaluation {
   periodTo: string;
   careerAssignments: EvaluationCareerAssignment[];
 }
+
+type Semester = "First" | "Second";
 
 export interface EvaluationCareerAssignment {
   technicalCareerId: string;
