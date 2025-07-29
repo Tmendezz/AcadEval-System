@@ -1,0 +1,94 @@
+using AcadEvalSys.Application.TechnicalCareers.Commands.CreateTechnicalCareer;
+using AcadEvalSys.Application.TechnicalCareers.Commands.DeleteTechnicalCareer;
+using AcadEvalSys.Application.TechnicalCareers.Commands.UpdateTechnicalCareer;
+using AcadEvalSys.Application.TechnicalCareers.Dtos;
+using AcadEvalSys.Application.TechnicalCareers.Queries.GetAllTechnicalCareers;
+using AcadEvalSys.Application.TechnicalCareers.Queries.GetTechnicalCareerById;
+using AcadEvalSys.Domain.Constants.Constants;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace AcadEvalSys.WEB.Server.Controllers;
+/// <summary>
+/// Controlador para la gestión de carreras técnicas. Solo accesible por administradores.
+/// </summary>
+[ApiController]
+[Route("technical-careers")]
+[Authorize(Roles = UserRoles.Admin)]
+public class TechnicalCareerController(IMediator mediator) : ControllerBase
+{
+    /// <summary>
+    /// Obtiene todas las carreras técnicas.
+    /// </summary>
+    /// <returns>Lista de carreras técnicas.</returns>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Produces("application/json")]
+    public async Task<ActionResult<IEnumerable<TechnicalCareerDto>>> GetAllCareers()
+    {
+        var careers = await mediator.Send(new GetAllTechnicalCareersQuery());
+        return Ok(careers);
+    }
+
+    /// <summary>
+    /// Obtiene una carrera técnica por su ID.
+    /// </summary>
+    /// <param name="id">ID de la carrera técnica.</param>
+    /// <returns>Carrera técnica solicitada.</returns>
+    [HttpGet("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Produces("application/json")]
+    public async Task<ActionResult<TechnicalCareerDto>> GetById([FromRoute] Guid id)
+    {
+        var career = await mediator.Send(new GetTechnicalCareerByIdQuery(id));
+        return Ok(career);
+    }
+
+    /// <summary>
+    /// Crea una nueva carrera técnica.
+    /// </summary>
+    /// <param name="command">Datos de la carrera técnica a crear.</param>
+    /// <returns>ID de la carrera técnica creada.</returns>
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Produces("application/json")]
+    public async Task<IActionResult> CreateCareer(CreateTechnicalCareerCommand command)
+    {
+        var id = await mediator.Send(command);
+        return CreatedAtAction(nameof(GetById), new { id }, null);
+    }
+
+    /// <summary>
+    /// Actualiza una carrera técnica existente.
+    /// </summary>
+    /// <param name="id">ID de la carrera técnica a actualizar.</param>
+    /// <param name="command">Datos actualizados de la carrera técnica.</param>
+    /// <returns>NoContent si se actualiza correctamente.</returns>
+    [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UpdateCareer([FromRoute] Guid id, [FromBody] UpdateTechnicalCareerCommand command)
+    {
+        command.Id = id;
+        await mediator.Send(command);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Elimina una carrera técnica por su ID.
+    /// </summary>
+    /// <param name="id">ID de la carrera técnica a eliminar.</param>
+    /// <returns>NoContent si se elimina correctamente.</returns>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteCareer([FromRoute] Guid id)
+    {
+        await mediator.Send(new DeleteTechnicalCareerCommand(id));
+        return NoContent();
+    }
+}

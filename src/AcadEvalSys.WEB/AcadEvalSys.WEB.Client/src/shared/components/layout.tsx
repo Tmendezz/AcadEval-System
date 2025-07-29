@@ -1,21 +1,11 @@
-import { ReactNode, useEffect, useCallback, useState } from "react";
+import { ReactNode, useEffect } from "react";
 import { usePathname } from "wouter/use-browser-location";
 import { AppSidebar } from "./sidebar/app-sidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "./ui/sidebar";
 import { Separator } from "./ui/separator";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/shared/components/ui/breadcrumb";
+import { Breadcrumb } from "@/shared/components/ui/breadcrumb";
 import { ThemeToggle } from "./theme-toggle/theme-toggle";
-import {
-  useRouteStore,
-  BreadcrumbItem as BreadcrumbItemType,
-} from "../stores/route-store";
+import { useRouteStore } from "../stores/route-store";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -23,13 +13,11 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname();
-  const { setCurrentPath, getBreadcrumbItems } = useRouteStore();
+  const { setCurrentPath } = useRouteStore();
 
   useEffect(() => {
     setCurrentPath(pathname);
   }, [pathname, setCurrentPath]);
-
-  const breadcrumbItems = getBreadcrumbItems();
 
   return (
     <SidebarProvider defaultOpen>
@@ -42,42 +30,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               orientation="vertical"
               className="mr-2 data-[orientation=vertical]:h-4"
             />
-            <Breadcrumb>
-              <BreadcrumbList>
-                {breadcrumbItems.flatMap(
-                  (item: BreadcrumbItemType, index: number) => {
-                    const isFirstItem = index === 0;
-                    const isLastItem = index === breadcrumbItems.length - 1;
-
-                    const elements = [
-                      <BreadcrumbItem
-                        key={`item-${index}`}
-                        className={isFirstItem ? "hidden md:block" : ""}
-                      >
-                        {item.path ? (
-                          <BreadcrumbLink href={item.path}>
-                            {item.label}
-                          </BreadcrumbLink>
-                        ) : (
-                          <BreadcrumbPage>{item.label}</BreadcrumbPage>
-                        )}
-                      </BreadcrumbItem>,
-                    ];
-
-                    if (!isLastItem) {
-                      elements.push(
-                        <BreadcrumbSeparator
-                          key={`sep-${index}`}
-                          className="hidden md:block"
-                        />
-                      );
-                    }
-
-                    return elements;
-                  }
-                )}
-              </BreadcrumbList>
-            </Breadcrumb>
+            Evaluaciones y Encuestas Académicas
           </div>
           <div className="flex items-center gap-2 mr-4">
             <ThemeToggle />

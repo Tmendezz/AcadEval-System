@@ -26,11 +26,13 @@ import { DataTablePagination } from "./data-table-pagination";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  onRowClick?: (id: string) => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  onRowClick,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -49,6 +51,12 @@ export function DataTable<TData, TValue>({
       columnFilters,
     },
   });
+
+  const handleRowClick = (row: any) => {
+    if (onRowClick && row.original?.id) {
+      onRowClick(row.original.id);
+    }
+  };
 
   return (
     <div className="space-y-4 w-full">
@@ -85,6 +93,10 @@ export function DataTable<TData, TValue>({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
+                    onClick={() => handleRowClick(row)}
+                    className={
+                      onRowClick ? "cursor-pointer hover:bg-muted/50" : ""
+                    }
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} className="p-3 truncate">

@@ -1,9 +1,11 @@
+import { ReactNode } from "react";
 import { Link } from "wouter";
+import { cn } from "@/shared/lib/cn";
+import { NavItem } from "@/shared/types";
 import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/shared/components/ui/sidebar";
-import { NavItem } from "./types";
 
 interface NavMenuItemProps {
   item: NavItem;

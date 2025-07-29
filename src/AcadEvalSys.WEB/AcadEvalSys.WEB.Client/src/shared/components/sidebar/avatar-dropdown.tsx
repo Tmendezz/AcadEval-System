@@ -26,6 +26,7 @@ interface AvatarDropdownProps {
   user: {
     name?: string;
     email?: string;
+    role?: string;
     initials?: string;
     avatarUrl?: string;
   };
@@ -63,7 +64,7 @@ export function AvatarDropdown({
             <div className="flex flex-col items-start text-sm min-w-0">
               <span className="truncate font-medium">{user.name}</span>
               <span className="truncate text-xs text-muted-foreground">
-                {user.email}
+                {user.role}
               </span>
             </div>
             <ChevronsUpDown className="ml-auto h-4 w-4 opacity-50 flex-shrink-0" />
@@ -89,7 +90,7 @@ export function AvatarDropdown({
               <div className="grid flex-1 text-left text-sm leading-tight min-w-0">
                 <span className="truncate font-medium">{user.name}</span>
                 <span className="truncate text-xs text-muted-foreground">
-                  {user.email}
+                  {user.role}
                 </span>
               </div>
             </div>

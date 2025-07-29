@@ -4,6 +4,7 @@ import { authStore } from "../stores/auth-store";
 import { queryClient } from "@/shared/config/queryClient";
 import { LoginCredentials } from "../types";
 import { navigate } from "wouter/use-browser-location";
+import { getErrorMessage } from "@/shared/lib/error-handler";
 
 export const authKeys = {
   all: ["auth"] as const,

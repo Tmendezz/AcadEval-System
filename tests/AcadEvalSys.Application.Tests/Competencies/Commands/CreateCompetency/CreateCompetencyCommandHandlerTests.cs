@@ -65,7 +65,7 @@ public class CreateCompetencyCommandHandlerTests
         
         _competencyRepositoryMock.Setup(repo => repo.ExistsByNameAsync(command.Name))
             .ReturnsAsync(false);
-        _competencyRepositoryMock.Setup(repo => repo.CreateCompetencyAsync(competency))
+        _competencyRepositoryMock.Setup(repo => repo.CreateAsync(competency))
             .ReturnsAsync(expectedId);
         
         // Act

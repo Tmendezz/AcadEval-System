@@ -8,7 +8,7 @@ namespace AcadEvalSys.Domain.Entities
     {
         public string? UserId { get; set; }
         public Guid? TechnicalCareerId { get; set; }
-        public CareerYear CurrentYear { get; set; } // Default to first year
+        public CareerYear? CurrentYear { get; set; } 
     
         // Navigation properties
         public virtual User? User { get; set; }
@@ -17,7 +17,8 @@ namespace AcadEvalSys.Domain.Entities
 
         // Collections
         public virtual ICollection<StudentSubject>? StudentSubjects { get; set; } = new List<StudentSubject>();
-        public virtual ICollection<StudentCompetencyEvaluation>? StudentCompetencyEvaluations { get; set; } = new List<StudentCompetencyEvaluation>();
+        public virtual ICollection<StudentCompetencyAssessment>? StudentCompetencyAssessments { get; set; } = [];
         public virtual ICollection<StudentEvaluationReport>? EvaluationReports { get; set; } = new List<StudentEvaluationReport>();
+
     }
 }

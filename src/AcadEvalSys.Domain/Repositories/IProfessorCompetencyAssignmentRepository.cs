@@ -5,8 +5,7 @@ namespace AcadEvalSys.Domain.Repositories;
 public interface IProfessorCompetencyAssignmentRepository
 {
     Task<Guid> CreateAsync(ProfessorCompetencyAssignment assignment);
-    Task CreateMultipleAsync(IEnumerable<ProfessorCompetencyAssignment> assignments);
+    Task<IEnumerable<ProfessorCompetencyAssignment>> GetProfessorAssignmentsAsync(string professorId, Guid? evaluationInstanceId = null);
+    Task<ProfessorCompetencyAssignment?> GetByIdAsync(Guid id);
     Task UpdateAsync(ProfessorCompetencyAssignment assignment);
-    Task DeleteAsync(Guid id);
-    Task DeleteByEvaluationPeriodIdAsync(Guid evaluationPeriodId);
-} 
+}

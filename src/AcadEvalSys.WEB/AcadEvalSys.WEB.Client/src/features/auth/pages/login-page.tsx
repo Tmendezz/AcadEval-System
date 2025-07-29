@@ -1,24 +1,18 @@
+import { Card, CardContent } from "@/shared/components/ui/card";
 import { LoginForm } from "../components/login-form";
-import logoLoginMOL from "@/assets/logo_login_MOL.png";
+import { AuthCardHeader } from "../components/auth-card-header";
 
 export function LoginPage() {
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="text-center mb-8 flex flex-col items-center">
-        <img src={logoLoginMOL} alt="Logo" className="mb-4" />
+    <Card className="w-full max-w-md mx-auto bg-white backdrop-blur-sm border border-gray-200/50 rounded-xl shadow-2xl">
+      <AuthCardHeader
+        title="Sistema de Encuestas y Evaluaciones por Competencias"
+        subtitle="Ingrese sus credenciales para acceder al sistema"
+      />
 
-        <div className="mb-2">
-          <h2 className="text-4xl font-bold text-primary tracking-widest">
-            SISTEMA EVAC
-          </h2>
-        </div>
-
-        <p className="text-sm text-muted-foreground mt-2">
-          Ingrese sus credenciales para acceder al sistema
-        </p>
-      </div>
-
-      <LoginForm />
-    </div>
+      <CardContent className="px-8 pb-6">
+        <LoginForm />
+      </CardContent>
+    </Card>
   );
 }

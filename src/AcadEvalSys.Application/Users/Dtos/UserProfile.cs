@@ -10,12 +10,7 @@ public class UserProfile : Profile
         CreateMap<User, CurrentUserDto>()
             .ForMember(dest => dest.Roles, opt => opt.Ignore());
 
-        CreateMap<Student, StudentDetailsDto>()
-            .ForMember(dest => dest.TechnicalCareerName, opt => opt.MapFrom(src => src.TechnicalCareer!.Name))
-            .ForMember(dest => dest.Subjects, opt => opt.Ignore());
-
-        CreateMap<Professor, ProfessorDetailsDto>()
-            .ForMember(dest => dest.Subjects, opt => opt.Ignore());
+        CreateMap<Professor, ProfessorDetailsDto>();
 
         CreateMap<Coordinator, CoordinatorDetailsDto>()
             .ForMember(dest => dest.TechnicalCareerName, opt => opt.MapFrom(src => src.TechnicalCareer!.Name));

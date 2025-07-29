@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AcadEvalSys.Infrastructure.Persistence;
 
-public class ApplicationDbContext : IdentityDbContext<User>
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<User>(options)
 {
     public DbSet<Student> Students { get; set; }
     public DbSet<Professor> Professors { get; set; }
@@ -14,18 +14,14 @@ public class ApplicationDbContext : IdentityDbContext<User>
     public DbSet<Competency> Competencies { get; set; }
     public DbSet<CompetencyLevelDescription> CompetencyLevelDescriptions { get; set; }
     public DbSet<StudentSubject> StudentSubjects { get; set; }
+    public DbSet<StudentEvaluationReport> StudentEvaluationReports { get; set; }
 
-    public DbSet<EvaluationPeriod> EvaluationPeriods { get; set; }
+    public DbSet<CompetencyEvaluationInstance> CompetencyEvaluationInstances { get; set; }
     public DbSet<FormQuestion> FormQuestions { get; set; }
     public DbSet<QuestionResponse> QuestionResponses { get; set; }
     public DbSet<ProfessorCompetencyAssignment> ProfessorCompetencyAssignments { get; set; }
-    public DbSet<StudentCompetencyEvaluation> StudentCompetencyEvaluations { get; set; }
+    public DbSet<StudentCompetencyAssessment> StudentCompetencyAssessments { get; set; }
 
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options)
-    {
-
-    }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -61,16 +57,24 @@ public class ApplicationDbContext : IdentityDbContext<User>
                   .OnDelete(DeleteBehavior.Cascade);
         });
 
-        builder.Entity<StudentCompetencyEvaluation>(entity =>
+        builder.Entity<StudentCompetencyAssessment>(entity =>
         {
             entity.HasOne(e => e.Student)
-                .WithMany(s => s.StudentCompetencyEvaluations)
+                .WithMany(s => s.StudentCompetencyAssessments)
                 .HasForeignKey(e => e.StudentId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(e => e.ProfessorCompetencyAssignment)
-                .WithMany(p => p.StudentCompetencyEvaluations)
+                .WithMany(p => p.StudentCompetencyAssessments)
                 .HasForeignKey(e => e.ProfessorCompetencyAssignmentId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<ProfessorCompetencyAssignment>(entity =>
+        {
+            entity.HasOne(pca => pca.Subject)
+                .WithMany(s => s.ProfessorCompetencyAssignments)
+                .HasForeignKey(pca => pca.SubjectId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
@@ -85,9 +89,29 @@ public class ApplicationDbContext : IdentityDbContext<User>
                 .IsUnique();
         });
 
-        builder.Entity<EvaluationPeriod>()
+        builder.Entity<CompetencyEvaluationInstance>()
             .HasMany(e => e.TechnicalCareers)
-            .WithMany(t => t.EvaluationPeriods);
+            .WithMany(t => t.CompetencyEvaluationInstances);
+
+        // Configuración explícita para StudentSubject
+        builder.Entity<StudentSubject>(entity =>
+        {
+            entity.HasKey(ss => ss.Id);
+
+            entity.HasOne(ss => ss.Student)
+                .WithMany(s => s.StudentSubjects)
+                .HasForeignKey(ss => ss.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(ss => ss.Subject)
+                .WithMany(s => s.StudentSubjects)
+                .HasForeignKey(ss => ss.SubjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Índice único para evitar duplicados
+            entity.HasIndex(ss => new { ss.StudentId, ss.SubjectId })
+                .IsUnique();
+        });
 
     }
 }

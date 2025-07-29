@@ -1,10 +1,6 @@
-import {
-  SidebarGroup,
-  SidebarMenu,
-  SidebarGroupLabel,
-} from "@/shared/components/ui/sidebar";
-import { NavItem } from "./types";
+import { NavItem } from "@/shared/types";
 import { NavMenuItem } from "./nav-menu-item";
+import { SidebarGroup, SidebarGroupLabel, SidebarMenu } from "../ui/sidebar";
 
 interface SidebarNavGroupProps {
   title: string;

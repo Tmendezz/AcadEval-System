@@ -1,5 +1,7 @@
+using AcadEvalSys.Application.Subjects.Dtos;
 using AcadEvalSys.Application.Users.Dtos;
 using AcadEvalSys.Application.Users.Services;
+using AcadEvalSys.Domain.Enums;
 using AcadEvalSys.Infrastructure.Persistence;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -20,15 +22,13 @@ public class UserProfileService(ApplicationDbContext dbContext, IMapper mapper) 
         if (student is null) return null;
 
         var result = mapper.Map<StudentDetailsDto>(student);
-        
-        // Mapear las materias del estudiante
-        result.Subjects = student.StudentSubjects?.Select(ss => new SubjectDetailsDto
+
+        result.Subjects = student.StudentSubjects?.Select(ss => new SubjectDto()
         {
             Id = ss.Subject!.Id,
             Name = ss.Subject.Name!,
             Year = ss.Subject.Year,
-            TechnicalCareerName = ss.Subject.TechnicalCareer?.Name
-        }) ?? Enumerable.Empty<SubjectDetailsDto>();
+        }) ?? [];
 
         return result;
     }
@@ -43,15 +43,14 @@ public class UserProfileService(ApplicationDbContext dbContext, IMapper mapper) 
         if (professor is null) return null;
 
         var result = mapper.Map<ProfessorDetailsDto>(professor);
-        
+
         // Mapear las materias del profesor
-        result.Subjects = professor.Subjects?.Select(s => new SubjectDetailsDto
+        result.Subjects = professor.Subjects?.Select(s => new SubjectDto
         {
             Id = s.Id,
             Name = s.Name!,
             Year = s.Year,
-            TechnicalCareerName = s.TechnicalCareer?.Name
-        }) ?? Enumerable.Empty<SubjectDetailsDto>();
+        }) ?? [];
 
         return result;
     }
@@ -66,4 +65,4 @@ public class UserProfileService(ApplicationDbContext dbContext, IMapper mapper) 
 
         return mapper.Map<CoordinatorDetailsDto>(coordinator);
     }
-} 
+}

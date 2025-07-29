@@ -1,31 +1,33 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
 import { useLoginMutation } from "@/shared/auth/hooks/use-login-mutation";
-import { Loader2 } from "lucide-react";
+import { Link } from "wouter";
+import { AuthButton } from "./auth-button";
+import { Form, FormField, FormMessage } from "@/shared/components/ui/form";
+import { FormItem } from "@/shared/components/ui/form";
+import { FormLabel } from "@/shared/components/ui/form";
+import { FormControl } from "@/shared/components/ui/form";
+import { Input } from "@/shared/components/ui/input";
+import { getErrorMessage } from "@/shared/lib/error-handler";
 
 const loginSchema = z.object({
-  username: z.string().min(1, "El usuario es requerido"),
+  email: z.string().email("Ingrese un correo académico válido"),
   password: z.string().min(1, "La contraseña es requerida"),
-  rememberMe: z.boolean().optional(),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export const LoginForm = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormData>({
+  const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });
+
+  const { handleSubmit, control } = form;
 
   const {
     mutate: login,
@@ -36,7 +38,7 @@ export const LoginForm = () => {
   const onSubmit = async (data: LoginFormData) => {
     try {
       await login({
-        email: data.username,
+        email: data.email,
         password: data.password,
       });
     } catch (error) {
@@ -45,69 +47,71 @@ export const LoginForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div>
-        <Input
-          type="text"
-          placeholder="alumno@itec-elmolino.edu.ar"
-          className="w-full h-12 px-4 bg-input border border-border text-foreground placeholder:text-muted-foreground"
-          disabled={isLoading}
-          {...register("username")}
+    <Form {...form}>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <FormField
+          control={control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-medium text-gray-700">
+                Correo académico
+              </FormLabel>
+              <FormControl>
+                <Input
+                  type="email"
+                  placeholder="usuario@itec-elmolino.edu.ar"
+                  disabled={isLoading}
+                  className="w-full h-12 px-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all duration-200"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {errors.username && (
-          <p className="text-destructive text-sm mt-1">
-            {errors.username.message}
-          </p>
-        )}
-      </div>
 
-      <div>
-        <Input
-          type="password"
-          placeholder="••••••••••••••"
-          className="w-full h-12 px-4 bg-input border border-border text-foreground placeholder:text-muted-foreground"
-          disabled={isLoading}
-          {...register("password")}
+        <FormField
+          control={control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-medium text-gray-700">
+                Contraseña
+              </FormLabel>
+              <FormControl>
+                <Input
+                  type="password"
+                  placeholder="••••••••••••••"
+                  disabled={isLoading}
+                  className="w-full h-12 px-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all duration-200"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {errors.password && (
-          <p className="text-destructive text-sm mt-1">
-            {errors.password.message}
-          </p>
+
+        {loginError && (
+          <div className="text-red-700 text-sm text-center p-3 bg-red-50 border border-red-200 rounded-lg">
+            {getErrorMessage(loginError)}
+          </div>
         )}
-      </div>
 
-      {/* Mostrar error de login si existe */}
-      {loginError && (
-        <div className="text-destructive text-sm text-center p-2 bg-destructive/10 rounded-md">
-          {loginError.message || "Error al iniciar sesión"}
-        </div>
-      )}
+        <AuthButton isLoading={isLoading} loadingText="Iniciando sesión...">
+          Ingresar
+        </AuthButton>
 
-      <Button
-        type="submit"
-        disabled={isLoading}
-        className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-base"
-      >
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Iniciando sesión...
-          </>
-        ) : (
-          "Ingresar"
-        )}
-      </Button>
-
-      <div className="text-center space-y-2 pt-4">
-        <p>
-          <a
+        <div className="text-center pt-4">
+          <Link
             href="/auth/forgot-password"
-            className="text-primary hover:text-primary/80 text-sm underline-offset-4 hover:underline"
+            className="text-blue-600 hover:text-blue-700 text-sm underline-offset-4 hover:underline transition-colors duration-200"
           >
             ¿Olvidó su contraseña? - Recuperar contraseña
-          </a>
-        </p>
-      </div>
-    </form>
+          </Link>
+        </div>
+      </form>
+    </Form>
   );
 };

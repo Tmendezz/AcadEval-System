@@ -5,6 +5,7 @@
 
 # dotenv files
 .env
+./dist
 
 # User-specific files
 *.rsuser
@@ -290,7 +291,7 @@ FakesAssemblies/
 # Node.js Tools for Visual Studio
 .ntvs_analysis.dat
 node_modules/
-
+dist/
 # Visual Studio 6 build log
 *.plg
 
@@ -460,9 +461,13 @@ Temporary Items
 Thumbs.db
 ehthumbs.db
 ehthumbs_vista.db
-
+appsettings.Development.json
 # Dump file
 *.stackdump
+
+# App settings
+src/AcadEvalSys.WEB/AcadEvalSys.WEB.Server/appsettings.Development.json
+src/AcadEvalSys.WEB/AcadEvalSys.WEB.Server/appsettings.json
 
 # Folder config file
 [Dd]esktop.ini

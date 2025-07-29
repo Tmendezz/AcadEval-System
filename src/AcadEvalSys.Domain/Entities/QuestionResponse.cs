@@ -11,6 +11,5 @@ namespace AcadEvalSys.Domain.Entities
 
         // Navigation properties
         public virtual FormQuestion? FormQuestion { get; set; }
-        public virtual StudentCompetencyEvaluation? StudentCompetencyEvaluation { get; set; }
     }
 }

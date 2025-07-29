@@ -1,45 +1,91 @@
 using AcadEvalSys.Domain.Entities;
+using AcadEvalSys.Domain.Enums;
 using AcadEvalSys.Domain.Repositories;
 using AcadEvalSys.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace AcadEvalSys.Infrastructure.Repositories;
 
-public class ProfessorCompetencyAssignmentRepository(ApplicationDbContext dbContext) : IProfessorCompetencyAssignmentRepository
+public class ProfessorCompetencyAssignmentRepository : IProfessorCompetencyAssignmentRepository
 {
+    private readonly ApplicationDbContext _context;
+
+    public ProfessorCompetencyAssignmentRepository(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
     public async Task<Guid> CreateAsync(ProfessorCompetencyAssignment assignment)
     {
-        var result = dbContext.ProfessorCompetencyAssignments.Add(assignment);
-        await dbContext.SaveChangesAsync();
-        return result.Entity.Id;
+        _context.ProfessorCompetencyAssignments.Add(assignment);
+        await _context.SaveChangesAsync();
+
+        // Generar automáticamente los StudentCompetencyAssessments para todos los estudiantes de la materia
+        await CreateStudentCompetencyAssessmentsAsync(assignment);
+
+        return assignment.Id;
     }
 
-    public async Task CreateMultipleAsync(IEnumerable<ProfessorCompetencyAssignment> assignments)
+    private async Task CreateStudentCompetencyAssessmentsAsync(ProfessorCompetencyAssignment assignment)
     {
-        await dbContext.ProfessorCompetencyAssignments.AddRangeAsync(assignments);
-        await dbContext.SaveChangesAsync();
+        // Obtener todos los estudiantes inscritos en la materia
+        var enrolledStudents = await _context.StudentSubjects
+            .Where(ss => ss.SubjectId == assignment.SubjectId)
+            .Select(ss => ss.StudentId)
+            .ToListAsync();
+
+        if (!enrolledStudents.Any())
+        {
+            return; // No hay estudiantes inscritos en esta materia
+        }
+
+        // Crear un StudentCompetencyAssessment para cada estudiante
+        var studentAssessments = enrolledStudents.Select(studentId => new StudentCompetencyAssessment
+        {
+            StudentId = studentId,
+            ProfessorCompetencyAssignmentId = assignment.Id,
+            Status = AssessmentStatus.Pending,
+            CompetencyLevel = CompetencyLevel.Inicial, // Nivel inicial
+            CreatedByUserId = assignment.CreatedByUserId,
+            CreatedAt = DateTime.UtcNow
+        }).ToList();
+
+        _context.StudentCompetencyAssessments.AddRange(studentAssessments);
+        await _context.SaveChangesAsync();
     }
 
-    
+    public async Task<IEnumerable<ProfessorCompetencyAssignment>> GetProfessorAssignmentsAsync(string professorId, Guid? evaluationInstanceId = null)
+    {
+        var query = _context.ProfessorCompetencyAssignments
+            .Include(pca => pca.Competency)
+            .Include(pca => pca.Subject)
+            .Include(pca => pca.StudentCompetencyAssessments!)
+                .ThenInclude(sca => sca.Student!)
+                    .ThenInclude(s => s.User)
+            .Where(pca => pca.Subject!.ProfessorId == professorId);
+
+        if (evaluationInstanceId.HasValue)
+        {
+            query = query.Where(pca => pca.CompetencyEvaluationInstanceId == evaluationInstanceId);
+        }
+
+        return await query.ToListAsync();
+    }
+
+    public async Task<ProfessorCompetencyAssignment?> GetByIdAsync(Guid id)
+    {
+        return await _context.ProfessorCompetencyAssignments
+            .Include(pca => pca.Competency)
+            .Include(pca => pca.Subject)
+            .Include(pca => pca.StudentCompetencyAssessments!)
+                .ThenInclude(sca => sca.Student!)
+                    .ThenInclude(s => s.User)
+            .FirstOrDefaultAsync(pca => pca.Id == id);
+    }
 
     public async Task UpdateAsync(ProfessorCompetencyAssignment assignment)
     {
-        dbContext.ProfessorCompetencyAssignments.Update(assignment);
-        await dbContext.SaveChangesAsync();
+        _context.ProfessorCompetencyAssignments.Update(assignment);
+        await _context.SaveChangesAsync();
     }
-
-    public async Task DeleteAsync(Guid id)
-    {
-        var assignment = await dbContext.ProfessorCompetencyAssignments.FirstOrDefaultAsync(pca => pca.Id == id);
-        if (assignment != null)
-        {
-            dbContext.ProfessorCompetencyAssignments.Remove(assignment);
-            await dbContext.SaveChangesAsync();
-        }
-    }
-
-    public Task DeleteByEvaluationPeriodIdAsync(Guid evaluationPeriodId)
-    {
-        throw new NotImplementedException();
-    }
-} 
+}

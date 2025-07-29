@@ -1,0 +1,68 @@
+using AcadEvalSys.Domain.Entities;
+using AcadEvalSys.Domain.Exceptions;
+using AcadEvalSys.Domain.Repositories;
+using MediatR;
+using Microsoft.Extensions.Logging;
+
+namespace AcadEvalSys.Application.Subjects.Commands.AssignProfessor;
+
+public class AssignProfessorToSubjectCommandHandler(
+    ILogger<AssignProfessorToSubjectCommandHandler> logger,
+    ISubjectRepository subjectRepository,
+    IProfessorRepository professorRepository
+    ) : IRequestHandler<AssignProfessorToSubjectCommand, bool>
+{
+    public async Task<bool> Handle(AssignProfessorToSubjectCommand request, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Assign professor {ProfessorId} to subject {SubjectId} in career {CareerId}", request.ProfessorId, request.SubjectId, request.TechnicalCareerId);
+
+        // validar que existe la materia
+        var subject = await subjectRepository.GetSubjectByIdAsync(request.SubjectId);
+        if (subject == null)
+        {
+            logger.LogWarning("Subject with ID {SubjectId} not found", request.SubjectId);
+            throw new NotFoundException(nameof(Subject), request.SubjectId.ToString());
+        }
+
+        // Validar que la materia pertenece a la carrera técnica especificada
+        if (subject.TechnicalCareerId != request.TechnicalCareerId)
+        {
+            logger.LogWarning("Subject with ID: {SubjectId} does not belong to career {CareerId}", request.SubjectId, request.TechnicalCareerId);
+            throw new NotFoundException(nameof(Subject), request.SubjectId.ToString());
+        }
+
+        // validar que el profesor existe y está activo
+        var professor = await professorRepository.GetByIdAsync(request.ProfessorId);
+        if (professor == null)
+        {
+            logger.LogWarning("Professor with ID {ProfessorId} not found or not active", request.ProfessorId);
+            throw new NotFoundException(nameof(Professor), request.ProfessorId);
+        }
+
+        // validar si la materia ya tiene el mismo profesor asignado
+        if (subject.ProfessorId == request.ProfessorId)
+        {
+            logger.LogInformation("Professor {ProfessorId} is already assigned to subject {SubjectId} in career {CareerId}", request.ProfessorId, request.SubjectId, request.TechnicalCareerId);
+            return true; // No es necesario hacer nada, ya está asignado
+        }
+
+        // si la materia ya tiene un profesor diferente, registrar la reasignación
+        if (!string.IsNullOrEmpty(subject.ProfessorId))
+        {
+            logger.LogInformation("Reassigning subject {SubjectId} from professor {OldProfessorId} to professor {NewProfessorId} in career {CareerId}",
+                request.SubjectId, subject.ProfessorId, request.ProfessorId, request.TechnicalCareerId);
+        }
+
+        try
+        {
+            await subjectRepository.AssignProfessorToSubjectAsync(request.SubjectId, request.ProfessorId);
+            logger.LogInformation("Professor {ProfessorId} assigned to subject {SubjectId} in career {CareerId} successfully", request.ProfessorId, request.SubjectId, request.TechnicalCareerId);
+            return true;
+        }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogError(ex, "Error assigning professor {ProfessorId} to subject {SubjectId} in career {CareerId}", request.ProfessorId, request.SubjectId, request.TechnicalCareerId);
+            return false;
+        }
+    }
+}

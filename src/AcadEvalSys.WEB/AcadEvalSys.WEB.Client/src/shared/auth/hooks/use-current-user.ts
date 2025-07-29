@@ -1,3 +1,4 @@
+import { getUserInitials, roleToText } from "@/shared/lib/utils";
 import { useUser } from "../stores/auth-store";
 
 /**
@@ -6,16 +7,9 @@ import { useUser } from "../stores/auth-store";
 export const useCurrentUser = () => {
   const user = useUser();
 
-  const getUserInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((part) => part.charAt(0).toUpperCase())
-      .slice(0, 2)
-      .join("");
-  };
-
   return {
     user,
     initials: user?.name ? getUserInitials(user.name) : "",
+    role: user?.roles[0] ? roleToText(user.roles[0]) : "",
   };
 };

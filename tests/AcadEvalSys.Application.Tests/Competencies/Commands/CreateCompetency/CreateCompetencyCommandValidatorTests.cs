@@ -22,7 +22,14 @@ public class CreateCompetencyCommandValidatorTests
         {
             Name = "Test Competency",
             Description = "This is a test competency.",
-            Type = CompetencyType.Soft
+            Type = CompetencyType.Soft,
+            CompetencyLevelDescriptions =  new Dictionary<CompetencyLevel, string>
+            {
+                { CompetencyLevel.Inicial, "Beginner" },
+                { CompetencyLevel.Intermedio, "Intermediate" },
+                { CompetencyLevel.Avanzado, "Advanced" },
+                { CompetencyLevel.Excelente, "Expert" }
+            }
         };
         
         // Act & Assert
