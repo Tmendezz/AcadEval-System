@@ -18,7 +18,7 @@ public class FinalizeEvaluationInstanceCommandHandler(
 {
     public async Task<bool> Handle(FinalizeEvaluationInstanceCommand request, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Admin finalizing evaluation instance {InstanceId} with ForceClose: {ForceClose}", 
+        logger.LogInformation("Admin finalizing evaluation instance {InstanceId} with ForceClose: {ForceClose}",
             request.EvaluationInstanceId, request.ForceClose);
 
         var user = userContext.GetCurrentUser();
@@ -45,7 +45,7 @@ public class FinalizeEvaluationInstanceCommandHandler(
         */
 
         // Verificar condiciones de finalización
-        var (completedAssignments, totalAssignments, allProfessorsCompleted) = ValidateAssignmentCompletion(instance, request.ForceClose, request.EvaluationInstanceId);
+        ValidateAssignmentCompletion(instance, request.ForceClose, request.EvaluationInstanceId);
 
         // Finalizar la instancia
         instance.Status = EvaluationStatus.Completed;
@@ -54,9 +54,8 @@ public class FinalizeEvaluationInstanceCommandHandler(
 
         await evaluationInstanceRepository.UpdateAsync(instance);
 
-        var logLevel = allProfessorsCompleted ? LogLevel.Information : LogLevel.Warning;
-        logger.Log(logLevel, "Evaluation instance {InstanceId} finalized by admin {AdminId}. Status: {Completed}/{Total} assignments completed, ForceClose: {ForceClose}", 
-            request.EvaluationInstanceId, user.Id, completedAssignments, totalAssignments, request.ForceClose);
+        logger.LogInformation("Evaluation instance {InstanceId} finalized by admin {AdminId}. ForceClose: {ForceClose}",
+            request.EvaluationInstanceId, user.Id, request.ForceClose);
 
         // Encolar la generación de reportes en background
         try
@@ -72,27 +71,26 @@ public class FinalizeEvaluationInstanceCommandHandler(
         return true;
     }
 
-    private (int CompletedAssignments, int TotalAssignments, bool AllProfessorsCompleted) ValidateAssignmentCompletion(CompetencyEvaluationInstance instance, bool forceClose, Guid evaluationInstanceId)
+    private void ValidateAssignmentCompletion(CompetencyEvaluationInstance instance, bool forceClose, Guid evaluationInstanceId)
     {
         // Obtener estadísticas de asignaciones
         var allAssignments = instance.ProfessorCompetencyAssignments?.ToList() ?? new List<ProfessorCompetencyAssignment>();
         var completedAssignments = allAssignments.Count(a => a.Status == ProfessorAssignmentStatus.Completed);
         var totalAssignments = allAssignments.Count;
-        
-        logger.LogInformation("Evaluation instance {InstanceId} statistics: {Completed}/{Total} professor assignments completed", 
+
+        logger.LogInformation("Evaluation instance {InstanceId} statistics: {Completed}/{Total} professor assignments completed",
             evaluationInstanceId, completedAssignments, totalAssignments);
 
         // Verificar condiciones de finalización
         var allProfessorsCompleted = completedAssignments == totalAssignments && totalAssignments > 0;
-        
+
         if (!allProfessorsCompleted && !forceClose)
         {
-            logger.LogWarning("Cannot finalize evaluation instance {InstanceId}: Not all professors completed ({Completed}/{Total}) and ForceClose is false", 
+            logger.LogWarning("Cannot finalize evaluation instance {InstanceId}: Not all professors completed ({Completed}/{Total}) and ForceClose is false",
                 evaluationInstanceId, completedAssignments, totalAssignments);
-            
+
             throw new InvalidOperationException($"Cannot finalize evaluation: {completedAssignments} of {totalAssignments} professor assignments completed. Use ForceClose=true to override.");
         }
 
-        return (completedAssignments, totalAssignments, allProfessorsCompleted);
     }
 }

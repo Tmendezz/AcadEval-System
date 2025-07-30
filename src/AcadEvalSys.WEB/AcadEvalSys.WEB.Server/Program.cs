@@ -27,23 +27,23 @@ try
 
     var app = builder.Build();
 
-/*  using (var scope = app.Services.CreateScope())
+    using (var scope = app.Services.CreateScope())
     {
         var seeder = scope.ServiceProvider.GetRequiredService<IDbSeeder>();
         await seeder.Seed();
-    }*/
-    
+    }
+
     app.UseSerilogRequestLogging();
     app.UseMiddleware<ErrorHandlingMiddleware>();
 
     // Configurar el dashboard de Hangfire (solo en desarrollo)
     if (app.Environment.IsDevelopment())
-    { 
+    {
         //seed
-  
+
         app.UseSwagger();
         app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "AcadEval API v1"));
-        
+
         // Dashboard de Hangfire para monitorear trabajos
         app.UseHangfireDashboard("/hangfire");
     }

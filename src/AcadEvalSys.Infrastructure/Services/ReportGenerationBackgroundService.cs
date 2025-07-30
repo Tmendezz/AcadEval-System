@@ -16,10 +16,10 @@ public class ReportGenerationBackgroundService(
     public Task EnqueueReportGenerationAsync(Guid evaluationInstanceId)
     {
         logger.LogInformation("Enqueuing report generation for evaluation instance {InstanceId}", evaluationInstanceId);
-        
-        // Encolar la tarea con Hangfire en la cola de reportes
+
+        // Encolar la tarea con Hangfire en la cola de reportes (nombre de la cola y la tarea a ejecutar)
         BackgroundJob.Enqueue("reports", () => ProcessReportGenerationAsync(evaluationInstanceId));
-        
+
         return Task.CompletedTask;
     }
 
@@ -30,7 +30,6 @@ public class ReportGenerationBackgroundService(
 
         try
         {
-            // 1. Obtener la instancia una sola vez con todos los datos necesarios
             var evaluationInstance = await instanceRepository.GetForReportGenerationAsync(evaluationInstanceId);
             if (evaluationInstance == null)
             {
@@ -38,7 +37,6 @@ public class ReportGenerationBackgroundService(
                 return;
             }
 
-            // 2. Obtener estudiantes con evaluaciones completadas
             var studentsWithCompletedAssessments = evaluationInstance.ProfessorCompetencyAssignments?
                 .SelectMany(pca => pca.StudentCompetencyAssessments ?? Enumerable.Empty<StudentCompetencyAssessment>())
                 .Where(sca => sca.Status == AssessmentStatus.Completed)
@@ -52,7 +50,7 @@ public class ReportGenerationBackgroundService(
                 return;
             }
 
-            logger.LogInformation("Processing report generation for {StudentCount} students in instance {InstanceId}", 
+            logger.LogInformation("Processing report generation for {StudentCount} students in instance {InstanceId}",
                 studentsWithCompletedAssessments.Count, evaluationInstanceId);
 
             // 3. Generar reportes para cada estudiante 
@@ -64,13 +62,13 @@ public class ReportGenerationBackgroundService(
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Failed to generate report for student {StudentId} in instance {InstanceId}", 
+                    logger.LogError(ex, "Failed to generate report for student {StudentId} in instance {InstanceId}",
                         studentId, evaluationInstanceId);
                     // Continuar con el siguiente estudiante en caso de error
                 }
             }
 
-            logger.LogInformation("Completed report generation for evaluation instance {InstanceId}. Processed {StudentCount} students", 
+            logger.LogInformation("Completed report generation for evaluation instance {InstanceId}. Processed {StudentCount} students",
                 evaluationInstanceId, studentsWithCompletedAssessments.Count);
         }
         catch (Exception ex)

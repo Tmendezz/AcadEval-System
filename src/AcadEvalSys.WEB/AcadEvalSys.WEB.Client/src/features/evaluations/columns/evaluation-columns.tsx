@@ -7,6 +7,8 @@ import { Button } from "@/shared/components/ui/button";
 
 import { Evaluation } from "@/shared/types";
 import { Badge } from "@/shared/components/ui/badge";
+import { Progress } from "@/shared/components/ui/progress";
+import { cn } from "@/shared/lib/cn";
 
 export const columns: ColumnDef<Evaluation>[] = [
   {
@@ -35,7 +37,13 @@ export const columns: ColumnDef<Evaluation>[] = [
     header: "Semestre",
     cell: ({ row }) => {
       return (
-        <Badge variant="outline">
+        <Badge
+          className={cn(
+            row.original.semester === "First"
+              ? "bg-indigo-500/20 text-indigo-500"
+              : "bg-orange-500/20 text-orange-500"
+          )}
+        >
           {row.original.semester === "First"
             ? "Primer Semestre"
             : "Segundo Semestre"}
@@ -44,25 +52,56 @@ export const columns: ColumnDef<Evaluation>[] = [
     },
   },
   {
-    id: "periodFrom",
-    accessorKey: "periodFrom",
-    header: "Fecha de inicio",
+    id: "status",
+    accessorKey: "status",
+    header: "Estado",
     cell: ({ row }) => {
       return (
-        <div className="text-sm text-muted-foreground truncate">
-          {format(new Date(row.original.periodFrom), "dd/MM/yyyy")}
+        <Badge
+          variant={
+            row.original.status === "Pending"
+              ? "outline"
+              : row.original.status === "Completed"
+              ? "default"
+              : "destructive"
+          }
+        >
+          {row.original.status === "Pending"
+            ? "Pendiente"
+            : row.original.status === "Completed"
+            ? "Completado"
+            : "Cerrado"}
+        </Badge>
+      );
+    },
+  },
+  {
+    id: "progressBar",
+    accessorKey: "progressBar",
+    header: "Progreso",
+    cell: ({ row }) => {
+      return (
+        <div className="flex gap-2 justify-between items-center w-3/4">
+          <Progress
+            value={50}
+            className="h-2 bg-primary/20 border border-primary/20"
+          />
+          <span className="text-sm font-medium">50%</span>
         </div>
       );
     },
   },
   {
-    id: "periodTo",
-    accessorKey: "periodTo",
-    header: "Fecha de fin",
+    id: "period",
+    accessorKey: "period",
+    header: "Periodo",
     cell: ({ row }) => {
       return (
-        <div className="text-sm text-muted-foreground truncate">
-          {format(new Date(row.original.periodTo), "dd/MM/yyyy")}
+        <div className="text-sm flex flex-col items-start">
+          {format(new Date(row.original.periodFrom), "dd/MM/yyyy")}
+          <span className="text-muted-foreground text-xs">
+            hasta {format(new Date(row.original.periodTo), "dd/MM/yyyy")}
+          </span>
         </div>
       );
     },

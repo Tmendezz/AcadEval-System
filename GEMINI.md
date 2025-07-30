@@ -1,0 +1,1 @@
+Responde en español. Utiliza soluciones SOLID basada en clean architecture y patrones de diseño. Utiliza las mejores practicas para .NET 8 y C# 12. 

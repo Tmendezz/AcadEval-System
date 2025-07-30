@@ -1,5 +1,7 @@
 import { CareerYear } from "./enums";
 
+export type EvaluationStatus = "Pending" | "Completed" | "Closed";
+
 export interface Evaluation {
   semester: Semester;
   id: string;
@@ -7,7 +9,9 @@ export interface Evaluation {
   description: string;
   periodFrom: string;
   periodTo: string;
+  status: EvaluationStatus;
   careerAssignments: EvaluationCareerAssignment[];
+  progress: number;
 }
 
 type Semester = "First" | "Second";
