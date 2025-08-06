@@ -9,7 +9,6 @@ namespace AcadEvalSys.Domain.Entities
         public bool IsRequired { get; set; }
         public int Order { get; set; }
 
-        public virtual Competency? Competency { get; set; }
         public virtual ICollection<QuestionResponse>? QuestionResponses { get; set; } = new List<QuestionResponse>();
     }
 }
