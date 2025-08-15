@@ -1,16 +1,15 @@
-﻿namespace AcadEvalSys.Domain.Entities
+﻿using AcadEvalSys.Domain.Enums;
+
+namespace AcadEvalSys.Domain.Entities
 {
     public class AcademicSurvey : BaseEntity
     {
         public string Title { get; set; } = string.Empty;
-        public DateTime CreatedAt { get; set;} = DateTime.UtcNow;
 
-        //FK a QuestionForm
-        public Guid FormId { get; set; }
-        //FK a Subject
-        public Guid SubjectId { get; set; }
-        //FK a Professor
-        public Guid ProfessorId { get; set; }
 
+        // Programación y estado
+        public DateTime? PublishAt { get; set; }
+        public DateTime? CloseAt { get; set; }
+        public SurveyStatus Status { get; set; } = SurveyStatus.Draft;
     }
 }

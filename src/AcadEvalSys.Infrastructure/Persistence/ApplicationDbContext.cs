@@ -17,11 +17,19 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<StudentEvaluationReport> StudentEvaluationReports { get; set; }
 
     public DbSet<CompetencyEvaluationInstance> CompetencyEvaluationInstances { get; set; }
-    public DbSet<FormQuestion> FormQuestions { get; set; }
-    public DbSet<QuestionResponse> QuestionResponses { get; set; }
     public DbSet<ProfessorCompetencyAssignment> ProfessorCompetencyAssignments { get; set; }
     public DbSet<StudentCompetencyAssessment> StudentCompetencyAssessments { get; set; }
 
+    public DbSet<AcademicSurvey> AcademicSurveys { get; set; }
+    public DbSet<SurveyTemplate> SurveyTemplates { get; set; }
+    public DbSet<SurveyTemplateQuestion> SurveyTemplateQuestions { get; set; }
+    public DbSet<SurveyTemplateQuestionOption> SurveyTemplateQuestionOptions { get; set; }
+
+    public DbSet<FormQuestion> FormQuestions { get; set; }
+    public DbSet<FormQuestionOptions> FormQuestionOptions { get; set; }
+    public DbSet<AcademicSurveySubject> AcademicSurveySubjects { get; set; }
+    public DbSet<AcademicSurveyResponse> AcademicSurveyResponses { get; set; }
+    public DbSet<SurveyQuestionResponse> SurveyQuestionResponses { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -113,5 +121,126 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .IsUnique();
         });
 
+        builder.Entity<AcademicSurvey>(entity =>
+        {
+            entity.Property(a => a.Title).IsRequired().HasMaxLength(200);
+            entity.Property(a => a.Status).HasConversion<int>();
+
+            entity.HasMany<AcademicSurveySubject>()
+                .WithOne(ass => ass.AcademicSurvey)
+                .HasForeignKey(ass => ass.AcademicSurveyId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<SurveyTemplate>(entity =>
+        {
+            entity.Property(st => st.Name).IsRequired().HasMaxLength(200);
+
+            entity.HasMany(st => st.Questions)
+                .WithOne()
+                .HasForeignKey(q => q.TemplateId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<SurveyTemplateQuestion>(entity =>
+        {
+            entity.Property(q => q.Text).IsRequired().HasMaxLength(1000);
+            entity.Property(q => q.Type).HasConversion<int>();
+
+            entity.HasMany(q => q.Options)
+                .WithOne()
+                .HasForeignKey(o => o.TemplateQuestionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(q => new { q.TemplateId, q.Order });
+        });
+
+        builder.Entity<SurveyTemplateQuestionOption>(entity =>
+        {
+            entity.Property(o => o.Text).IsRequired().HasMaxLength(300);
+            entity.HasIndex(o => new { o.TemplateQuestionId, o.Value }).IsUnique();
+        });
+
+        builder.Entity<FormQuestion>(entity =>
+        {
+            entity.Property(fq => fq.Text).HasMaxLength(1000);
+            entity.Property(fq => fq.QuestionType).HasConversion<int>();
+
+            entity.HasMany<SurveyQuestionResponse>()
+                .WithOne(sqr => sqr.FormQuestion)
+                .HasForeignKey(sqr => sqr.FormQuestionId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<FormQuestionOptions>(entity =>
+        {
+            entity.Property(fqo => fqo.FormQuestionId).IsRequired();
+            entity.Property(fqo => fqo.Value).IsRequired();
+        });
+
+        builder.Entity<AcademicSurveySubject>(entity =>
+        {
+            entity.Property(ass => ass.AcademicSurveyId).IsRequired();
+
+            // Enum nullable
+            entity.Property(ass => ass.Year).HasConversion<int?>();
+
+            // Relación opcional con TechnicalCareer
+            entity.HasOne<TechnicalCareer>()
+                .WithMany()
+                .HasForeignKey(ass => ass.TechnicalCareerId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Relación opcional con Subject
+            entity.HasOne(ass => ass.Subject)
+                .WithMany()
+                .HasForeignKey(ass => ass.SubjectId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Relación opcional con Professor (clave = UserId)
+            entity.HasOne<Professor>()
+                .WithMany()
+                .HasForeignKey(ass => ass.ProfessorUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasMany(ass => ass.Responses)
+                .WithOne()
+                .HasForeignKey(asr => asr.AcademicSurveySubjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<AcademicSurveyResponse>(entity =>
+        {
+            entity.Property(asr => asr.UserId).IsRequired();
+            entity.Property(asr => asr.SubmittedAt).IsRequired();
+
+            entity.HasOne(asr => asr.User)
+                .WithMany()
+                .HasForeignKey(asr => asr.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(asr => asr.QuestionResponses)
+                .WithOne()
+                .HasForeignKey(sqr => sqr.AcademicSurveyResponseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(asr => new { asr.UserId, asr.AcademicSurveySubjectId }).IsUnique();
+        });
+
+        builder.Entity<SurveyQuestionResponse>(entity =>
+        {
+            entity.Property(sqr => sqr.AcademicSurveyResponseId).IsRequired();
+            entity.Property(sqr => sqr.AcademicSurveySubjectId).IsRequired();
+            entity.Property(sqr => sqr.FormQuestionId).IsRequired();
+            entity.Property(sqr => sqr.Text).HasMaxLength(2000);
+
+            // FK referencial a AcademicSurveySubject (sin navegación)
+            entity.HasOne<AcademicSurveySubject>()
+                .WithMany()
+                .HasForeignKey(sqr => sqr.AcademicSurveySubjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(sqr => new { sqr.AcademicSurveyResponseId, sqr.AcademicSurveySubjectId });
+        });
     }
 }
