@@ -16,21 +16,35 @@ import { LoadingState } from "@/shared/components/ui/loading-state";
 import { DataSection } from "@/shared/components/ui/data-section";
 import { adminColumns, careerColumns } from "../columns";
 import { professorColumns } from "../columns/professor-columns";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/shared/components/ui/tabs";
 import {
   AdminFormDialog,
   AdminFormValues,
 } from "../components/admin-form-dialog";
 import { useState } from "react";
-import { Professor, UpdateProfessorRequest, CreateProfessorRequest } from "@/shared/types/professor";
-import { ProfessorFormDialog, ProfessorFormValues } from "../components/professor-form-dialog";
+import {
+  Professor,
+  UpdateProfessorRequest,
+  CreateProfessorRequest,
+} from "@/shared/types/professor";
+import {
+  ProfessorFormDialog,
+  ProfessorFormValues,
+} from "../components/professor-form-dialog";
 
 export default function PersonalPage() {
   const queryClient = useQueryClient();
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
   const [selectedAdmin, setSelectedAdmin] = useState<Professor | null>(null);
   const [isProfessorDialogOpen, setIsProfessorDialogOpen] = useState(false);
-  const [selectedProfessor, setSelectedProfessor] = useState<Professor | null>(null);
+  const [selectedProfessor, setSelectedProfessor] = useState<Professor | null>(
+    null
+  );
 
   // Queries
   const { data: professorsData, isLoading: isLoadingProfessors } = useQuery({
@@ -46,7 +60,7 @@ export default function PersonalPage() {
 
   const { data: professorList, isLoading: isLoadingProfessorList } = useQuery({
     queryKey: ["professors"],
-    queryFn: () => professorService.getAll().then(r => r.professors),
+    queryFn: () => professorService.getAll().then((r) => r.professors),
     staleTime: 10_000,
   });
 
@@ -124,7 +138,13 @@ export default function PersonalPage() {
   });
 
   const updateProfessor = useMutation({
-    mutationFn: async ({ id, values }: { id: string; values: ProfessorFormValues }) => {
+    mutationFn: async ({
+      id,
+      values,
+    }: {
+      id: string;
+      values: ProfessorFormValues;
+    }) => {
       const request: UpdateProfessorRequest = {
         name: values.name,
         email: values.email,
@@ -187,9 +207,15 @@ export default function PersonalPage() {
       <PageContent>
         <Tabs defaultValue="carreras" className="w-full">
           <TabsList className="grid w-full grid-cols-1 md:grid-cols-3">
-            <TabsTrigger className="cursor-pointer" value="carreras">Carreras</TabsTrigger>
-            <TabsTrigger className="cursor-pointer" value="profesores">Profesores</TabsTrigger>
-            <TabsTrigger className="cursor-pointer" value="administradores">Administradores</TabsTrigger>
+            <TabsTrigger className="cursor-pointer" value="carreras">
+              Carreras
+            </TabsTrigger>
+            <TabsTrigger className="cursor-pointer" value="profesores">
+              Profesores
+            </TabsTrigger>
+            <TabsTrigger className="cursor-pointer" value="administradores">
+              Administradores
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="carreras" className="mt-6">
@@ -232,7 +258,12 @@ export default function PersonalPage() {
               emptyIcon={<User className="w-8 h-8" />}
               className="mb-6"
               headerActions={
-                <Button onClick={() => { setSelectedProfessor(null); setIsProfessorDialogOpen(true); }}>
+                <Button
+                  onClick={() => {
+                    setSelectedProfessor(null);
+                    setIsProfessorDialogOpen(true);
+                  }}
+                >
                   <User className="w-4 h-4 mr-2" />
                   Nuevo Profesor
                 </Button>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "wouter";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/shared/components/ui/button";
@@ -8,39 +8,25 @@ import {
   PageContent,
 } from "@/shared/components/layout/page-layout";
 import { Input } from "@/shared/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
 import { Card } from "@/shared/components/ui/card";
 import {
   getTechnicalCareerById,
   updateTechnicalCareer,
-  assignCareerCoordinator,
 } from "@/shared/services/technical-career-service";
-import { createProfessor } from "@/shared/services/professor-service";
 import * as subjectService from "@/shared/services/subject-service";
 import { useProfessors } from "@/shared/hooks/use-professors";
 import type { Professor } from "@/shared/types/professor";
 import type { Subject } from "@/shared/types/subject";
 import { toast } from "sonner";
-import type { AxiosError } from "axios";
 import { ProfessorCombobox } from "@/shared/components/ui/professor-combobox";
 
-type SubjectRow = Subject & {
-  draftNewProfessor?: {
-    name: string;
-    email: string;
-    password: string;
-  };
-};
+// Local row model matches Subject
+type SubjectRow = Subject;
 
 export default function EditTechnicalCareerPage() {
   const { careerId } = useParams();
   const queryClient = useQueryClient();
+
   const { data: career } = useQuery({
     queryKey: ["technical-career", careerId],
     queryFn: () => getTechnicalCareerById(careerId || ""),
@@ -54,6 +40,7 @@ export default function EditTechnicalCareerPage() {
     enabled: !!careerId,
   });
 
+  // Professors: list ALL created (no career filter)
   const [search, setSearch] = useState("");
   const { data: professorsData, isFetching: isSearching } = useProfessors(
     1,
@@ -64,109 +51,75 @@ export default function EditTechnicalCareerPage() {
 
   const [name, setName] = useState("");
   const [rows, setRows] = useState<SubjectRow[]>([]);
-  const [coordinatorToken, setCoordinatorToken] = useState<string>("");
+  // Snapshot de asignaciones originales para evitar PUT redundantes
+  const [initialProfBySubject, setInitialProfBySubject] = useState<
+    Record<string, string | undefined>
+  >({});
 
   useEffect(() => {
     if (career?.name) setName(career.name);
-    if (subjects.length) setRows(subjects as SubjectRow[]);
+    if (subjects.length) {
+      setRows(
+        subjects.map((s) => ({
+          id: s.id,
+          name: s.name,
+          description: s.description,
+          year: s.year,
+          professorId: s.professorId,
+          professorName: s.professorName,
+        }))
+      );
+      // Construir snapshot original de profesor por materia
+      setInitialProfBySubject(
+        Object.fromEntries(subjects.map((s) => [s.id, s.professorId]))
+      );
+    }
   }, [career, subjects]);
-
-  const coordinatorCandidates = useMemo(() => {
-    const list: { value: string; label: string }[] = [];
-    const seen = new Set<string>();
-    const byId = new Map(existingProfessors.map((p) => [p.id, p] as const));
-
-    rows.forEach((r, idx) => {
-      if (r.professorId) {
-        const key = `id:${r.professorId}`;
-        if (!seen.has(key)) {
-          const prof = byId.get(r.professorId);
-          const label = r.professorName
-            ? r.professorName
-            : prof
-            ? `${prof.name} — ${prof.email}`
-            : "Profesor asignado";
-          list.push({ value: key, label });
-          seen.add(key);
-        }
-      }
-      if (r.draftNewProfessor?.email) {
-        const key = `new:${idx}`;
-        if (!seen.has(key)) {
-          list.push({
-            value: key,
-            label: `${r.draftNewProfessor.name} — ${r.draftNewProfessor.email}`,
-          });
-          seen.add(key);
-        }
-      }
-    });
-    return list;
-  }, [rows, existingProfessors]);
 
   const saveMutation = useMutation({
     mutationFn: async () => {
       if (!careerId) return;
-      await updateTechnicalCareer(careerId, { name });
 
-      const newProfessorIdByIndex = new Map<number, string>();
-
-      for (let i = 0; i < rows.length; i++) {
-        const r = rows[i];
-
-        // Crear profesor si corresponde
-        let professorId = r.professorId;
-        if (!professorId && r.draftNewProfessor) {
-          professorId = await createProfessor({
-            name: r.draftNewProfessor.name,
-            email: r.draftNewProfessor.email,
-            password: r.draftNewProfessor.password,
-          });
-          newProfessorIdByIndex.set(i, professorId);
-        }
-
-        // Actualizar asignatura
-        await subjectService.updateSubject(careerId, r.id, {
-          name: r.name,
-          description: r.description,
-          year: r.year,
-        });
-
-        // Asignar profesor
-        if (professorId) {
-          await subjectService.assignProfessor(careerId, r.id, professorId);
-        }
+      const currentName = career?.name ?? "";
+      const effectiveName = (name ?? "").trim() || currentName;
+      if (effectiveName && effectiveName !== currentName) {
+        await updateTechnicalCareer(careerId, { name: effectiveName });
       }
 
-      // Resolver coordinador
-      if (coordinatorToken) {
-        let coordinatorUserId = "";
-        if (coordinatorToken.startsWith("id:")) {
-          coordinatorUserId = coordinatorToken.slice(3);
-        } else if (coordinatorToken.startsWith("new:")) {
-          const idxStr = coordinatorToken.slice(4);
-          const idx = Number(idxStr);
-          const createdId = newProfessorIdByIndex.get(idx);
-          if (createdId) coordinatorUserId = createdId;
-        }
-        if (coordinatorUserId) {
-          await assignCareerCoordinator(careerId, coordinatorUserId);
+      // Assign selected professors for each subject row
+      for (let i = 0; i < rows.length; i++) {
+        const r = rows[i];
+        const original = initialProfBySubject[r.id];
+        const currentProfessorId = r.professorId;
+        const originalProfessorId = original;
+
+        // Comparar IDs de profesor, manejando undefined/null
+        const changed = currentProfessorId !== originalProfessorId;
+
+        if (changed && currentProfessorId) {
+          // Solo asignar si hay un profesor seleccionado
+          await subjectService.assignProfessor(
+            careerId,
+            r.id,
+            currentProfessorId
+          );
         }
       }
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["technical-careers"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["technical-career", careerId],
+      });
       await queryClient.invalidateQueries({ queryKey: ["subjects", careerId] });
       toast.success("Tecnicatura actualizada correctamente.");
+      // Refrescar snapshot local tras guardar
+      setInitialProfBySubject(
+        Object.fromEntries(rows.map((r) => [r.id, r.professorId]))
+      );
     },
-    onError: (err: unknown) => {
-      const axiosErr = err as AxiosError<any>;
-      const serverMsg =
-        (axiosErr.response?.data as any)?.Message ||
-        (axiosErr.response?.data as any)?.message ||
-        axiosErr.message ||
-        "No se pudo guardar los cambios";
-      toast.error(serverMsg);
+    onError: () => {
+      toast.error("No se pudo guardar los cambios");
     },
   });
 
@@ -174,7 +127,7 @@ export default function EditTechnicalCareerPage() {
     <PageLayout>
       <PageHeader
         title="Editar Tecnicatura"
-        description="Actualiza datos, profesores y coordinador"
+        description="Actualiza datos y profesores"
       />
       <PageContent className="space-y-6">
         <Card className="p-4 space-y-3">
@@ -201,68 +154,87 @@ export default function EditTechnicalCareerPage() {
                 .map((r) => (
                   <div
                     key={r.id}
-                    className="grid grid-cols-1 md:grid-cols-6 gap-3"
+                    className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center"
                   >
-                    <Input
-                      value={r.name}
-                      onChange={(e) => (
-                        (r.name = e.target.value), setRows([...rows])
-                      )}
-                    />
-                    <ProfessorCombobox
-                      value={r.professorId || ""}
-                      onChange={(v) => {
-                        if (!v) return;
-                        r.professorId = v;
-                        setRows([...rows]);
-                      }}
-                      options={(() => {
-                        const options = existingProfessors.map((p) => ({
-                          value: p.id,
-                          label: p.name,
-                        }));
-                        if (
-                          r.professorId &&
-                          !options.some((o) => o.value === r.professorId)
-                        ) {
-                          options.unshift({
-                            value: r.professorId,
-                            label: r.professorName ?? "Profesor asignado",
-                          });
+                    <div className="md:col-span-4">
+                      <label className="block text-sm font-medium text-muted-foreground mb-2">
+                        Asignatura:
+                      </label>
+                      <Input
+                        value={r.name}
+                        onChange={(e) =>
+                          setRows((prev) =>
+                            prev.map((row) =>
+                              row.id === r.id
+                                ? ({
+                                    ...row,
+                                    name: e.target.value,
+                                  } as SubjectRow)
+                                : row
+                            )
+                          )
                         }
-                        return options;
-                      })()}
-                      onSearch={setSearch}
-                      isLoading={isSearching}
-                      searchTerm={search}
-                      placeholder="Profesor"
-                    />
+                        placeholder="Nombre de la asignatura"
+                      />
+                    </div>
+
+                    <div className="md:col-span-7">
+                      <label className="block text-sm font-medium text-muted-foreground mb-2">
+                        Profesor:
+                      </label>
+                      <ProfessorCombobox
+                        value={r.professorId}
+                        onChange={(v) => {
+                          if (!v) return;
+
+                          setRows((prev) =>
+                            prev.map((row) => {
+                              if (row.id !== r.id) return row;
+                              const prof = existingProfessors.find(
+                                (p) => p.id === v
+                              );
+                              return {
+                                ...row,
+                                professorId: v,
+                                professorName:
+                                  prof?.name || "Profesor asignado",
+                              } as SubjectRow;
+                            })
+                          );
+                        }}
+                        options={(() => {
+                          const opts = existingProfessors.map((p) => ({
+                            value: p.id,
+                            label: `${p.name}`,
+                          }));
+                          if (
+                            r.professorId &&
+                            !opts.some((o) => o.value === r.professorId)
+                          ) {
+                            opts.unshift({
+                              value: r.professorId,
+                              label: r.professorName || "Profesor asignado",
+                            });
+                          }
+                          return opts;
+                        })()}
+                        onSearch={setSearch}
+                        isLoading={isSearching}
+                        searchTerm={search}
+                        placeholder="Seleccionar profesor"
+                        className="w-full"
+                      />
+                    </div>
                   </div>
                 ))}
             </div>
           </Card>
         ))}
 
-        <Card className="p-4 space-y-3">
-          <label className="text-sm font-medium">Coordinador</label>
-          <Select value={coordinatorToken} onValueChange={setCoordinatorToken}>
-            <SelectTrigger>
-              <SelectValue placeholder="Seleccione coordinador entre profesores de las materias" />
-            </SelectTrigger>
-            <SelectContent>
-              {coordinatorCandidates.map((c) => (
-                <SelectItem key={c.value} value={c.value}>
-                  {c.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Card>
-
         <div className="flex justify-end">
           <Button
             onClick={() => saveMutation.mutate()}
-            disabled={!name || saveMutation.isPending}
+            disabled={saveMutation.isPending}
           >
             Guardar cambios
           </Button>

@@ -24,9 +24,10 @@ export interface ProfessorOption {
 
 interface ProfessorComboboxProps {
   value?: string;
-  onChange: (value?: string, idx?: number) => void;
+  onChange: (value?: string, label?: string) => void;
   options: ProfessorOption[];
   placeholder?: string;
+  fallbackLabel?: string;
   onRequestCreate?: () => void;
   disabled?: boolean;
   className?: string;
@@ -40,6 +41,7 @@ export function ProfessorCombobox({
   onChange,
   options,
   placeholder = "Profesor",
+  fallbackLabel,
   onRequestCreate,
   disabled,
   className,
@@ -48,14 +50,27 @@ export function ProfessorCombobox({
   searchTerm,
 }: ProfessorComboboxProps) {
   const [open, setOpen] = useState(false);
+  const [localSelectedLabel, setLocalSelectedLabel] = useState<
+    string | undefined
+  >(undefined);
 
   const label = useMemo(
-    () => options.find((o) => o.value === value)?.label,
-    [options, value]
+    () =>
+      options.find((o) => o.value === (value ?? "").trim())?.label ||
+      (value ? fallbackLabel : undefined),
+    [options, value, fallbackLabel]
   );
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v);
+        if (v) {
+          onSearch?.("");
+        }
+      }}
+    >
       <PopoverTrigger asChild>
         <Button
           type="button"
@@ -66,7 +81,7 @@ export function ProfessorCombobox({
           aria-expanded={open}
         >
           <span className="truncate text-left min-w-0">
-            {label || placeholder}
+            {label || localSelectedLabel || fallbackLabel || placeholder}
           </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -88,14 +103,27 @@ export function ProfessorCombobox({
                   key={opt.value}
                   value={opt.label}
                   onSelect={() => {
-                    onChange(opt.value);
+                    console.log("🎯 CommandItem onSelect llamado:", {
+                      optValue: opt.value,
+                      optLabel: opt.label,
+                      currentValue: value,
+                    });
+                    setLocalSelectedLabel(opt.label);
+                    console.log(
+                      "📞 Llamando onChange con:",
+                      opt.value,
+                      opt.label
+                    );
+                    onChange(opt.value, opt.label);
                     setOpen(false);
                   }}
                 >
                   <CircleUser
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === opt.value ? "opacity-100" : "opacity-0"
+                      (value ?? "").trim() === opt.value
+                        ? "opacity-100"
+                        : "opacity-0"
                     )}
                   />
                   <span className="truncate">{opt.label}</span>

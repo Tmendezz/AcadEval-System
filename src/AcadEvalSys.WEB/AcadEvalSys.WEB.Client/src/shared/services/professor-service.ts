@@ -25,15 +25,28 @@ export const professorService = {
       params.append("technicalCareerId", technicalCareerId);
 
     const { data } = await api.get<{
-      items: Professor[];
+      items: Array<{
+        userId: string;
+        name: string;
+        email: string;
+        phone?: string;
+        subjects?: any[];
+      }>;
       totalItemsCount: number;
       totalPages: number;
       itemsFrom: number;
       itemsTo: number;
     }>(`${PROFESSORS_API_URL}?${params}`);
 
+    // Mapear la respuesta de la API al tipo Professor esperado
+    const professors: Professor[] = (data.items ?? []).map((item) => ({
+      id: item.userId, // Mapear userId a id
+      name: item.name,
+      email: item.email,
+    }));
+
     return {
-      professors: data.items ?? [],
+      professors,
       totalCount: data.totalItemsCount ?? 0,
     };
   },
@@ -56,7 +69,7 @@ export const professorService = {
       totalItemsCount: number;
     }>(`/identity/admins?${params}`);
 
-  const admins: Professor[] = data.items.map((u) => ({
+    const admins: Professor[] = data.items.map((u) => ({
       id: u.id,
       name: u.name,
       email: u.email,

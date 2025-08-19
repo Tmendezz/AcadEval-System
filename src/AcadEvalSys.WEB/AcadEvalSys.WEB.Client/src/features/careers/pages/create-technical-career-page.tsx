@@ -81,7 +81,7 @@ export default function CreateTechnicalCareerPage() {
           const prof = existingProfessors.find((p) => p.id === s.professorId);
           list.push({
             value: key,
-            label: prof ? `${prof.name} — ${prof.email}` : s.professorId,
+            label: prof ? `${prof.name}` : s.professorId,
           });
           seen.add(key);
         }
@@ -91,7 +91,7 @@ export default function CreateTechnicalCareerPage() {
         if (!seen.has(key)) {
           list.push({
             value: key,
-            label: `${s.newProfessor.name} — ${s.newProfessor.email}`,
+            label: `${s.newProfessor.name}`,
           });
           seen.add(key);
         }
@@ -114,7 +114,6 @@ export default function CreateTechnicalCareerPage() {
             name: s.newProfessor.name,
             email: s.newProfessor.email,
             password: s.newProfessor.password,
-            phone: s.newProfessor.phone,
           });
           newProfessorIdByIndex.set(i, professorId);
         }
@@ -204,7 +203,7 @@ export default function CreateTechnicalCareerPage() {
                 options={(() => {
                   const opts = existingProfessors.map((p) => ({
                     value: p.id,
-                    label: p.name,
+                    label: `${p.name}`,
                   }));
                   if (s.newProfessor) {
                     opts.unshift({
