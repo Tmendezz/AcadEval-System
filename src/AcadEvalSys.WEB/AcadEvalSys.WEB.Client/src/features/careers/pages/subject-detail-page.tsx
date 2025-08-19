@@ -14,22 +14,39 @@ import {
   PageSection,
 } from "@/shared/components/layout/page-layout";
 import { LoadingState } from "@/shared/components/ui/loading-state";
-import {
-  ArrowLeft,
-  GraduationCap,
-  Pencil,
-  Plus,
-  UserPlus,
-  Users,
-} from "lucide-react";
+import { ArrowLeft, GraduationCap, Pencil, Plus } from "lucide-react";
 import { useSubject } from "../hooks";
-import { studentColumns } from "../columns";
-import { DataSection } from "@/shared/components/ui/data-section";
+import {
+  ImportStudentsButton,
+  EnrolledStudentsManagement,
+} from "../components";
+import { EnrolledStudent } from "@/shared/types/subject";
+import { Student } from "@/shared/types/student";
+import { CareerYear } from "@/shared/types/enums";
 
 export default function SubjectDetailPage() {
   const { careerId, subjectId } = useParams();
 
   const { subject, isLoadingSubject } = useSubject(subjectId!, careerId!);
+
+  // Función para convertir EnrolledStudent[] a Student[]
+  // ✅ Backend actualizado: ahora incluye currentYear y technicalCareerName
+  const convertEnrolledStudentsToStudents = (
+    enrolledStudents: EnrolledStudent[]
+  ): Student[] => {
+    return enrolledStudents.map((enrolled) => ({
+      id: enrolled.studentId,
+      name: enrolled.studentName,
+      email: enrolled.studentEmail,
+      currentYear:
+        enrolled.currentYear === "First"
+          ? CareerYear.First
+          : enrolled.currentYear === "Second"
+          ? CareerYear.Second
+          : CareerYear.Third,
+      technicalCareerName: enrolled.technicalCareerName,
+    }));
+  };
 
   if (isLoadingSubject) {
     return (
@@ -75,10 +92,11 @@ export default function SubjectDetailPage() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Volver
           </Button>
-          <Button>
-            <UserPlus className="w-4 h-4 mr-2" />
-            Inscribir Estudiante
-          </Button>
+          <ImportStudentsButton
+            careerId={careerId!}
+            subjectId={subjectId!}
+            subjectName={subject.name}
+          />
         </div>
       </PageHeader>
 
@@ -120,16 +138,15 @@ export default function SubjectDetailPage() {
           </Card>
         </PageSection>
 
-        {/* Lista de Estudiantes */}
-        <DataSection
-          title="Estudiantes Inscritos"
-          description={`Estudiantes inscritos en ${subject.name}`}
-          data={subject.enrolledStudents || []}
-          columns={studentColumns}
-          isLoading={false}
-          emptyMessage="No hay estudiantes inscritos"
-          emptyIcon={<Users className="w-8 h-8" />}
-          className="mb-6"
+        {/* Gestión de Estudiantes */}
+        <EnrolledStudentsManagement
+          enrolledStudents={convertEnrolledStudentsToStudents(
+            subject.enrolledStudents || []
+          )}
+          subjectId={subjectId!}
+          subjectName={subject.name}
+          careerId={careerId!}
+          isLoading={isLoadingSubject}
         />
       </PageContent>
     </PageLayout>

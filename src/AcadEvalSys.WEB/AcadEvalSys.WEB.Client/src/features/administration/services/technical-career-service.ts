@@ -1,9 +1,9 @@
 import { api } from "@/shared/config/axios";
-import {
+import type {
   TechnicalCareer,
   CreateTechnicalCareerRequest,
   UpdateTechnicalCareerRequest,
-} from "../types/technical-career";
+} from "@/shared/types/technical-career";
 
 const TECHNICAL_CAREERS_API_URL = "/technical-careers";
 

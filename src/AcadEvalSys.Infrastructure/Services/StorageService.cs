@@ -40,6 +40,7 @@ public class StorageService : IStorageService
 
             // Generar nombre único para evitar conflictos
             var uniqueFileName = $"{Guid.NewGuid()}_{fileName}";
+            var contentType = GetContentType(fileExtension);
             
             // Obtener el contenedor - AHORA PRIVADO
             var containerClient = _blobServiceClient.GetBlobContainerClient(_storageConfiguration.ReportsContainerName);
@@ -50,10 +51,11 @@ public class StorageService : IStorageService
             // Obtener el blob client
             var blobClient = containerClient.GetBlobClient(uniqueFileName);
             
+       
             // Configurar headers para el tipo de contenido
             var blobHttpHeaders = new BlobHttpHeaders
             {
-                ContentType = GetContentType(fileExtension)
+                ContentType = contentType
             };
             
             // Subir el archivo
@@ -64,7 +66,10 @@ public class StorageService : IStorageService
                     HttpHeaders = blobHttpHeaders,
                 });
 
-            _logger.LogInformation("File uploaded successfully: {FileName} -> {BlobName}", fileName, uniqueFileName);
+            _logger.LogInformation(
+                "File uploaded to Azure Blob Storage. Container: {Container}, BlobPath: {BlobPath}",
+                _storageConfiguration.ReportsContainerName,
+                uniqueFileName);
             
             // RETORNAR SOLO EL NOMBRE DEL BLOB, NO LA URL
             return uniqueFileName; // ← CAMBIO CLAVE
@@ -109,8 +114,7 @@ public class StorageService : IStorageService
 
             var sasUri = blobClient.GenerateSasUri(sasBuilder);
             
-            _logger.LogDebug("Generated presigned URL for blob {BlobName}, expires at {ExpiresOn}", 
-                blobName, sasBuilder.ExpiresOn);
+            // URL generada (omitimos log detallado en producción)
 
             return sasUri.ToString();
         }

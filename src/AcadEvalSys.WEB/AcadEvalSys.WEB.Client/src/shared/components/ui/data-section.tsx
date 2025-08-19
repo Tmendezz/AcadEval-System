@@ -11,7 +11,7 @@ import { LoadingState, EmptyState } from "./loading-state";
 import { cn } from "@/shared/lib/cn";
 
 interface DataSectionProps<TData> {
-  title: string;
+  title: ReactNode;
   description?: string;
   data: TData[];
   columns: ColumnDef<TData>[];
@@ -21,6 +21,7 @@ interface DataSectionProps<TData> {
   onRowClick?: (id: string) => void;
   className?: string;
   children?: ReactNode;
+  headerActions?: ReactNode;
 }
 
 export function DataSection<TData>({
@@ -34,11 +35,15 @@ export function DataSection<TData>({
   onRowClick,
   className,
   children,
+  headerActions,
 }: DataSectionProps<TData>) {
   return (
     <Card className={cn("", className)}>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <div className="flex items-center justify-between gap-4">
+          <CardTitle>{title}</CardTitle>
+          {headerActions}
+        </div>
         {description && (
           <p className="text-sm text-muted-foreground">{description}</p>
         )}
@@ -52,7 +57,14 @@ export function DataSection<TData>({
             {children}
           </>
         ) : (
-          <EmptyState title={emptyMessage} icon={emptyIcon} />
+          <EmptyState
+            title={emptyMessage}
+            icon={
+              <div className="flex items-center justify-center w-10 h-10 mx-auto">
+                {emptyIcon}
+              </div>
+            }
+          />
         )}
       </CardContent>
     </Card>

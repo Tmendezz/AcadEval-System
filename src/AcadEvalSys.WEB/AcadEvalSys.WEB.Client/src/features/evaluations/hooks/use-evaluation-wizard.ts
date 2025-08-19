@@ -51,6 +51,7 @@ export function useEvaluationWizard() {
   };
 
   const updateAssignments = (newAssignments: Assignment[]) => {
+    console.log("Assignments actualizados:", newAssignments);
     setAssignments(newAssignments);
     // Convertir las asignaciones al formato esperado por el backend
     const backendAssignments = newAssignments.map(
@@ -59,6 +60,7 @@ export function useEvaluationWizard() {
         subjectId,
       })
     );
+    console.log("Formato backend:", backendAssignments);
     setValue("competencyAssignments", backendAssignments);
   };
 

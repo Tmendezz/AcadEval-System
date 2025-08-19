@@ -7,6 +7,8 @@ import {
   CompetencyDetailPage,
   CreateEvaluationPage,
 } from "../features/evaluations";
+import EvaluationDetailPage from "../features/evaluations/pages/evaluation-detail-page";
+import CareerYearDetailPage from "../features/evaluations/pages/career-year-detail-page";
 import {
   CreateSurveyPage,
   SurveysPage,
@@ -14,6 +16,9 @@ import {
 } from "../features/surveys";
 import { PersonalPage } from "../features/administration";
 import { SubjectDetailPage, SubjectsPage } from "../features/careers";
+import CreateTechnicalCareerPage from "@/features/careers/pages/create-technical-career-page";
+import EditTechnicalCareerPage from "@/features/careers/pages/edit-technical-career-page";
+import { AdminRoute } from "../features/auth/components";
 
 export function AppRoutes() {
   return (
@@ -33,11 +38,24 @@ export function AppRoutes() {
           path="/evaluaciones/competencias/:id"
           component={CompetencyDetailPage}
         />
+        <Route path="/evaluaciones/:id" component={EvaluationDetailPage} />
+        <Route
+          path="/evaluaciones/:evaluationId/carrera/:careerSlug/año/:yearSlug"
+          component={CareerYearDetailPage}
+        />
 
         {/* Carreras */}
         <Route
           path="/tecnicaturas/:careerId/asignaturas"
           component={SubjectsPage}
+        />
+        <Route
+          path="/tecnicaturas/nueva"
+          component={CreateTechnicalCareerPage}
+        />
+        <Route
+          path="/tecnicaturas/:careerId/editar"
+          component={EditTechnicalCareerPage}
         />
         <Route path="/tecnicaturas/:careerId" component={SubjectsPage} />
         <Route
@@ -45,8 +63,13 @@ export function AppRoutes() {
           component={SubjectDetailPage}
         />
 
-        {/* Administración */}
-        <Route path="/administradores" component={PersonalPage} />
+        {/* Administración - SOLO PARA ADMIN */}
+        <Route path="/administradores">
+          <AdminRoute>
+            <PersonalPage />
+          </AdminRoute>
+        </Route>
+
         <Route path="/:rest*">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">

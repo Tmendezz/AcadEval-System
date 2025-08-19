@@ -88,4 +88,39 @@ public class ProfessorCompetencyAssignmentRepository : IProfessorCompetencyAssig
         _context.ProfessorCompetencyAssignments.Update(assignment);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<IEnumerable<ProfessorCompetencyAssignment>> GetCareerYearAssignmentDetailsAsync(
+        Guid evaluationId, 
+        Guid careerId, 
+        CareerYear year, 
+        CancellationToken cancellationToken = default)
+    {
+        // Query simple que retorna las entidades del dominio con includes
+        return await _context.ProfessorCompetencyAssignments
+            .Include(pca => pca.Competency)
+            .Include(pca => pca.Subject)
+                .ThenInclude(s => s.Professor)
+                .ThenInclude(p => p.User)
+            .Include(pca => pca.StudentCompetencyAssessments)
+                .ThenInclude(sca => sca.Student)
+                .ThenInclude(s => s.User)
+            .Where(pca => pca.CompetencyEvaluationInstanceId == evaluationId
+                         && pca.Subject.TechnicalCareerId == careerId
+                         && pca.Subject.Year == year)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<StudentCompetencyAssessment>> GetAssignmentStudentsAsync(
+        Guid assignmentId, 
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.StudentCompetencyAssessments
+            .Include(sca => sca.Student)
+                .ThenInclude(s => s.User)
+            .Where(sca => sca.ProfessorCompetencyAssignmentId == assignmentId)
+            .OrderBy(sca => sca.Student.User.Name)
+            .ToListAsync(cancellationToken);
+    }
+
+
 }

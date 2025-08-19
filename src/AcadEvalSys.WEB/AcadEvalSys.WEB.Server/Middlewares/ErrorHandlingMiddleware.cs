@@ -34,6 +34,13 @@ public class ErrorHandlingMiddleware(
             logger.LogWarning(forbid.Message);
         }
         
+        catch (BadRequestException badRequest)
+        {
+            context.Response.StatusCode = 400;
+            await context.Response.WriteAsJsonAsync(new { Message = badRequest.Message });
+            logger.LogWarning(badRequest.Message);
+        }
+
         catch (DuplicateResourceException duplicate)
         {
             context.Response.StatusCode = 409;

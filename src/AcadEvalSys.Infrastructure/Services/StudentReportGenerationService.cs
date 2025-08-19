@@ -65,7 +65,10 @@ public class StudentReportGenerationService(
             using var pdfStream = await reportService.GenerateStudentEvaluationSummaryReportAsync(reportData);
 
             // 5. Subir el reporte al storage
-            var fileName = $"student-summary_{studentId}_{evaluationInstanceId}_{DateTime.UtcNow:yyyyMMdd}.pdf";
+            // Si se usa Google DriveStorageService soportamos paths para crear carpetas:
+            // EvaluacionesPorCompetencias/Evaluacion_{fecha}/alumno-{id}-reporte.pdf
+            var reportFolder = $"EvaluacionesPorCompetencias/Evaluacion_{DateTime.UtcNow:dd-MM-yyyy}";
+            var fileName = $"{reportFolder}/alumno-{studentId}-reporte.pdf";
             var blobName = await storageService.UploadFileAsync(fileName, pdfStream);
 
             // 6. Guardar metadatos del reporte en la base de datos

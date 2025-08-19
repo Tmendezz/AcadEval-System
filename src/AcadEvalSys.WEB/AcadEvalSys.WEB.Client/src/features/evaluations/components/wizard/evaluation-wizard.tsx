@@ -29,7 +29,8 @@ export function EvaluationWizard({
     updateAssignments,
   } = useEvaluationWizard();
 
-  const handleFormSubmit = (data: any) => {
+  const handleFormSubmit = (data: EvaluationFormData) => {
+    console.log("Datos del formulario:", data);
     onSubmit(data);
   };
 

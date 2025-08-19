@@ -13,10 +13,7 @@ public class EvaluationInstanceDto
     public int TotalProfessorAssignmentsCount { get; set; }
     public int CompletedProfessorAssignmentsCount { get; set; }
     public decimal OverallProgressPercentage { get; set; }
-    public EvaluationStatus Status =>
-        CompletedProfessorAssignmentsCount == 0 ? EvaluationStatus.Pending :
-        CompletedProfessorAssignmentsCount == TotalProfessorAssignmentsCount ? EvaluationStatus.Completed :
-        EvaluationStatus.Pending;
+    public EvaluationStatus Status { get; set; } = EvaluationStatus.Pending;
     public DateTime CreatedAt { get; set; }
     public string? CreatedByUserId { get; set; }
     public Semester Semester { get; set; }

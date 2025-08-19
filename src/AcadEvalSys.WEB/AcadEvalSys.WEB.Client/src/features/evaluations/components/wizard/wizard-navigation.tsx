@@ -49,7 +49,6 @@ export function WizardNavigation({
             <Button
               type="submit"
               disabled={!canProceed || isSubmitting}
-              onClick={onSubmit}
             >
               {isSubmitting ? "Creando..." : "Crear Evaluación"}
             </Button>

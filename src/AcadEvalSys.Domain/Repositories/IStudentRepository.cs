@@ -13,6 +13,8 @@ public interface IStudentRepository
     
     // Métodos para enrollment en materias
     Task<bool> IsEnrolledInSubjectAsync(string studentId, Guid subjectId);
-    Task EnrollInSubjectAsync(string studentId, Guid subjectId);
+    Task EnrollInSubjectAsync(string studentId, Guid subjectId, string createdByUserId);
+    Task UpdateStudentYearIfNeededAsync(string studentId, AcadEvalSys.Domain.Enums.CareerYear subjectYear);
     Task UnenrollFromSubjectAsync(string studentId, Guid subjectId);
+    Task<IEnumerable<Student>> GetAvailableStudentsForSubjectAsync(Guid technicalCareerId, Guid subjectId, AcadEvalSys.Domain.Enums.CareerYear? year = null);
 }

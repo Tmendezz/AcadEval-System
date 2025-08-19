@@ -2,10 +2,11 @@ using AcadEvalSys.Domain.Entities;
 using AcadEvalSys.Domain.Repositories;
 using AcadEvalSys.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace AcadEvalSys.Infrastructure.Repositories;
 
-public class StudentRepository(ApplicationDbContext dbContext) : IStudentRepository
+public class StudentRepository(ApplicationDbContext dbContext, ILogger<StudentRepository> logger) : IStudentRepository
 {
     public async Task<(IEnumerable<Student> Students, int TotalCount)> GetAllAsync(int pageNumber, int pageSize, string? searchTerm = null, Guid? technicalCareerId = null, AcadEvalSys.Domain.Enums.CareerYear? currentYear = null)
     {
@@ -88,7 +89,7 @@ public class StudentRepository(ApplicationDbContext dbContext) : IStudentReposit
             .AnyAsync(ss => ss.StudentId == studentId && ss.SubjectId == subjectId && ss.IsActive);
     }
 
-    public async Task EnrollInSubjectAsync(string studentId, Guid subjectId)
+    public async Task EnrollInSubjectAsync(string studentId, Guid subjectId, string createdByUserId)
     {
         var existingEnrollment = await dbContext.StudentSubjects
             .FirstOrDefaultAsync(ss => ss.StudentId == studentId && ss.SubjectId == subjectId);
@@ -97,6 +98,7 @@ public class StudentRepository(ApplicationDbContext dbContext) : IStudentReposit
         {
             existingEnrollment.IsActive = true;
             existingEnrollment.UpdatedAt = DateTime.UtcNow;
+            existingEnrollment.UpdatedByUserId = createdByUserId;
         }
         else
         {
@@ -105,6 +107,7 @@ public class StudentRepository(ApplicationDbContext dbContext) : IStudentReposit
                 StudentId = studentId,
                 SubjectId = subjectId,
                 CreatedAt = DateTime.UtcNow,
+                CreatedByUserId = createdByUserId,
                 IsActive = true
             };
             dbContext.StudentSubjects.Add(studentSubject);
@@ -122,6 +125,51 @@ public class StudentRepository(ApplicationDbContext dbContext) : IStudentReposit
         {
             studentSubject.IsActive = false;
             await dbContext.SaveChangesAsync();
+        }
+    }
+
+    public async Task<IEnumerable<Student>> GetAvailableStudentsForSubjectAsync(Guid technicalCareerId, Guid subjectId, Domain.Enums.CareerYear? year = null)
+    {
+        var query = dbContext.Students.AsQueryable()
+            .Include(s => s.User)
+            .Include(s => s.TechnicalCareer)
+            .Where(s => s.TechnicalCareerId == technicalCareerId)
+            .Where(s => !dbContext.StudentSubjects.Any(ss => 
+                ss.StudentId == s.UserId && 
+                ss.SubjectId == subjectId && 
+                ss.IsActive));
+
+        if (year.HasValue)
+        {
+            query = query.Where(s => s.CurrentYear == year.Value);
+        }
+
+        return await query
+            .OrderBy(s => s.CurrentYear) // Ordenar por año primero
+            .ThenBy(s => s.User.Name)     // Luego por nombre
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// Actualiza el año académico del estudiante si el año de la asignatura es superior al año actual del estudiante.
+    /// Esto permite el avance automático de año cuando los estudiantes se inscriben en materias de años superiores.
+    /// </summary>
+    /// <param name="studentId">ID del estudiante</param>
+    /// <param name="subjectYear">Año de la asignatura en la que se está inscribiendo</param>
+    public async Task UpdateStudentYearIfNeededAsync(string studentId, Domain.Enums.CareerYear subjectYear)
+    {
+        var student = await dbContext.Students
+            .Include(s => s.User)
+            .FirstOrDefaultAsync(s => s.UserId == studentId);
+
+        if (student != null && (int)subjectYear > (int)student.CurrentYear)
+        {
+            var previousYear = student.CurrentYear;
+            student.CurrentYear = subjectYear;
+            await dbContext.SaveChangesAsync();
+            
+            logger.LogInformation("Student {StudentName} ({StudentId}) year updated from {PreviousYear} to {NewYear} due to enrollment in higher year subject", 
+                student.User?.Name, student.UserId, previousYear, subjectYear);
         }
     }
 }

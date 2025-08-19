@@ -2,12 +2,12 @@ import { Redirect, Route, Switch } from "wouter";
 import { AuthLayout } from "../features/auth/components/auth-layout";
 import { LoginPage } from "../features/auth/pages/login-page";
 import { ForgotPasswordPage } from "@/features/auth/pages/forgot-password-page";
-import { useIsAuthenticated } from "@/shared/auth/stores/auth-store";
+import { useAuthStore } from "@/features/auth/store";
 
 // Componente para página de recuperación de contraseña
 
 export function AuthRoutes() {
-  const isAuthenticated = useIsAuthenticated();
+  const { isAuthenticated } = useAuthStore();
 
   if (isAuthenticated) {
     return <Redirect to="/" />;

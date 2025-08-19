@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { cn } from "@/shared/lib/cn";
+import { filterOptionsById } from "@/shared/lib/unique-options";
 
 interface AssignmentOption {
   id: string;
@@ -41,6 +42,8 @@ interface AssignmentPanelProps {
   isLoading?: boolean;
   emptyMessage?: string;
   className?: string;
+  /** Opcional: IDs que deben ocultarse del selector por estar ocupados */
+  excludedIds?: Set<string>;
 }
 
 export function AssignmentPanel({
@@ -55,6 +58,7 @@ export function AssignmentPanel({
   isLoading = false,
   emptyMessage = "No hay opciones disponibles",
   className,
+  excludedIds,
 }: AssignmentPanelProps) {
   return (
     <Card className={cn("", className)}>
@@ -101,7 +105,11 @@ export function AssignmentPanel({
                 <SelectValue placeholder="Seleccionar..." />
               </SelectTrigger>
               <SelectContent>
-                {availableOptions.map((option) => (
+                {filterOptionsById(
+                  availableOptions,
+                  excludedIds ?? new Set(),
+                  selectedId
+                ).map((option) => (
                   <SelectItem key={option.id} value={option.id}>
                     {option.name} {option.email && `(${option.email})`}
                   </SelectItem>

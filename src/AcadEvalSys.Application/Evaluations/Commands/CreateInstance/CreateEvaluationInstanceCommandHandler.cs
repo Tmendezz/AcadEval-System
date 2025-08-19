@@ -45,9 +45,16 @@ public class CreateEvaluationInstanceCommandHandler(
 
         foreach (var assignment in request.CompetencyAssignments)
         {
+            // Obtener la información del Subject para establecer los campos faltantes
+            var subject = await subjectRepository.GetSubjectByIdAsync(assignment.SubjectId);
+            if (subject == null)
+            {
+                throw new NotFoundException(nameof(Subject), assignment.SubjectId.ToString());
+            }
+
             var professorAssignment = mapper.Map<ProfessorCompetencyAssignment>(assignment);
             professorAssignment.CompetencyEvaluationInstanceId = competencyEvaluationInstanceId;
-
+            
             professorAssignments.Add(professorAssignment);
         }
 

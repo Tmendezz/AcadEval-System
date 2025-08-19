@@ -18,6 +18,7 @@ import {
 import { Badge } from "@/shared/components/ui/badge";
 import { Label } from "@/shared/components/ui/label";
 import { UserCheck, UserPlus, Users, GraduationCap } from "lucide-react";
+import { filterOptionsById } from "@/shared/lib/unique-options";
 
 interface Coordinator {
   id: string;
@@ -36,6 +37,7 @@ interface CareerCoordinatorCardProps {
   coordinator?: Coordinator;
   professors: Professor[];
   onAssignCoordinator: (professorId: string) => Promise<void>;
+  excludedProfessorIds?: Set<string>;
 }
 
 export function CareerCoordinatorCard({
@@ -43,6 +45,7 @@ export function CareerCoordinatorCard({
   coordinator,
   professors,
   onAssignCoordinator,
+  excludedProfessorIds,
 }: CareerCoordinatorCardProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedProfessor, setSelectedProfessor] = useState<string>("");
@@ -114,7 +117,11 @@ export function CareerCoordinatorCard({
                   <SelectValue placeholder="Selecciona un profesor" />
                 </SelectTrigger>
                 <SelectContent>
-                  {professors.map((professor) => (
+                  {filterOptionsById(
+                    professors,
+                    excludedProfessorIds ?? new Set(),
+                    selectedProfessor
+                  ).map((professor) => (
                     <SelectItem key={professor.id} value={professor.id}>
                       <div className="flex items-center gap-2">
                         <GraduationCap className="w-4 h-4" />

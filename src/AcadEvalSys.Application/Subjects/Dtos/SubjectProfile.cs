@@ -20,7 +20,9 @@ public class SubjectProfile : Profile
                 {
                     StudentId = ss.Student!.UserId!,
                     StudentName = ss.Student.User!.Name,
-                    StudentEmail = ss.Student.User.Email
+                    StudentEmail = ss.Student.User.Email,
+                    CurrentYear = ss.Student.CurrentYear ?? Domain.Enums.CareerYear.First,
+                    TechnicalCareerName = ss.Student.TechnicalCareer != null ? ss.Student.TechnicalCareer.Name : string.Empty
                 }).ToList() : null));
 
         CreateMap<CreateSubjectCommand, Subject>();

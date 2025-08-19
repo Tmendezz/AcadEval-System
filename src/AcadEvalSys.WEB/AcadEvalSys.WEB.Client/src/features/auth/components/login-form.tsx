@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useLoginMutation } from "@/shared/auth/hooks/use-login-mutation";
+import { useLogin } from "@/features/auth/hooks/use-login";
 import { Link } from "wouter";
 import { AuthButton } from "./auth-button";
 import { Form, FormField, FormMessage } from "@/shared/components/ui/form";
@@ -30,10 +30,10 @@ export const LoginForm = () => {
   const { handleSubmit, control } = form;
 
   const {
-    mutate: login,
-    isPending: isLoading,
+    login,
+    isLoading,
     error: loginError,
-  } = useLoginMutation();
+  } = useLogin();
 
   const onSubmit = async (data: LoginFormData) => {
     try {

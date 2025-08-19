@@ -16,8 +16,8 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && !isAuthRoute && !isLoginEndpoint) {
       try {
-        const { authStore } = await import("@/shared/auth/stores/auth-store");
-        authStore.getState().clearAuth();
+        const { useAuthStore } = await import("@/features/auth/store");
+        useAuthStore.getState().logout();
       } catch (e) {
         console.warn("Could not clear auth store:", e);
       }

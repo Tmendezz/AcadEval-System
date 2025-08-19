@@ -1,39 +1,40 @@
 import { CareerYear } from "./enums";
 
 export interface Evaluation {
-  semester: Semester;
   id: string;
   title: string;
   description: string;
   periodFrom: string;
   periodTo: string;
-  careerAssignments: EvaluationCareerAssignment[];
+  semester: Semester;
+  assignmentsByCareer: CompetencyAssignmentByCareerYearDto[];
+  totalProfessorAssignmentsCount: number;
+  completedProfessorAssignmentsCount: number;
+  overallProgressPercentage: number;
+  status: EvaluationStatus;
+  createdAt: string;
+  createdByUserId?: string;
 }
 
 type Semester = "First" | "Second";
 
-export interface EvaluationCareerAssignment {
-  technicalCareerId: string;
-  technicalCareerName: string;
-  assignmentsByYear: AssignmentsByYear;
-  totalAssignments: number;
-  totalProfessors: number;
-  totalCompetencies: number;
-  activeYears: string[];
+export type EvaluationStatus = "Pending" | "Completed";
+
+export interface CompetencyAssignmentByCareerYearDto {
+  careerName: string;
+  assignments: AssignmentsByYear;
 }
 
 export type AssignmentsByYear = {
-  [key in CareerYear]: EvaluationAssignment[];
+  [key in CareerYear]: CompetencyAssignmentDto[];
 };
 
-export interface EvaluationAssignment {
+export interface CompetencyAssignmentDto {
   assignmentId: string;
-  year: string;
-  competencyId: string;
   competencyName: string;
-  competencyDescription: string;
-  competencyType: string;
-  professorId: string;
+  subjectName: string;
   professorName: string;
-  professorEmail: string;
+  status: ProfessorAssignmentStatus;
 }
+
+export type ProfessorAssignmentStatus = "Pending" | "Completed";

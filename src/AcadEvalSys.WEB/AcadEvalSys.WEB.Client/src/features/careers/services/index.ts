@@ -1,5 +1,6 @@
-// Servicios del módulo de administración
+// Servicios específicos del módulo de careers
 export * from "./technical-career-service";
-export * from "./subject-service";
-export * from "./professor-service";
-export * from "./student-service";
+
+// Servicios globales (re-export para compatibilidad)
+export { professorService } from "@/shared/services/professor-service";
+export { studentService } from "@/shared/services/student-service";

@@ -15,6 +15,10 @@ import {
   useCompetencies,
   useSubjectsByCareer,
 } from "@/features/evaluations/hooks";
+import {
+  buildExclusionSet,
+  filterOptionsById,
+} from "@/shared/lib/unique-options";
 
 interface CompetencyAssignmentsStepProps {
   assignments: Assignment[];
@@ -46,11 +50,25 @@ export function CompetencyAssignmentsStep({
   const { data: competencies = [] } = useCompetencies();
   const { data: subjects = [] } = useSubjectsByCareer("", undefined, true);
 
+  // Excluir competencias ya usadas en la lista completa
+  const usedCompetencyIds = buildExclusionSet(
+    assignments,
+    (a) => a.competencyId || undefined,
+    (a) => !a.competencyId
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Asignaciones de Competencias</h3>
-        <Button onClick={addAssignment} variant="outline" size="sm">
+        {/* Botón deshabilitado si ya alcanzó el número de competencias */}
+        <Button
+          onClick={addAssignment}
+          variant="outline"
+          size="sm"
+          type="button"
+          disabled={assignments.length >= competencies.length}
+        >
           <Plus className="w-4 h-4 mr-2" />
           Agregar Asignación
         </Button>
@@ -81,7 +99,11 @@ export function CompetencyAssignmentsStep({
                         <SelectValue placeholder="Seleccionar competencia" />
                       </SelectTrigger>
                       <SelectContent>
-                        {competencies.map((competency) => (
+                        {filterOptionsById(
+                          competencies,
+                          usedCompetencyIds,
+                          assignment.competencyId
+                        ).map((competency) => (
                           <SelectItem key={competency.id} value={competency.id}>
                             <div className="flex items-center gap-2">
                               <span>{competency.name}</span>
@@ -138,6 +160,7 @@ export function CompetencyAssignmentsStep({
                       variant="outline"
                       size="sm"
                       className="w-full"
+                      type="button"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Eliminar

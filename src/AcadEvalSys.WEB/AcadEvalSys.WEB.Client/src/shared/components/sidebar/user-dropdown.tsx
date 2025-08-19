@@ -1,5 +1,4 @@
-import { BadgeCheck, LogOut, User } from "lucide-react";
-import { useCurrentUser } from "@/shared/auth/hooks/use-current-user";
+import { LogOut, User } from "lucide-react";
 import { AvatarDropdown } from "./avatar-dropdown";
 import {
   DropdownMenuItem,
@@ -7,28 +6,30 @@ import {
   DropdownMenuSeparator,
 } from "@/shared/components/ui/dropdown-menu";
 import { useCallback, useState } from "react";
-import { authService } from "@/shared/auth/services/auth-service";
+import { useAuthStore } from "@/features/auth/store";
+
 
 export function UserDropdown() {
-  const { user, initials, role } = useCurrentUser();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { logout, user } = useAuthStore();
 
-  const userInfo = {
-    name: user?.name,
-    email: user?.email,
-    role: role,
-    initials: initials,
-    avatarUrl: undefined,
-  };
-
+  // Mantén el logout existente o usa el nuevo
   const handleLogout = useCallback(async () => {
     setIsLoggingOut(true);
-    await authService.logout();
-    setIsLoggingOut(false);
+    try {
+      await logout();
+      // El nuevo store se actualizará automáticamente via interceptors
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    } finally {
+      setIsLoggingOut(false);
+    }
   }, []);
 
+  if (!user) return null;
+
   return (
-    <AvatarDropdown user={userInfo}>
+      <AvatarDropdown user={user}>
       <DropdownMenuGroup>
         <DropdownMenuItem className="cursor-pointer">
           <User className="mr-2 h-4 w-4 flex-shrink-0" />

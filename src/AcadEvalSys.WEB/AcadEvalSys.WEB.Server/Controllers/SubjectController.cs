@@ -2,9 +2,13 @@ using AcadEvalSys.Application.Subjects.Commands.AssignProfessor;
 using AcadEvalSys.Application.Subjects.Commands.CreateSubject;
 using AcadEvalSys.Application.Subjects.Commands.DeleteSubject;
 using AcadEvalSys.Application.Subjects.Commands.EnrollStudent;
+using AcadEvalSys.Application.Subjects.Commands.UnenrollStudent;
+using AcadEvalSys.Application.Subjects.Commands.UnenrollStudents;
 using AcadEvalSys.Application.Subjects.Commands.UpdateSubject;
 using AcadEvalSys.Application.Subjects.Queries.GetAllSubjects;
 using AcadEvalSys.Application.Subjects.Queries.GetSubjectById;
+using AcadEvalSys.Application.Students.Queries.GetAvailableStudents;
+using AcadEvalSys.Application.Students.Dtos;
 using AcadEvalSys.Domain.Constants.Constants;
 using AcadEvalSys.Domain.Enums;
 using MediatR;
@@ -110,6 +114,8 @@ public class SubjectController(IMediator mediator) : ControllerBase
 
     /// <summary>
     /// Inscribe un estudiante en una asignatura de una carrera técnica.
+    /// Si el año de la asignatura es superior al año actual del estudiante, 
+    /// el año del estudiante se actualiza automáticamente.
     /// </summary>
     /// <param name="careerId">ID de la carrera técnica.</param>
     /// <param name="subjectId">ID de la asignatura.</param>
@@ -143,4 +149,91 @@ public class SubjectController(IMediator mediator) : ControllerBase
         var result = await mediator.Send(command);
         return result ? Ok() : BadRequest();
     }
+
+    // DEPRECATED: Endpoint de importación de estudiantes a nivel de asignatura eliminado.
+    // REEMPLAZADO POR: TechnicalCareerController.ImportStudents + selección manual de estudiantes
+    // 
+    // Flujo actual:
+    // 1. Importar estudiantes masivamente: TechnicalCareerController.ImportStudents 
+    // 2. Inscribir estudiantes en asignaturas: SubjectController.EnrollStudent (selección manual)
+    // 3. Gestión individual: SubjectController.UnenrollStudent
+
+    /// <summary>
+    /// Obtiene los estudiantes disponibles para inscribir en una asignatura.
+    /// </summary>
+    /// <param name="careerId">ID de la carrera técnica.</param>
+    /// <param name="subjectId">ID de la asignatura.</param>
+    /// <param name="year">Año del estudiante (opcional).</param>
+    /// <returns>Lista de estudiantes disponibles para inscribir.</returns>
+    [HttpGet("{subjectId}/available-students")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Produces("application/json")]
+    public async Task<ActionResult<IEnumerable<StudentDto>>> GetAvailableStudents(
+        Guid careerId, 
+        Guid subjectId, 
+        [FromQuery] CareerYear? year = null)
+    {
+        var query = new GetAvailableStudentsQuery
+        {
+            TechnicalCareerId = careerId,
+            SubjectId = subjectId,
+            Year = year
+        };
+        var result = await mediator.Send(query);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Desenrola un estudiante de una asignatura.
+    /// </summary>
+    /// <param name="careerId">ID de la carrera técnica.</param>
+    /// <param name="subjectId">ID de la asignatura.</param>
+    /// <param name="studentId">ID del estudiante a desenrolar.</param>
+    /// <returns>True si se desenroló exitosamente.</returns>
+    [HttpDelete("{subjectId}/students/{studentId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UnenrollStudent(
+        Guid careerId, 
+        Guid subjectId, 
+        string studentId)
+    {
+        var command = new UnenrollStudentCommand
+        {
+            SubjectId = subjectId,
+            StudentId = studentId
+        };
+        var result = await mediator.Send(command);
+        return result ? Ok(new { success = true }) : NotFound(new { success = false });
+    }
+
+    /// <summary>
+    /// Desenrola múltiples estudiantes de una asignatura.
+    /// </summary>
+    /// <param name="careerId">ID de la carrera técnica.</param>
+    /// <param name="subjectId">ID de la asignatura.</param>
+    /// <param name="request">Lista de IDs de estudiantes a desenrolar.</param>
+    /// <returns>Resultado de la operación masiva.</returns>
+    [HttpPost("{subjectId}/students/bulk-unenroll")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Produces("application/json")]
+    public async Task<IActionResult> UnenrollStudents(
+        Guid careerId, 
+        Guid subjectId, 
+        [FromBody] BulkUnenrollRequest request)
+    {
+        var command = new UnenrollStudentsCommand
+        {
+            SubjectId = subjectId,
+            StudentIds = request.StudentIds
+        };
+        var result = await mediator.Send(command);
+        return Ok(result);
+    }
+}
+
+public class BulkUnenrollRequest
+{
+    public List<string> StudentIds { get; set; } = new();
 }

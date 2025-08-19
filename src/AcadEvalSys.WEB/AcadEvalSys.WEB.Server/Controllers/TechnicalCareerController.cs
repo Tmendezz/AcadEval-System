@@ -1,9 +1,13 @@
 using AcadEvalSys.Application.TechnicalCareers.Commands.CreateTechnicalCareer;
 using AcadEvalSys.Application.TechnicalCareers.Commands.DeleteTechnicalCareer;
 using AcadEvalSys.Application.TechnicalCareers.Commands.UpdateTechnicalCareer;
+using AcadEvalSys.Application.TechnicalCareers.Commands.AssignCoordinator;
+using AcadEvalSys.Application.TechnicalCareers.Commands.ImportStudents;
+using AcadEvalSys.Application.TechnicalCareers.Commands.AddStudentToCareer;
 using AcadEvalSys.Application.TechnicalCareers.Dtos;
 using AcadEvalSys.Application.TechnicalCareers.Queries.GetAllTechnicalCareers;
 using AcadEvalSys.Application.TechnicalCareers.Queries.GetTechnicalCareerById;
+using AcadEvalSys.Application.Subjects.Dtos;
 using AcadEvalSys.Domain.Constants.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -91,4 +95,54 @@ public class TechnicalCareerController(IMediator mediator) : ControllerBase
         await mediator.Send(new DeleteTechnicalCareerCommand(id));
         return NoContent();
     }
+
+        /// <summary>
+        /// Asigna un coordinador a una carrera técnica.
+        /// </summary>
+        [HttpPut("{id}/coordinator")]
+        public async Task<IActionResult> AssignCoordinator([FromRoute] Guid id, [FromBody] AssignCoordinatorCommand command)
+        {
+            command.TechnicalCareerId = id;
+            await mediator.Send(command);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Importa estudiantes desde un archivo CSV/Excel a una carrera técnica.
+        /// </summary>
+        /// <param name="id">ID de la carrera técnica.</param>
+        /// <param name="file">Archivo CSV/Excel con los datos de los estudiantes.</param>
+        /// <returns>Resultado de la importación.</returns>
+        [HttpPost("{id}/import-students")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [Produces("application/json")]
+        public async Task<IActionResult> ImportStudents(Guid id, IFormFile file)
+        {
+            var command = new ImportStudentsToCareerCommand
+            {
+                TechnicalCareerId = id,
+                File = file
+            };
+            var result = await mediator.Send(command);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Crea un nuevo estudiante en una carrera técnica específica.
+        /// </summary>
+        /// <param name="id">ID de la carrera técnica.</param>
+        /// <param name="command">Datos del estudiante a crear.</param>
+        /// <returns>ID del estudiante creado.</returns>
+        [HttpPost("{id}/students")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Produces("application/json")]
+        public async Task<IActionResult> AddStudentToCareer(Guid id, [FromBody] AddStudentToCareerCommand command)
+        {
+            command.TechnicalCareerId = id;
+            var studentId = await mediator.Send(command);
+            return CreatedAtAction("GetById", "Student", new { id = studentId }, new { id = studentId });
+        }
 }

@@ -4,8 +4,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { Badge, badgeVariants } from "@/shared/components/ui/badge";
-import { Separator } from "@/shared/components/ui/separator";
+import { Badge } from "@/shared/components/ui/badge";
 import { EvaluationFormData, Assignment } from "../../../types/evaluation-form";
 import { useTechnicalCareers } from "@/shared/hooks/use-technical-careers";
 import { useCompetencies } from "@/shared/hooks/use-competencies";
@@ -22,7 +21,7 @@ interface ReviewStepProps {
 export function ReviewStep({ formData, assignments }: ReviewStepProps) {
   const { data: careers = [] } = useTechnicalCareers();
   const { data: competencies = [] } = useCompetencies();
-
+  console.log(assignments); 
   const groupedAssignments = groupAssignmentsByCareer(assignments);
 
   return (

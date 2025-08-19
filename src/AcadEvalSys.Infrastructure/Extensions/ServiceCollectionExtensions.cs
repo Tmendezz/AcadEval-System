@@ -41,9 +41,19 @@ public static class ServiceCollectionExtensions
             }
         });
 
-        // Configurar Storage
+        // Configurar Storage (Azure Blob por defecto)
         services.Configure<StorageConfiguration>(configuration.GetSection(StorageConfiguration.Section));
-        services.AddScoped<IStorageService, StorageService>();
+        services.Configure<GoogleDriveStorageConfiguration>(configuration.GetSection(GoogleDriveStorageConfiguration.Section));
+
+        var storageProvider = configuration.GetValue<string>("Storage:Provider");
+        if (string.Equals(storageProvider, "GoogleDrive", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddScoped<IStorageService, GoogleDriveStorageService>();
+        }
+        else
+        {
+            services.AddScoped<IStorageService, StorageService>();
+        }
         
         // Configurar Reportes
         services.AddScoped<IReportService, PdfReportService>();

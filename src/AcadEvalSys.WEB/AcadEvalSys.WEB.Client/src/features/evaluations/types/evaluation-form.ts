@@ -1,4 +1,6 @@
-import { Competency, Subject, TechnicalCareer } from "@/shared/types";
+import { Competency } from "@/shared/types/competency";
+import { Subject } from "@/shared/types/subject";
+import { TechnicalCareer } from "@/shared/types/technical-career";
 
 export interface EvaluationFormData {
   title: string;
@@ -28,6 +30,7 @@ export interface WizardStep {
 export interface Assignment {
   competencyId: string;
   subjectId: string;
+  professorId?: string;
   careerId?: string;
   year?: number;
 }

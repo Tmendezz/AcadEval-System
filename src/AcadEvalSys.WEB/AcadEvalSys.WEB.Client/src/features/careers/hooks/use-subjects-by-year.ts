@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Subject } from "@/shared/types";
 import { CareerYear } from "@/shared/types/enums";
-import { subjectService } from "../services/subject-service";
+import { getSubjectsByCareer } from "@/shared/services/subject-service";
+import { Subject } from "@/shared/types/subject";
 
 interface UseSubjectsByYearOptions {
   includeEnrolledStudents?: boolean;
@@ -23,7 +23,7 @@ export const useSubjectsByYear = (
   const [selectedYear, setSelectedYear] = useState<CareerYear>(initialYear);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Obtener todas las asignaturas de la carrera
+  // Obtener todas las asignaturas de la carrera sin filtro de año
   const {
     data: allSubjects = [],
     isLoading,
@@ -32,9 +32,9 @@ export const useSubjectsByYear = (
   } = useQuery({
     queryKey: ["subjects-by-career", careerId, includeEnrolledStudents],
     queryFn: () =>
-      subjectService.getSubjectsByCareer(
+      getSubjectsByCareer(
         careerId,
-        selectedYear.toString(),
+        undefined, // No filtrar por año en el backend
         includeEnrolledStudents
       ),
     enabled: enabled && !!careerId,
@@ -44,15 +44,27 @@ export const useSubjectsByYear = (
   const filteredSubjects = useMemo(() => {
     let filtered = allSubjects;
 
-    // Filtrar por año
-    if (selectedYear !== CareerYear.First) {
-      filtered = filtered.filter(
-        (subject) => subject.year === selectedYear.toString()
+    // Filtrar por año seleccionado
+    filtered = filtered.filter((subject) => {
+      // El tipo Subject tiene year como string ("First", "Second", "Third")
+      // Mapeamos CareerYear (1, 2, 3) a string correspondiente
+      const yearMap = {
+        [CareerYear.First]: "First",
+        [CareerYear.Second]: "Second",
+        [CareerYear.Third]: "Third",
+      };
+      return subject.year === yearMap[selectedYear];
+    });
+
+    // Filtrar por término de búsqueda
+    if (searchTerm.trim()) {
+      filtered = filtered.filter((subject) =>
+        subject.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     return filtered;
-  }, [allSubjects, selectedYear]);
+  }, [allSubjects, selectedYear, searchTerm]);
 
   const changeYear = (year: CareerYear) => {
     setSelectedYear(year);
@@ -85,8 +97,13 @@ export const useSubjectsByYear = (
     // Estadísticas
     totalStats: {
       totalSubjects: filteredSubjects.length,
-      totalStudents: 0,
-      totalAssignedProfessors: 0,
+      totalStudents: filteredSubjects.reduce(
+        (acc, subject) => acc + (subject.enrolledStudents?.length || 0),
+        0
+      ),
+      totalAssignedProfessors: filteredSubjects.filter(
+        (subject) => subject.professorId
+      ).length,
     },
 
     // Acciones

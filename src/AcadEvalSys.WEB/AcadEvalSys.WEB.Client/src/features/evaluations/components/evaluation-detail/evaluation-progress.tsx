@@ -1,0 +1,47 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Progress } from "@/shared/components/ui/progress";
+import { CheckCircle, Clock, Users } from "lucide-react";
+import { Evaluation } from "@/shared/types/evaluation";
+
+interface EvaluationProgressProps {
+  evaluation: Evaluation;
+}
+
+export function EvaluationProgress({ evaluation }: EvaluationProgressProps) {
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>Progreso General</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <Progress value={evaluation.overallProgressPercentage} className="flex-1" />
+            <span className="font-semibold text-lg">
+              {Math.round(evaluation.overallProgressPercentage)}%
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-600" />
+              <span className="text-muted-foreground">Completadas:</span>
+              <span className="font-medium">{evaluation.completedProfessorAssignmentsCount}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-yellow-600" />
+              <span className="text-muted-foreground">Pendientes:</span>
+              <span className="font-medium">
+                {evaluation.totalProfessorAssignmentsCount - evaluation.completedProfessorAssignmentsCount}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-blue-600" />
+              <span className="text-muted-foreground">Total:</span>
+              <span className="font-medium">{evaluation.totalProfessorAssignmentsCount}</span>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+} 

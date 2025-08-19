@@ -3,6 +3,7 @@ using AcadEvalSys.Application.Reports.Commands.UpdateReportObservation;
 using AcadEvalSys.Application.Reports.Queries.GetEvaluationInstanceReports;
 using AcadEvalSys.Application.Reports.Queries.GetReportDownloadUrl;
 using AcadEvalSys.Application.Reports.Queries.GetStudentReports;
+using AcadEvalSys.Application.Reports.Queries.DownloadReportFile;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -31,6 +32,18 @@ public class ReportsController(IMediator mediator) : ControllerBase
         var query = new GetReportDownloadUrlQuery { ReportId = reportId };
         var result = await mediator.Send(query);
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Descarga directa del archivo del reporte con autorización (estudiante dueño o staff)
+    /// </summary>
+    [HttpGet("{reportId}/file")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DownloadReportFile(Guid reportId)
+    {
+        var result = await mediator.Send(new DownloadReportFileQuery(reportId));
+        return File(result.Content, result.ContentType, result.FileName);
     }
 
     /// <summary>

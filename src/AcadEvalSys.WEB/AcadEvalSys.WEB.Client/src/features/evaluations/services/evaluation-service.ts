@@ -1,4 +1,5 @@
 import { api } from "@/shared/config/axios";
+import { EvaluationFormData } from "../types/evaluation-form";
 
 const EVALUATIONS_API_URL = "/evaluation-instances";
 
@@ -12,17 +13,7 @@ export const getEvaluationById = async (id: string) => {
   return data;
 };
 
-export const createEvaluation = async (evaluation: {
-  title: string;
-  description: string;
-  periodFrom: string;
-  periodTo: string;
-  semester: "First" | "Second";
-  competencyAssignments: Array<{
-    competencyId: string;
-    subjectId: string;
-  }>;
-}) => {
+export const createEvaluation = async (evaluation: EvaluationFormData) => {
   const { data } = await api.post(EVALUATIONS_API_URL, evaluation);
   return data;
 };
@@ -50,3 +41,28 @@ export const finalizeEvaluation = async (id: string, forceClose = false) => {
   );
   return data;
 };
+
+export const getCareerYearAssignmentDetails = async (
+  evaluationId: string,
+  careerId: string,
+  year: string
+) => {
+  const { data } = await api.get(
+    `${EVALUATIONS_API_URL}/${evaluationId}/career-assignments`,
+    {
+      params: {
+        careerId,
+        year
+      }
+    }
+  );
+  return data;
+};
+
+export const getAssignmentStudents = async (assignmentId: string) => {
+  const { data } = await api.get(
+    `${EVALUATIONS_API_URL}/assignments/${assignmentId}/students`
+  );
+  return data;
+};
+

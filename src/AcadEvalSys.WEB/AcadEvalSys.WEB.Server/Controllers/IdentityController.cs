@@ -3,7 +3,10 @@ using AcadEvalSys.Application.Users.Commands.UnassignUserRole;
 using AcadEvalSys.Application.Users.Queries;
 using AcadEvalSys.Application.Users.Queries.GetCurrentUserInfo;
 using AcadEvalSys.Application.Users.Queries.GetSessionStatus;
+using AcadEvalSys.Application.Users.Queries.GetAdmins;
 using AcadEvalSys.Application.Users.Dtos;
+using AcadEvalSys.Application.Users.Commands.CreateAdmin;
+using AcadEvalSys.Application.Users.Commands.DeactivateUser;
 using AcadEvalSys.Domain.Constants.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
@@ -91,4 +94,42 @@ public class IdentityController(IMediator mediator) : ControllerBase
         var sessionStatus = await mediator.Send(new GetSessionStatusQuery());
         return Ok(sessionStatus);
     }
+
+        /// <summary>
+        /// Obtiene la lista paginada de usuarios con rol Administrador.
+        /// </summary>
+        [HttpGet("admins")]
+        [Authorize(Roles = UserRoles.Admin)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Produces("application/json")]
+        public async Task<IActionResult> GetAdmins([FromQuery] GetAdminsQuery query)
+        {
+            var result = await mediator.Send(query);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Crea un usuario con rol Administrador.
+        /// </summary>
+        [HttpPost("admins")]
+        [Authorize(Roles = UserRoles.Admin)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CreateAdmin([FromBody] CreateAdminUserCommand command)
+        {
+            var id = await mediator.Send(command);
+            return Created($"/identity/admins/{id}", new { id });
+        }
+
+        /// <summary>
+        /// Desactiva un usuario (no podrá iniciar sesión).
+        /// </summary>
+        [HttpPost("deactivate-user")]
+        [Authorize(Roles = UserRoles.Admin)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> DeactivateUser([FromBody] DeactivateUserCommand command)
+        {
+            await mediator.Send(command);
+            return NoContent();
+        }
 }

@@ -3,7 +3,7 @@ import {
   Competency,
   CreateCompetencyRequest,
   UpdateCompetencyRequest,
-} from "@/shared/types";
+} from "@/shared/types/competency";
 
 const COMPETENCIES_API_URL = "/competencies";
 

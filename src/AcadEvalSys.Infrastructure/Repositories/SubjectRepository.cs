@@ -111,4 +111,10 @@ public class SubjectRepository(ApplicationDbContext dbContext) : ISubjectReposit
         dbContext.Subjects.Update(subject);
         await dbContext.SaveChangesAsync();
     }
+
+    public async Task<bool> UserTeachesInCareerAsync(string userId, Guid technicalCareerId)
+    {
+        return await dbContext.Subjects
+            .AnyAsync(s => s.IsActive && s.TechnicalCareerId == technicalCareerId && s.ProfessorId == userId);
+    }
 }

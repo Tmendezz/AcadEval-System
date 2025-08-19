@@ -9,3 +9,9 @@ export * from "./subject-service";
 
 // Professors
 export * from "./professor-service";
+
+// Students
+export * from "./student-service";
+
+// Identity/Admin
+export * from "./identity-admin-service";

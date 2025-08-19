@@ -20,6 +20,8 @@ export interface EnrolledStudent {
   studentId: string;
   studentName: string;
   studentEmail: string;
+  currentYear: "First" | "Second" | "Third"; // Mapeo desde CareerYear del backend
+  technicalCareerName: string;
 }
 
 export interface SubjectAssignment {

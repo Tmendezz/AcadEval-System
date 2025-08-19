@@ -1,6 +1,6 @@
 import { EntityCard } from "@/shared/components/ui/entity-card";
 import { TechnicalCareer } from "../types/technical-career";
-import { CareerStatistics } from "../hooks/use-admin-statistics";
+import { CareerStatistics } from "@/shared/types/statistics";
 import { Users, GraduationCap } from "lucide-react";
 
 interface CareerListProps {

@@ -1,14 +1,15 @@
 import {
   BarChart3,
-  BookOpen,
-  FileText,
+  Brain,
+  ClipboardEditIcon,
+  Copy, 
   GraduationCap,
-  Settings,
+  LayoutDashboard,
   Users,
 } from "lucide-react";
-import { NavGroup } from "@/shared/types";
 import { useQuery } from "@tanstack/react-query";
 import { technicalCareerService } from "@/features/careers/services/technical-career-service";
+import { NavGroup } from "@/shared/types/ui";
 
 export function useSidebarConfig() {
   const { data: careers = [] } = useQuery({
@@ -22,7 +23,7 @@ export function useSidebarConfig() {
       items: [
         {
           href: "/",
-          icon: BarChart3,
+          icon: LayoutDashboard,
           label: "Panel Principal",
         },
       ],
@@ -32,12 +33,12 @@ export function useSidebarConfig() {
       items: [
         {
           href: "/surveys",
-          icon: FileText,
+          icon: BarChart3,
           label: "Encuestas",
         },
         {
           href: "/surveys/templates",
-          icon: BookOpen,
+          icon: Copy,
           label: "Plantillas",
         },
       ],
@@ -47,12 +48,12 @@ export function useSidebarConfig() {
       items: [
         {
           href: "/evaluaciones",
-          icon: Settings,
+          icon: ClipboardEditIcon,
           label: "Evaluaciones",
         },
         {
           href: "/evaluaciones/competencias",
-          icon: GraduationCap,
+          icon: Brain,
           label: "Competencias",
         },
       ],

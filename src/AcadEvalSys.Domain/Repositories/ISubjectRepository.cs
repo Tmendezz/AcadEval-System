@@ -17,4 +17,7 @@ public interface ISubjectRepository
     
     // Método para soft delete
     Task DeleteAsync(Subject subject);
+
+    // Verificaciones
+    Task<bool> UserTeachesInCareerAsync(string userId, Guid technicalCareerId);
 }

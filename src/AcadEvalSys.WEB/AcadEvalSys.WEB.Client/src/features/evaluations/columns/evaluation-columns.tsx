@@ -5,8 +5,9 @@ import { PencilIcon, TrashIcon, Eye } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/shared/components/ui/button";
 
-import { Evaluation } from "@/shared/types";
+import { Evaluation } from "@/shared/types/evaluation";
 import { Badge } from "@/shared/components/ui/badge";
+import { navigate } from "wouter/use-browser-location";
 
 export const columns: ColumnDef<Evaluation>[] = [
   {
@@ -85,8 +86,7 @@ export const columns: ColumnDef<Evaluation>[] = [
 
       const handleView = (e: React.MouseEvent) => {
         e.stopPropagation();
-        // TODO: Implementar lógica de ver detalle
-        console.log("Ver detalle evaluación:", row.original.id);
+        navigate(`/evaluaciones/${row.original.id}`) ;
       };
 
       return (

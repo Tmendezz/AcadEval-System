@@ -1,23 +1,14 @@
-import { ReactNode, useEffect } from "react";
-import { usePathname } from "wouter/use-browser-location";
+import { ReactNode } from "react";
 import { AppSidebar } from "./sidebar/app-sidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "./ui/sidebar";
 import { Separator } from "./ui/separator";
-import { Breadcrumb } from "@/shared/components/ui/breadcrumb";
 import { ThemeToggle } from "./theme-toggle/theme-toggle";
-import { useRouteStore } from "../stores/route-store";
 
 interface AppLayoutProps {
   children: ReactNode;
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-  const pathname = usePathname();
-  const { setCurrentPath } = useRouteStore();
-
-  useEffect(() => {
-    setCurrentPath(pathname);
-  }, [pathname, setCurrentPath]);
 
   return (
     <SidebarProvider defaultOpen>
@@ -33,6 +24,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             Evaluaciones y Encuestas Académicas
           </div>
           <div className="flex items-center gap-2 mr-4">
+    
             <ThemeToggle />
           </div>
         </header>
