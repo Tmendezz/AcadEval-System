@@ -13,7 +13,8 @@ public class AssignCoordinatorCommandHandler(
     ILogger<AssignCoordinatorCommandHandler> logger,
     ITechnicalCareerRepository careerRepository,
     UserManager<User> userManager,
-    ISubjectRepository subjectRepository
+    ISubjectRepository subjectRepository,
+    ICoordinatorRepository coordinatorRepository
 ) : IRequestHandler<AssignCoordinatorCommand>
 {
     public async Task Handle(AssignCoordinatorCommand request, CancellationToken cancellationToken)
@@ -39,13 +40,9 @@ public class AssignCoordinatorCommandHandler(
             await userManager.AddToRoleAsync(user, UserRoles.Coordinator);
         }
 
-        // Vincular como coordinador de la carrera (modelo soporta múltiples; aquí asumimos 1 principal)
-        career.Coordinators ??= new List<Coordinator>();
-        var existing = career.Coordinators.FirstOrDefault(c => c.UserId == request.UserId);
-        if (existing == null)
-        {
-            career.Coordinators.Add(new Coordinator { UserId = user.Id, TechnicalCareerId = request.TechnicalCareerId });
-        }
+    // Enforce 1 coordinator per career: remove existing for this career, then add new
+    await coordinatorRepository.RemoveByCareerIdAsync(request.TechnicalCareerId);
+    await coordinatorRepository.AddAsync(new Coordinator { UserId = user.Id, TechnicalCareerId = request.TechnicalCareerId });
 
         await careerRepository.Update();
     }

@@ -56,11 +56,10 @@ export const professorService = {
       totalItemsCount: number;
     }>(`/identity/admins?${params}`);
 
-    const admins: Professor[] = data.items.map((u) => ({
+  const admins: Professor[] = data.items.map((u) => ({
       id: u.id,
       name: u.name,
       email: u.email,
-      phone: u.phone,
     }));
 
     return { admins, totalCount: data.totalItemsCount };

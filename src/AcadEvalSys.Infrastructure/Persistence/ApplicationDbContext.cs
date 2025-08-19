@@ -55,6 +55,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                   .WithOne(u => u.Coordinator)
                   .HasForeignKey<Coordinator>(c => c.UserId)
                   .OnDelete(DeleteBehavior.Cascade);
+
+        // Asegurar 1 coordinador por carrera (índice único)
+        entity.HasIndex(c => c.TechnicalCareerId)
+            .IsUnique();
         });
 
         builder.Entity<StudentCompetencyAssessment>(entity =>

@@ -117,6 +117,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICompetencyRepository, CompetencyRepository>();
         services.AddScoped<ISubjectRepository, SubjectRepository>();
         services.AddScoped<IProfessorRepository, ProfessorRepository>();
+    services.AddScoped<ICoordinatorRepository, CoordinatorRepository>();
         services.AddScoped<IUserProfileService, UserProfileService>();
         services.AddScoped<ISessionService, SessionService>();
         services.AddScoped<ICompetencyEvaluationInstanceRepository, CompetencyEvaluationInstanceRepository>();
@@ -132,7 +133,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IStudentEvaluationReportRepository, StudentEvaluationReportRepository>();
         
         // Configurar Hangfire con PostgreSQL
-        services.AddHangfireServices(connectionString);
+    services.AddHangfireServices(connectionString!);
         
         return services;
     }

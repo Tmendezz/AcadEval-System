@@ -35,7 +35,6 @@ type SubjectRow = Subject & {
     name: string;
     email: string;
     password: string;
-    phone?: string;
   };
 };
 
@@ -75,15 +74,19 @@ export default function EditTechnicalCareerPage() {
   const coordinatorCandidates = useMemo(() => {
     const list: { value: string; label: string }[] = [];
     const seen = new Set<string>();
+    const byId = new Map(existingProfessors.map((p) => [p.id, p] as const));
+
     rows.forEach((r, idx) => {
       if (r.professorId) {
         const key = `id:${r.professorId}`;
         if (!seen.has(key)) {
-          const prof = existingProfessors.find((p) => p.id === r.professorId);
-          list.push({
-            value: key,
-            label: prof ? `${prof.name} — ${prof.email}` : r.professorId,
-          });
+          const prof = byId.get(r.professorId);
+          const label = r.professorName
+            ? r.professorName
+            : prof
+            ? `${prof.name} — ${prof.email}`
+            : "Profesor asignado";
+          list.push({ value: key, label });
           seen.add(key);
         }
       }
@@ -118,7 +121,6 @@ export default function EditTechnicalCareerPage() {
             name: r.draftNewProfessor.name,
             email: r.draftNewProfessor.email,
             password: r.draftNewProfessor.password,
-            phone: r.draftNewProfessor.phone,
           });
           newProfessorIdByIndex.set(i, professorId);
         }
@@ -219,8 +221,6 @@ export default function EditTechnicalCareerPage() {
                           value: p.id,
                           label: p.name,
                         }));
-                        // Asegurar que, si la asignatura ya tiene profesor asignado
-                        // pero no está en la lista cargada, se muestre igualmente.
                         if (
                           r.professorId &&
                           !options.some((o) => o.value === r.professorId)

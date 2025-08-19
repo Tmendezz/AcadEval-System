@@ -7,7 +7,6 @@ export const identityAdminService = {
     name: string;
     email: string;
     password: string;
-    phone?: string;
   }): Promise<string> {
     const { data } = await api.post<{ id: string }>(
       `${IDENTITY_API_URL}/admins`,

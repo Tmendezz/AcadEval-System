@@ -74,7 +74,7 @@ export function useSidebarConfig() {
         {
           href: "/administradores",
           icon: Users,
-          label: "Personal",
+          label: "Gestión Académica",
         },
       ],
     },

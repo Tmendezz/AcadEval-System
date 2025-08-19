@@ -21,7 +21,7 @@ import {
 } from "@/shared/components/ui/form";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
-import { Professor } from "@/shared/types/professor";
+import type { Professor } from "@/shared/types/professor";
 
 const baseSchema = z.object({
   name: z.string().min(2, "El nombre es obligatorio"),
@@ -30,28 +30,28 @@ const baseSchema = z.object({
   password: z.string().optional(),
 });
 
-export type AdminFormValues = z.infer<typeof baseSchema>;
+export type ProfessorFormValues = z.infer<typeof baseSchema>;
 
-interface AdminFormDialogProps {
+interface ProfessorFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  administrator?: Professor | null;
-  onSubmit: (values: AdminFormValues) => void;
+  professor?: Professor | null;
+  onSubmit: (values: ProfessorFormValues) => void;
 }
 
-export function AdminFormDialog({
+export function ProfessorFormDialog({
   open,
   onOpenChange,
-  administrator,
+  professor,
   onSubmit,
-}: AdminFormDialogProps) {
-  const isEditing = Boolean(administrator);
+}: ProfessorFormDialogProps) {
+  const isEditing = Boolean(professor);
 
-  const form = useForm<AdminFormValues>({
+  const form = useForm<ProfessorFormValues>({
     resolver: zodResolver(baseSchema),
     defaultValues: {
-      name: administrator?.name ?? "",
-      email: administrator?.email ?? "",
+      name: professor?.name ?? "",
+      email: professor?.email ?? "",
   // phone removed
       password: "",
     },
@@ -59,14 +59,14 @@ export function AdminFormDialog({
 
   useEffect(() => {
     form.reset({
-      name: administrator?.name ?? "",
-      email: administrator?.email ?? "",
+      name: professor?.name ?? "",
+      email: professor?.email ?? "",
   // phone removed
       password: "",
     });
-  }, [administrator, form, open]);
+  }, [professor, form, open]);
 
-  const handleSubmit = (values: AdminFormValues) => {
+  const handleSubmit = (values: ProfessorFormValues) => {
     onSubmit(values);
     onOpenChange(false);
   };
@@ -78,20 +78,17 @@ export function AdminFormDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Editar Administrador" : "Nuevo Administrador"}
+            {isEditing ? "Editar Profesor" : "Nuevo Profesor"}
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Actualiza la información del administrador"
-              : "Completa los datos para crear un nuevo administrador"}
+              ? "Actualiza la información del profesor"
+              : "Completa los datos para crear un nuevo profesor"}
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="name"
@@ -113,11 +110,7 @@ export function AdminFormDialog({
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="correo@ejemplo.com"
-                      {...field}
-                    />
+                    <Input type="email" placeholder="correo@ejemplo.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -134,11 +127,7 @@ export function AdminFormDialog({
                   <FormItem>
                     <FormLabel>Contraseña</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Contraseña temporal"
-                        {...field}
-                      />
+                      <Input type="password" placeholder="Contraseña temporal" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -150,9 +139,7 @@ export function AdminFormDialog({
               <Button type="button" variant="outline" onClick={handleClose}>
                 Cancelar
               </Button>
-              <Button type="submit">
-                {isEditing ? "Actualizar" : "Crear"}
-              </Button>
+              <Button type="submit">{isEditing ? "Actualizar" : "Crear"}</Button>
             </DialogFooter>
           </form>
         </Form>
