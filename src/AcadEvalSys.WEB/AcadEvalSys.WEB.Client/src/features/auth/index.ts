@@ -4,17 +4,15 @@
 export { useAuthStore } from "./store";
 
 // Hooks
-export { 
-  useSessionCheck, 
-  useAuthRouter, 
-  useRoleGuard, 
-  useAdminGuard, 
-  useCoordinatorGuard, 
-  useProfessorGuard 
+export {
+  useSessionCheck,
+  useAuthRouter,
+  usePermissions,
+  useCanEvaluate,
 } from "./hooks";
 
 // Componentes
-export { 
+export {
   LoginForm,
   AuthLayout,
   ForgotPasswordForm,
@@ -25,9 +23,19 @@ export {
   CoordinatorRoute,
   ProfessorRoute,
   AccessDenied,
-  AuthRouter
+  AuthRouter,
 } from "./components";
 
 // Tipos (re-export desde shared)
-export type { User, LoginCredentials, SessionStatus, ApiError } from "@/shared/types/auth";
-export { UserRole, USER_ROLES, getRoleLabel, isValidRole } from "@/shared/types/auth"; 
+export type {
+  User,
+  LoginCredentials,
+  SessionStatus,
+  ApiError,
+} from "@/shared/types/auth";
+export {
+  UserRole,
+  USER_ROLES,
+  getRoleLabel,
+  isValidRole,
+} from "@/shared/types/auth";

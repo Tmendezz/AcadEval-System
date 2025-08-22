@@ -63,6 +63,31 @@ export const assignCareerCoordinator = async (
   });
 };
 
+export const getCareerCoordinator = async (
+  careerId: string
+): Promise<{
+  userId: string;
+  name: string;
+  email: string;
+  phone: string;
+} | null> => {
+  try {
+    const { data } = await api.get(
+      `${TECHNICAL_CAREERS_API_URL}/${careerId}/coordinator`
+    );
+    return data;
+  } catch (error) {
+    // Si no hay coordinador asignado, retornar null
+    return null;
+  }
+};
+
+export const removeCareerCoordinator = async (
+  careerId: string
+): Promise<void> => {
+  await api.delete(`${TECHNICAL_CAREERS_API_URL}/${careerId}/coordinator`);
+};
+
 // Importación masiva de estudiantes a nivel de carrera
 export interface ImportStudentsResult {
   usersCreated: number;

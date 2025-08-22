@@ -28,16 +28,16 @@ export function AssignmentForm({
   return (
     <Card className="bg-muted/30">
       <CardContent className="pt-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
           <div className="space-y-2">
             <Label>Competencia</Label>
-            <div className="h-9 flex items-center text-sm px-3 rounded-md border bg-muted/50">
+            <div className="h-9 flex items-center text-sm px-3 py-2 rounded-md border bg-muted/50">
               {competencies.find((c) => c.id === assignment.competencyId)
                 ?.name || "Sin competencia"}
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 mt-2">
             <Label>Asignatura</Label>
             <SmartSelect
               value={assignment.subjectId ?? ""}
@@ -45,7 +45,7 @@ export function AssignmentForm({
               placeholder="Asignar profesor/asignatura"
               options={subjects}
               renderOption={(subject) => (
-                <div className="flex flex-col">
+                <div className=" flex items-center gap-2">
                   <span className="font-medium">{subject.name}</span>
                   <span className="text-xs text-muted-foreground">
                     {subject.professorName
@@ -54,20 +54,18 @@ export function AssignmentForm({
                   </span>
                 </div>
               )}
-              triggerClassName="max-w-[220px]"
+              triggerClassName=" min-w-[360px]"
             />
           </div>
 
-          <div className="flex items-end justify-end">
+          <div className="flex items-center justify-end self-center mt-4">
             <Button
               onClick={onRemove}
               variant="outline"
               size="sm"
-              className="h-9"
               type="button"
             >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Remover Competencia
+              <Trash2 className="w-4 h-4" />
             </Button>
           </div>
         </div>

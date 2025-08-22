@@ -1,16 +1,7 @@
-import { useState } from "react";
-import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useGetAssignmentStudents } from "../../hooks";
-import {
-  Users,
-  ChevronDown,
-  ChevronUp,
-  Mail,
-  BookOpen,
-  Star,
-} from "lucide-react";
+import { Users, Mail, Star } from "lucide-react";
 
 interface AssignmentStudent {
   studentId: string;
@@ -28,41 +19,17 @@ interface AssignmentStudentsListProps {
 export function AssignmentStudentsList({
   assignmentId,
 }: AssignmentStudentsListProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
   const { data: students, isLoading } = useGetAssignmentStudents(
     assignmentId,
-    isExpanded
+    true // Siempre expandido
   );
-
-  if (!isExpanded) {
-    return (
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => setIsExpanded(true)}
-        className="text-xs text-muted-foreground hover:text-foreground"
-      >
-        <Users className="w-3 h-3 mr-1" />
-        Ver estudiantes
-        <ChevronDown className="w-3 h-3 ml-1" />
-      </Button>
-    );
-  }
 
   return (
     <div className="mt-3 border-t border-border/50 pt-3">
-      <div className="flex items-center justify-between mb-3">
+      <div className="mb-3">
         <h5 className="text-xs font-medium text-muted-foreground">
           Lista de Estudiantes
         </h5>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setIsExpanded(false)}
-          className="text-xs"
-        >
-          <ChevronUp className="w-3 h-3" />
-        </Button>
       </div>
 
       {isLoading ? (
@@ -72,49 +39,71 @@ export function AssignmentStudentsList({
           ))}
         </div>
       ) : (
-        <div className="space-y-2 max-h-40 overflow-y-auto">
-          {students?.map((student: AssignmentStudent) => (
-            <div
-              key={student.studentId}
-              className="flex items-center justify-between p-2 rounded border border-border/30 bg-background/50"
-            >
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <BookOpen className="w-3 h-3 text-muted-foreground" />
-                  <span className="text-xs font-medium">
-                    {student.studentName}
-                  </span>
-                  <Badge
-                    variant={
-                      student.status === "Evaluated" ? "default" : "secondary"
-                    }
-                    className={`text-xs ${
-                      student.status === "Evaluated"
-                        ? "bg-green-100 text-green-700 border-green-200"
-                        : "bg-yellow-100 text-yellow-700 border-yellow-200"
-                    }`}
-                  >
-                    {student.status === "Evaluated" ? "Evaluado" : "Pendiente"}
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Mail className="w-3 h-3" />
-                    <span>{student.studentEmail}</span>
-                  </div>
-                  {student.competencyLevel && (
-                    <div className="flex items-center gap-1">
-                      <Star className="w-3 h-3" />
-                      <span>Nivel: {student.competencyLevel}</span>
+        <div className="overflow-hidden rounded-md border">
+          <table className="w-full text-xs">
+            <thead className="bg-muted/50">
+              <tr>
+                <th className="px-3 py-2 text-left font-medium text-muted-foreground">
+                  Estudiante
+                </th>
+                <th className="px-3 py-2 text-left font-medium text-muted-foreground">
+                  Email
+                </th>
+                <th className="px-3 py-2 text-left font-medium text-muted-foreground">
+                  Estado
+                </th>
+                <th className="px-3 py-2 text-left font-medium text-muted-foreground">
+                  Nivel
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {students?.map((student: AssignmentStudent) => (
+                <tr key={student.studentId} className="hover:bg-muted/30">
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-3 h-3 text-muted-foreground" />
+                      <span className="font-medium">{student.studentName}</span>
                     </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-3 h-3 text-muted-foreground" />
+                      <span className="text-muted-foreground">
+                        {student.studentEmail}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-3 py-2">
+                    <Badge
+                      variant={
+                        student.status === "Evaluated" ? "default" : "secondary"
+                      }
+                      className="text-xs"
+                    >
+                      {student.status === "Evaluated"
+                        ? "Evaluado"
+                        : "Pendiente"}
+                    </Badge>
+                  </td>
+                  <td className="px-3 py-2">
+                    {student.competencyLevel ? (
+                      <div className="flex items-center gap-2">
+                        <Star className="w-3 h-3 text-muted-foreground" />
+                        <span>{student.competencyLevel}</span>
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
           {(!students || students.length === 0) && (
-            <div className="text-center py-4 text-xs text-muted-foreground">
+            <div className="text-center py-8 text-xs text-muted-foreground bg-muted/20">
+              <Users className="w-4 h-4 mx-auto mb-2 text-muted-foreground" />
               No hay estudiantes asignados
             </div>
           )}

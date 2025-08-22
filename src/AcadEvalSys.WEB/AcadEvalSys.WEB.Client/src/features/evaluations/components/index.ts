@@ -10,3 +10,6 @@ export * from "./wizard";
 // Componentes de evaluation-detail
 export * from "./evaluation-detail";
 export * from "./career-year-detail";
+
+// Componentes de evaluaciones de profesores
+export * from "./professor-evaluations";

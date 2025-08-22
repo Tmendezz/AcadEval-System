@@ -11,14 +11,9 @@ import {
   CompetencyTabs,
 } from "../components/career-year-detail";
 import { useCareerYearData } from "../hooks/use-career-year-data";
-import { useUrlMapping } from "../hooks/use-url-mapping";
 
 export default function CareerYearDetailPage() {
-  const { evaluationId, careerSlug, yearSlug } = useParams();
-  const { getCareerNameFromSlug, getYearFromSlug } = useUrlMapping();
-
-  const careerName = getCareerNameFromSlug(careerSlug || "");
-  const year = getYearFromSlug(yearSlug || "");
+  const { evaluationId, careerId, year } = useParams();
 
   const {
     evaluation,
@@ -27,7 +22,7 @@ export default function CareerYearDetailPage() {
     competencyGroups,
     isLoading,
     error,
-  } = useCareerYearData(evaluationId || "", careerName, year);
+  } = useCareerYearData(evaluationId || "", careerId || "", year || "");
 
   if (isLoading) {
     return (
@@ -84,13 +79,13 @@ export default function CareerYearDetailPage() {
           <PageHeader
             evaluationTitle={evaluation.title}
             careerName={careerData.careerName}
-            year={year}
+            year={year || ""}
             evaluationId={evaluation.id}
           />
 
           <YearSummaryCard
             careerName={careerData.careerName}
-            year={year}
+            year={year || ""}
             metrics={yearMetrics}
           />
 

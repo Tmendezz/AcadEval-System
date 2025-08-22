@@ -1,4 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { Evaluation } from "@/shared/types/evaluation";
 
@@ -13,45 +18,44 @@ export function EvaluationBasicInfo({ evaluation }: EvaluationBasicInfoProps) {
         <CardTitle>Información de la Evaluación</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div>
-            <h4 className="font-medium text-sm text-muted-foreground">
+            <h4 className="font-medium text-xs text-muted-foreground uppercase tracking-wide">
               Semestre
             </h4>
-            <Badge variant="outline" className="mt-1">
+            <Badge variant="outline" className="mt-2">
               {evaluation.semester === "First"
                 ? "Primer Semestre"
                 : "Segundo Semestre"}
             </Badge>
           </div>
           <div>
-            <h4 className="font-medium text-sm text-muted-foreground">
+            <h4 className="font-medium text-xs text-muted-foreground uppercase tracking-wide">
               Período
             </h4>
-            <p className="text-sm mt-1">
-              {new Date(evaluation.periodFrom).toLocaleDateString()} - {new Date(evaluation.periodTo).toLocaleDateString()}
+            <p className="text-sm mt-2">
+              {new Date(evaluation.periodFrom).toLocaleDateString()} -{" "}
+              {new Date(evaluation.periodTo).toLocaleDateString()}
             </p>
           </div>
           <div>
-            <h4 className="font-medium text-sm text-muted-foreground">
+            <h4 className="font-medium text-xs text-muted-foreground uppercase tracking-wide">
               Estado
             </h4>
-            <Badge 
-              variant={evaluation.status === "Completed" ? "default" : "secondary"}
-              className={`mt-1 ${
-                evaluation.status === "Completed" 
-                  ? "bg-green-100 text-green-700" 
-                  : "bg-yellow-100 text-yellow-700"
-              }`}
+            <Badge
+              variant={
+                evaluation.status === "Completed" ? "default" : "secondary"
+              }
+              className="mt-2"
             >
               {evaluation.status === "Completed" ? "Completada" : "Pendiente"}
             </Badge>
           </div>
           <div>
-            <h4 className="font-medium text-sm text-muted-foreground">
+            <h4 className="font-medium text-xs text-muted-foreground uppercase tracking-wide">
               Creada
             </h4>
-            <p className="text-sm mt-1">
+            <p className="text-sm mt-2">
               {new Date(evaluation.createdAt).toLocaleDateString()}
             </p>
           </div>
@@ -59,4 +63,4 @@ export function EvaluationBasicInfo({ evaluation }: EvaluationBasicInfoProps) {
       </CardContent>
     </Card>
   );
-} 
+}

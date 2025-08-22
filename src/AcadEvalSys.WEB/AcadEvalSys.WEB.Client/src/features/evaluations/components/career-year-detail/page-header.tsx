@@ -1,6 +1,4 @@
-import { Link } from "wouter";
-import { Button } from "@/shared/components/ui/button";
-import { ChevronLeft } from "lucide-react";
+import { GraduationCap, Calendar } from "lucide-react";
 
 interface PageHeaderProps {
   evaluationTitle: string;
@@ -16,21 +14,22 @@ export function PageHeader({
   evaluationId,
 }: PageHeaderProps) {
   return (
-    <div className="flex items-center justify-between mb-6">
-      <div className="flex items-center gap-4">
-        <Link href={`/evaluaciones/${evaluationId}`}>
-          <Button variant="ghost" size="sm" className="gap-2">
-            <ChevronLeft className="w-4 h-4" />
-            Volver
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            {evaluationTitle}
-          </h1>
-          <p className="text-muted-foreground">
-            {careerName} - Año {year}
-          </p>
+    <div>
+      {/* Título principal */}
+      <div className="mb-4">
+        <h1 className="text-2xl font-semibold text-foreground mb-2">
+          {evaluationTitle}
+        </h1>
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <GraduationCap className="w-4 h-4" />
+            <span>{careerName}</span>
+          </div>
+          <div className="w-1 h-1 bg-muted-foreground rounded-full" />
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4" />
+            <span>Año {year}</span>
+          </div>
         </div>
       </div>
     </div>

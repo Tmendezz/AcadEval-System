@@ -22,7 +22,11 @@ interface CompetencyGroup {
   progressPercentage: number;
 }
 
-export function useCareerYearData(evaluationId: string, careerName: string, year: string) {
+export function useCareerYearData(
+  evaluationId: string,
+  careerId: string,
+  year: string
+) {
   // Obtener datos de la evaluación
   const {
     data: evaluation,
@@ -33,17 +37,6 @@ export function useCareerYearData(evaluationId: string, careerName: string, year
     queryFn: () => getEvaluationById(evaluationId || ""),
     enabled: !!evaluationId,
   });
-
-  // Obtener el ID de la carrera a partir de los datos de evaluación
-  const careerId = useMemo(() => {
-    if (!evaluation || !careerName) return null;
-
-    const careerData = evaluation.assignmentsByCareer.find(
-      (career: any) => career.careerName === careerName
-    );
-
-    return careerData?.careerId || null;
-  }, [evaluation, careerName]);
 
   // Obtener detalles de asignaciones para el año/carrera
   const { data: careerYearDetails, isLoading: isLoadingDetails } =
@@ -105,11 +98,11 @@ export function useCareerYearData(evaluationId: string, careerName: string, year
 
   // Obtener datos de la carrera
   const careerData = useMemo(() => {
-    if (!evaluation || !careerName) return null;
+    if (!evaluation || !careerId) return null;
     return evaluation.assignmentsByCareer.find(
-      (career: any) => career.careerName === careerName
+      (career: any) => career.careerId === careerId
     );
-  }, [evaluation, careerName]);
+  }, [evaluation, careerId]);
 
   return {
     evaluation,

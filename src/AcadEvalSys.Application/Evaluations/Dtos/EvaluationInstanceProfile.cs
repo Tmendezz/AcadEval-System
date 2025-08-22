@@ -9,16 +9,15 @@ public class EvaluationInstanceProfile : Profile
 {
     public EvaluationInstanceProfile()
     {
-        CreateMap<CreateEvaluationInstanceCommand, CompetencyEvaluationInstance>()
-            .ForMember(dest => dest.PeriodFrom, opt => opt.MapFrom(src => 
-                DateTime.SpecifyKind(DateTime.Parse(src.PeriodFrom.ToString()), DateTimeKind.Utc)))
-            .ForMember(dest => dest.PeriodTo, opt => opt.MapFrom(src => 
-                DateTime.SpecifyKind(DateTime.Parse(src.PeriodTo.ToString()), DateTimeKind.Utc)));
+   CreateMap<CreateEvaluationInstanceCommand, CompetencyEvaluationInstance>()
+            .ForMember(dest => dest.PeriodFrom, opt => opt.MapFrom(src =>
+                DateTime.SpecifyKind(src.PeriodFrom, DateTimeKind.Utc)))
+            .ForMember(dest => dest.PeriodTo, opt => opt.MapFrom(src =>
+                DateTime.SpecifyKind(src.PeriodTo, DateTimeKind.Utc)));
 
         CreateMap<CreateCompetencyAssignmentDto, ProfessorCompetencyAssignment>()
-            .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => true)) // Por defecto activo
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => ProfessorAssignmentStatus.Pending)); // Por defecto pendiente
-
+            .ForMember(dest => dest.IsActive, opt => opt.MapFrom(_ => true))
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(_ => ProfessorAssignmentStatus.Pending));
 
         CreateMap<CompetencyEvaluationInstance, EvaluationInstanceDto>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
@@ -28,31 +27,31 @@ public class EvaluationInstanceProfile : Profile
                     : 0))
             .ForMember(dest => dest.Semester, opt => opt.MapFrom(src => src.Semester))
             .ForMember(dest => dest.AssignmentsByCareer, opt => opt.MapFrom(src =>
-                src.ProfessorCompetencyAssignments
-                    .GroupBy(a => a.Subject.TechnicalCareer.Name) // 1. Agrupar por carrera primero
+                (src.ProfessorCompetencyAssignments ?? Enumerable.Empty<ProfessorCompetencyAssignment>())
+                    .Where(a => a.Subject != null && a.Subject.TechnicalCareer != null)
+                    .GroupBy(a => a.Subject!.TechnicalCareer!.Name ?? "Sin carrera")
                     .Select(careerGroup => new CompetencyAssignmentByCareerYearDto
                     {
                         CareerName = careerGroup.Key,
-                        CareerId = careerGroup.First().Subject.TechnicalCareer.Id,
+                        CareerId = careerGroup
+                            .Select(x => x.Subject!.TechnicalCareer!.Id)
+                            .FirstOrDefault(),
                         Assignments = careerGroup
-                            .GroupBy(a => a.Subject.Year.ToString()) // 2. Agrupar por año dentro de cada carrera
+                            .GroupBy(a => (a.Subject!.Year).ToString())
                             .ToDictionary(
-                                yearGroup => yearGroup.Key, // La clave del diccionario (ej: "First", "Second", "Third")
-                                yearGroup => yearGroup.Select(a => new CompetencyAssignmentDto // El valor del diccionario (array de asignaciones)
+                                yearGroup => yearGroup.Key,
+                                yearGroup => yearGroup.Select(a => new CompetencyAssignmentDto
                                 {
                                     AssignmentId = a.Id,
-                                    CompetencyName = a.Competency.Name,
-                                    SubjectName = a.Subject.Name,
-                                    ProfessorName = a.Subject.Professor.User.Name,
+                                    CompetencyName = a.Competency != null ? a.Competency.Name : "Sin competencia",
+                                    SubjectName = a.Subject != null ? a.Subject.Name : "Sin materia",
+                                    ProfessorName = (a.Subject != null && a.Subject.Professor != null && a.Subject.Professor.User != null) ? a.Subject.Professor.User.Name : "Sin profesor",
                                     Status = a.Status
                                 }).ToArray()
                             )
                     }).ToArray()
-
             ));
 
     }
 
 }
-
-

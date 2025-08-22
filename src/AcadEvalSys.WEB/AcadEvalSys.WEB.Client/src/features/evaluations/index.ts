@@ -1,9 +1,5 @@
-export { default as CompetenciesPage } from "./pages/competencies-page";
-export { default as CreateEvaluationPage } from "./pages/create-evaluation-page";
-export { default as EvaluationsPage } from "./pages/evaluations-page";
-export { default as CompetencyDetailPage } from "./pages/competency-detail-page";
-export { default as EvaluationDetailPage } from "./pages/evaluation-detail-page";
-export { default as CareerYearDetailPage } from "./pages/career-year-detail-page";
+// Pages
+export * from "./pages";
 
 // Componentes reutilizables
 export { EvaluationFilters } from "./components";

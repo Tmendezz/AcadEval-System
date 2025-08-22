@@ -1,14 +1,27 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { Users } from "lucide-react";
 import { CompetencyAssignmentByCareerYearDto } from "@/shared/types/evaluation";
-import { CareerYearCard } from "@/shared/components/career-year-card";
+import { CareerYear } from "@/shared/types/enums";
+import {
+  mapCareerYearStringToNumber,
+  getDefaultCareerYear,
+} from "@/shared/utils/enum-helpers";
+import { CareerYearCard } from "@/features/evaluations/components/evaluation-detail/career-year-card";
 
 interface CareerAssignmentsSectionProps {
   assignmentsByCareer: CompetencyAssignmentByCareerYearDto[];
   evaluationId: string;
 }
 
-export function CareerAssignmentsSection({ assignmentsByCareer, evaluationId }: CareerAssignmentsSectionProps) {
+export function CareerAssignmentsSection({
+  assignmentsByCareer,
+  evaluationId,
+}: CareerAssignmentsSectionProps) {
   if (!assignmentsByCareer || assignmentsByCareer.length === 0) {
     return (
       <Card>
@@ -28,25 +41,39 @@ export function CareerAssignmentsSection({ assignmentsByCareer, evaluationId }: 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Carreras Técnicas</CardTitle>
+        <CardTitle>Tecnicaturas evaluadas</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
           {assignmentsByCareer.map((career) => (
-            <div key={career.careerName} className="border rounded-lg p-4">
-              <h3 className="font-semibold text-lg mb-4 text-chart-4">
-                {career.careerName}
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {Object.entries(career.assignments).map(([year, assignments]) => (
-                  <CareerYearCard
-                    key={year}
-                    year={year}
-                    assignments={assignments}
-                    careerName={career.careerName}
-                    evaluationId={evaluationId}
-                  />
-                ))}
+            <div key={career.careerName} className="rounded-lg border bg-card">
+              <div className="flex items-center justify-between p-4 border-b">
+                <h3 className="font-semibold text-lg text-foreground">
+                  {career.careerName}
+                </h3>
+                <span className="text-xs text-muted-foreground">
+                  {Object.keys(career.assignments).length} años
+                </span>
+              </div>
+              <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-6">
+                {Object.entries(career.assignments).map(
+                  ([yearKey, assignments]) => {
+                    const yearNumber =
+                      mapCareerYearStringToNumber(yearKey) ||
+                      getDefaultCareerYear();
+
+                    return (
+                      <CareerYearCard
+                        key={yearKey}
+                        year={yearNumber}
+                        assignments={assignments}
+                        careerName={career.careerName}
+                        careerId={career.careerId}
+                        evaluationId={evaluationId}
+                      />
+                    );
+                  }
+                )}
               </div>
             </div>
           ))}
@@ -54,4 +81,4 @@ export function CareerAssignmentsSection({ assignmentsByCareer, evaluationId }: 
       </CardContent>
     </Card>
   );
-} 
+}

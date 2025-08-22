@@ -22,6 +22,7 @@ export type EvaluationStatus = "Pending" | "Completed";
 
 export interface CompetencyAssignmentByCareerYearDto {
   careerName: string;
+  careerId: string;
   assignments: AssignmentsByYear;
 }
 

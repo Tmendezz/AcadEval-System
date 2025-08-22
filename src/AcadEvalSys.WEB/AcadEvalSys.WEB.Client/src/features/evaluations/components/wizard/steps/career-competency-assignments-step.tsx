@@ -97,7 +97,18 @@ export function CareerCompetencyAssignmentsStep({
   // Se dejó de usar el botón de agregar manualmente; filas se sincronizan con competencias
 
   const removeAssignment = (index: number) => {
-    const newAssignments = assignments.filter((_, i) => i !== index);
+    const target = assignments[index];
+    if (!target) return;
+
+    const newAssignments = assignments.filter((a, i) =>
+      i === index
+        ? false
+        : !(
+            a.careerId === target.careerId &&
+            a.year === target.year &&
+            a.competencyId === target.competencyId
+          )
+    );
     onAssignmentsChange(newAssignments);
   };
 
@@ -280,16 +291,27 @@ export function CareerCompetencyAssignmentsStep({
             const careerAssignments = assignments.filter(
               (a) => a.careerId === career.id
             );
-            const isCareerCompleted =
-              careerAssignments.length > 0 &&
-              careerAssignments.every((a) => a.competencyId && a.subjectId);
+
+            // Un año se considera completado si todas sus asignaciones tienen competencyId y subjectId
+            const years = [1, 2, 3];
+            const completedYears = years.reduce((acc, y) => {
+              const yearRows = careerAssignments.filter((a) => a.year === y);
+              if (yearRows.length === 0) return acc; // no cuenta si no tiene filas
+              const isYearDone = yearRows.every(
+                (a) => Boolean(a.competencyId) && Boolean(a.subjectId)
+              );
+              return acc + (isYearDone ? 1 : 0);
+            }, 0);
+
             return (
               <CareerCard
                 key={career.id}
                 career={career}
                 isExpanded={expandedCareers.has(career.id)}
                 onToggle={() => toggleCareer(career.id)}
-                isCompleted={isCareerCompleted}
+                isCompleted={false}
+                completedYears={completedYears}
+                totalYears={3}
                 onRemove={() => removeCareer(career.id)}
               >
                 <div className="space-y-4">

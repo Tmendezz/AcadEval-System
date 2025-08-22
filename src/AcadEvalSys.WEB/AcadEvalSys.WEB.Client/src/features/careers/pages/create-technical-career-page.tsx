@@ -252,19 +252,31 @@ export default function CreateTechnicalCareerPage() {
         {renderYearSection("3° Año", "Third")}
 
         <Card className="p-4 space-y-3">
-          <label className="text-sm font-medium">Coordinador</label>
+          <label className="text-sm font-medium">
+            Coordinador de la carrera
+          </label>
           <Select value={coordinatorToken} onValueChange={setCoordinatorToken}>
             <SelectTrigger>
-              <SelectValue placeholder="Seleccione coordinador entre profesores de las materias" />
+              <SelectValue placeholder="Seleccione un coordinador entre los profesores de las materias" />
             </SelectTrigger>
             <SelectContent>
               {coordinatorCandidates.map((c) => (
                 <SelectItem key={c.value} value={c.value}>
                   {c.label}
+                  {c.value.startsWith("new:") && " (nuevo)"}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+          <p className="text-xs text-muted-foreground">
+            Solo se muestran profesores que dictan materias en esta carrera
+          </p>
+          {coordinatorCandidates.length === 0 && (
+            <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded border">
+              ⚠️ No hay profesores asignados a materias. Asigne profesores
+              primero para poder seleccionar un coordinador.
+            </p>
+          )}
         </Card>
 
         <div className="flex justify-end">

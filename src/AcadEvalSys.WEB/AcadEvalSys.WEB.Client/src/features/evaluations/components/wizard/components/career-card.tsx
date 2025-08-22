@@ -1,12 +1,13 @@
-import { useState } from "react";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { ChevronDown, ChevronRight, CheckCircle2, X } from "lucide-react";
-import { Career } from "../../../types/evaluation-form";
+import { ChevronDown, ChevronRight, Trash2 } from "lucide-react";
+import { Button } from "@/shared/components/ui/button";
+import { Badge } from "@/shared/components/ui/badge";
+import { Career } from "@/features/evaluations/types/types";
 
 interface CareerCardProps {
   career: Career;
@@ -15,6 +16,8 @@ interface CareerCardProps {
   children: React.ReactNode;
   isCompleted?: boolean;
   onRemove?: () => void;
+  completedYears?: number;
+  totalYears?: number;
 }
 
 export function CareerCard({
@@ -24,6 +27,8 @@ export function CareerCard({
   children,
   isCompleted = false,
   onRemove,
+  completedYears = 0,
+  totalYears = 3,
 }: CareerCardProps) {
   return (
     <Card>
@@ -34,26 +39,27 @@ export function CareerCard({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CardTitle className="text-lg">{career.name}</CardTitle>
-            {isCompleted && (
-              <span className="inline-flex items-center gap-1 text-xs text-green-600">
-                <CheckCircle2 className="w-4 h-4" /> Listo
-              </span>
-            )}
+            <Badge
+              variant={completedYears === totalYears ? "default" : "secondary"}
+            >
+              {completedYears}/{totalYears}
+            </Badge>
           </div>
           <div className="flex items-center gap-2">
             {onRemove && (
-              <button
-                type="button"
-                className="text-xs text-muted-foreground hover:text-foreground"
+              <Button
+                variant="destructive"
+                size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   onRemove();
                 }}
-                aria-label="Quitar tecnicatura"
+                className="h-8 px-3 gap-1"
                 title="Quitar tecnicatura"
               >
-                <X className="w-4 h-4" />
-              </button>
+                <Trash2 className="w-4 h-4" />
+                <span className="hidden sm:inline">Quitar</span>
+              </Button>
             )}
             {isExpanded ? (
               <ChevronDown className="h-5 w-5" />

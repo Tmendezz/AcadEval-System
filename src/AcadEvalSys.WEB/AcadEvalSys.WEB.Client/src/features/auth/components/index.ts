@@ -6,12 +6,14 @@ export { AuthButton } from "./auth-button";
 export { AuthCardHeader } from "./auth-card-header";
 
 // Componentes de protección de rutas
-export { 
-  ProtectedRoute, 
-  AdminRoute, 
-  CoordinatorRoute, 
-  ProfessorRoute 
+export {
+  ProtectedRoute,
+  AdminRoute,
+  CoordinatorRoute,
+  ProfessorRoute,
 } from "./protected-route";
+
+// Componentes de rutas basadas en roles
 
 // Componentes de acceso denegado
 export { AccessDenied } from "./access-denied";

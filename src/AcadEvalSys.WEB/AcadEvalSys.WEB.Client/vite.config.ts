@@ -7,7 +7,6 @@ import path from "path";
 import child_process from "child_process";
 import { env } from "process";
 
-// Conditionally generate and use HTTPS certs if not in Docker build
 let httpsConfig = undefined;
 
 if (env.DOCKER_BUILD !== "true") {

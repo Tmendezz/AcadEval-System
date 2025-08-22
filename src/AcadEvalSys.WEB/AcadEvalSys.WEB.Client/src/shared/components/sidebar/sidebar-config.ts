@@ -2,20 +2,40 @@ import {
   BarChart3,
   Brain,
   ClipboardEditIcon,
-  Copy, 
+  Copy,
   GraduationCap,
   LayoutDashboard,
   Users,
+  Target,
+  CheckCircle,
+  Clock,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { technicalCareerService } from "@/features/careers/services/technical-career-service";
 import { NavGroup } from "@/shared/types/ui";
+import { useAuthStore } from "@/features/auth/store";
+import { UserRole } from "@/shared/types/auth";
 
 export function useSidebarConfig() {
+  const { user } = useAuthStore();
   const { data: careers = [] } = useQuery({
     queryKey: ["technical-careers"],
     queryFn: () => technicalCareerService.getAll(),
+    enabled:
+      !!user &&
+      (user.roles.includes(UserRole.Admin) ||
+        user.roles.includes(UserRole.Coordinator)),
   });
+
+  // Función para verificar si el usuario tiene un rol específico
+  const hasRole = (role: UserRole): boolean => {
+    return user?.roles.includes(role) || false;
+  };
+
+  // Función para verificar si el usuario tiene alguno de los roles especificados
+  const hasAnyRole = (roles: UserRole[]): boolean => {
+    return user?.roles.some((role) => roles.includes(role)) || false;
+  };
 
   const sidebarConfig: Record<string, NavGroup> = {
     main: {
@@ -28,22 +48,39 @@ export function useSidebarConfig() {
         },
       ],
     },
-    surveys: {
-      title: "Encuestas Académicas",
-      items: [
-        {
-          href: "/surveys",
-          icon: BarChart3,
-          label: "Encuestas",
-        },
-        {
-          href: "/surveys/templates",
-          icon: Copy,
-          label: "Plantillas",
-        },
-      ],
-    },
-    evaluations: {
+  };
+
+  // Encuestas - Diferentes vistas según el rol
+  sidebarConfig.surveys = {
+    title: "Encuestas Académicas",
+    items: [
+      {
+        href: "/surveys",
+        icon: BarChart3,
+        label: "Mis Encuestas",
+      },
+    ],
+  };
+
+  // Solo admin y coordinadores ven plantillas
+  if (hasAnyRole([UserRole.Admin, UserRole.Coordinator])) {
+    sidebarConfig.surveys.items.push({
+      href: "/surveys/templates",
+      icon: Copy,
+      label: "Plantillas",
+    });
+  }
+
+  // Evaluaciones - Diferentes vistas según el rol
+  if (
+    hasAnyRole([
+      UserRole.Admin,
+      UserRole.Coordinator,
+      UserRole.Professor,
+      UserRole.Student,
+    ])
+  ) {
+    sidebarConfig.evaluations = {
       title: "Evaluaciones por Competencias",
       items: [
         {
@@ -51,14 +88,22 @@ export function useSidebarConfig() {
           icon: ClipboardEditIcon,
           label: "Evaluaciones",
         },
-        {
-          href: "/evaluaciones/competencias",
-          icon: Brain,
-          label: "Competencias",
-        },
       ],
-    },
-    technicalCareers: {
+    };
+
+    // Solo admin y coordinadores ven competencias
+    if (hasAnyRole([UserRole.Admin, UserRole.Coordinator])) {
+      sidebarConfig.evaluations.items.push({
+        href: "/evaluaciones/competencias",
+        icon: Brain,
+        label: "Competencias",
+      });
+    }
+  }
+
+  // Tecnicaturas - Solo admin y coordinadores
+  if (hasAnyRole([UserRole.Admin, UserRole.Coordinator])) {
+    sidebarConfig.technicalCareers = {
       title: "Tecnicaturas",
       items: [
         ...careers.map((career) => ({
@@ -67,8 +112,12 @@ export function useSidebarConfig() {
           label: career.name,
         })),
       ],
-    },
-    administration: {
+    };
+  }
+
+  // Administración - Solo admin
+  if (hasRole(UserRole.Admin)) {
+    sidebarConfig.administration = {
       title: "Administración",
       items: [
         {
@@ -77,8 +126,8 @@ export function useSidebarConfig() {
           label: "Gestión Académica",
         },
       ],
-    },
-  };
+    };
+  }
 
   return sidebarConfig;
 }

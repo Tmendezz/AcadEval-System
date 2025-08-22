@@ -2,11 +2,13 @@ using AcadEvalSys.Application.TechnicalCareers.Commands.CreateTechnicalCareer;
 using AcadEvalSys.Application.TechnicalCareers.Commands.DeleteTechnicalCareer;
 using AcadEvalSys.Application.TechnicalCareers.Commands.UpdateTechnicalCareer;
 using AcadEvalSys.Application.TechnicalCareers.Commands.AssignCoordinator;
+using AcadEvalSys.Application.TechnicalCareers.Commands.RemoveCoordinator;
 using AcadEvalSys.Application.TechnicalCareers.Commands.ImportStudents;
 using AcadEvalSys.Application.TechnicalCareers.Commands.AddStudentToCareer;
 using AcadEvalSys.Application.TechnicalCareers.Dtos;
 using AcadEvalSys.Application.TechnicalCareers.Queries.GetAllTechnicalCareers;
 using AcadEvalSys.Application.TechnicalCareers.Queries.GetTechnicalCareerById;
+using AcadEvalSys.Application.TechnicalCareers.Queries.GetCareerCoordinator;
 using AcadEvalSys.Application.Subjects.Dtos;
 using AcadEvalSys.Domain.Constants.Constants;
 using MediatR;
@@ -108,6 +110,18 @@ public class TechnicalCareerController(IMediator mediator) : ControllerBase
         }
 
         /// <summary>
+        /// Quita el coordinador de una carrera técnica.
+        /// </summary>
+        /// <param name="id">ID de la carrera técnica.</param>
+        /// <returns>NoContent si se elimina correctamente.</returns>
+        [HttpDelete("{id}/coordinator")]
+        public async Task<IActionResult> RemoveCoordinator([FromRoute] Guid id)
+        {
+            await mediator.Send(new RemoveCoordinatorCommand { TechnicalCareerId = id });
+            return NoContent();
+        }
+
+        /// <summary>
         /// Importa estudiantes desde un archivo CSV/Excel a una carrera técnica.
         /// </summary>
         /// <param name="id">ID de la carrera técnica.</param>
@@ -145,4 +159,23 @@ public class TechnicalCareerController(IMediator mediator) : ControllerBase
             var studentId = await mediator.Send(command);
             return CreatedAtAction("GetById", "Student", new { id = studentId }, new { id = studentId });
         }
+
+    /// <summary>
+    /// Obtiene el coordinador de una carrera técnica por su ID.
+    /// </summary>
+    /// <param name="id">ID de la carrera técnica.</param>
+    /// <returns>Datos del coordinador de la carrera técnica.</returns>
+    [HttpGet("{id}/coordinator")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Produces("application/json")]
+    public async Task<ActionResult<GetCareerCoordinatorDto>> GetCareerCoordinator([FromRoute] Guid id)
+    {
+        var coordinator = await mediator.Send(new GetCareerCoordinatorQuery { TechnicalCareerId = id });
+        if (coordinator == null)
+        {
+            return NotFound();
+        }
+        return Ok(coordinator);
+    }
 }

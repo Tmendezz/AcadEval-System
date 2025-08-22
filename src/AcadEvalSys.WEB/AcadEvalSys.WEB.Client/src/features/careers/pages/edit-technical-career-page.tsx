@@ -10,8 +10,18 @@ import {
 import { Input } from "@/shared/components/ui/input";
 import { Card } from "@/shared/components/ui/card";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import {
   getTechnicalCareerById,
   updateTechnicalCareer,
+  assignCareerCoordinator,
+  getCareerCoordinator,
+  removeCareerCoordinator,
 } from "@/shared/services/technical-career-service";
 import * as subjectService from "@/shared/services/subject-service";
 import { useProfessors } from "@/shared/hooks/use-professors";
@@ -40,6 +50,13 @@ export default function EditTechnicalCareerPage() {
     enabled: !!careerId,
   });
 
+  // Obtener coordinador actual
+  const { data: currentCoordinator } = useQuery({
+    queryKey: ["career-coordinator", careerId],
+    queryFn: () => getCareerCoordinator(careerId || ""),
+    enabled: !!careerId,
+  });
+
   // Professors: list ALL created (no career filter)
   const [search, setSearch] = useState("");
   const { data: professorsData, isFetching: isSearching } = useProfessors(
@@ -51,6 +68,7 @@ export default function EditTechnicalCareerPage() {
 
   const [name, setName] = useState("");
   const [rows, setRows] = useState<SubjectRow[]>([]);
+  const [selectedCoordinator, setSelectedCoordinator] = useState<string>("");
   // Snapshot de asignaciones originales para evitar PUT redundantes
   const [initialProfBySubject, setInitialProfBySubject] = useState<
     Record<string, string | undefined>
@@ -75,6 +93,18 @@ export default function EditTechnicalCareerPage() {
       );
     }
   }, [career, subjects]);
+
+  // Establecer coordinador actual cuando se carga
+  useEffect(() => {
+    if (currentCoordinator) {
+      setSelectedCoordinator(currentCoordinator.userId);
+    }
+  }, [currentCoordinator]);
+
+  // Obtener candidatos para coordinador (profesores que dictan materias en la carrera)
+  const coordinatorCandidates = existingProfessors.filter((professor) =>
+    rows.some((row) => row.professorId === professor.id)
+  );
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -105,6 +135,20 @@ export default function EditTechnicalCareerPage() {
           );
         }
       }
+
+      // Gestionar coordinador
+      if (
+        selectedCoordinator &&
+        selectedCoordinator !== currentCoordinator?.userId
+      ) {
+        // Asignar nuevo coordinador
+        await assignCareerCoordinator(careerId, selectedCoordinator);
+        toast.success("Coordinador asignado correctamente");
+      } else if (!selectedCoordinator && currentCoordinator) {
+        // Quitar coordinador actual
+        await removeCareerCoordinator(careerId);
+        toast.success("Coordinador removido correctamente");
+      }
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["technical-careers"] });
@@ -112,6 +156,9 @@ export default function EditTechnicalCareerPage() {
         queryKey: ["technical-career", careerId],
       });
       await queryClient.invalidateQueries({ queryKey: ["subjects", careerId] });
+      await queryClient.invalidateQueries({
+        queryKey: ["career-coordinator", careerId],
+      });
       toast.success("Tecnicatura actualizada correctamente.");
       // Refrescar snapshot local tras guardar
       setInitialProfBySubject(
@@ -137,6 +184,71 @@ export default function EditTechnicalCareerPage() {
             onChange={(e) => setName(e.target.value)}
             placeholder="Ej: Tecnicatura en Programación"
           />
+        </Card>
+
+        {/* Selector de Coordinador */}
+        <Card className="p-4 space-y-3">
+          <label className="text-sm font-medium">
+            Coordinador de la carrera
+          </label>
+
+          {/* Mostrar coordinador actual si existe */}
+          {currentCoordinator && (
+            <div className="p-3 bg-muted/50 rounded-md border">
+              <p className="text-sm font-medium">Coordinador actual:</p>
+              <p className="text-sm text-muted-foreground">
+                {currentCoordinator.name} ({currentCoordinator.email})
+                {currentCoordinator.phone && ` - ${currentCoordinator.phone}`}
+              </p>
+            </div>
+          )}
+
+          <Select
+            value={selectedCoordinator}
+            onValueChange={setSelectedCoordinator}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccione un coordinador entre los profesores de las materias" />
+            </SelectTrigger>
+            <SelectContent>
+              {coordinatorCandidates.map((professor) => (
+                <SelectItem key={professor.id} value={professor.id}>
+                  {professor.name}
+                  {currentCoordinator?.userId === professor.id && " (actual)"}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <p className="text-xs text-muted-foreground">
+            Solo se muestran profesores que dictan materias en esta carrera
+          </p>
+
+          {/* Validación en tiempo real */}
+          {selectedCoordinator &&
+            selectedCoordinator !== currentCoordinator?.userId && (
+              <div className="p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700">
+                Profesor seleccionado como nuevo coordinador
+              </div>
+            )}
+
+          {!selectedCoordinator && currentCoordinator && (
+            <div className="p-2 bg-amber-50 border border-amber-200 rounded text-xs text-amber-700">
+              ⚠️ Se quitará el coordinador actual
+            </div>
+          )}
+
+          {/* Botón para quitar coordinador */}
+          {currentCoordinator && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSelectedCoordinator("")}
+              className="w-full"
+            >
+              Quitar coordinador actual
+            </Button>
+          )}
         </Card>
 
         {["First", "Second", "Third"].map((yearKey) => (
