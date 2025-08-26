@@ -2,16 +2,19 @@ import { useState } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Upload } from "lucide-react";
 import { ImportStudentsToCareerDialog } from "./import-students-to-career-dialog";
+import { CareerYear } from "@/shared/types/enums";
 
 interface ImportStudentsToCareerButtonProps {
   careerId: string;
   careerName: string;
+  careerYear: CareerYear;
   disabled?: boolean;
 }
 
 export function ImportStudentsToCareerButton({
   careerId,
   careerName,
+  careerYear,
   disabled = false,
 }: ImportStudentsToCareerButtonProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -32,6 +35,7 @@ export function ImportStudentsToCareerButton({
         onOpenChange={setDialogOpen}
         careerId={careerId}
         careerName={careerName}
+        careerYear={careerYear}
       />
     </>
   );

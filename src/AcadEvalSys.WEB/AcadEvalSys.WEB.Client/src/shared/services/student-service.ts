@@ -42,11 +42,30 @@ export const studentService = {
   ): Promise<Student[]> {
     const params = new URLSearchParams({ technicalCareerId });
     if (currentYear) params.append("currentYear", currentYear.toString());
-
-    const { data } = await api.get<Student[]>(
-      `${STUDENTS_API_URL}/by-career?${params}`
+    // Backend no expone /students/by-career; usamos GET /students con filtros
+    const { data } = await api.get<{ students: any[]; totalCount: number }>(
+      `${STUDENTS_API_URL}?${params}`
     );
-    return data;
+    const toYearNumber = (y: any): number => {
+      if (typeof y === "number") return y;
+      switch (y) {
+        case "First":
+          return 1;
+        case "Second":
+          return 2;
+        case "Third":
+          return 3;
+        default:
+          return 1;
+      }
+    };
+    return (data.students ?? []).map((s: any) => ({
+      id: s.userId ?? s.id,
+      name: s.name,
+      email: s.email,
+      currentYear: toYearNumber(s.currentYear),
+      technicalCareerName: s.technicalCareerName ?? "",
+    }));
   },
 
   async getAvailableStudents(

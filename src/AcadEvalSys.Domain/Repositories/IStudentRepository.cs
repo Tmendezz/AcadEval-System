@@ -17,4 +17,7 @@ public interface IStudentRepository
     Task UpdateStudentYearIfNeededAsync(string studentId, AcadEvalSys.Domain.Enums.CareerYear subjectYear);
     Task UnenrollFromSubjectAsync(string studentId, Guid subjectId);
     Task<IEnumerable<Student>> GetAvailableStudentsForSubjectAsync(Guid technicalCareerId, Guid subjectId, AcadEvalSys.Domain.Enums.CareerYear? year = null);
+    
+    // Método para revocar inscripciones expiradas
+    Task<int> RevokeEnrollmentsByYearAsync(int academicYear);
 }

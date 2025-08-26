@@ -1,4 +1,10 @@
-import { useState, useMemo } from "react";
+import {
+  useState,
+  useMemo,
+  forwardRef,
+  useImperativeHandle,
+  useEffect,
+} from "react";
 import {
   Card,
   CardContent,
@@ -6,12 +12,11 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Badge } from "@/shared/components/ui/badge";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 
-import { Users, Search, UserMinus, Filter, Trash2 } from "lucide-react";
+import { Users, UserMinus, Trash2 } from "lucide-react";
 import { Student } from "@/shared/types/student";
 import { CareerYear, CareerYearLabels } from "@/shared/types/enums";
 import { useUnenrollStudent, useUnenrollStudents } from "../hooks";
@@ -22,20 +27,44 @@ interface EnrolledStudentsManagementProps {
   subjectName: string;
   careerId: string;
   isLoading?: boolean;
+  onSelectionChange?: (state: {
+    selectedCount: number;
+    totalFiltered: number;
+    isAllSelected: boolean;
+    isBulkPending: boolean;
+  }) => void;
 }
 
-export function EnrolledStudentsManagement({
-  enrolledStudents,
-  subjectId,
-  subjectName,
-  careerId,
-  isLoading = false,
-}: EnrolledStudentsManagementProps) {
+export interface EnrolledStudentsManagementHandle {
+  toggleSelectAll: () => void;
+  unenrollSelected: () => Promise<void>;
+  getSelectionState: () => {
+    selectedCount: number;
+    totalFiltered: number;
+    isAllSelected: boolean;
+    isBulkPending: boolean;
+  };
+}
+
+export const EnrolledStudentsManagement = forwardRef<
+  EnrolledStudentsManagementHandle,
+  EnrolledStudentsManagementProps
+>(function EnrolledStudentsManagement(
+  {
+    enrolledStudents,
+    subjectId,
+    subjectName,
+    careerId,
+    isLoading = false,
+    onSelectionChange,
+  }: EnrolledStudentsManagementProps,
+  ref
+) {
   const [selectedStudents, setSelectedStudents] = useState<Set<string>>(
     new Set()
   );
-  const [searchTerm, setSearchTerm] = useState("");
-  const [yearFilter, setYearFilter] = useState<CareerYear | "All">("All");
+  const [searchTerm] = useState("");
+  const [yearFilter] = useState<CareerYear | "All">("All");
 
   const unenrollStudentMutation = useUnenrollStudent();
   const unenrollStudentsMutation = useUnenrollStudents();
@@ -101,27 +130,46 @@ export function EnrolledStudentsManagement({
     }
   };
 
-  const renderYearFilters = () => (
-    <div className="flex gap-2">
-      <Button
-        variant={yearFilter === "All" ? "default" : "outline"}
-        size="sm"
-        onClick={() => setYearFilter("All")}
-      >
-        Todos
-      </Button>
-      {[CareerYear.First, CareerYear.Second, CareerYear.Third].map((year) => (
-        <Button
-          key={year}
-          variant={yearFilter === year ? "default" : "outline"}
-          size="sm"
-          onClick={() => setYearFilter(year)}
-        >
-          {CareerYearLabels[year]}
-        </Button>
-      ))}
-    </div>
+  // Exponer API al padre
+  useImperativeHandle(
+    ref,
+    () => ({
+      toggleSelectAll: handleSelectAll,
+      unenrollSelected: handleUnenrollSelected,
+      getSelectionState: () => ({
+        selectedCount: selectedStudents.size,
+        totalFiltered: filteredStudents.length,
+        isAllSelected:
+          selectedStudents.size === filteredStudents.length &&
+          filteredStudents.length > 0,
+        isBulkPending: unenrollStudentsMutation.isPending,
+      }),
+    }),
+    [
+      selectedStudents,
+      filteredStudents.length,
+      unenrollStudentsMutation.isPending,
+    ]
   );
+
+  // Notificar cambios de selección al padre
+  useEffect(() => {
+    if (!onSelectionChange) return;
+    onSelectionChange({
+      selectedCount: selectedStudents.size,
+      totalFiltered: filteredStudents.length,
+      isAllSelected:
+        selectedStudents.size === filteredStudents.length &&
+        filteredStudents.length > 0,
+      isBulkPending: unenrollStudentsMutation.isPending,
+    });
+  }, [
+    selectedStudents,
+    filteredStudents.length,
+    unenrollStudentsMutation.isPending,
+  ]);
+
+  // Filtros por año disponibles si se requiere UI dedicada
 
   const renderStudentCard = (student: Student) => {
     const isSelected = selectedStudents.has(student.id);
@@ -225,7 +273,7 @@ export function EnrolledStudentsManagement({
                       size="sm"
                       disabled={unenrollStudentsMutation.isPending}
                     >
-                      <Trash2 className="h-4 w-4 mr-1" />
+                      <Trash2 className="w-4 h-4 mr-1" />
                       Desinscribir {selectedStudents.size} estudiante
                       {selectedStudents.size > 1 ? "s" : ""}
                     </Button>
@@ -254,4 +302,4 @@ export function EnrolledStudentsManagement({
       </Card>
     </>
   );
-}
+});

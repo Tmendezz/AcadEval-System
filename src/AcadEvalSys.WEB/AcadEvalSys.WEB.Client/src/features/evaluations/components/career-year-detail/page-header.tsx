@@ -20,17 +20,6 @@ export function PageHeader({
         <h1 className="text-2xl font-semibold text-foreground mb-2">
           {evaluationTitle}
         </h1>
-        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <GraduationCap className="w-4 h-4" />
-            <span>{careerName}</span>
-          </div>
-          <div className="w-1 h-1 bg-muted-foreground rounded-full" />
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            <span>Año {year}</span>
-          </div>
-        </div>
       </div>
     </div>
   );

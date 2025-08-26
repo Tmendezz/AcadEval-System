@@ -85,14 +85,16 @@ public class StudentRepository(ApplicationDbContext dbContext, ILogger<StudentRe
 
     public async Task<bool> IsEnrolledInSubjectAsync(string studentId, Guid subjectId)
     {
+        var currentYear = DateTime.Now.Year;
         return await dbContext.StudentSubjects
-            .AnyAsync(ss => ss.StudentId == studentId && ss.SubjectId == subjectId && ss.IsActive);
+            .AnyAsync(ss => ss.StudentId == studentId && ss.SubjectId == subjectId && ss.IsActive && ss.AcademicYear == currentYear);
     }
 
     public async Task EnrollInSubjectAsync(string studentId, Guid subjectId, string createdByUserId)
     {
+        var currentYear = DateTime.Now.Year;
         var existingEnrollment = await dbContext.StudentSubjects
-            .FirstOrDefaultAsync(ss => ss.StudentId == studentId && ss.SubjectId == subjectId);
+            .FirstOrDefaultAsync(ss => ss.StudentId == studentId && ss.SubjectId == subjectId && ss.AcademicYear == currentYear);
 
         if (existingEnrollment != null)
         {
@@ -106,6 +108,7 @@ public class StudentRepository(ApplicationDbContext dbContext, ILogger<StudentRe
             {
                 StudentId = studentId,
                 SubjectId = subjectId,
+                AcademicYear = currentYear,
                 CreatedAt = DateTime.UtcNow,
                 CreatedByUserId = createdByUserId,
                 IsActive = true
@@ -118,8 +121,9 @@ public class StudentRepository(ApplicationDbContext dbContext, ILogger<StudentRe
 
     public async Task UnenrollFromSubjectAsync(string studentId, Guid subjectId)
     {
+        var currentYear = DateTime.Now.Year;
         var studentSubject = await dbContext.StudentSubjects
-            .FirstOrDefaultAsync(ss => ss.StudentId == studentId && ss.SubjectId == subjectId && ss.IsActive);
+            .FirstOrDefaultAsync(ss => ss.StudentId == studentId && ss.SubjectId == subjectId && ss.IsActive && ss.AcademicYear == currentYear);
 
         if (studentSubject != null)
         {
@@ -131,23 +135,47 @@ public class StudentRepository(ApplicationDbContext dbContext, ILogger<StudentRe
     public async Task<IEnumerable<Student>> GetAvailableStudentsForSubjectAsync(Guid technicalCareerId, Guid subjectId, Domain.Enums.CareerYear? year = null)
     {
         var query = dbContext.Students.AsQueryable()
-            .Include(s => s.User)
-            .Include(s => s.TechnicalCareer)
-            .Where(s => s.TechnicalCareerId == technicalCareerId)
-            .Where(s => !dbContext.StudentSubjects.Any(ss => 
-                ss.StudentId == s.UserId && 
-                ss.SubjectId == subjectId && 
-                ss.IsActive));
+            .Where(s => s.TechnicalCareerId == technicalCareerId);
 
         if (year.HasValue)
         {
             query = query.Where(s => s.CurrentYear == year.Value);
         }
 
-        return await query
-            .OrderBy(s => s.CurrentYear) // Ordenar por año primero
-            .ThenBy(s => s.User.Name)     // Luego por nombre
+        // Excluir estudiantes ya inscritos en esta materia para el año actual
+        var currentYear = DateTime.Now.Year;
+        var enrolledStudentIds = await dbContext.StudentSubjects
+            .Where(ss => ss.SubjectId == subjectId && ss.IsActive && ss.AcademicYear == currentYear)
+            .Select(ss => ss.StudentId)
             .ToListAsync();
+
+        if (enrolledStudentIds.Any())
+        {
+            query = query.Where(s => !enrolledStudentIds.Contains(s.UserId));
+        }
+
+        return await query
+            .Include(s => s.User)
+            .Include(s => s.TechnicalCareer)
+            .ToListAsync();
+    }
+
+    public async Task<int> RevokeEnrollmentsByYearAsync(int academicYear)
+    {
+        var enrollmentsToRevoke = await dbContext.StudentSubjects
+            .Where(ss => ss.AcademicYear == academicYear && ss.IsActive)
+            .ToListAsync();
+
+        foreach (var enrollment in enrollmentsToRevoke)
+        {
+            enrollment.IsActive = false;
+            enrollment.UpdatedAt = DateTime.UtcNow;
+            // Nota: No establecemos UpdatedByUserId ya que es una revocación automática del sistema
+        }
+
+        await dbContext.SaveChangesAsync();
+        
+        return enrollmentsToRevoke.Count;
     }
 
     /// <summary>

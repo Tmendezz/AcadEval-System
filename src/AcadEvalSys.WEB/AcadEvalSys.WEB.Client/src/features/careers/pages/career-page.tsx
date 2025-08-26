@@ -11,13 +11,10 @@ import {
 import { CareerCoordinatorCard } from "../components/career-coordinator-card";
 import { DataSection } from "@/shared/components/ui/data-section";
 import { useGetTechnicalCareerById, useSubjectsByYear } from "../hooks";
+import { useCareerCoordinator } from "../hooks";
 import { createSubjectColumns } from "../columns";
 import { LoadingState } from "@/shared/components/ui/loading-state";
-import {
-  ImportStudentsToCareerButton,
-  AddStudentButton,
-  YearFilterBadges,
-} from "../components";
+import { ImportStudentsToCareerButton, AddStudentButton } from "../components";
 import {
   SubjectFormDialog,
   SubjectFormValues,
@@ -25,11 +22,15 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as subjectService from "@/shared/services/subject-service";
 import { useState } from "react";
+import { YearFilterBadges } from "../components/year-filter-badges";
 
 export default function CareerPage() {
   const queryClient = useQueryClient();
   const { careerId } = useParams();
   const { data: careerData } = useGetTechnicalCareerById(careerId || "");
+
+  // Obtener el coordinador de la carrera
+  const { data: coordinatorData } = useCareerCoordinator(careerId);
 
   const {
     filteredSubjects,
@@ -89,14 +90,7 @@ export default function CareerPage() {
 
       <PageContent>
         {careerId && (
-          <CareerCoordinatorCard
-            careerName={careerData?.name || ""}
-            coordinator={undefined} // TODO: Get real coordinator
-            professors={[]} // TODO: Get professor list
-            onAssignCoordinator={async (professorId) => {
-              // TODO: Implementar lógica de asignación de coordinador
-            }}
-          />
+          <CareerCoordinatorCard coordinator={coordinatorData || undefined} />
         )}
         <PageSection className="space-y-6">
           <div className="relative">
@@ -124,6 +118,7 @@ export default function CareerPage() {
                 <ImportStudentsToCareerButton
                   careerId={careerId}
                   careerName={careerData?.name || ""}
+                  careerYear={selectedYear}
                 />
               </div>
             </div>

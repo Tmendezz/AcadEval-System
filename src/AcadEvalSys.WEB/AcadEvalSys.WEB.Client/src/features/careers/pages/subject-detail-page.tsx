@@ -1,4 +1,5 @@
 import { useParams } from "wouter";
+import { useRef, useState, useCallback } from "react";
 import { navigate } from "wouter/use-browser-location";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -16,21 +17,31 @@ import {
 import { LoadingState } from "@/shared/components/ui/loading-state";
 import { ArrowLeft, GraduationCap, Pencil, Plus } from "lucide-react";
 import { useSubject } from "../hooks";
-import {
-  ImportStudentsButton,
-  EnrolledStudentsManagement,
-} from "../components";
+import { EnrolledStudentsManagement } from "../components";
 import { EnrolledStudent } from "@/shared/types/subject";
 import { Student } from "@/shared/types/student";
 import { CareerYear } from "@/shared/types/enums";
+import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
+import type { EnrolledStudentsManagementHandle } from "../components/enrolled-students-management";
+import { StudentSelectionDialog } from "../components/student-selection-dialog";
 
 export default function SubjectDetailPage() {
   const { careerId, subjectId } = useParams();
 
   const { subject, isLoadingSubject } = useSubject(subjectId!, careerId!);
 
-  // Función para convertir EnrolledStudent[] a Student[]
-  // ✅ Backend actualizado: ahora incluye currentYear y technicalCareerName
+  const listRef = useRef<EnrolledStudentsManagementHandle | null>(null);
+  const [selectionState, setSelectionState] = useState({
+    selectedCount: 0,
+    totalFiltered: 0,
+    isAllSelected: false,
+    isBulkPending: false,
+  });
+  const handleSelectionChange = useCallback((s: typeof selectionState) => {
+    setSelectionState(s);
+  }, []);
+  const [isEnrollDialogOpen, setIsEnrollDialogOpen] = useState(false);
+
   const convertEnrolledStudentsToStudents = (
     enrolledStudents: EnrolledStudent[]
   ): Student[] => {
@@ -84,19 +95,10 @@ export default function SubjectDetailPage() {
         description={`Detalles de la asignatura ${subject.name} - ${subject.year}`}
       >
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate(`/administration/tecnicaturas/${careerId}`)}
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Volver
+          <Button onClick={() => setIsEnrollDialogOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Inscribir alumnos
           </Button>
-          <ImportStudentsButton
-            careerId={careerId!}
-            subjectId={subjectId!}
-            subjectName={subject.name}
-          />
         </div>
       </PageHeader>
 
@@ -140,6 +142,7 @@ export default function SubjectDetailPage() {
 
         {/* Gestión de Estudiantes */}
         <EnrolledStudentsManagement
+          ref={listRef}
           enrolledStudents={convertEnrolledStudentsToStudents(
             subject.enrolledStudents || []
           )}
@@ -147,6 +150,14 @@ export default function SubjectDetailPage() {
           subjectName={subject.name}
           careerId={careerId!}
           isLoading={isLoadingSubject}
+          onSelectionChange={handleSelectionChange}
+        />
+        <StudentSelectionDialog
+          open={isEnrollDialogOpen}
+          onOpenChange={setIsEnrollDialogOpen}
+          careerId={careerId!}
+          subjectId={subjectId!}
+          subjectName={subject.name}
         />
       </PageContent>
     </PageLayout>

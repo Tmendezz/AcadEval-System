@@ -132,6 +132,12 @@ public static class ServiceCollectionExtensions
         // Student Reports - NUEVO
         services.AddScoped<IStudentEvaluationReportRepository, StudentEvaluationReportRepository>();
         
+        // Enrollment Expiration Service
+        services.AddScoped<IEnrollmentExpirationService, EnrollmentExpirationService>();
+        
+        // Enrollment Expiration Background Service
+        services.AddScoped<EnrollmentExpirationBackgroundService>();
+        
         // Configurar Hangfire con PostgreSQL
     services.AddHangfireServices(connectionString!);
         

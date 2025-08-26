@@ -26,6 +26,7 @@ import {
   CoordinatorRoute,
   ProtectedRoute,
 } from "../features/auth/components";
+import { UserRole } from "@/shared/types/auth";
 
 export function AppRoutes() {
   return (
@@ -59,28 +60,28 @@ export function AppRoutes() {
 
         {/* Evaluaciones - Solo para profesores */}
         <Route path="/evaluaciones/:id/evaluar">
-          <ProtectedRoute requiredRoles={["Professor"]}>
+          <ProtectedRoute requiredRoles={[UserRole.Professor]}>
             <ProfessorEvaluationPage />
           </ProtectedRoute>
         </Route>
 
         {/* Evaluaciones pendientes para profesores */}
         <Route path="/evaluaciones/pendientes">
-          <ProtectedRoute requiredRoles={["Professor"]}>
+          <ProtectedRoute requiredRoles={[UserRole.Professor]}>
             <ProfessorPendingEvaluationsPage />
           </ProtectedRoute>
         </Route>
 
         {/* Evaluaciones completadas para profesores */}
         <Route path="/evaluaciones/completadas">
-          <ProtectedRoute requiredRoles={["Professor"]}>
+          <ProtectedRoute requiredRoles={[UserRole.Professor]}>
             <ProfessorPendingEvaluationsPage />
           </ProtectedRoute>
         </Route>
 
         {/* Evaluaciones recibidas para estudiantes */}
         <Route path="/evaluaciones/recibidas">
-          <ProtectedRoute requiredRoles={["Student"]}>
+          <ProtectedRoute requiredRoles={[UserRole.Student]}>
             <StudentReceivedEvaluationsPage />
           </ProtectedRoute>
         </Route>

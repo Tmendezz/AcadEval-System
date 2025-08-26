@@ -22,7 +22,7 @@ public class ImportStudentsToCareerCommandHandler(
     IStudentRepository studentRepository,
     ITechnicalCareerRepository technicalCareerRepository,
     IUserContext userContext,
-    IStudentCsvParser studentCsvParser) : IRequestHandler<ImportStudentsToCareerCommand, ImportStudentsResultDto>
+    IStudentExcelParser studentExcelParser) : IRequestHandler<ImportStudentsToCareerCommand, ImportStudentsResultDto>
 {
     public async Task<ImportStudentsResultDto> Handle(ImportStudentsToCareerCommand request, CancellationToken cancellationToken)
     {
@@ -40,7 +40,7 @@ public class ImportStudentsToCareerCommandHandler(
         var records = new List<ImportStudentRecord>();
         try
         {
-            records = studentCsvParser.Parse(request.File).ToList();
+            records = studentExcelParser.Parse(request.File).ToList();
         }
         catch (Exception ex)
         {

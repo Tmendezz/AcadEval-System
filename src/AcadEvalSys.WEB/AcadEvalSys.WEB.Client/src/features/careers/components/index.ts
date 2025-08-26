@@ -1,14 +1,9 @@
 // Componentes del módulo de careers
-export * from "./statistics-cards";
-export * from "./search-filters";
-export * from "./career-list";
-export * from "./year-filter-badges";
-export * from "./career-coordinator-card";
-export * from "./import-students-button";
-export * from "./import-students-dialog";
-export * from "./import-students-to-career-button";
-export * from "./import-students-to-career-dialog";
-export * from "./student-selection-dialog";
-export * from "./add-student-button";
-export * from "./add-student-dialog";
-export * from "./enrolled-students-management";
+export { AddStudentButton } from "./add-student-button";
+export { CareerCoordinatorCard } from "./career-coordinator-card";
+export { ImportStudentsButton } from "./import-students-button";
+export { ImportStudentsDialog } from "./import-students-dialog";
+export { ImportStudentsToCareerButton } from "./import-students-to-career-button";
+export { ImportStudentsToCareerDialog } from "./import-students-to-career-dialog";
+export { EnrolledStudentsManagement } from "./enrolled-students-management";
+export * from "./import-dialog";

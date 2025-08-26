@@ -53,7 +53,7 @@ export function ImportStudentsDialog({
   const importMutation = useImportStudents();
 
   const validateAndSetFile = useCallback((file: File) => {
-    const allowedTypes = [".csv"]; // Solo CSV
+    const allowedTypes = [".csv", ".xlsx", ".xls"]; // CSV o Excel
     const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
 
     if (!allowedTypes.includes(fileExtension)) {
@@ -322,7 +322,7 @@ export function ImportStudentsDialog({
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".csv"
+                accept=".csv,.xlsx,.xls"
                 onChange={handleFileSelected}
                 className="sr-only"
               />

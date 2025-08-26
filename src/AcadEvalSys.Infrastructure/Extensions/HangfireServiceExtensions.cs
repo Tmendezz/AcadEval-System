@@ -39,6 +39,13 @@ public static class HangfireServiceExtensions
         // Registrar nuestro servicio de background
         services.AddScoped<IReportGenerationBackgroundService, ReportGenerationBackgroundService>();
 
+        // Configurar jobs recurrentes
+        // Aquí puedes agregar otros jobs que se ejecuten periódicamente
+        
+        // Inicializar job de expiración de inscripciones
+        var enrollmentExpirationService = serviceProvider.GetRequiredService<EnrollmentExpirationBackgroundService>();
+        enrollmentExpirationService.ScheduleAutomaticRevocation();
+        
         return services;
     }
 }

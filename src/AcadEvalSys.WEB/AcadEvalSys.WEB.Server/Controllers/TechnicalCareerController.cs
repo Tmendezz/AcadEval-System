@@ -178,4 +178,21 @@ public class TechnicalCareerController(IMediator mediator) : ControllerBase
         }
         return Ok(coordinator);
     }
+
+        /// <summary>
+        /// Revoca las inscripciones expiradas del año anterior
+        /// </summary>
+        /// <param name="id">ID de la carrera técnica.</param>
+        /// <param name="command">Comando para revocar inscripciones.</param>
+        /// <returns>Resultado de la revocación.</returns>
+        [HttpPost("{id}/revoke-expired-enrollments")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Produces("application/json")]
+        public async Task<ActionResult<RevokeExpiredEnrollmentsResult>> RevokeExpiredEnrollments([FromRoute] Guid id, [FromBody] RevokeExpiredEnrollmentsCommand command)
+        {
+            var result = await mediator.Send(command);
+            return Ok(result);
+        }
 }

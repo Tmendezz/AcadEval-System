@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { Target, Search, Plus } from "lucide-react";
-import { Competency } from "@/shared/types";
+import { Competency } from "@/shared/types/competency";
 import { getCompetencies } from "@/shared/services/competency-service";
 import {
   PageLayout,
