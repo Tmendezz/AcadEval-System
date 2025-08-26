@@ -26,14 +26,40 @@ public class IdentityController(IMediator mediator) : ControllerBase
 {
 
     /// <summary>
-    /// Cierra la sesión del usuario actual.
+    /// Cierra la sesión del usuario actual y limpia todas las cookies.
     /// </summary>
     /// <returns>NoContent si se cierra la sesión correctamente.</returns>
     [HttpPost("logout")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Logout()
     {
+        //  Cerrar sesión de ASP.NET Core Identity
         await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+        
+        //  Limpiar todas las cookies de autenticación
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = Request.IsHttps,
+            SameSite = SameSiteMode.Lax,
+            Path = "/",
+            Expires = DateTime.UtcNow.AddDays(-1) // Expirar ayer
+        };
+
+        // Limpiar cookies principales de autenticación
+        Response.Cookies.Delete(".AspNetCore.Identity.Application", cookieOptions);
+        Response.Cookies.Delete(".AspNetCore.Identity.External", cookieOptions);
+        
+        // Limpiar cookies de sesión si las hay
+        Response.Cookies.Delete("session", cookieOptions);
+        Response.Cookies.Delete("auth", cookieOptions);
+        
+        
+        // Agregar headers para prevenir cache del navegador
+        Response.Headers.Append("Cache-Control", "no-cache, no-store, must-revalidate");
+        Response.Headers.Append("Pragma", "no-cache");
+        Response.Headers.Append("Expires", "0");
+
         return NoContent();
     }
 

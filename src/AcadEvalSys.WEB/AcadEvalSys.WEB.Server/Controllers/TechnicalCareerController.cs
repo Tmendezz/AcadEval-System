@@ -10,6 +10,7 @@ using AcadEvalSys.Application.TechnicalCareers.Queries.GetAllTechnicalCareers;
 using AcadEvalSys.Application.TechnicalCareers.Queries.GetTechnicalCareerById;
 using AcadEvalSys.Application.TechnicalCareers.Queries.GetCareerCoordinator;
 using AcadEvalSys.Application.Subjects.Dtos;
+using AcadEvalSys.Application.TechnicalCareers.Commands.RevokeExpiredEnrollments;
 using AcadEvalSys.Domain.Constants.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

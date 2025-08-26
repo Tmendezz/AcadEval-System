@@ -21,11 +21,7 @@ import { PersonalPage } from "../features/administration";
 import { SubjectDetailPage, SubjectsPage } from "../features/careers";
 import CreateTechnicalCareerPage from "@/features/careers/pages/create-technical-career-page";
 import EditTechnicalCareerPage from "@/features/careers/pages/edit-technical-career-page";
-import {
-  AdminRoute,
-  CoordinatorRoute,
-  ProtectedRoute,
-} from "../features/auth/components";
+import { AdminRoute, ProtectedRoute } from "../features/auth/components";
 import { UserRole } from "@/shared/types/auth";
 
 export function AppRoutes() {
@@ -45,44 +41,36 @@ export function AppRoutes() {
           path="/evaluaciones/competencias/:id"
           component={CompetencyDetailPage}
         />
-        <Route path="/evaluaciones/:id" component={EvaluationDetailPage} />
-        <Route
-          path="/evaluaciones/:evaluationId/carrera/:careerId/año/:year"
-          component={CareerYearDetailPage}
-        />
 
-        {/* Evaluaciones - Solo para administradores y coordinadores */}
+        {/* RUTAS ESPECÍFICAS DEBEN IR ANTES QUE LAS GENÉRICAS */}
         <Route path="/evaluaciones/nueva">
-          <CoordinatorRoute>
-            <CreateEvaluationPage />
-          </CoordinatorRoute>
+          <CreateEvaluationPage />
         </Route>
-
-        {/* Evaluaciones - Solo para profesores */}
-        <Route path="/evaluaciones/:id/evaluar">
-          <ProtectedRoute requiredRoles={[UserRole.Professor]}>
-            <ProfessorEvaluationPage />
-          </ProtectedRoute>
-        </Route>
-
-        {/* Evaluaciones pendientes para profesores */}
         <Route path="/evaluaciones/pendientes">
           <ProtectedRoute requiredRoles={[UserRole.Professor]}>
             <ProfessorPendingEvaluationsPage />
           </ProtectedRoute>
         </Route>
-
-        {/* Evaluaciones completadas para profesores */}
         <Route path="/evaluaciones/completadas">
           <ProtectedRoute requiredRoles={[UserRole.Professor]}>
             <ProfessorPendingEvaluationsPage />
           </ProtectedRoute>
         </Route>
-
-        {/* Evaluaciones recibidas para estudiantes */}
         <Route path="/evaluaciones/recibidas">
           <ProtectedRoute requiredRoles={[UserRole.Student]}>
             <StudentReceivedEvaluationsPage />
+          </ProtectedRoute>
+        </Route>
+
+        {/* RUTAS GENÉRICAS VAN AL FINAL */}
+        <Route path="/evaluaciones/:id" component={EvaluationDetailPage} />
+        <Route
+          path="/evaluaciones/:evaluationId/carrera/:careerId/año/:year"
+          component={CareerYearDetailPage}
+        />
+        <Route path="/evaluaciones/:id/evaluar">
+          <ProtectedRoute requiredRoles={[UserRole.Professor]}>
+            <ProfessorEvaluationPage />
           </ProtectedRoute>
         </Route>
 
@@ -99,14 +87,10 @@ export function AppRoutes() {
 
         {/* Carreras - Solo para administradores y coordinadores */}
         <Route path="/tecnicaturas/nueva">
-          <CoordinatorRoute>
-            <CreateTechnicalCareerPage />
-          </CoordinatorRoute>
+          <CreateTechnicalCareerPage />
         </Route>
         <Route path="/tecnicaturas/:careerId/editar">
-          <CoordinatorRoute>
-            <EditTechnicalCareerPage />
-          </CoordinatorRoute>
+          <EditTechnicalCareerPage />
         </Route>
 
         {/* Administración - SOLO PARA ADMIN */}

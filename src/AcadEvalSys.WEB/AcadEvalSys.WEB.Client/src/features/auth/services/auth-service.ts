@@ -1,33 +1,33 @@
-import { api } from "@/shared/config/axios-new";
+import { api } from "@/shared/config/axios";
 import { useAuthStore } from "@/features/auth/store";
 import { User, LoginCredentials, SessionStatus } from "@/shared/types/auth";
 
 const AUTH_API_URL = "/identity";
 
 export const authService = {
-
   async login(credentials: LoginCredentials): Promise<User> {
     const store = useAuthStore.getState();
-    
+
     try {
       store.setLoading(true);
       store.setError(null);
 
       // Llamada a la API de login
       const response = await api.post(
-        `${AUTH_API_URL}/login?useCookies=true`, 
+        `${AUTH_API_URL}/login?useCookies=true`,
         credentials
       );
 
       // Obtener información del usuario después del login
       const userInfo = await authService.getCurrentUser();
-      
+
       // Actualizar el store con la información del usuario
       store.login(userInfo);
-      
+
       return userInfo;
     } catch (error: any) {
-      const message = error.response?.data?.message || "Error al iniciar sesión";
+      const message =
+        error.response?.data?.message || "Error al iniciar sesión";
       store.setError(message);
       throw error;
     } finally {
@@ -40,13 +40,13 @@ export const authService = {
    */
   async logout(): Promise<void> {
     const store = useAuthStore.getState();
-    
+
     try {
       store.setLoading(true);
-      
+
       // Llamada a la API de logout
       await api.post(`${AUTH_API_URL}/logout`);
-      
+
       // Limpiar el store
       store.logout();
     } catch (error) {
@@ -85,7 +85,7 @@ export const authService = {
    */
   async refreshUserInfo(): Promise<void> {
     const store = useAuthStore.getState();
-    
+
     try {
       const userInfo = await authService.getCurrentUser();
       store.setUser(userInfo);
@@ -95,7 +95,4 @@ export const authService = {
       store.logout();
     }
   },
-
-
-
 };
