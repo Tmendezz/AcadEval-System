@@ -15,18 +15,8 @@ export const columns: ColumnDef<Evaluation>[] = [
     accessorKey: "title",
     header: "Título",
     cell: ({ row }) => {
-      return <div className="text-sm font-medium">{row.original.title}</div>;
-    },
-  },
-  {
-    id: "description",
-    accessorKey: "description",
-    header: "Descripción",
-    cell: ({ row }) => {
       return (
-        <div className="text-sm text-muted-foreground truncate">
-          {row.original.description}
-        </div>
+        <div className="text-sm w-40 font-medium">{row.original.title}</div>
       );
     },
   },
@@ -86,7 +76,7 @@ export const columns: ColumnDef<Evaluation>[] = [
 
       const handleView = (e: React.MouseEvent) => {
         e.stopPropagation();
-        navigate(`/evaluaciones/${row.original.id}`) ;
+        navigate(`/evaluaciones/${row.original.id}`);
       };
 
       return (

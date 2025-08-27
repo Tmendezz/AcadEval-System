@@ -25,6 +25,16 @@ export function AssignmentForm({
   onUpdate,
   onRemove,
 }: AssignmentFormProps) {
+  const handleRemove = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onRemove();
+  };
+
+  const handleSubjectChange = (value: string) => {
+    onUpdate("subjectId", value);
+  };
+
   return (
     <Card className="bg-muted/30">
       <CardContent className="pt-4">
@@ -41,7 +51,7 @@ export function AssignmentForm({
             <Label>Asignatura</Label>
             <SmartSelect
               value={assignment.subjectId ?? ""}
-              onValueChange={(value) => onUpdate("subjectId", value)}
+              onValueChange={handleSubjectChange}
               placeholder="Asignar profesor/asignatura"
               options={subjects}
               renderOption={(subject) => (
@@ -60,7 +70,7 @@ export function AssignmentForm({
 
           <div className="flex items-center justify-end self-center mt-4">
             <Button
-              onClick={onRemove}
+              onClick={handleRemove}
               variant="outline"
               size="sm"
               type="button"

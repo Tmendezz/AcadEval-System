@@ -24,6 +24,31 @@ export function WizardNavigation({
   const isFirstStep = currentStep === 1;
   const isLastStep = currentStep === totalSteps;
 
+  const handleNext = () => {
+    console.log("WizardNavigation - Botón Siguiente clickeado:", {
+      currentStep,
+      totalSteps,
+      canProceed,
+    });
+    onNext();
+  };
+
+  const handlePrevious = () => {
+    console.log("WizardNavigation - Botón Anterior clickeado:", {
+      currentStep,
+      totalSteps,
+    });
+    onPrevious();
+  };
+
+  console.log("WizardNavigation - Renderizando:", {
+    currentStep,
+    totalSteps,
+    canProceed,
+    isFirstStep,
+    isLastStep,
+  });
+
   return (
     <>
       <Separator className="my-8" />
@@ -32,7 +57,7 @@ export function WizardNavigation({
         <Button
           type="button"
           variant="outline"
-          onClick={onPrevious}
+          onClick={handlePrevious}
           disabled={isFirstStep}
         >
           <ChevronLeft className="w-4 h-4 mr-2" />
@@ -41,15 +66,12 @@ export function WizardNavigation({
 
         <div className="flex gap-2">
           {!isLastStep ? (
-            <Button type="button" onClick={onNext} disabled={!canProceed}>
+            <Button type="button" onClick={handleNext} disabled={!canProceed}>
               Siguiente
               <ChevronRight className="w-4 h-4 ml-2" />
             </Button>
           ) : (
-            <Button
-              type="submit"
-              disabled={!canProceed || isSubmitting}
-            >
+            <Button type="submit" disabled={!canProceed || isSubmitting}>
               {isSubmitting ? "Creando..." : "Crear Evaluación"}
             </Button>
           )}

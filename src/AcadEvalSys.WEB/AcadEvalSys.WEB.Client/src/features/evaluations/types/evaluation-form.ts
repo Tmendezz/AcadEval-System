@@ -35,6 +35,10 @@ export interface Assignment {
   year?: number;
 }
 
+export interface AssignmentWithSubject extends Assignment {
+  subject: Subject;
+}
+
 export interface CareerAssignment {
   careerId: string;
   year: number;

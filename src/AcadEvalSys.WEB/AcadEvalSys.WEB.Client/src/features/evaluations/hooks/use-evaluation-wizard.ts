@@ -33,14 +33,32 @@ export function useEvaluationWizard() {
   const watchedValues = watch();
 
   const nextStep = () => {
+    console.log("useEvaluationWizard - nextStep llamado:", {
+      currentStep,
+      totalSteps: WIZARD_STEPS.length,
+      canProceed: canProceed(),
+    });
+
     if (currentStep < WIZARD_STEPS.length) {
-      setCurrentStep(currentStep + 1);
+      const newStep = currentStep + 1;
+      console.log("useEvaluationWizard - Cambiando al paso:", newStep);
+      setCurrentStep(newStep);
+    } else {
+      console.log("useEvaluationWizard - Ya estamos en el último paso");
     }
   };
 
   const prevStep = () => {
+    console.log("useEvaluationWizard - prevStep llamado:", {
+      currentStep,
+    });
+
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+      const newStep = currentStep - 1;
+      console.log("useEvaluationWizard - Cambiando al paso:", newStep);
+      setCurrentStep(newStep);
+    } else {
+      console.log("useEvaluationWizard - Ya estamos en el primer paso");
     }
   };
 

@@ -21,7 +21,7 @@ interface ReviewStepProps {
 export function ReviewStep({ formData, assignments }: ReviewStepProps) {
   const { data: careers = [] } = useTechnicalCareers();
   const { data: competencies = [] } = useCompetencies();
-  console.log(assignments); 
+
   const groupedAssignments = groupAssignmentsByCareer(assignments);
 
   return (

@@ -94,8 +94,6 @@ export function CareerCompetencyAssignmentsStep({
     setExpandedYears(newExpanded);
   };
 
-  // Se dejó de usar el botón de agregar manualmente; filas se sincronizan con competencias
-
   const removeAssignment = (index: number) => {
     const target = assignments[index];
     if (!target) return;
@@ -292,7 +290,6 @@ export function CareerCompetencyAssignmentsStep({
               (a) => a.careerId === career.id
             );
 
-            // Un año se considera completado si todas sus asignaciones tienen competencyId y subjectId
             const years = [1, 2, 3];
             const completedYears = years.reduce((acc, y) => {
               const yearRows = careerAssignments.filter((a) => a.year === y);

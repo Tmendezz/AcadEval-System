@@ -23,7 +23,7 @@ export default function CreateEvaluationPage() {
       toast.success("Evaluación creada exitosamente");
       console.log("Evaluación creada exitosamente ", data);
 
-      navigate("/evaluations");
+      navigate("/evaluaciones ");
     } catch (error) {
       console.error("Error al crear la evaluación:", error);
       toast.error("Error al crear la evaluación. Intente nuevamente.");

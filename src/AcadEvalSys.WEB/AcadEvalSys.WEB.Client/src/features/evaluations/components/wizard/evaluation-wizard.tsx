@@ -3,7 +3,6 @@ import { WIZARD_STEPS } from "../../constants/wizard-steps";
 import { EvaluationFormData } from "../../types/evaluation-form";
 import { useEvaluationWizard } from "../../hooks/use-evaluation-wizard";
 import { WizardStepIndicator } from "./wizard-step-indicator";
-import { WizardStepTitle } from "./wizard-step-title";
 import { WizardNavigation } from "./wizard-navigation";
 import { BasicInfoStep } from "./steps/basic-info-step";
 import { CareerCompetencyAssignmentsStep } from "./steps/career-competency-assignments-step";
@@ -29,9 +28,10 @@ export function EvaluationWizard({
     updateAssignments,
   } = useEvaluationWizard();
 
-  const handleFormSubmit = (data: EvaluationFormData) => {
-    console.log("Datos del formulario:", data);
-    onSubmit(data);
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Datos del formulario:", watchedValues);
+    onSubmit(watchedValues);
   };
 
   const renderStepContent = () => {
@@ -50,6 +50,7 @@ export function EvaluationWizard({
           <ReviewStep formData={watchedValues} assignments={assignments} />
         );
       default:
+        console.log("EvaluationWizard - Paso no reconocido:", currentStep);
         return null;
     }
   };
@@ -60,18 +61,32 @@ export function EvaluationWizard({
 
       <Card>
         <CardContent className="pt-6">
-          <form onSubmit={form.handleSubmit(handleFormSubmit)}>
-            {renderStepContent()}
-
-            <WizardNavigation
-              currentStep={currentStep}
-              totalSteps={WIZARD_STEPS.length}
-              canProceed={canProceed()}
-              onPrevious={prevStep}
-              onNext={nextStep}
-              isSubmitting={isSubmitting}
-            />
-          </form>
+          {/* Solo renderizar el form en el último paso para evitar submit automático */}
+          {currentStep === 3 ? (
+            <form onSubmit={handleFormSubmit}>
+              {renderStepContent()}
+              <WizardNavigation
+                currentStep={currentStep}
+                totalSteps={WIZARD_STEPS.length}
+                canProceed={canProceed()}
+                onPrevious={prevStep}
+                onNext={nextStep}
+                isSubmitting={isSubmitting}
+              />
+            </form>
+          ) : (
+            <>
+              {renderStepContent()}
+              <WizardNavigation
+                currentStep={currentStep}
+                totalSteps={WIZARD_STEPS.length}
+                canProceed={canProceed()}
+                onPrevious={prevStep}
+                onNext={nextStep}
+                isSubmitting={isSubmitting}
+              />
+            </>
+          )}
         </CardContent>
       </Card>
     </div>
