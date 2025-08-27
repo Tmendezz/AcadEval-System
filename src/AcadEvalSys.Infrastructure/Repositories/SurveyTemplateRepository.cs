@@ -15,6 +15,15 @@ namespace AcadEvalSys.Infrastructure.Repositories
             return result.Entity.Id;
         }
 
+        public async Task<bool> ExistsNameAsync(string name, SurveyTemplateType type, Guid? excludingId = null, CancellationToken ct = default)
+        {
+            return await dbContext.SurveyTemplates
+                .AnyAsync(s => s.IsActive
+                && s.Name == name
+                && s.SurveyType == type
+                && (!excludingId.HasValue || s.Id != excludingId.Value), ct);
+        }
+
         public async Task<SurveyTemplate?> GetTemplateByIdAsync(
         Guid id, bool includeChildren = true, CancellationToken ct = default)
         {

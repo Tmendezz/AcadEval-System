@@ -1,6 +1,9 @@
-﻿namespace AcadEvalSys.Application.Templates.Commands.DeleteTemplate
+﻿using MediatR;
+
+namespace AcadEvalSys.Application.Templates.Commands.DeleteTemplate
 {
-    public class DeleteTemplateCommand
+    public class DeleteSurveyTemplateCommand : IRequest
     {
+        public Guid Id { get; set; }
     }
 }

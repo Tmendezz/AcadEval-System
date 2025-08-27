@@ -1,6 +1,10 @@
-﻿namespace AcadEvalSys.Application.Templates.Queries.GetTemplateById
+﻿using AcadEvalSys.Application.Templates.Dtos;
+using MediatR;
+
+namespace AcadEvalSys.Application.Templates.Queries.GetTemplateById
 {
-    public class GetTemplatesByIdQuery
+    public class GetSurveyTemplateByIdQuery(Guid id) : IRequest<SurveyTemplateReadDto>
     {
+        public Guid Id { get; } = id;
     }
 }
