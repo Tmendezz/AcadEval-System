@@ -1,4 +1,5 @@
 ﻿using AcadEvalSys.Application.Templates.Commands.CreateTemplate;
+using AcadEvalSys.Domain.Enums;
 using FluentValidation;
 using System.Linq;
 
@@ -26,11 +27,11 @@ public class CreateSurveyTemplateCommandValidator : AbstractValidator<CreateSurv
         RuleForEach(x => x.Dto.Questions).ChildRules(q =>
         {
             q.RuleFor(y => y.Text).NotEmpty().WithMessage("El texto de la pregunta es requerido.");
-            q.RuleFor(y => y.Type).NotEmpty().WithMessage("El tipo de la pregunta es requerido.");
+            q.RuleFor(y => y.Type).IsInEnum().WithMessage("El tipo de la pregunta es requerido.");
             q.RuleFor(y => y.Order).GreaterThan(0).WithMessage("El orden de la pregunta debe ser > 0.");
 
             // Si es de opciones, exigir opciones y validarlas
-            q.When(y => y.Type is "single_choice" or "multiple_choice", () =>
+            q.When(y => y.Type is QuestionType.SingleChoice or QuestionType.MultipleChoice or QuestionType.OpenText, () =>
             {
                 q.RuleFor(y => y.Options)
                     .NotEmpty().WithMessage("Las preguntas de opción deben tener al menos una opción.");
