@@ -57,7 +57,7 @@ public class StudentReportGenerationService(
                     Professor = assessment.ProfessorCompetencyAssignment?.Subject?.Professor?.User?.Name ?? string.Empty,
                     Description = assessment.ProfessorCompetencyAssignment?.Competency?.LevelDescriptions?
                         .FirstOrDefault(ld => ld.Level == assessment.CompetencyLevel)?.Description
-                        ?? $"Sin evaluar {assessment.CompetencyLevel}"
+                        ?? "Sin calificar"
                 }).ToList()
             };
 

@@ -1,9 +1,11 @@
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
 
 namespace AcadEvalSys.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class MakeCompetencyLevelNullable : Migration
+    public partial class UpdateExistingCompetencyLevelsToNull : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -32,5 +34,3 @@ namespace AcadEvalSys.Infrastructure.Migrations
         }
     }
 }
-
-

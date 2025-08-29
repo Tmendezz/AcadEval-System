@@ -5,4 +5,7 @@ Modal pra evaluar alumno en una competencia
 UI para alumnos con validaciones para visualizar pdfs de evaluaciones
 Validar en el front formularios
 Mejorar performance con use callbacks para evitar llamadas en toda la app
-Testear CRUD de competencias, profesores, carreras, inscripciones, descargas  
+Testear CRUD de competencias, profesores, carreras, inscripciones, descargas 
+
+3 step de review muestra ids y no asignatura
+necesito ordenar por fecha las evaluaciones creadas

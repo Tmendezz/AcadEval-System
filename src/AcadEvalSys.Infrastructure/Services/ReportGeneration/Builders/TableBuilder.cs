@@ -250,7 +250,9 @@ public class TableBuilder : ITableBuilder
         table.Cell().Element(c => CellStyle(c, bgColor))
             .Text(competency.Name).FontSize(10);
         table.Cell().Element(c => CellStyle(c, bgColor))
-            .Text(_styleService.GetCompetencyLevelDescription(competency.CompetencyLevel))
+            .Text(competency.CompetencyLevel.HasValue
+                ? _styleService.GetCompetencyLevelDescription(competency.CompetencyLevel.Value)
+                : "Sin calificar")
             .FontSize(10)
             .SemiBold();
             
