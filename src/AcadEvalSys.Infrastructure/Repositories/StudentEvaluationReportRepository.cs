@@ -50,6 +50,15 @@ public class StudentEvaluationReportRepository : IStudentEvaluationReportReposit
             .ToListAsync();
     }
 
+    public async Task<StudentEvaluationReport?> GetByStudentAndInstanceAsync(string studentId, Guid evaluationInstanceId)
+    {
+        return await _context.StudentEvaluationReports
+            .Include(r => r.Student)
+            .Include(r => r.CompetencyEvaluationInstance)
+            .FirstOrDefaultAsync(r => r.StudentId == studentId && 
+                                    r.CompetencyEvaluationInstanceId == evaluationInstanceId);
+    }
+
     public async Task UpdateAsync(StudentEvaluationReport report)
     {
         _context.StudentEvaluationReports.Update(report);

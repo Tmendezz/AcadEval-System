@@ -158,7 +158,7 @@ public class TechnicalCareerController(IMediator mediator) : ControllerBase
         {
             command.TechnicalCareerId = id;
             var studentId = await mediator.Send(command);
-            return CreatedAtAction("GetById", "Student", new { id = studentId }, new { id = studentId });
+            return CreatedAtAction("GetStudentById", "Student", new { id = studentId }, new { id = studentId });
         }
 
     /// <summary>

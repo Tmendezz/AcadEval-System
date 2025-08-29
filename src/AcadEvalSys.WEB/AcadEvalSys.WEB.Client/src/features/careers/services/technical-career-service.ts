@@ -79,7 +79,7 @@ export const technicalCareerService = {
     try {
       const { data } = await api.post<{ id: string }>(
         `${TECHNICAL_CAREERS_API_URL}/${careerId}/students`,
-        student
+        { ...student, technicalCareerId: careerId }
       );
 
       console.log(`✅ Student added successfully to career:`, data);

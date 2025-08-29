@@ -9,6 +9,7 @@ import {
   Target,
   CheckCircle,
   Clock,
+  Award,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { technicalCareerService } from "@/features/careers/services/technical-career-service";
@@ -71,15 +72,8 @@ export function useSidebarConfig() {
     });
   }
 
-  // Evaluaciones - Diferentes vistas según el rol
-  if (
-    hasAnyRole([
-      UserRole.Admin,
-      UserRole.Coordinator,
-      UserRole.Professor,
-      UserRole.Student,
-    ])
-  ) {
+  // Evaluaciones - Solo para administradores
+  if (hasRole(UserRole.Admin)) {
     sidebarConfig.evaluations = {
       title: "Evaluaciones por Competencias",
       items: [
@@ -88,17 +82,27 @@ export function useSidebarConfig() {
           icon: ClipboardEditIcon,
           label: "Evaluaciones",
         },
+        {
+          href: "/evaluaciones/competencias",
+          icon: Brain,
+          label: "Competencias",
+        },
       ],
     };
+  }
 
-    // Solo admin y coordinadores ven competencias
-    if (hasAnyRole([UserRole.Admin, UserRole.Coordinator])) {
-      sidebarConfig.evaluations.items.push({
-        href: "/evaluaciones/competencias",
-        icon: Brain,
-        label: "Competencias",
-      });
-    }
+  // Dashboard del estudiante - Solo para estudiantes
+  if (hasRole(UserRole.Student)) {
+    sidebarConfig.studentDashboard = {
+      title: "Mi Evaluaciones",
+      items: [
+        {
+          href: "/estudiante/evaluaciones",
+          icon: Award,
+          label: "Mis Evaluaciones de Competencia",
+        },
+      ],
+    };
   }
 
   // Tecnicaturas - Solo admin y coordinadores

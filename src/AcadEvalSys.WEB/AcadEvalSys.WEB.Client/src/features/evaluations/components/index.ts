@@ -13,3 +13,6 @@ export * from "./career-year-detail";
 
 // Componentes de evaluaciones de profesores
 export * from "./professor-evaluations";
+
+// Componentes de evaluación de estudiantes
+export { StudentEvaluationModal } from "./student-evaluation-modal";

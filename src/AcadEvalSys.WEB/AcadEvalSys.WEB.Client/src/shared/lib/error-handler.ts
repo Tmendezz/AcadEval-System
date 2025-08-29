@@ -6,10 +6,10 @@ export const getErrorMessage = (error: any): string => {
   const status = error?.response?.status;
   const serverMessage =
     error?.response?.data?.message || error?.response?.data?.title;
-
+  console.log("error:", error);
   switch (status) {
     case 400:
-      return "Los datos ingresados no son válidos.";
+      return serverMessage || "Los datos ingresados no son válidos.";
     case 401:
       return "Credenciales incorrectas. Intente nuevamente.";
     case 403:

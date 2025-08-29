@@ -113,7 +113,7 @@ export default function ProfessorPendingEvaluationsPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm" asChild>
-                          <Link href={`/evaluaciones/${evaluation.id}/evaluar`}>
+                          <Link href={`/evaluaciones/${evaluation.id}/asignacion/${evaluation.id}`}>
                             Continuar Evaluando
                             <ArrowRight className="w-4 h-4 ml-2" />
                           </Link>
@@ -170,7 +170,7 @@ export default function ProfessorPendingEvaluationsPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm" asChild>
-                          <Link href={`/evaluaciones/${evaluation.id}/evaluar`}>
+                          <Link href={`/evaluaciones/${evaluation.id}/asignacion/${evaluation.id}`}>
                             Ver Detalles
                             <ArrowRight className="w-4 h-4 ml-2" />
                           </Link>
