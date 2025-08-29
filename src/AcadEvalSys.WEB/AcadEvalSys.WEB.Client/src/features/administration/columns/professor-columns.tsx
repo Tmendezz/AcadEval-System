@@ -39,6 +39,7 @@ export const professorColumns = ({
             size="sm"
             onClick={handleEdit}
             className="h-7 w-7 p-0"
+            title="Editar"
           >
             <Edit className="w-3 h-3" />
           </Button>

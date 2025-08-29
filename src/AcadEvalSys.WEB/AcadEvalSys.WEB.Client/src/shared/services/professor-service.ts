@@ -134,11 +134,10 @@ export const professorService = {
   },
 };
 
-// ✅ Exportaciones con nombres compatibles hacia atrás
 export const getProfessors = professorService.getAll;
 export const getProfessorById = professorService.getById;
+export const getProfessorAssignments = professorService.getAssignments;
 export const createProfessor = professorService.create;
 export const updateProfessor = professorService.update;
 export const deleteProfessor = professorService.delete;
-export const getProfessorAssignments = professorService.getAssignments;
 export const getStudentsByAssignment = professorService.getStudentsByAssignment;

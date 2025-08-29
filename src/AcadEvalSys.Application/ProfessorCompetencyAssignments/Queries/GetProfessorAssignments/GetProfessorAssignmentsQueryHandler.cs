@@ -37,6 +37,17 @@ public class GetProfessorAssignmentsQueryHandler(
             StudentEvaluations = mapper.Map<IEnumerable<StudentCompetencyEvaluationDto>>(assignment.StudentCompetencyAssessments ?? new List<Domain.Entities.StudentCompetencyAssessment>())
         });
 
+        // Log detallado para debugging
+        foreach (var assignment in assignmentsList)
+        {
+            logger.LogInformation("Assignment ID: {AssignmentId}, Competency: {CompetencyName}, Subject: {SubjectName}, Status: {Status}, Students Count: {StudentsCount}", 
+                assignment.Id, 
+                assignment.Competency?.Name, 
+                assignment.Subject?.Name, 
+                assignment.Status,
+                assignment.StudentCompetencyAssessments?.Count ?? 0);
+        }
+
         return result;
     }
 }

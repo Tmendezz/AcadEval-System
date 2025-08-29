@@ -69,7 +69,15 @@ public class ProfessorCompetencyAssignmentRepository : IProfessorCompetencyAssig
             query = query.Where(pca => pca.CompetencyEvaluationInstanceId == evaluationInstanceId);
         }
 
-        return await query.ToListAsync();
+        var result = await query.ToListAsync();
+        
+        Console.WriteLine($"GetProfessorAssignmentsAsync: Found {result.Count()} assignments for professor {professorId}");
+        foreach (var assignment in result)
+        {
+            Console.WriteLine($"Assignment: {assignment.Id}, Subject: {assignment.Subject?.Name}, Competency: {assignment.Competency?.Name}, Students: {assignment.StudentCompetencyAssessments?.Count ?? 0}");
+        }
+        
+        return result;
     }
 
     public async Task<ProfessorCompetencyAssignment?> GetByIdAsync(Guid id)

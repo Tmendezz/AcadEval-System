@@ -91,6 +91,25 @@ export function useSidebarConfig() {
     };
   }
 
+  // Evaluaciones para docentes
+  if (hasRole(UserRole.Professor)) {
+    sidebarConfig.professorEvaluations = {
+      title: "Mis Evaluaciones",
+      items: [
+        {
+          href: "/evaluaciones/mis-evaluaciones",
+          icon: ClipboardEditIcon,
+          label: "Evaluaciones de Competencias",
+        },
+        {
+          href: "/evaluaciones/pendientes",
+          icon: Clock,
+          label: "Evaluaciones Pendientes",
+        },
+      ],
+    };
+  }
+
   // Dashboard del estudiante - Solo para estudiantes
   if (hasRole(UserRole.Student)) {
     sidebarConfig.studentDashboard = {

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,12 +21,12 @@ import {
 } from "@/shared/components/ui/form";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
+import { Eye, EyeOff } from "lucide-react";
 import { Professor } from "@/shared/types/professor";
 
 const baseSchema = z.object({
   name: z.string().min(2, "El nombre es obligatorio"),
   email: z.string().email("Email inválido"),
-  // phone removed
   password: z.string().optional(),
 });
 
@@ -46,13 +46,13 @@ export function AdminFormDialog({
   onSubmit,
 }: AdminFormDialogProps) {
   const isEditing = Boolean(administrator);
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<AdminFormValues>({
     resolver: zodResolver(baseSchema),
     defaultValues: {
       name: administrator?.name ?? "",
       email: administrator?.email ?? "",
-  // phone removed
       password: "",
     },
   });
@@ -61,7 +61,6 @@ export function AdminFormDialog({
     form.reset({
       name: administrator?.name ?? "",
       email: administrator?.email ?? "",
-  // phone removed
       password: "",
     });
   }, [administrator, form, open]);
@@ -71,11 +70,13 @@ export function AdminFormDialog({
     onOpenChange(false);
   };
 
-  const handleClose = () => onOpenChange(false);
+  const handleClose = () => {
+    onOpenChange(false);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Editar Administrador" : "Nuevo Administrador"}
@@ -124,27 +125,46 @@ export function AdminFormDialog({
               )}
             />
 
-            {/* phone removed */}
-
-            {!isEditing && (
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Contraseña</FormLabel>
-                    <FormControl>
+            {/* Campo de contraseña siempre visible */}
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    {isEditing
+                      ? "Nueva Contraseña (dejar vacío para no cambiar)"
+                      : "Contraseña"}
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
                       <Input
-                        type="password"
-                        placeholder="Contraseña temporal"
+                        type={showPassword ? "text" : "password"}
+                        placeholder={
+                          isEditing ? "Nueva contraseña" : "Contraseña"
+                        }
                         {...field}
+                        className="pr-10"
                       />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={handleClose}>

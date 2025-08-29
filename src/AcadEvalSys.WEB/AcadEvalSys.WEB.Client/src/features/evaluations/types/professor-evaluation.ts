@@ -11,6 +11,18 @@ export interface ProfessorEvaluationAssignment {
   progressPercentage: number;
 }
 
+export interface ProfessorAssignmentFromApi {
+  assignmentId: string;
+  competencyName: string;
+  competencyDescription: string;
+  subjectName: string;
+  status: "Pending" | "Completed";
+  totalStudentsCount: number;
+  evaluatedStudentsCount: number;
+  progressPercentage: number;
+  studentEvaluations: any[];
+}
+
 export interface StudentForEvaluation {
   studentId: string;
   studentName: string;

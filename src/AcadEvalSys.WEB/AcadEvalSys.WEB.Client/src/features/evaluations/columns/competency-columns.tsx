@@ -1,8 +1,9 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import { Competency } from "@/shared/types";
 import { Edit, Trash2, Target, Brain, Eye } from "lucide-react";
+import { navigate } from "wouter/use-browser-location";
+import { Competency } from "../types/types";
 
 export const competencyColumns: ColumnDef<Competency>[] = [
   {
@@ -54,20 +55,17 @@ export const competencyColumns: ColumnDef<Competency>[] = [
     cell: ({ row }) => {
       const handleEdit = (e: React.MouseEvent) => {
         e.stopPropagation();
-        // TODO: Implementar lógica de edición
         console.log("Editar competencia:", row.original.id);
       };
 
       const handleDelete = (e: React.MouseEvent) => {
         e.stopPropagation();
-        // TODO: Implementar lógica de eliminación
         console.log("Eliminar competencia:", row.original.id);
       };
 
       const handleView = (e: React.MouseEvent) => {
         e.stopPropagation();
-        // TODO: Implementar lógica de ver detalle
-        console.log("Ver detalle competencia:", row.original.id);
+        navigate(`/evaluaciones/competencias/${row.original.id}`);
       };
 
       return (

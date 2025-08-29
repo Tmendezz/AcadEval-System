@@ -150,34 +150,32 @@ export default function CompetencyDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {competency.competencyLevelDescriptions ? (
-                  Object.entries(competency.competencyLevelDescriptions).map(
-                    ([level, description]) => (
-                      <div
-                        key={level}
-                        className="flex items-start justify-between p-4 border rounded-lg bg-muted/30"
-                      >
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <Badge variant="outline" className="font-medium">
-                              {level}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-foreground leading-relaxed">
-                            {description}
-                          </p>
+                {competency.levels && competency.levels.length > 0 ? (
+                  competency.levels.map((level) => (
+                    <div
+                      key={level.level}
+                      className="flex items-start justify-between p-4 border rounded-lg bg-muted/30"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <Badge variant="outline" className="font-medium">
+                            {level.level}
+                          </Badge>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="gap-2 text-muted-foreground hover:text-foreground"
-                        >
-                          <Edit className="w-4 h-4" />
-                          Editar
-                        </Button>
+                        <p className="text-sm text-foreground leading-relaxed">
+                          {level.description}
+                        </p>
                       </div>
-                    )
-                  )
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="gap-2 text-muted-foreground hover:text-foreground"
+                      >
+                        <Edit className="w-4 h-4" />
+                        Editar
+                      </Button>
+                    </div>
+                  ))
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-8">
                     No hay niveles definidos para esta competencia

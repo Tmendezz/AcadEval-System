@@ -3,7 +3,12 @@ export interface Competency {
   name: string;
   description: string;
   type: "Technical" | "Soft";
-  competencyLevelDescriptions?: CompetencyLevelDescriptions;
+  levels?: CompetencyLevelDescription[];
+}
+
+export interface CompetencyLevelDescription {
+  level: "Inicial" | "Intermedio" | "Avanzado" | "Excelente" | "Ninguno";
+  description: string;
 }
 
 export interface CompetencyLevel {
