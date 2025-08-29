@@ -28,9 +28,10 @@ import { useGetStudentsForAssignment } from "../hooks/professor-evaluations";
 
 export default function AssignmentDetailPage() {
   const { assignmentId } = useParams<{ assignmentId: string }>();
-  const [selectedStudent, setSelectedStudent] = useState<StudentForEvaluation | null>(null);
+  const [selectedStudent, setSelectedStudent] =
+    useState<StudentForEvaluation | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
   const { data: students, isLoading } = useGetStudentsForAssignment(
     assignmentId || ""
   );
@@ -189,25 +190,25 @@ export default function AssignmentDetailPage() {
                             {student.studentName}
                           </h3>
                           {getStatusBadge(student.status)}
-                          {student.competencyLevel
-                            ? getCompetencyLevelBadge(student.competencyLevel)
-                            : (
-                              <Badge
-                                variant="outline"
-                                className="bg-gray-100 text-gray-800 border-gray-200"
-                              >
-                                <Star className="w-3 h-3 mr-1" />
-                                Sin calificar
-                              </Badge>
-                            )}
+                          {student.competencyLevel ? (
+                            getCompetencyLevelBadge(student.competencyLevel)
+                          ) : (
+                            <Badge
+                              variant="outline"
+                              className="bg-gray-100 text-gray-800 border-gray-200"
+                            >
+                              <Star className="w-3 h-3 mr-1" />
+                              Sin calificar
+                            </Badge>
+                          )}
                         </div>
                         <p className="text-sm text-muted-foreground">
                           {student.studentEmail}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => handleEvaluateStudent(student)}
                         >
