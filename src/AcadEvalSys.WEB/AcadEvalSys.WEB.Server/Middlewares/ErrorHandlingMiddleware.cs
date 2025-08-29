@@ -9,6 +9,14 @@ public class ErrorHandlingMiddleware(
 {
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
+        // No procesar errores para endpoints de autenticación de Identity
+        var path = context.Request.Path.Value?.ToLowerInvariant();
+        if (path != null && (path.Contains("/identity/login") || path.Contains("/identity/register")))
+        {
+            await next(context);
+            return;
+        }
+
         try
         {
             await next(context);
@@ -56,7 +64,7 @@ public class ErrorHandlingMiddleware(
 
             var response = env.IsDevelopment()
                 ? new { Message = baseException.Message, StackTrace = baseException.StackTrace }
-                : new { Message = "Something went wrong", StackTrace = (string?)null };
+                : new { Message = "Error interno del servidor. Intente nuevamente más tarde.", StackTrace = (string?)null };
 
             context.Response.StatusCode = 500;
             await context.Response.WriteAsJsonAsync(response);

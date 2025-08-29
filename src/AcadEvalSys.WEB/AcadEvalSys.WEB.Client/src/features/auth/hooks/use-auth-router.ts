@@ -20,11 +20,13 @@ export function useAuthRouter(): UseAuthRouterReturn {
   const [location, setLocation] = useLocation();
 
   useEffect(() => {
+    // Evitar redirecciones hasta terminar el chequeo de sesión
+    if (isCheckingSession) return;
     // Si está autenticado y está en una ruta de auth, redirigir al dashboard
     if (isAuthenticated && location.startsWith("/auth")) {
       setLocation("/");
     }
-  }, [isAuthenticated, location, setLocation]);
+  }, [isAuthenticated, isCheckingSession, location, setLocation]);
 
   return {
     isCheckingSession,
@@ -32,4 +34,4 @@ export function useAuthRouter(): UseAuthRouterReturn {
     shouldShowAuthRoutes: !isCheckingSession && !isAuthenticated,
     shouldShowAppRoutes: !isCheckingSession && isAuthenticated,
   };
-} 
+}

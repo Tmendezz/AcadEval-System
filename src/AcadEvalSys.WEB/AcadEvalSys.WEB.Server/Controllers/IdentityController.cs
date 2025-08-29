@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using AcadEvalSys.Infrastructure.Services;
 
 namespace AcadEvalSys.WEB.Server.Controllers;
 
@@ -22,7 +23,7 @@ namespace AcadEvalSys.WEB.Server.Controllers;
 [Route("identity")]
 [Tags("Identity")]
 [ApiController]
-public class IdentityController(IMediator mediator) : ControllerBase
+public class IdentityController(IMediator mediator, ILogoutService logoutService) : ControllerBase
 {
 
     /// <summary>
@@ -33,33 +34,7 @@ public class IdentityController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Logout()
     {
-        //  Cerrar sesión de ASP.NET Core Identity
-        await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
-        
-        //  Limpiar todas las cookies de autenticación
-        var cookieOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = Request.IsHttps,
-            SameSite = SameSiteMode.Lax,
-            Path = "/",
-            Expires = DateTime.UtcNow.AddDays(-1) // Expirar ayer
-        };
-
-        // Limpiar cookies principales de autenticación
-        Response.Cookies.Delete(".AspNetCore.Identity.Application", cookieOptions);
-        Response.Cookies.Delete(".AspNetCore.Identity.External", cookieOptions);
-        
-        // Limpiar cookies de sesión si las hay
-        Response.Cookies.Delete("session", cookieOptions);
-        Response.Cookies.Delete("auth", cookieOptions);
-        
-        
-        // Agregar headers para prevenir cache del navegador
-        Response.Headers.Append("Cache-Control", "no-cache, no-store, must-revalidate");
-        Response.Headers.Append("Pragma", "no-cache");
-        Response.Headers.Append("Expires", "0");
-
+        await logoutService.ExecuteLogoutAsync();
         return NoContent();
     }
 

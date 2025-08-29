@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using AcadEvalSys.Domain.Entities;
 
 namespace AcadEvalSys.Infrastructure.Services;
 
@@ -28,12 +29,12 @@ public interface ILogoutService
 public class LogoutService : ILogoutService
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly SignInManager<User> _signInManager;
     private readonly ILogger<LogoutService> _logger;
 
     public LogoutService(
         IHttpContextAccessor httpContextAccessor,
-        SignInManager<IdentityUser> signInManager,
+        SignInManager<User> signInManager,
         ILogger<LogoutService> logger)
     {
         _httpContextAccessor = httpContextAccessor;
@@ -75,28 +76,35 @@ public class LogoutService : ILogoutService
         var httpContext = _httpContextAccessor.HttpContext;
         if (httpContext?.Response == null) return;
 
-        var cookieOptions = new CookieOptions
+        CookieOptions BuildOptions(string path) => new CookieOptions
         {
             HttpOnly = true,
             Secure = httpContext.Request.IsHttps,
             SameSite = SameSiteMode.Lax,
-            Path = "/",
-            Expires = DateTime.UtcNow.AddDays(-1) // Expirar ayer
+            Path = path,
+            Expires = DateTime.UtcNow.AddDays(-1)
         };
 
-        // Cookies principales de ASP.NET Core Identity
+        // Cookies principales de ASP.NET Core Identity y Session
         var identityCookies = new[]
         {
             ".AspNetCore.Identity.Application",
             ".AspNetCore.Identity.External",
             ".AspNetCore.Identity.TwoFactorUserId",
-            ".AspNetCore.Identity.TwoFactorRememberMe"
+            ".AspNetCore.Identity.TwoFactorRememberMe",
+            ".AspNetCore.Session"
         };
+
+        // Intentar eliminar en ambas rutas: "/" y "/api" (por UsePathBase)
+        var paths = new[] { "/", "/api" };
 
         foreach (var cookieName in identityCookies)
         {
-            httpContext.Response.Cookies.Delete(cookieName, cookieOptions);
-            _logger.LogDebug("Cookie eliminada: {CookieName}", cookieName);
+            foreach (var path in paths)
+            {
+                httpContext.Response.Cookies.Delete(cookieName, BuildOptions(path));
+                _logger.LogDebug("Cookie eliminada: {CookieName} en path {Path}", cookieName, path);
+            }
         }
 
         // Cookies de sesión comunes
@@ -110,8 +118,11 @@ public class LogoutService : ILogoutService
 
         foreach (var cookieName in sessionCookies)
         {
-            httpContext.Response.Cookies.Delete(cookieName, cookieOptions);
-            _logger.LogDebug("Cookie de sesión eliminada: {CookieName}", cookieName);
+            foreach (var path in paths)
+            {
+                httpContext.Response.Cookies.Delete(cookieName, BuildOptions(path));
+                _logger.LogDebug("Cookie de sesión eliminada: {CookieName} en path {Path}", cookieName, path);
+            }
         }
 
         // Limpiar cookies personalizadas que empiecen con ciertos prefijos
@@ -123,8 +134,11 @@ public class LogoutService : ILogoutService
                 cookieName.StartsWith("user_") ||
                 cookieName.StartsWith("token_"))
             {
-                httpContext.Response.Cookies.Delete(cookieName, cookieOptions);
-                _logger.LogDebug("Cookie personalizada eliminada: {CookieName}", cookieName);
+                foreach (var path in paths)
+                {
+                    httpContext.Response.Cookies.Delete(cookieName, BuildOptions(path));
+                    _logger.LogDebug("Cookie personalizada eliminada: {CookieName} en path {Path}", cookieName, path);
+                }
             }
         }
     }

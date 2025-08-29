@@ -29,21 +29,13 @@ export const LoginForm = () => {
 
   const { handleSubmit, control } = form;
 
-  const {
-    login,
-    isLoading,
-    error: loginError,
-  } = useLogin();
-
+  const { login, isLoading, error: loginError } = useLogin();
+  console.log("loginError:", loginError);
   const onSubmit = async (data: LoginFormData) => {
-    try {
-      await login({
-        email: data.email,
-        password: data.password,
-      });
-    } catch (error) {
-      console.error("Error en submit:", error);
-    }
+    await login({
+      email: data.email,
+      password: data.password,
+    });
   };
 
   return (

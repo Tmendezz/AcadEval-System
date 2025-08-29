@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { authService } from "../services/auth-service";
-  import { useAuthStore } from "@/features/auth/store";
+import { useAuthStore } from "@/features/auth/store";
 import { navigate } from "wouter/use-browser-location";
 import { toast } from "sonner";
 import { LoginCredentials } from "@/shared/types/auth";
@@ -14,8 +14,16 @@ export const useLogin = () => {
       navigate("/dashboard");
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || "Error al iniciar sesión";
-      toast.error(message);
+      // Extraer el mensaje del servidor si está disponible
+      const serverMessage =
+        error.response?.data?.detail ||
+        error.response?.data?.title ||
+        error.response?.data?.message;
+      const message = serverMessage || "Error al iniciar sesión";
+
+      // También actualizar el store con el error completo para que se muestre en el formulario
+      const store = useAuthStore.getState();
+      store.setError(error);
     },
   });
 
@@ -26,7 +34,7 @@ export const useLogin = () => {
   return {
     login,
     isLoading: isLoading || loginMutation.isPending,
-    error: error || loginMutation.error?.message,
+    error: error || loginMutation.error,
     isSuccess: loginMutation.isSuccess,
   };
 };

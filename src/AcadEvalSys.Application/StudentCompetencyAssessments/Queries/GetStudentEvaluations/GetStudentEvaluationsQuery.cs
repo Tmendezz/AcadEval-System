@@ -1,4 +1,5 @@
 using MediatR;
+using AcadEvalSys.Application.StudentCompetencyAssessments.Dtos;
 
 namespace AcadEvalSys.Application.StudentCompetencyAssessments.Queries.GetStudentEvaluations;
 

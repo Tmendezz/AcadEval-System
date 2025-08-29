@@ -1,4 +1,5 @@
 using AcadEvalSys.Application.StudentCompetencyAssessments.Dtos;
+using AcadEvalSys.Domain.Entities;
 using AcadEvalSys.Domain.Repositories;
 using AutoMapper;
 using MediatR;

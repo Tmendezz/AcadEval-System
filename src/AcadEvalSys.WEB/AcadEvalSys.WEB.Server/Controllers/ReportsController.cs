@@ -29,13 +29,13 @@ public class ReportsController(IMediator mediator) : ControllerBase
     [Produces("application/json")]
     public async Task<IActionResult> GetReportDownloadUrl(Guid reportId)
     {
-        var query = new GetReportDownloadUrlQuery { ReportId = reportId };
+        var query = new GetReportDownloadUrlQuery(reportId);
         var result = await mediator.Send(query);
         return Ok(result);
     }
 
     /// <summary>
-    /// Descarga directa del archivo del reporte con autorización (estudiante dueño o staff)
+    /// Descarga directa del archivo del reporte con autorización (estudiante)
     /// </summary>
     [HttpGet("{reportId}/file")]
     [ProducesResponseType(StatusCodes.Status200OK)]

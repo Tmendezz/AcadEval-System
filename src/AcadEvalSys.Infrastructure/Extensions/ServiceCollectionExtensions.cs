@@ -7,6 +7,7 @@ using AcadEvalSys.Infrastructure.Persistence;
 using AcadEvalSys.Infrastructure.Repositories;
 using AcadEvalSys.Infrastructure.Seeders;
 using AcadEvalSys.Infrastructure.Services;
+using AcadEvalSys.Infrastructure.Services;
 using AcadEvalSys.Application.Users.Services;
 using AcadEvalSys.Domain.Interfaces;
 using AcadEvalSys.Infrastructure.Services.ReportGeneration;
@@ -138,6 +139,10 @@ public static class ServiceCollectionExtensions
         
         // Enrollment Expiration Background Service
         services.AddScoped<EnrollmentExpirationBackgroundService>();
+
+        // HttpContextAccessor y LogoutService para manejo de sesión/cookies
+        services.AddHttpContextAccessor();
+        services.AddScoped<ILogoutService, LogoutService>();
         
         // Configurar Hangfire con PostgreSQL
     services.AddHangfireServices(connectionString!);
