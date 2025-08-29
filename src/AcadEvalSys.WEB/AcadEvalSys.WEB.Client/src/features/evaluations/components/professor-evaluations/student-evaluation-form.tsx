@@ -146,17 +146,17 @@ export function StudentEvaluationForm({
               >
                 {student.status === "Evaluated" ? "✓ Evaluado" : "⏳ Pendiente"}
               </Badge>
-              {student.competencyLevel && (
-                <Badge
-                  variant="outline"
-                  className={`text-xs ${
-                    competencyLevelColors[student.competencyLevel]
-                  }`}
-                >
-                  <Star className="w-3 h-3 mr-1" />
-                  {student.competencyLevel}
-                </Badge>
-              )}
+              <Badge
+                variant="outline"
+                className={`text-xs ${
+                  student.competencyLevel
+                    ? competencyLevelColors[student.competencyLevel]
+                    : "bg-gray-500/20 text-gray-600 border-gray-500/30"
+                }`}
+              >
+                <Star className="w-3 h-3 mr-1" />
+                {student.competencyLevel || "Sin calificar"}
+              </Badge>
             </div>
           </div>
 

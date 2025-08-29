@@ -45,7 +45,7 @@ public class ProfessorCompetencyAssignmentRepository : IProfessorCompetencyAssig
             StudentId = studentId,
             ProfessorCompetencyAssignmentId = assignment.Id,
             Status = AssessmentStatus.Pending,
-            CompetencyLevel = CompetencyLevel.Inicial, // Nivel inicial
+            CompetencyLevel = null,
             CreatedByUserId = assignment.CreatedByUserId,
             CreatedAt = DateTime.UtcNow
         }).ToList();

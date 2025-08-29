@@ -1,0 +1,8 @@
+Page para ver evaluaciones del profesor (lista)
+Page detalle para ver evaluacion a compeltar
+Implementar modal para evaluar alumno
+Modal pra evaluar alumno en una competencia
+UI para alumnos con validaciones para visualizar pdfs de evaluaciones
+Validar en el front formularios
+Mejorar performance con use callbacks para evitar llamadas en toda la app
+Testear CRUD de competencias, profesores, carreras, inscripciones, descargas  

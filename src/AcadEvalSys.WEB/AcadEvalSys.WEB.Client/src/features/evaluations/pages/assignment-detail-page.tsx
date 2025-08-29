@@ -21,7 +21,6 @@ import {
   CheckCircle,
   Clock,
 } from "lucide-react";
-import { useGetAssignmentStudents } from "../hooks";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { StudentEvaluationModal } from "../components/student-evaluation-modal";
 import { StudentForEvaluation } from "../types/professor-evaluation";
@@ -190,8 +189,17 @@ export default function AssignmentDetailPage() {
                             {student.studentName}
                           </h3>
                           {getStatusBadge(student.status)}
-                          {student.competencyLevel &&
-                            getCompetencyLevelBadge(student.competencyLevel)}
+                          {student.competencyLevel
+                            ? getCompetencyLevelBadge(student.competencyLevel)
+                            : (
+                              <Badge
+                                variant="outline"
+                                className="bg-gray-100 text-gray-800 border-gray-200"
+                              >
+                                <Star className="w-3 h-3 mr-1" />
+                                Sin calificar
+                              </Badge>
+                            )}
                         </div>
                         <p className="text-sm text-muted-foreground">
                           {student.studentEmail}

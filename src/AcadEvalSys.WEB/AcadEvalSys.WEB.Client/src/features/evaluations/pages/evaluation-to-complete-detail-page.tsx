@@ -23,7 +23,6 @@ import {
   CheckCircle,
   Clock,
   Target,
-  Calendar,
 } from "lucide-react";
 import {
   getProfessorAssignmentById,
@@ -34,8 +33,7 @@ import { useState } from "react";
 import { StudentForEvaluation } from "../types/professor-evaluation";
 
 export default function EvaluationToCompleteDetailPage() {
-  const { evaluationId, assignmentId } = useParams<{
-    evaluationId: string;
+  const { assignmentId } = useParams<{
     assignmentId: string;
   }>();
 
@@ -258,8 +256,17 @@ export default function EvaluationToCompleteDetailPage() {
                             {student.studentName}
                           </h3>
                           {getStatusBadge(student.status)}
-                          {student.competencyLevel &&
-                            getCompetencyLevelBadge(student.competencyLevel)}
+                          {student.competencyLevel
+                            ? getCompetencyLevelBadge(student.competencyLevel)
+                            : (
+                              <Badge
+                                variant="outline"
+                                className="bg-gray-100 text-gray-800 border-gray-200"
+                              >
+                                <Star className="w-3 h-3 mr-1" />
+                                Sin calificar
+                              </Badge>
+                            )}
                         </div>
                         <p className="text-sm text-muted-foreground">
                           {student.studentEmail}

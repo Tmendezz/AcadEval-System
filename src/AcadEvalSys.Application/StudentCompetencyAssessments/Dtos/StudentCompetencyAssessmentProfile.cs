@@ -23,7 +23,7 @@ public class StudentCompetencyAssessmentProfile : Profile
                 src.ProfessorCompetencyAssignment.Competency.LevelDescriptions
                     .Where(ld => ld.Level == src.CompetencyLevel)
                     .Select(ld => ld.Description)
-                    .FirstOrDefault() ?? "Sin Evaluar"))
+                    .FirstOrDefault() ?? "Sin calificar"))
             .ForMember(dest => dest.CompetencyLevel, opt => opt.MapFrom(src => src.CompetencyLevel))
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status));
 
