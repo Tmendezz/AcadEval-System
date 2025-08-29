@@ -99,7 +99,13 @@ const columns: ColumnDef<StudentData>[] = [
           <span>{level}</span>
         </div>
       ) : (
-        <span className="text-muted-foreground">-</span>
+        <Badge
+          variant="outline"
+          className="bg-gray-100 text-gray-800 border-gray-200 text-xs"
+        >
+          <Star className="w-3 h-3 mr-1" />
+          Sin calificar
+        </Badge>
       );
     },
   },

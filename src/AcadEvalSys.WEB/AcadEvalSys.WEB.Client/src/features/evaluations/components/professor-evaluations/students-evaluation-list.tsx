@@ -286,7 +286,7 @@ export function StudentsEvaluationList({
                       : "⏳ Pendiente"}
                   </Badge>
 
-                  {student.competencyLevel && (
+                  {student.competencyLevel ? (
                     <Badge
                       variant="outline"
                       className={`text-xs ${getCompetencyLevelColor(
@@ -295,6 +295,14 @@ export function StudentsEvaluationList({
                     >
                       <Star className="w-3 h-3 mr-1" />
                       {student.competencyLevel}
+                    </Badge>
+                  ) : (
+                    <Badge
+                      variant="outline"
+                      className="bg-gray-100 text-gray-800 border-gray-200 text-xs"
+                    >
+                      <Star className="w-3 h-3 mr-1" />
+                      Sin calificar
                     </Badge>
                   )}
 
