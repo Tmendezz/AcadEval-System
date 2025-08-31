@@ -3,6 +3,7 @@ using System;
 using AcadEvalSys.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AcadEvalSys.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250831165516_AddAcademicSurveyModel")]
+    partial class AddAcademicSurveyModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,7 +71,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
 
                     b.HasIndex("UpdatedByUserId");
 
-                    b.ToTable("AcademicSurveys", (string)null);
+                    b.ToTable("AcademicSurveys");
                 });
 
             modelBuilder.Entity("AcadEvalSys.Domain.Entities.AcademicSurveyResponse", b =>
@@ -118,7 +121,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
 
                     b.HasIndex("UserId1");
 
-                    b.ToTable("AcademicSurveyResponses", (string)null);
+                    b.ToTable("AcademicSurveyResponses");
                 });
 
             modelBuilder.Entity("AcadEvalSys.Domain.Entities.AcademicSurveySubject", b =>
@@ -171,7 +174,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
 
                     b.HasIndex("UpdatedByUserId");
 
-                    b.ToTable("AcademicSurveySubjects", (string)null);
+                    b.ToTable("AcademicSurveySubjects");
                 });
 
             modelBuilder.Entity("AcadEvalSys.Domain.Entities.Competency", b =>
@@ -212,7 +215,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
 
                     b.HasIndex("UpdatedByUserId");
 
-                    b.ToTable("Competencies", (string)null);
+                    b.ToTable("Competencies");
                 });
 
             modelBuilder.Entity("AcadEvalSys.Domain.Entities.CompetencyEvaluationInstance", b =>
@@ -260,7 +263,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
 
                     b.HasIndex("UpdatedByUserId");
 
-                    b.ToTable("CompetencyEvaluationInstances", (string)null);
+                    b.ToTable("CompetencyEvaluationInstances");
                 });
 
             modelBuilder.Entity("AcadEvalSys.Domain.Entities.CompetencyLevelDescription", b =>
@@ -303,7 +306,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
                     b.HasIndex("CompetencyId", "Level")
                         .IsUnique();
 
-                    b.ToTable("CompetencyLevelDescriptions", (string)null);
+                    b.ToTable("CompetencyLevelDescriptions");
                 });
 
             modelBuilder.Entity("AcadEvalSys.Domain.Entities.Coordinator", b =>
@@ -318,7 +321,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
 
                     b.HasIndex("TechnicalCareerId");
 
-                    b.ToTable("Coordinators", (string)null);
+                    b.ToTable("Coordinators");
                 });
 
             modelBuilder.Entity("AcadEvalSys.Domain.Entities.Professor", b =>
@@ -331,7 +334,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("Professors", (string)null);
+                    b.ToTable("Professors");
                 });
 
             modelBuilder.Entity("AcadEvalSys.Domain.Entities.ProfessorCompetencyAssignment", b =>
@@ -389,7 +392,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
 
                     b.HasIndex("UpdatedByUserId");
 
-                    b.ToTable("ProfessorCompetencyAssignments", (string)null);
+                    b.ToTable("ProfessorCompetencyAssignments");
                 });
 
             modelBuilder.Entity("AcadEvalSys.Domain.Entities.Student", b =>
@@ -407,7 +410,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
 
                     b.HasIndex("TechnicalCareerId");
 
-                    b.ToTable("Students", (string)null);
+                    b.ToTable("Students");
                 });
 
             modelBuilder.Entity("AcadEvalSys.Domain.Entities.StudentCompetencyAssessment", b =>
@@ -461,7 +464,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
 
                     b.HasIndex("UpdatedByUserId");
 
-                    b.ToTable("StudentCompetencyAssessments", (string)null);
+                    b.ToTable("StudentCompetencyAssessments");
                 });
 
             modelBuilder.Entity("AcadEvalSys.Domain.Entities.StudentEvaluationReport", b =>
@@ -524,7 +527,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
 
                     b.HasIndex("UpdatedByUserId");
 
-                    b.ToTable("StudentEvaluationReports", (string)null);
+                    b.ToTable("StudentEvaluationReports");
                 });
 
             modelBuilder.Entity("AcadEvalSys.Domain.Entities.StudentSubject", b =>
@@ -565,7 +568,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
                     b.HasIndex("StudentId", "SubjectId")
                         .IsUnique();
 
-                    b.ToTable("StudentSubjects", (string)null);
+                    b.ToTable("StudentSubjects");
                 });
 
             modelBuilder.Entity("AcadEvalSys.Domain.Entities.Subject", b =>
@@ -611,7 +614,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
 
                     b.HasIndex("UpdatedByUserId");
 
-                    b.ToTable("Subjects", (string)null);
+                    b.ToTable("Subjects");
                 });
 
             modelBuilder.Entity("AcadEvalSys.Domain.Entities.SurveyQuestion", b =>
@@ -665,7 +668,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
 
                     b.HasIndex("UpdatedByUserId");
 
-                    b.ToTable("SurveyQuestions", (string)null);
+                    b.ToTable("SurveyQuestions");
                 });
 
             modelBuilder.Entity("AcadEvalSys.Domain.Entities.SurveyQuestionOption", b =>
@@ -715,7 +718,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
                     b.HasIndex("SurveyQuestionId", "Value")
                         .IsUnique();
 
-                    b.ToTable("SurveyQuestionOptions", (string)null);
+                    b.ToTable("SurveyQuestionOptions");
                 });
 
             modelBuilder.Entity("AcadEvalSys.Domain.Entities.SurveyQuestionResponse", b =>
@@ -765,7 +768,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
                     b.HasIndex("AcademicSurveyResponseId", "SurveyQuestionId")
                         .IsUnique();
 
-                    b.ToTable("SurveyQuestionResponses", (string)null);
+                    b.ToTable("SurveyQuestionResponses");
                 });
 
             modelBuilder.Entity("AcadEvalSys.Domain.Entities.SurveyTemplate", b =>
@@ -812,7 +815,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
 
                     b.HasIndex("UpdatedByUserId");
 
-                    b.ToTable("SurveyTemplates", (string)null);
+                    b.ToTable("SurveyTemplates");
                 });
 
             modelBuilder.Entity("AcadEvalSys.Domain.Entities.SurveyTemplateQuestion", b =>
@@ -866,7 +869,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
 
                     b.HasIndex("TemplateId", "Order");
 
-                    b.ToTable("SurveyTemplateQuestions", (string)null);
+                    b.ToTable("SurveyTemplateQuestions");
                 });
 
             modelBuilder.Entity("AcadEvalSys.Domain.Entities.SurveyTemplateQuestionOption", b =>
@@ -921,7 +924,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
                     b.HasIndex("TemplateQuestionId", "Value")
                         .IsUnique();
 
-                    b.ToTable("SurveyTemplateQuestionOptions", (string)null);
+                    b.ToTable("SurveyTemplateQuestionOptions");
                 });
 
             modelBuilder.Entity("AcadEvalSys.Domain.Entities.TechnicalCareer", b =>
@@ -954,7 +957,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
 
                     b.HasIndex("UpdatedByUserId");
 
-                    b.ToTable("TechnicalCareers", (string)null);
+                    b.ToTable("TechnicalCareers");
                 });
 
             modelBuilder.Entity("AcadEvalSys.Domain.Entities.User", b =>
@@ -1036,7 +1039,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
 
                     b.HasIndex("TechnicalCareersId");
 
-                    b.ToTable("CompetencyEvaluationInstanceTechnicalCareer", (string)null);
+                    b.ToTable("CompetencyEvaluationInstanceTechnicalCareer");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
