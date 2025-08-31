@@ -25,8 +25,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<SurveyTemplateQuestion> SurveyTemplateQuestions { get; set; }
     public DbSet<SurveyTemplateQuestionOption> SurveyTemplateQuestionOptions { get; set; }
 
-    public DbSet<FormQuestion> FormQuestions { get; set; }
-    public DbSet<FormQuestionOptions> FormQuestionOptions { get; set; }
+    public DbSet<SurveyQuestion> SurveyQuestions { get; set; }
+    public DbSet<SurveyQuestionOption> SurveyQuestionOptions { get; set; }
     public DbSet<AcademicSurveySubject> AcademicSurveySubjects { get; set; }
     public DbSet<AcademicSurveyResponse> AcademicSurveyResponses { get; set; }
     public DbSet<SurveyQuestionResponse> SurveyQuestionResponses { get; set; }
@@ -126,9 +126,19 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.Property(a => a.Title).IsRequired().HasMaxLength(200);
             entity.Property(a => a.Status).HasConversion<int>();
 
-            entity.HasMany<AcademicSurveySubject>()
-                .WithOne(ass => ass.AcademicSurvey)
+            entity.HasOne(a => a.Template)
+                .WithMany()
+                .HasForeignKey(a => a.TemplateId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasMany(a => a.Subjects)
+                .WithOne(ass => ass.AcademicSurvey!)
                 .HasForeignKey(ass => ass.AcademicSurveyId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(a => a.Questions)
+                .WithOne(q => q.AcademicSurvey!)
+                .HasForeignKey(q => q.AcademicSurveyId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -161,21 +171,21 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.HasIndex(o => new { o.TemplateQuestionId, o.Value }).IsUnique();
         });
 
-        builder.Entity<FormQuestion>(entity =>
+        builder.Entity<SurveyQuestion>(entity =>
         {
             entity.Property(fq => fq.Text).HasMaxLength(1000);
-            entity.Property(fq => fq.QuestionType).HasConversion<int>();
+            entity.Property(fq => fq.Type).HasConversion<int>();
 
             entity.HasMany<SurveyQuestionResponse>()
-                .WithOne(sqr => sqr.FormQuestion)
-                .HasForeignKey(sqr => sqr.FormQuestionId)
+                .WithOne(sqr => sqr.SurveyQuestion)
+                .HasForeignKey(sqr => sqr.SurveyQuestionId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        builder.Entity<FormQuestionOptions>(entity =>
+        builder.Entity<SurveyQuestionOption>(entity =>
         {
-            entity.Property(fqo => fqo.FormQuestionId).IsRequired();
-            entity.Property(fqo => fqo.Value).IsRequired();
+            entity.Property(o => o.Text).IsRequired().HasMaxLength(300);
+            entity.HasIndex(o => new { o.SurveyQuestionId, o.Value }).IsUnique();
         });
 
         builder.Entity<AcademicSurveySubject>(entity =>
@@ -211,36 +221,31 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         builder.Entity<AcademicSurveyResponse>(entity =>
         {
-            entity.Property(asr => asr.UserId).IsRequired();
-            entity.Property(asr => asr.SubmittedAt).IsRequired();
-
-            entity.HasOne(asr => asr.User)
+            entity.Property(r => r.UserId).IsRequired();
+            entity.HasOne<User>()
                 .WithMany()
-                .HasForeignKey(asr => asr.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasMany(asr => asr.QuestionResponses)
-                .WithOne()
-                .HasForeignKey(sqr => sqr.AcademicSurveyResponseId)
+            entity.HasOne<AcademicSurveySubject>()
+                .WithMany(s => s.Responses)
+                .HasForeignKey(r => r.AcademicSurveySubjectId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasIndex(asr => new { asr.UserId, asr.AcademicSurveySubjectId }).IsUnique();
         });
 
         builder.Entity<SurveyQuestionResponse>(entity =>
         {
-            entity.Property(sqr => sqr.AcademicSurveyResponseId).IsRequired();
-            entity.Property(sqr => sqr.AcademicSurveySubjectId).IsRequired();
-            entity.Property(sqr => sqr.FormQuestionId).IsRequired();
-            entity.Property(sqr => sqr.Text).HasMaxLength(2000);
-
-            // FK referencial a AcademicSurveySubject (sin navegación)
-            entity.HasOne<AcademicSurveySubject>()
-                .WithMany()
-                .HasForeignKey(sqr => sqr.AcademicSurveySubjectId)
+            entity.HasOne<AcademicSurveyResponse>()
+                .WithMany(r => r.QuestionResponses)
+                .HasForeignKey(qr => qr.AcademicSurveyResponseId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(sqr => new { sqr.AcademicSurveyResponseId, sqr.AcademicSurveySubjectId });
+            entity.HasOne(qr => qr.SurveyQuestion)
+                .WithMany()
+                .HasForeignKey(qr => qr.SurveyQuestionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(qr => new { qr.AcademicSurveyResponseId, qr.SurveyQuestionId }).IsUnique();
         });
     }
 }
