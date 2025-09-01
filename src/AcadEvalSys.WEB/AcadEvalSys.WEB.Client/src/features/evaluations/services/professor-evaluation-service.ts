@@ -5,9 +5,10 @@ import {
   StudentAssessmentRequest,
   StudentAssessmentResponse,
   ProfessorEvaluationFilters,
+  ProfessorAssignmentFromApi,
 } from "../types/professor-evaluation";
 
-const PROFESSOR_EVALUATIONS_API_URL = "/evaluation-instances";
+const PROFESSOR_EVALUATIONS_API_URL = "professors";
 
 export const getProfessorAssignments = async (
   evaluationId: string,
@@ -22,7 +23,7 @@ export const getProfessorAssignments = async (
 
 export const getProfessorAssignmentById = async (
   assignmentId: string
-): Promise<ProfessorEvaluationAssignment> => {
+): Promise<ProfessorAssignmentFromApi> => {
   const { data } = await api.get(
     `${PROFESSOR_EVALUATIONS_API_URL}/assignments/${assignmentId}`
   );
@@ -35,29 +36,42 @@ export const getStudentsForAssignment = async (
   const { data } = await api.get(
     `${PROFESSOR_EVALUATIONS_API_URL}/assignments/${assignmentId}/students`
   );
-  return data;
+
+  // El backend devuelve un objeto con studentEvaluations, necesitamos extraer el array
+  if (
+    data &&
+    data.studentEvaluations &&
+    Array.isArray(data.studentEvaluations)
+  ) {
+    return data.studentEvaluations.map((student: any) => ({
+      studentId: student.studentId,
+      studentName: student.studentName,
+      studentEmail: student.studentEmail,
+      status: student.status === "Completed" ? "Evaluated" : "Pending",
+      competencyLevel: student.competencyLevel,
+      assessmentDate: undefined,
+      observations: undefined,
+    }));
+  }
+
+  return [];
 };
 
 export const assessStudent = async (
   assessment: StudentAssessmentRequest
 ): Promise<StudentAssessmentResponse> => {
   const { data } = await api.post(
-    `${PROFESSOR_EVALUATIONS_API_URL}/assignments/${assessment.assignmentId}/students/${assessment.studentId}/assess`,
-    {
-      competencyLevel: assessment.competencyLevel,
-      observations: assessment.observations,
-    }
+    `${PROFESSOR_EVALUATIONS_API_URL}/assignments/${assessment.assignmentId}/students/${assessment.studentId}/evaluate`,
+    assessment
   );
   return data;
 };
 
 export const updateStudentAssessment = async (
-  assignmentId: string,
-  studentId: string,
-  assessment: Partial<StudentAssessmentRequest>
+  assessment: StudentAssessmentRequest
 ): Promise<StudentAssessmentResponse> => {
-  const { data } = await api.put(
-    `${PROFESSOR_EVALUATIONS_API_URL}/assignments/${assignmentId}/students/${studentId}/assess`,
+  const { data } = await api.post(
+    `${PROFESSOR_EVALUATIONS_API_URL}/assignments/${assessment.assignmentId}/students/${assessment.studentId}/evaluate`,
     assessment
   );
   return data;

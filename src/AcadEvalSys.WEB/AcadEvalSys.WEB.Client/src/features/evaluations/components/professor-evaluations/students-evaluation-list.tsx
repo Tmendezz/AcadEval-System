@@ -230,7 +230,7 @@ export function StudentsEvaluationList({
                 <SelectValue placeholder="Filtrar por estado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos los estados</SelectItem>
+                <SelectItem value="all">Todos los estados</SelectItem>
                 <SelectItem value="Pending">Pendientes</SelectItem>
                 <SelectItem value="Evaluated">Evaluados</SelectItem>
               </SelectContent>

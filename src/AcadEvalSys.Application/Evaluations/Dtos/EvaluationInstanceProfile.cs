@@ -21,6 +21,8 @@ public class EvaluationInstanceProfile : Profile
 
         CreateMap<CompetencyEvaluationInstance, EvaluationInstanceDto>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+            .ForMember(dest => dest.CreatedByUserId, opt => opt.MapFrom(src => src.CreatedByUserId))
             .ForMember(dest => dest.OverallProgressPercentage, opt => opt.MapFrom(src =>
                 src.TotalProfessorAssignmentsCount > 0
                     ? (decimal)src.CompletedProfessorAssignmentsCount / src.TotalProfessorAssignmentsCount * 100

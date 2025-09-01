@@ -16,11 +16,16 @@ export interface ProfessorAssignmentFromApi {
   competencyName: string;
   competencyDescription: string;
   subjectName: string;
+  careerName: string;
+  careerYear: string;
   status: "Pending" | "Completed";
   totalStudentsCount: number;
   evaluatedStudentsCount: number;
   progressPercentage: number;
   studentEvaluations: any[];
+  periodFrom?: string;
+  periodTo?: string;
+  competencyLevelDescriptions: Record<string, string>;
 }
 
 export interface StudentForEvaluation {
@@ -37,8 +42,7 @@ export type CompetencyLevel =
   | "Inicial"
   | "Intermedio"
   | "Avanzado"
-  | "Excelente"
-  | "Ninguno";
+  | "Excelente";
 
 export interface StudentAssessmentRequest {
   assignmentId: string;

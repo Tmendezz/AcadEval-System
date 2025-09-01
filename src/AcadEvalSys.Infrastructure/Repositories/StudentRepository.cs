@@ -117,6 +117,9 @@ public class StudentRepository(ApplicationDbContext dbContext, ILogger<StudentRe
         }
 
         await dbContext.SaveChangesAsync();
+
+        // Crear StudentCompetencyAssessments para instancias de evaluación activas
+        await CreateStudentCompetencyAssessmentsForActiveEvaluationsAsync(studentId, subjectId, createdByUserId);
     }
 
     public async Task UnenrollFromSubjectAsync(string studentId, Guid subjectId)
@@ -199,5 +202,60 @@ public class StudentRepository(ApplicationDbContext dbContext, ILogger<StudentRe
             logger.LogInformation("Student {StudentName} ({StudentId}) year updated from {PreviousYear} to {NewYear} due to enrollment in higher year subject", 
                 student.User?.Name, student.UserId, previousYear, subjectYear);
         }
+    }
+
+    /// <summary>
+    /// Crea StudentCompetencyAssessments para todas las instancias de evaluación activas
+    /// que incluyan la materia especificada
+    /// </summary>
+    private async Task CreateStudentCompetencyAssessmentsForActiveEvaluationsAsync(string studentId, Guid subjectId, string createdByUserId)
+    {
+        // Buscar instancias de evaluación activas que incluyan esta materia
+        var activeEvaluations = await dbContext.ProfessorCompetencyAssignments
+            .Where(pca => pca.SubjectId == subjectId && 
+                         (pca.CompetencyEvaluationInstance.Status == Domain.Enums.EvaluationStatus.Pending || 
+                          pca.CompetencyEvaluationInstance.Status == Domain.Enums.EvaluationStatus.Upcoming))
+            .Include(pca => pca.CompetencyEvaluationInstance)
+            .ToListAsync();
+
+        foreach (var assignment in activeEvaluations)
+        {
+            // Verificar si ya existe un assessment para este estudiante y asignación
+            var existingAssessment = await dbContext.StudentCompetencyAssessments
+                .FirstOrDefaultAsync(sca => sca.StudentId == studentId && 
+                                          sca.ProfessorCompetencyAssignmentId == assignment.Id);
+
+            if (existingAssessment == null)
+            {
+                var assessment = new StudentCompetencyAssessment
+                {
+                    StudentId = studentId,
+                    ProfessorCompetencyAssignmentId = assignment.Id,
+                    Status = Domain.Enums.AssessmentStatus.Pending,
+                    CompetencyLevel = null,
+                    CreatedByUserId = createdByUserId,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                dbContext.StudentCompetencyAssessments.Add(assessment);
+            }
+        }
+
+        if (activeEvaluations.Any())
+        {
+            await dbContext.SaveChangesAsync();
+            logger.LogInformation("Created {Count} StudentCompetencyAssessments for student {StudentId} in subject {SubjectId}", 
+                activeEvaluations.Count, studentId, subjectId);
+        }
+    }
+
+    public async Task<IEnumerable<string>> GetEnrolledStudentsForSubjectAsync(Guid subjectId, int academicYear)
+    {
+        return await dbContext.StudentSubjects
+            .Where(ss => ss.SubjectId == subjectId && ss.IsActive && ss.AcademicYear == academicYear)
+            .Select(ss => ss.StudentId)
+            .Where(id => id != null)
+            .Cast<string>()
+            .ToListAsync();
     }
 }

@@ -1,5 +1,6 @@
 // Pages
 export * from "./pages";
+export { default as EvaluateStudentsPage } from "./pages/evaluate-students-page";
 
 // Componentes reutilizables
 export { EvaluationFilters } from "./components";

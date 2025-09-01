@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback } from "react";
-import { FilterOptions, FilterConfig } from "@/shared/types";
+import { FilterOptions, FilterConfig } from "@/shared/types/ui";
 
 export const useFiltering = <T>({
   data,
@@ -17,7 +17,7 @@ export const useFiltering = <T>({
 export const useAdvancedFiltering = <T>(data: T[], config: FilterConfig<T>) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
-  const [sortBy, setSortBy] = useState<string>("");
+  const [sortBy, setSortBy] = useState<string>("createdAtDesc"); // Por defecto, ordenar por fecha de creación (más reciente primero)
 
   const filteredAndSortedData = useMemo(() => {
     let result = [...data];
@@ -60,7 +60,7 @@ export const useAdvancedFiltering = <T>(data: T[], config: FilterConfig<T>) => {
   const clearFilters = useCallback(() => {
     setActiveFilters({});
     setSearchTerm("");
-    setSortBy("");
+    setSortBy("createdAtDesc"); // Mantener ordenamiento por fecha de creación como predeterminado
   }, []);
 
   return {

@@ -25,6 +25,16 @@ public class GetProfessorAssignmentByIdQueryHandler(
             return null;
         }
 
+        // Obtener las descripciones de los niveles de competencia
+        var levelDescriptions = new Dictionary<Domain.Enums.CompetencyLevel, string>();
+        if (assignment.Competency?.LevelDescriptions != null)
+        {
+            foreach (var levelDesc in assignment.Competency.LevelDescriptions)
+            {
+                levelDescriptions[levelDesc.Level] = levelDesc.Description;
+            }
+        }
+
         var result = new ProfessorAssignmentWithStudentsDto
         {
             AssignmentId = assignment.Id,
@@ -35,7 +45,10 @@ public class GetProfessorAssignmentByIdQueryHandler(
             TotalStudentsCount = assignment.TotalStudentsCount,
             EvaluatedStudentsCount = assignment.EvaluatedStudentsCount,
             ProgressPercentage = assignment.ProgressPercentage,
-            StudentEvaluations = mapper.Map<IEnumerable<StudentCompetencyEvaluationDto>>(assignment.StudentCompetencyAssessments ?? new List<Domain.Entities.StudentCompetencyAssessment>())
+            PeriodFrom = assignment.CompetencyEvaluationInstance?.PeriodFrom,
+            PeriodTo = assignment.CompetencyEvaluationInstance?.PeriodTo,
+            StudentEvaluations = mapper.Map<IEnumerable<StudentCompetencyEvaluationDto>>(assignment.StudentCompetencyAssessments ?? new List<Domain.Entities.StudentCompetencyAssessment>()),
+            CompetencyLevelDescriptions = levelDescriptions
         };
 
         logger.LogInformation("Retrieved professor assignment: {AssignmentId}, Status: {Status}, Students: {StudentCount}",

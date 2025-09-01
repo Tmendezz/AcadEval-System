@@ -5,6 +5,7 @@ namespace AcadEvalSys.Application.StudentCompetencyAssessments.Dtos;
 public class StudentCompetencyEvaluationDto
 {
     public Guid StudentCompetencyAssessmentId { get; set; }
+    public string StudentId { get; set; } = string.Empty;
     public string StudentName { get; set; } = string.Empty;
     public string StudentEmail { get; set; } = string.Empty;
     public string CompetencyLevelDescription { get; set; } = string.Empty;

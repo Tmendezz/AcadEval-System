@@ -6,31 +6,17 @@ import {
   PageSection,
 } from "@/shared/components/layout/page-layout";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
-import { Button } from "@/shared/components/ui/button";
-import { Badge } from "@/shared/components/ui/badge";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import {
-  Clock,
-  CheckCircle,
-  ArrowRight,
-  Users,
-  BookOpen,
-  Filter,
-} from "lucide-react";
-import { Link } from "wouter";
+import { Clock, CheckCircle, Filter } from "lucide-react";
 import { useGetAllProfessorAssignments } from "../hooks";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+import { DataSection } from "@/shared/components/ui/data-section";
+import { professorEvaluationColumns } from "../columns";
 
 export default function ProfessorAllEvaluationsPage() {
   const { user } = useAuthStore();
@@ -43,23 +29,6 @@ export default function ProfessorAllEvaluationsPage() {
       if (statusFilter === "all") return true;
       return assignment.status === statusFilter;
     }) || [];
-
-  const getStatusBadge = (status: string) => {
-    if (status === "Completed") {
-      return (
-        <Badge variant="default" className="bg-green-100 text-green-800">
-          <CheckCircle className="w-3 h-3 mr-1" />
-          Completada
-        </Badge>
-      );
-    }
-    return (
-      <Badge variant="outline" className="text-orange-600 border-orange-200">
-        <Clock className="w-3 h-3 mr-1" />
-        Pendiente
-      </Badge>
-    );
-  };
 
   if (isLoading) {
     return (
@@ -79,6 +48,50 @@ export default function ProfessorAllEvaluationsPage() {
       </PageLayout>
     );
   }
+
+  const getPageTitle = () => {
+    switch (statusFilter) {
+      case "Pending":
+        return "Evaluaciones Pendientes";
+      case "Completed":
+        return "Evaluaciones Completadas";
+      default:
+        return "Todas las Evaluaciones";
+    }
+  };
+
+  const getPageDescription = () => {
+    switch (statusFilter) {
+      case "Pending":
+        return "Evaluaciones de competencias que requieren tu atención";
+      case "Completed":
+        return "Evaluaciones de competencias que ya has completado";
+      default:
+        return "Gestiona todas tus evaluaciones de competencias asignadas. Usa los filtros para ver evaluaciones pendientes o completadas.";
+    }
+  };
+
+  const getEmptyMessage = () => {
+    switch (statusFilter) {
+      case "Pending":
+        return "No tienes evaluaciones pendientes";
+      case "Completed":
+        return "No has completado ninguna evaluación aún";
+      default:
+        return "No tienes evaluaciones asignadas";
+    }
+  };
+
+  const getEmptyIcon = () => {
+    switch (statusFilter) {
+      case "Pending":
+        return <Clock className="w-8 h-8" />;
+      case "Completed":
+        return <CheckCircle className="w-8 h-8" />;
+      default:
+        return <Clock className="w-8 h-8" />;
+    }
+  };
 
   return (
     <PageLayout>
@@ -119,105 +132,17 @@ export default function ProfessorAllEvaluationsPage() {
             </div>
           </div>
 
-          {/* Lista de Evaluaciones */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                {statusFilter === "all" && (
-                  <>
-                    <Clock className="w-5 h-5 text-blue-500" />
-                    Todas las Evaluaciones ({filteredAssignments.length})
-                  </>
-                )}
-                {statusFilter === "Pending" && (
-                  <>
-                    <Clock className="w-5 h-5 text-orange-500" />
-                    Evaluaciones Pendientes ({filteredAssignments.length})
-                  </>
-                )}
-                {statusFilter === "Completed" && (
-                  <>
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                    Evaluaciones Completadas ({filteredAssignments.length})
-                  </>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {filteredAssignments.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  {statusFilter === "all" && (
-                    <>
-                      <Clock className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
-                      <p>No tienes evaluaciones asignadas</p>
-                    </>
-                  )}
-                  {statusFilter === "Pending" && (
-                    <>
-                      <Clock className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
-                      <p>No tienes evaluaciones pendientes</p>
-                    </>
-                  )}
-                  {statusFilter === "Completed" && (
-                    <>
-                      <CheckCircle className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
-                      <p>No has completado ninguna evaluación aún</p>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {filteredAssignments.map((assignment) => (
-                    <div
-                      key={assignment.assignmentId}
-                      className={`flex items-center justify-between p-4 border rounded-lg transition-colors ${
-                        assignment.status === "Completed"
-                          ? "bg-green-50/50 hover:bg-green-50/70"
-                          : "hover:bg-muted/50"
-                      }`}
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-foreground">
-                            {assignment.competencyName}
-                          </h3>
-                          {getStatusBadge(assignment.status)}
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <BookOpen className="w-4 h-4" />
-                            {assignment.subjectName}
-                          </span>
-                          <span
-                            className={`flex items-center gap-1 ${
-                              assignment.status === "Completed"
-                                ? "text-green-600 font-medium"
-                                : ""
-                            }`}
-                          >
-                            <Users className="w-4 h-4" />
-                            {assignment.status === "Completed" && "✓ "}
-                            {assignment.evaluatedStudents} de{" "}
-                            {assignment.totalStudents} evaluados
-                          </span>
-                        </div>
-                      </div>
-                      <Button variant="outline" size="sm" asChild>
-                        <Link
-                          href={`/evaluaciones/asignacion/${assignment.assignmentId}`}
-                        >
-                          {assignment.status === "Completed"
-                            ? "Ver Detalles"
-                            : "Continuar Evaluando"}
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                        </Link>
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {/* Tabla de Evaluaciones */}
+          <DataSection
+            title={getPageTitle()}
+            description={getPageDescription()}
+            data={filteredAssignments}
+            columns={professorEvaluationColumns}
+            isLoading={isLoading}
+            emptyMessage={getEmptyMessage()}
+            emptyIcon={getEmptyIcon()}
+            className="mb-6"
+          />
         </PageSection>
       </PageContent>
     </PageLayout>

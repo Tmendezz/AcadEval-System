@@ -58,6 +58,7 @@ public class CompetencyEvaluationInstanceRepository(ApplicationDbContext dbConte
             .Include(ep => ep.StudentEvaluationReports)
             .AsSplitQuery()
             .Where(ep => ep.IsActive)
+            .OrderByDescending(ep => ep.CreatedAt) // Ordenar por fecha de creación (más reciente primero)
             .ToListAsync();
     }
 

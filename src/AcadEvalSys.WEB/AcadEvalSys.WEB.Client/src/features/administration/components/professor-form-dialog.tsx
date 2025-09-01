@@ -21,16 +21,14 @@ import {
 } from "@/shared/components/ui/form";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
-import { Badge } from "@/shared/components/ui/badge";
 import { Separator } from "@/shared/components/ui/separator";
-import { Key, Copy, Eye, EyeOff, RefreshCw } from "lucide-react";
+import { Key, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import type { Professor } from "@/shared/types/professor";
 
 const baseSchema = z.object({
   name: z.string().min(2, "El nombre es obligatorio"),
   email: z.string().email("Email inválido"),
-  // phone removed
   password: z.string().optional(),
 });
 
@@ -43,13 +41,6 @@ interface ProfessorFormDialogProps {
   onSubmit: (values: ProfessorFormValues) => void;
 }
 
-interface GenerateTemporaryPasswordResult {
-  userId: string;
-  email: string;
-  name: string;
-  temporaryPassword: string;
-}
-
 export function ProfessorFormDialog({
   open,
   onOpenChange,
@@ -58,11 +49,7 @@ export function ProfessorFormDialog({
 }: ProfessorFormDialogProps) {
   const isEditing = Boolean(professor);
   const [showPassword, setShowPassword] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
-  const [temporaryPassword, setTemporaryPassword] = useState<string | null>(
-    null
-  );
   const [newPassword, setNewPassword] = useState("");
 
   const form = useForm<ProfessorFormValues>({
@@ -70,7 +57,6 @@ export function ProfessorFormDialog({
     defaultValues: {
       name: professor?.name ?? "",
       email: professor?.email ?? "",
-      // phone removed
       password: "",
     },
   });
@@ -79,10 +65,8 @@ export function ProfessorFormDialog({
     form.reset({
       name: professor?.name ?? "",
       email: professor?.email ?? "",
-      // phone removed
       password: "",
     });
-    setTemporaryPassword(null);
     setNewPassword("");
   }, [professor, form, open]);
 
@@ -92,37 +76,8 @@ export function ProfessorFormDialog({
   };
 
   const handleClose = () => {
-    setTemporaryPassword(null);
     setNewPassword("");
     onOpenChange(false);
-  };
-
-  const handleGenerateTemporaryPassword = async () => {
-    if (!professor?.id) return;
-
-    setIsGenerating(true);
-    try {
-      const response = await fetch("/api/user-password/generate-temporary", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId: professor.id }),
-      });
-
-      if (response.ok) {
-        const result: GenerateTemporaryPasswordResult = await response.json();
-        setTemporaryPassword(result.temporaryPassword);
-        toast.success("Contraseña temporal generada exitosamente");
-      } else {
-        const error = await response.json();
-        toast.error(error.error || "Error al generar contraseña temporal");
-      }
-    } catch (error) {
-      toast.error("Error de conexión");
-    } finally {
-      setIsGenerating(false);
-    }
   };
 
   const handleResetPassword = async () => {
@@ -142,22 +97,17 @@ export function ProfessorFormDialog({
       });
 
       if (response.ok) {
-        toast.success("Contraseña reseteada exitosamente");
+        toast.success("Contraseña actualizada exitosamente");
         setNewPassword("");
       } else {
         const error = await response.json();
-        toast.error(error.error || "Error al resetear contraseña");
+        toast.error(error.error || "Error al actualizar contraseña");
       }
     } catch (error) {
       toast.error("Error de conexión");
     } finally {
       setIsResetting(false);
     }
-  };
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success("Contraseña copiada al portapapeles");
   };
 
   return (
@@ -211,8 +161,6 @@ export function ProfessorFormDialog({
               )}
             />
 
-            {/* phone removed */}
-
             {!isEditing && (
               <FormField
                 control={form.control}
@@ -240,54 +188,9 @@ export function ProfessorFormDialog({
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <Key className="w-4 h-4 text-muted-foreground" />
-                    <h4 className="font-medium">Gestión de Contraseña</h4>
+                    <h4 className="font-medium">Cambiar Contraseña</h4>
                   </div>
 
-                  {/* Generar Contraseña Temporal */}
-                  <div className="space-y-2">
-                    <Button
-                      onClick={handleGenerateTemporaryPassword}
-                      disabled={isGenerating}
-                      variant="outline"
-                      className="w-full"
-                    >
-                      {isGenerating ? (
-                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                      ) : (
-                        <RefreshCw className="w-4 h-4 mr-2" />
-                      )}
-                      Generar Contraseña Temporal
-                    </Button>
-
-                    {temporaryPassword && (
-                      <div className="p-3 bg-muted rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium">
-                            Contraseña Temporal:
-                          </span>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => copyToClipboard(temporaryPassword)}
-                          >
-                            <Copy className="w-3 h-3" />
-                          </Button>
-                        </div>
-                        <Badge
-                          variant="secondary"
-                          className="font-mono text-sm"
-                        >
-                          {temporaryPassword}
-                        </Badge>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          Esta contraseña debe ser cambiada en el próximo inicio
-                          de sesión
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Resetear Contraseña */}
                   <div className="space-y-2">
                     <div className="relative">
                       <Input
@@ -319,7 +222,7 @@ export function ProfessorFormDialog({
                       {isResetting ? (
                         <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
                       ) : (
-                        "Establecer Nueva Contraseña"
+                        "Actualizar Contraseña"
                       )}
                     </Button>
                   </div>

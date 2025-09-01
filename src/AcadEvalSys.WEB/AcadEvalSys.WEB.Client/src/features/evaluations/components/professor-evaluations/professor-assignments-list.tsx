@@ -133,11 +133,11 @@ export function ProfessorAssignmentsList({
             </div>
 
             <Select
-              value={filters.status || ""}
+              value={filters.status || "all"}
               onValueChange={(value) =>
                 setFilters((prev) => ({
                   ...prev,
-                  status: (value as any) || undefined,
+                  status: value === "all" ? undefined : value,
                 }))
               }
             >
@@ -145,7 +145,7 @@ export function ProfessorAssignmentsList({
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos los estados</SelectItem>
+                <SelectItem value="all">Todos los estados</SelectItem>
                 <SelectItem value="Pending">Pendiente</SelectItem>
                 <SelectItem value="InProgress">En Progreso</SelectItem>
                 <SelectItem value="Completed">Completado</SelectItem>
@@ -153,11 +153,11 @@ export function ProfessorAssignmentsList({
             </Select>
 
             <Select
-              value={filters.careerYear?.toString() || ""}
+              value={filters.careerYear?.toString() || "all"}
               onValueChange={(value) =>
                 setFilters((prev) => ({
                   ...prev,
-                  careerYear: value ? parseInt(value) : undefined,
+                  careerYear: value === "all" ? undefined : parseInt(value),
                 }))
               }
             >
@@ -165,7 +165,7 @@ export function ProfessorAssignmentsList({
                 <SelectValue placeholder="Año de carrera" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos los años</SelectItem>
+                <SelectItem value="all">Todos los años</SelectItem>
                 <SelectItem value="1">Primer Año</SelectItem>
                 <SelectItem value="2">Segundo Año</SelectItem>
                 <SelectItem value="3">Tercer Año</SelectItem>

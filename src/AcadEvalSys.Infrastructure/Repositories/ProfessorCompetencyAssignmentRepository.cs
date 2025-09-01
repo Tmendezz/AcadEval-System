@@ -28,15 +28,18 @@ public class ProfessorCompetencyAssignmentRepository : IProfessorCompetencyAssig
 
     private async Task CreateStudentCompetencyAssessmentsAsync(ProfessorCompetencyAssignment assignment)
     {
-        // Obtener todos los estudiantes inscritos en la materia
+        // Obtener todos los estudiantes inscritos activamente en la materia para el año académico actual
+        var currentYear = DateTime.Now.Year;
         var enrolledStudents = await _context.StudentSubjects
-            .Where(ss => ss.SubjectId == assignment.SubjectId)
+            .Where(ss => ss.SubjectId == assignment.SubjectId && 
+                        ss.IsActive && 
+                        ss.AcademicYear == currentYear)
             .Select(ss => ss.StudentId)
             .ToListAsync();
 
         if (!enrolledStudents.Any())
         {
-            return; // No hay estudiantes inscritos en esta materia
+            return; // No hay estudiantes inscritos activamente en esta materia
         }
 
         // Crear un StudentCompetencyAssessment para cada estudiante
@@ -59,6 +62,8 @@ public class ProfessorCompetencyAssignmentRepository : IProfessorCompetencyAssig
         var query = _context.ProfessorCompetencyAssignments
             .Include(pca => pca.Competency)
             .Include(pca => pca.Subject)
+                .ThenInclude(s => s.TechnicalCareer)
+            .Include(pca => pca.CompetencyEvaluationInstance)
             .Include(pca => pca.StudentCompetencyAssessments!)
                 .ThenInclude(sca => sca.Student!)
                     .ThenInclude(s => s.User)
@@ -74,7 +79,7 @@ public class ProfessorCompetencyAssignmentRepository : IProfessorCompetencyAssig
         Console.WriteLine($"GetProfessorAssignmentsAsync: Found {result.Count()} assignments for professor {professorId}");
         foreach (var assignment in result)
         {
-            Console.WriteLine($"Assignment: {assignment.Id}, Subject: {assignment.Subject?.Name}, Competency: {assignment.Competency?.Name}, Students: {assignment.StudentCompetencyAssessments?.Count ?? 0}");
+            Console.WriteLine($"Assignment: {assignment.Id}, Subject: {assignment.Subject?.Name}, Competency: {assignment.Competency?.Name}, Career: {assignment.Subject?.TechnicalCareer?.Name}, Year: {assignment.Subject?.Year}, Students: {assignment.StudentCompetencyAssessments?.Count ?? 0}");
         }
         
         return result;
@@ -85,6 +90,7 @@ public class ProfessorCompetencyAssignmentRepository : IProfessorCompetencyAssig
         return await _context.ProfessorCompetencyAssignments
             .Include(pca => pca.Competency)
             .Include(pca => pca.Subject)
+            .Include(pca => pca.CompetencyEvaluationInstance)
             .Include(pca => pca.StudentCompetencyAssessments!)
                 .ThenInclude(sca => sca.Student!)
                     .ThenInclude(s => s.User)

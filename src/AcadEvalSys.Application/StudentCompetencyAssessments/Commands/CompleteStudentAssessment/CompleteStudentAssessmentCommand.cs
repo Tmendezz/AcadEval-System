@@ -11,4 +11,5 @@ public class CompleteStudentAssessmentCommand(): IRequest<Guid>
 
     [JsonIgnore] public string StudentId { get; set; }  = string.Empty;
     public CompetencyLevel? CompetencyLevel { get; set; } 
+    public string? Observations { get; set; }
 }

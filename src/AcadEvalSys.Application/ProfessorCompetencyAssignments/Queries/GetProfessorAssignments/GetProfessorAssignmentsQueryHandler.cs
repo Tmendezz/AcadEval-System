@@ -24,28 +24,41 @@ public class GetProfessorAssignmentsQueryHandler(
         var assignmentsList = assignments.ToList();
         logger.LogInformation("Retrieved {Count} professor assignments", assignmentsList.Count);
 
-        var result = assignmentsList.Select(assignment => new ProfessorAssignmentWithStudentsDto
-        {
-            AssignmentId = assignment.Id,
-            CompetencyName = assignment.Competency?.Name ?? string.Empty,
-            CompetencyDescription = assignment.Competency?.Description ?? string.Empty,
-            SubjectName = assignment.Subject?.Name ?? string.Empty,
-            Status = assignment.Status,
-            TotalStudentsCount = assignment.TotalStudentsCount,
-            EvaluatedStudentsCount = assignment.EvaluatedStudentsCount,
-            ProgressPercentage = assignment.ProgressPercentage,
-            StudentEvaluations = mapper.Map<IEnumerable<StudentCompetencyEvaluationDto>>(assignment.StudentCompetencyAssessments ?? new List<Domain.Entities.StudentCompetencyAssessment>())
+        var result = assignmentsList.Select(assignment => {
+            // Obtener las descripciones de los niveles de competencia
+            var levelDescriptions = new Dictionary<Domain.Enums.CompetencyLevel, string>();
+            if (assignment.Competency?.LevelDescriptions != null)
+            {
+                foreach (var levelDesc in assignment.Competency.LevelDescriptions)
+                {
+                    levelDescriptions[levelDesc.Level] = levelDesc.Description;
+                }
+            }
+
+            return new ProfessorAssignmentWithStudentsDto
+            {
+                AssignmentId = assignment.Id,
+                CompetencyName = assignment.Competency?.Name ?? string.Empty,
+                CompetencyDescription = assignment.Competency?.Description ?? string.Empty,
+                SubjectName = assignment.Subject?.Name ?? string.Empty,
+                CareerName = assignment.Subject?.TechnicalCareer?.Name ?? string.Empty,
+                CareerYear = assignment.Subject?.Year.ToString() ?? string.Empty,
+                Status = assignment.Status,
+                TotalStudentsCount = assignment.TotalStudentsCount,
+                EvaluatedStudentsCount = assignment.EvaluatedStudentsCount,
+                ProgressPercentage = assignment.ProgressPercentage,
+                PeriodFrom = assignment.CompetencyEvaluationInstance?.PeriodFrom,
+                PeriodTo = assignment.CompetencyEvaluationInstance?.PeriodTo,
+                StudentEvaluations = mapper.Map<IEnumerable<StudentCompetencyEvaluationDto>>(assignment.StudentCompetencyAssessments ?? new List<Domain.Entities.StudentCompetencyAssessment>()),
+                CompetencyLevelDescriptions = levelDescriptions
+            };
         });
 
         // Log detallado para debugging
         foreach (var assignment in assignmentsList)
         {
             logger.LogInformation("Assignment ID: {AssignmentId}, Competency: {CompetencyName}, Subject: {SubjectName}, Status: {Status}, Students Count: {StudentsCount}", 
-                assignment.Id, 
-                assignment.Competency?.Name, 
-                assignment.Subject?.Name, 
-                assignment.Status,
-                assignment.StudentCompetencyAssessments?.Count ?? 0);
+                assignment.Id, assignment.Competency?.Name, assignment.Subject?.Name, assignment.Status, assignment.TotalStudentsCount);
         }
 
         return result;

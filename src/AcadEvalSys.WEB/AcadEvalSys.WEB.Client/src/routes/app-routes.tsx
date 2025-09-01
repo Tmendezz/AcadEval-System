@@ -10,6 +10,7 @@ import {
   ProfessorAllEvaluationsPage,
   AssignmentDetailPage,
   EvaluationToCompleteDetailPage,
+  EvaluateStudentsPage,
 } from "../features/evaluations";
 import ProfessorPendingEvaluationsPage from "../features/evaluations/pages/professor-pending-evaluations-page";
 import StudentReceivedEvaluationsPage from "../features/evaluations/pages/student-received-evaluations-page";
@@ -63,6 +64,11 @@ export function AppRoutes() {
         <Route path="/evaluaciones/mis-evaluaciones">
           <ProtectedRoute requiredRoles={[UserRole.Professor]}>
             <ProfessorAllEvaluationsPage />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/evaluaciones/mis-evaluaciones/:assignmentId">
+          <ProtectedRoute requiredRoles={[UserRole.Professor]}>
+            <EvaluateStudentsPage />
           </ProtectedRoute>
         </Route>
         <Route path="/evaluaciones/asignacion/:assignmentId">

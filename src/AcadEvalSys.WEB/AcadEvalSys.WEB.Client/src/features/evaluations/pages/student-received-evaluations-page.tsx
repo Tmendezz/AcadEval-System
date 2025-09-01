@@ -12,52 +12,17 @@ import {
 } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { Target, Clock, CheckCircle, Star, BookOpen } from "lucide-react";
+import { useStudentReceivedEvaluations } from "../hooks/student-evaluations/use-student-received-evaluations";
+import { StudentReceivedEvaluation } from "@/shared/services/student-evaluation-service";
 
 export default function StudentReceivedEvaluationsPage() {
   const { user } = useAuthStore();
-
-  // Mock data - En producción esto vendría de una API
-  const receivedEvaluations = [
-    {
-      id: "1",
-      competency: "Programación Web",
-      subject: "Desarrollo Web",
-      career: "Tecnicatura en Informática",
-      year: "Primer Año",
-      professor: "Dr. Juan Pérez",
-      status: "completed",
-      competencyLevel: "Avanzado",
-      assessmentDate: "2024-11-15",
-      observations:
-        "Excelente desempeño en el desarrollo de aplicaciones web responsivas.",
-    },
-    {
-      id: "2",
-      competency: "Bases de Datos",
-      subject: "Sistemas de Información",
-      career: "Tecnicatura en Informática",
-      year: "Segundo Año",
-      professor: "Dra. María García",
-      status: "pending",
-      dueDate: "2024-12-20",
-    },
-    {
-      id: "3",
-      competency: "Algoritmos",
-      subject: "Programación I",
-      career: "Tecnicatura en Informática",
-      year: "Primer Año",
-      professor: "Prof. Carlos López",
-      status: "completed",
-      competencyLevel: "Intermedio",
-      assessmentDate: "2024-11-10",
-      observations: "Buen manejo de estructuras de datos básicas.",
-    },
-  ];
+  const { data: receivedEvaluations = [], isLoading } =
+    useStudentReceivedEvaluations();
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "completed":
+      case "Completed":
         return (
           <Badge
             variant="default"
@@ -67,7 +32,8 @@ export default function StudentReceivedEvaluationsPage() {
             Completada
           </Badge>
         );
-      case "pending":
+      case "Pending":
+      case "InProgress":
         return (
           <Badge
             variant="secondary"
@@ -144,7 +110,8 @@ export default function StudentReceivedEvaluationsPage() {
                     <p className="text-2xl font-bold text-foreground">
                       {
                         receivedEvaluations.filter(
-                          (e) => e.status === "completed"
+                          (e: StudentReceivedEvaluation) =>
+                            e.status === "Completed"
                         ).length
                       }
                     </p>
@@ -164,7 +131,8 @@ export default function StudentReceivedEvaluationsPage() {
                     <p className="text-2xl font-bold text-foreground">
                       {
                         receivedEvaluations.filter(
-                          (e) => e.status === "pending"
+                          (e: StudentReceivedEvaluation) =>
+                            e.status === "Pending" || e.status === "InProgress"
                         ).length
                       }
                     </p>
@@ -190,85 +158,91 @@ export default function StudentReceivedEvaluationsPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {receivedEvaluations.map((evaluation) => (
-                    <div
-                      key={evaluation.id}
-                      className={`p-4 border rounded-lg transition-colors ${
-                        evaluation.status === "completed"
-                          ? "bg-green-50/50 border-green-200/50"
-                          : "hover:bg-muted/50"
-                      }`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 space-y-3">
-                          <div className="flex items-center gap-3">
-                            <h3 className="font-semibold text-foreground text-lg">
-                              {evaluation.competency}
-                            </h3>
-                            {getStatusBadge(evaluation.status)}
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
-                            <div>
-                              <p>
-                                <strong>Asignatura:</strong>{" "}
-                                {evaluation.subject}
-                              </p>
-                              <p>
-                                <strong>Carrera:</strong> {evaluation.career} -{" "}
-                                {evaluation.year}
-                              </p>
-                              <p>
-                                <strong>Profesor:</strong>{" "}
-                                {evaluation.professor}
-                              </p>
+                  {receivedEvaluations.map(
+                    (evaluation: StudentReceivedEvaluation) => (
+                      <div
+                        key={evaluation.id}
+                        className={`p-4 border rounded-lg transition-colors ${
+                          evaluation.status === "Completed"
+                            ? "bg-green-50/50 border-green-200/50"
+                            : "hover:bg-muted/50"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 space-y-3">
+                            <div className="flex items-center gap-3">
+                              <h3 className="font-semibold text-foreground text-lg">
+                                {evaluation.competencyName}
+                              </h3>
+                              {getStatusBadge(evaluation.status)}
                             </div>
 
-                            {evaluation.status === "completed" && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
                               <div>
                                 <p>
-                                  <strong>Nivel Alcanzado:</strong>
+                                  <strong>Asignatura:</strong>{" "}
+                                  {evaluation.subjectName}
                                 </p>
-                                <div className="mt-1">
-                                  {getCompetencyLevelBadge(
-                                    evaluation.competencyLevel
-                                  )}
-                                </div>
-                                <p className="mt-2">
-                                  <strong>Fecha:</strong>{" "}
-                                  {new Date(
-                                    evaluation.assessmentDate
-                                  ).toLocaleDateString()}
+                                <p>
+                                  <strong>Carrera:</strong>{" "}
+                                  {evaluation.careerName} - {evaluation.year}
+                                </p>
+                                <p>
+                                  <strong>Profesor:</strong>{" "}
+                                  {evaluation.professorName}
+                                </p>
+                              </div>
+
+                              {evaluation.status === "Completed" &&
+                                evaluation.competencyLevel && (
+                                  <div>
+                                    <p>
+                                      <strong>Nivel Alcanzado:</strong>
+                                    </p>
+                                    <div className="mt-1">
+                                      {getCompetencyLevelBadge(
+                                        evaluation.competencyLevel
+                                      )}
+                                    </div>
+                                    <p className="mt-2">
+                                      <strong>Fecha:</strong>{" "}
+                                      {evaluation.assessmentDate &&
+                                        new Date(
+                                          evaluation.assessmentDate
+                                        ).toLocaleDateString()}
+                                    </p>
+                                  </div>
+                                )}
+
+                              {(evaluation.status === "Pending" ||
+                                evaluation.status === "InProgress") &&
+                                evaluation.dueDate && (
+                                  <div>
+                                    <p>
+                                      <strong>Fecha Límite:</strong>{" "}
+                                      {new Date(
+                                        evaluation.dueDate
+                                      ).toLocaleDateString()}
+                                    </p>
+                                  </div>
+                                )}
+                            </div>
+
+                            {evaluation.observations && (
+                              <div className="mt-3 p-3 bg-muted/30 rounded-lg">
+                                <p className="text-sm font-medium text-foreground mb-1">
+                                  Observaciones:
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  {evaluation.observations}
                                 </p>
                               </div>
                             )}
-
-                            {evaluation.status === "pending" && (
-                              <div>
-                                <p>
-                                  <strong>Fecha Límite:</strong>{" "}
-                                  {new Date(
-                                    evaluation.dueDate
-                                  ).toLocaleDateString()}
-                                </p>
-                              </div>
-                            )}
                           </div>
-
-                          {evaluation.observations && (
-                            <div className="mt-3 p-3 bg-muted/30 rounded-lg">
-                              <p className="text-sm font-medium text-foreground mb-1">
-                                Observaciones:
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                {evaluation.observations}
-                              </p>
-                            </div>
-                          )}
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  )}
                 </div>
               )}
             </CardContent>

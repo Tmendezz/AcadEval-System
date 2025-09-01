@@ -11,6 +11,7 @@ namespace AcadEvalSys.Domain.Entities
         public AssessmentStatus? Status { get; set; } = AssessmentStatus.Pending;
         public CompetencyLevel? CompetencyLevel { get; set; }
         public DateTime? CompletedAt { get; set; }
+        public string? Observations { get; set; }
 
         public virtual Student? Student { get; set; }
         public virtual ProfessorCompetencyAssignment? ProfessorCompetencyAssignment { get; set; }

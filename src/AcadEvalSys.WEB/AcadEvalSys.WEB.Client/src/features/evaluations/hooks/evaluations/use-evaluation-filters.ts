@@ -35,6 +35,10 @@ export const useEvaluationFilters = (evaluations: Evaluation[]) => {
         new Date(a.periodFrom).getTime() - new Date(b.periodFrom).getTime(),
       periodTo: (a: Evaluation, b: Evaluation) =>
         new Date(a.periodTo).getTime() - new Date(b.periodTo).getTime(),
+      createdAt: (a: Evaluation, b: Evaluation) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      createdAtDesc: (a: Evaluation, b: Evaluation) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     },
   };
 

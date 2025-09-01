@@ -21,6 +21,8 @@ export default function EvaluationsPage() {
     setSearchTerm,
     activeFilters,
     updateFilter,
+    sortBy,
+    setSortBy,
   } = useEvaluationFilters(evaluations);
 
   const handleNewEvaluation = () => {
@@ -50,6 +52,8 @@ export default function EvaluationsPage() {
             onStatusFilterChange={(value) => updateFilter("status", value)}
             careerFilter={activeFilters.career || "all"}
             onCareerFilterChange={(value) => updateFilter("career", value)}
+            sortBy={sortBy}
+            onSortByChange={setSortBy}
             className="mb-6"
           />
 

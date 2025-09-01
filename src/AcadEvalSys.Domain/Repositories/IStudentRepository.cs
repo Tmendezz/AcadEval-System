@@ -20,4 +20,7 @@ public interface IStudentRepository
     
     // Método para revocar inscripciones expiradas
     Task<int> RevokeEnrollmentsByYearAsync(int academicYear);
+    
+    // Método para obtener estudiantes inscritos en una materia
+    Task<IEnumerable<string>> GetEnrolledStudentsForSubjectAsync(Guid subjectId, int academicYear);
 }

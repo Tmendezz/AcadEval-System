@@ -47,9 +47,35 @@ public class StudentCompetencyAssessmentsRepository(ApplicationDbContext context
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<StudentCompetencyAssessment>> GetByStudentIdAsync(string studentId)
+    {
+        return await context.StudentCompetencyAssessments
+            .Include(sca => sca.Student!)
+                .ThenInclude(s => s.User)
+            .Include(sca => sca.ProfessorCompetencyAssignment!)
+                .ThenInclude(pca => pca.Competency)
+            .Include(sca => sca.ProfessorCompetencyAssignment!)
+                .ThenInclude(pca => pca.Subject)
+                    .ThenInclude(s => s.TechnicalCareer)
+            .Include(sca => sca.ProfessorCompetencyAssignment!)
+                .ThenInclude(pca => pca.Subject)
+                    .ThenInclude(s => s.Professor)
+                        .ThenInclude(p => p.User)
+            .Include(sca => sca.ProfessorCompetencyAssignment!)
+                .ThenInclude(pca => pca.CompetencyEvaluationInstance)
+            .Where(sca => sca.StudentId == studentId)
+            .ToListAsync();
+    }
+
     public async Task UpdateAsync(StudentCompetencyAssessment assessment)
     {
         context.StudentCompetencyAssessments.Update(assessment);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task CreateAsync(StudentCompetencyAssessment assessment)
+    {
+        context.StudentCompetencyAssessments.Add(assessment);
         await context.SaveChangesAsync();
     }
 

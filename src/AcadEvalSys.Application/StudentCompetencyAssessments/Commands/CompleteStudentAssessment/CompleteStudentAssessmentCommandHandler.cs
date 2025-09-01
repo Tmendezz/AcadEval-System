@@ -36,6 +36,7 @@ public class CompleteStudentAssessmentCommandHandler(ILogger<CompleteStudentAsse
         
         // Actualizar el assessment existente
         existingAssessment.CompetencyLevel = request.CompetencyLevel ?? throw new ArgumentNullException(nameof(request.CompetencyLevel));
+        existingAssessment.Observations = request.Observations;
         existingAssessment.Status = AssessmentStatus.Completed;
         existingAssessment.CompletedAt = DateTime.UtcNow;
         existingAssessment.UpdatedAt = DateTime.UtcNow;

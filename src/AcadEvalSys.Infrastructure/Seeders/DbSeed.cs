@@ -95,17 +95,46 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
 
             if (!dbContext.CompetencyEvaluationInstances.Any())
             {
-                var evaluationInstance = new CompetencyEvaluationInstance
+                // Crear múltiples evaluaciones con fechas diferentes para probar el ordenamiento
+                var evaluationInstances = new List<CompetencyEvaluationInstance>
                 {
-                    Title = "Evaluación de Competencias - Test Finalize",
-                    Description = "Instancia de evaluación para testear la funcionalidad de finalización y generación de reportes",
-                    PeriodFrom = DateTime.UtcNow.AddDays(-7),
-                    PeriodTo = DateTime.UtcNow.AddDays(7),
-                    Status = EvaluationStatus.Pending,
-                    CreatedByUserId = adminId
+                    new CompetencyEvaluationInstance
+                    {
+                        Title = "Evaluación de Competencias - Test Finalize",
+                        Description = "Instancia de evaluación para testear la funcionalidad de finalización y generación de reportes",
+                        PeriodFrom = DateTime.UtcNow.AddDays(-7),
+                        PeriodTo = DateTime.UtcNow.AddDays(7),
+                        Status = EvaluationStatus.Pending,
+                        CreatedAt = DateTime.UtcNow.AddDays(-30), // Evaluación más antigua
+                        CreatedByUserId = adminId
+                    },
+                    new CompetencyEvaluationInstance
+                    {
+                        Title = "Evaluación de Competencias - Semestre Actual",
+                        Description = "Evaluación del semestre actual para todas las carreras",
+                        PeriodFrom = DateTime.UtcNow.AddDays(-15),
+                        PeriodTo = DateTime.UtcNow.AddDays(15),
+                        Status = EvaluationStatus.Pending,
+                        CreatedAt = DateTime.UtcNow.AddDays(-15), // Evaluación intermedia
+                        CreatedByUserId = adminId
+                    },
+                    new CompetencyEvaluationInstance
+                    {
+                        Title = "Evaluación de Competencias - Próximo Semestre",
+                        Description = "Evaluación planificada para el próximo semestre",
+                        PeriodFrom = DateTime.UtcNow.AddDays(30),
+                        PeriodTo = DateTime.UtcNow.AddDays(60),
+                        Status = EvaluationStatus.Pending,
+                        CreatedAt = DateTime.UtcNow.AddDays(-5), // Evaluación más reciente
+                        CreatedByUserId = adminId
+                    }
                 };
-                dbContext.CompetencyEvaluationInstances.Add(evaluationInstance);
+
+                dbContext.CompetencyEvaluationInstances.AddRange(evaluationInstances);
                 await dbContext.SaveChangesAsync();
+
+                // Usar la primera evaluación para crear las asignaciones
+                var evaluationInstance = evaluationInstances.First();
 
                 var professorAssignments = CreateProfessorCompetencyAssignments(
                     evaluationInstance.Id,

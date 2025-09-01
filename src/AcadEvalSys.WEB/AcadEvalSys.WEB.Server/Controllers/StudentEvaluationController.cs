@@ -1,5 +1,6 @@
 using AcadEvalSys.Application.StudentCompetencyAssessments.Queries.GetStudentEvaluations;
 using AcadEvalSys.Application.StudentCompetencyAssessments.Queries.GetStudentEvaluationInstances;
+using AcadEvalSys.Application.StudentCompetencyAssessments.Queries.GetStudentReceivedEvaluations;
 using AcadEvalSys.Application.Reports.Queries.DownloadReportFile;
 using AcadEvalSys.Application.Reports.Queries.GetReportDownloadUrl;
 using AcadEvalSys.Application.Users;
@@ -15,7 +16,7 @@ namespace AcadEvalSys.WEB.Server.Controllers;
 /// Solo accesible por estudiantes autenticados.
 /// </summary>
 [ApiController]
-[Route("api/student-evaluations")]
+[Route("student-evaluations")]
 [Authorize(Roles = UserRoles.Student)]
 public class StudentEvaluationsController(IMediator mediator, IUserContext userContext) : ControllerBase
 {
@@ -90,6 +91,28 @@ public class StudentEvaluationsController(IMediator mediator, IUserContext userC
         var evaluations = await mediator.Send(query);
         
         return Ok(evaluations);
+    }
+
+    /// <summary>
+    /// Obtiene las evaluaciones recibidas por el estudiante autenticado con información completa.
+    /// </summary>
+    /// <returns>Lista de evaluaciones recibidas con detalles completos.</returns>
+    [HttpGet("received-evaluations")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [Produces("application/json")]
+    public async Task<IActionResult> GetMyReceivedEvaluations()
+    {
+        var currentUser = userContext.GetCurrentUser();
+        if (currentUser == null)
+        {
+            return Unauthorized();
+        }
+
+        var query = new GetStudentReceivedEvaluationsQuery(currentUser.Id);
+        var receivedEvaluations = await mediator.Send(query);
+        
+        return Ok(receivedEvaluations);
     }
 
     /// <summary>

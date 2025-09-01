@@ -15,6 +15,8 @@ interface EvaluationFiltersProps {
   onStatusFilterChange: (value: string) => void;
   careerFilter: string;
   onCareerFilterChange: (value: string) => void;
+  sortBy: string;
+  onSortByChange: (value: string) => void;
   className?: string;
 }
 
@@ -25,6 +27,8 @@ export const EvaluationFilters = ({
   onStatusFilterChange,
   careerFilter,
   onCareerFilterChange,
+  sortBy,
+  onSortByChange,
   className,
 }: EvaluationFiltersProps) => {
   return (
@@ -71,6 +75,20 @@ export const EvaluationFilters = ({
           <SelectItem value="software-engineering">
             Ingeniería de Software
           </SelectItem>
+        </SelectContent>
+      </Select>
+
+      <Select value={sortBy} onValueChange={onSortByChange}>
+        <SelectTrigger className="w-full sm:w-[180px]">
+          <SelectValue placeholder="Ordenar por" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="none">Sin ordenar</SelectItem>
+          <SelectItem value="createdAtDesc">Más recientes primero</SelectItem>
+          <SelectItem value="createdAt">Más antiguas primero</SelectItem>
+          <SelectItem value="title">Por título</SelectItem>
+          <SelectItem value="periodFrom">Por fecha de inicio</SelectItem>
+          <SelectItem value="periodTo">Por fecha de fin</SelectItem>
         </SelectContent>
       </Select>
     </div>
