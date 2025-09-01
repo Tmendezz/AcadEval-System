@@ -79,14 +79,7 @@ export default function CareerPage() {
             ? `Gestión de asignaturas para ${careerData?.name || ""}`
             : "Gestión de asignaturas"
         }
-      >
-        <div className="flex gap-2">
-          <Button onClick={() => setIsSubjectDialogOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Nueva asignatura
-          </Button>
-        </div>
-      </PageHeader>
+      />
 
       <PageContent>
         {careerId && (
