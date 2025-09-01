@@ -32,7 +32,7 @@ export function EvaluationHeader({ evaluation }: EvaluationHeaderProps) {
 
         {/* Botón para evaluación de profesores */}
         <div className="flex items-center gap-3">
-          <Link href="/evaluaciones/mis-evaluaciones">
+          <Link href="/evaluaciones/docentes/mis-evaluaciones">
             <Button className="gap-2">
               <Target className="w-4 h-4" />
               Evaluar Competencias

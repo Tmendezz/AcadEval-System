@@ -13,13 +13,12 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { Clock, CheckCircle, Filter } from "lucide-react";
-import { useGetAllProfessorAssignments } from "../hooks";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { DataSection } from "@/shared/components/ui/data-section";
 import { professorEvaluationColumns } from "../columns";
+import { useGetAllProfessorAssignments } from "../hooks/professor-evaluations/use-all-professor-assignments";
 
 export default function ProfessorAllEvaluationsPage() {
-  const { user } = useAuthStore();
   const { data: assignments, isLoading } = useGetAllProfessorAssignments();
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -117,7 +116,7 @@ export default function ProfessorAllEvaluationsPage() {
               </span>
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-64">
                 <SelectValue placeholder="Seleccionar estado" />
               </SelectTrigger>
               <SelectContent>

@@ -27,8 +27,8 @@ import {
   ProfessorEvaluationAssignment,
   ProfessorEvaluationFilters,
 } from "../../types/professor-evaluation";
-import { useGetProfessorAssignments } from "../../hooks";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+import { useGetProfessorAssignments } from "../../hooks/professor-evaluations/use-professor-assignments";
 
 interface ProfessorAssignmentsListProps {
   evaluationId: string;
@@ -137,7 +137,10 @@ export function ProfessorAssignmentsList({
               onValueChange={(value) =>
                 setFilters((prev) => ({
                   ...prev,
-                  status: value === "all" ? undefined : value,
+                  status:
+                    value === "all"
+                      ? undefined
+                      : (value as "Pending" | "InProgress" | "Completed"),
                 }))
               }
             >

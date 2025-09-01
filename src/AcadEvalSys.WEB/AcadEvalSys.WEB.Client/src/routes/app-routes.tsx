@@ -10,6 +10,7 @@ import {
   AssignmentDetailPage,
   EvaluationToCompleteDetailPage,
   EvaluateStudentsPage,
+  StudentEvaluationDetailPage,
 } from "../features/evaluations";
 import ProfessorPendingEvaluationsPage from "../features/evaluations/pages/professor-pending-evaluations-page";
 import StudentReceivedEvaluationsPage from "../features/evaluations/pages/student-received-evaluations-page";
@@ -50,24 +51,27 @@ export function AppRoutes() {
         <Route path="/evaluaciones/nueva">
           <CreateEvaluationPage />
         </Route>
-        <Route path="/evaluaciones/pendientes">
-          <ProtectedRoute requiredRoles={[UserRole.Professor]}>
-            <ProfessorAllEvaluationsPage />
-          </ProtectedRoute>
-        </Route>
-        <Route path="/evaluaciones/completadas">
-          <ProtectedRoute requiredRoles={[UserRole.Professor]}>
-            <ProfessorAllEvaluationsPage />
-          </ProtectedRoute>
-        </Route>
-        <Route path="/evaluaciones/mis-evaluaciones">
-          <ProtectedRoute requiredRoles={[UserRole.Professor]}>
-            <ProfessorAllEvaluationsPage />
-          </ProtectedRoute>
-        </Route>
-        <Route path="/evaluaciones/mis-evaluaciones/:assignmentId">
+        <Route path="/evaluaciones/docentes/mis-evaluaciones/:assignmentId">
           <ProtectedRoute requiredRoles={[UserRole.Professor]}>
             <EvaluateStudentsPage />
+          </ProtectedRoute>
+        </Route>
+        {/* Rutas específicas para docentes */}
+        <Route path="/evaluaciones/docentes/mis-evaluaciones">
+          <ProtectedRoute requiredRoles={[UserRole.Professor]}>
+            <ProfessorAllEvaluationsPage />
+          </ProtectedRoute>
+        </Route>
+
+        {/* Rutas específicas para alumnos */}
+        <Route path="/evaluaciones/alumnos/mis-evaluaciones">
+          <ProtectedRoute requiredRoles={[UserRole.Student]}>
+            <StudentReceivedEvaluationsPage />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/evaluaciones/alumnos/mis-evaluaciones/:evaluationId">
+          <ProtectedRoute requiredRoles={[UserRole.Student]}>
+            <StudentEvaluationDetailPage />
           </ProtectedRoute>
         </Route>
         <Route path="/evaluaciones/asignacion/:assignmentId">
@@ -78,11 +82,6 @@ export function AppRoutes() {
         <Route path="/evaluaciones/:evaluationId/asignacion/:assignmentId">
           <ProtectedRoute requiredRoles={[UserRole.Professor]}>
             <EvaluationToCompleteDetailPage />
-          </ProtectedRoute>
-        </Route>
-        <Route path="/evaluaciones/recibidas">
-          <ProtectedRoute requiredRoles={[UserRole.Student]}>
-            <StudentReceivedEvaluationsPage />
           </ProtectedRoute>
         </Route>
 

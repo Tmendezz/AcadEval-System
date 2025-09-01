@@ -165,7 +165,7 @@ export const professorEvaluationColumns: ColumnDef<ProfessorAssignmentFromApi>[]
         const assignment = row.original;
 
         const handleView = () => {
-          navigate(`/evaluaciones/mis-evaluaciones/${assignment.assignmentId}`);
+          navigate(`/evaluaciones/docentes/mis-evaluaciones/${assignment.assignmentId}`);
         };
 
         return (

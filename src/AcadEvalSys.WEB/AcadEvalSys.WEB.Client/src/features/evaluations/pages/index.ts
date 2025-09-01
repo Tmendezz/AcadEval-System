@@ -9,3 +9,4 @@ export { default as CompetenciesPage } from "./competencies-page";
 export { default as ProfessorAllEvaluationsPage } from "./professor-all-evaluations-page";
 export { default as AssignmentDetailPage } from "./assignment-detail-page";
 export { default as EvaluationToCompleteDetailPage } from "./evaluation-to-complete-detail-page";
+export { default as StudentEvaluationDetailPage } from "./student-evaluation-detail-page";

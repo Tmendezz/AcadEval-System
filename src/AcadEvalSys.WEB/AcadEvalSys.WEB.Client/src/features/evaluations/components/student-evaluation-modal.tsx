@@ -17,13 +17,13 @@ import {
   StudentAssessmentRequest,
   CompetencyLevel,
 } from "../types/professor-evaluation";
+import { useGetProfessorAssignmentById } from "../hooks/professor-evaluations";
+import { useCompetencies } from "@/shared/hooks/use-competencies";
+import { toast } from "sonner";
 import {
   useAssessStudent,
   useUpdateStudentAssessment,
-  useGetProfessorAssignmentById,
-} from "../hooks/professor-evaluations";
-import { useCompetencies } from "@/shared/hooks/use-competencies";
-import { toast } from "sonner";
+} from "../hooks/professor-evaluations/use-assess-student";
 
 interface StudentEvaluationModalProps {
   student: StudentForEvaluation;

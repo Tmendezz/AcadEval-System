@@ -116,7 +116,7 @@ export default function AssignmentDetailPage() {
           {/* Header con navegación */}
           <div className="mb-6">
             <Button variant="ghost" asChild className="mb-4">
-              <Link href="/evaluaciones/mis-evaluaciones">
+              <Link href="/evaluaciones/docentes/mis-evaluaciones">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Volver a Mis Evaluaciones
               </Link>

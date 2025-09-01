@@ -97,7 +97,7 @@ export function useSidebarConfig() {
       title: "Evaluaciones por Competencias",
       items: [
         {
-          href: "/evaluaciones/mis-evaluaciones",
+          href: "/evaluaciones/docentes/mis-evaluaciones",
           icon: ClipboardEditIcon,
           label: "Mis Evaluaciones",
         },
@@ -111,7 +111,7 @@ export function useSidebarConfig() {
       title: "Evaluaciones por Competencias",
       items: [
         {
-          href: "/estudiante/evaluaciones",
+          href: "/evaluaciones/alumnos/mis-evaluaciones",
           icon: Award,
           label: "Mis Evaluaciones",
         },

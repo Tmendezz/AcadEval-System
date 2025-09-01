@@ -20,8 +20,11 @@ import {
   StudentForEvaluation,
   CompetencyLevel,
 } from "../../types/professor-evaluation";
-import { useAssessStudent, useUpdateStudentAssessment } from "../../hooks";
 import { toast } from "sonner";
+import {
+  useAssessStudent,
+  useUpdateStudentAssessment,
+} from "../../hooks/professor-evaluations/use-assess-student";
 
 interface StudentEvaluationFormProps {
   student: StudentForEvaluation;
@@ -30,7 +33,6 @@ interface StudentEvaluationFormProps {
 }
 
 const competencyLevels: CompetencyLevel[] = [
-  "Ninguno",
   "Inicial",
   "Intermedio",
   "Avanzado",
@@ -51,7 +53,7 @@ export function StudentEvaluationForm({
   onEvaluationComplete,
 }: StudentEvaluationFormProps) {
   const [competencyLevel, setCompetencyLevel] = useState<CompetencyLevel>(
-    student.competencyLevel || "Ninguno"
+    student.competencyLevel || "Inicial"
   );
   const [observations, setObservations] = useState(student.observations || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -94,8 +96,6 @@ export function StudentEvaluationForm({
       setIsSubmitting(false);
     }
   };
-
-  const isFormValid = competencyLevel !== "Ninguno";
 
   return (
     <Card className="border-0 bg-gradient-to-r from-card to-card/80">
@@ -220,7 +220,7 @@ export function StudentEvaluationForm({
                 type="button"
                 variant="outline"
                 onClick={() => {
-                  setCompetencyLevel(student.competencyLevel || "Ninguno");
+                  setCompetencyLevel(student.competencyLevel || "Inicial");
                   setObservations(student.observations || "");
                 }}
                 disabled={isSubmitting}
@@ -230,7 +230,7 @@ export function StudentEvaluationForm({
 
               <Button
                 type="submit"
-                disabled={!isFormValid || isSubmitting}
+                disabled={isSubmitting}
                 className="min-w-32"
               >
                 {isSubmitting
