@@ -1,4 +1,5 @@
 using AcadEvalSys.Application.StudentCompetencyAssessments.Commands.CompleteStudentAssessment;
+using AcadEvalSys.Application.Extensions;
 using AcadEvalSys.Domain.Entities;
 using AcadEvalSys.Domain.Enums;
 using AutoMapper;
@@ -35,7 +36,7 @@ public class StudentCompetencyAssessmentProfile : Profile
             .ForMember(dest => dest.CompetencyName, opt => opt.MapFrom(src => src.ProfessorCompetencyAssignment.Competency.Name))
             .ForMember(dest => dest.SubjectName, opt => opt.MapFrom(src => src.ProfessorCompetencyAssignment.Subject.Name))
             .ForMember(dest => dest.CareerName, opt => opt.MapFrom(src => src.ProfessorCompetencyAssignment.Subject.TechnicalCareer.Name))
-            .ForMember(dest => dest.Year, opt => opt.MapFrom(src => src.ProfessorCompetencyAssignment.Subject.Year.ToString()))
+            .ForMember(dest => dest.Year, opt => opt.MapFrom(src => src.ProfessorCompetencyAssignment.Subject.Year.ToOrdinalString()))
             .ForMember(dest => dest.ProfessorName, opt => opt.MapFrom(src => "Profesor Asignado")) // TODO: Implementar obtención del nombre del profesor
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
             .ForMember(dest => dest.CompetencyLevel, opt => opt.MapFrom(src => src.CompetencyLevel))

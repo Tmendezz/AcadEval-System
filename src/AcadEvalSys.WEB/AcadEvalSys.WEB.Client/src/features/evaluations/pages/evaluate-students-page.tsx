@@ -173,21 +173,12 @@ export default function EvaluateStudentsPage() {
       <PageContent>
         <PageSection>
           {/* Header con botón de regreso */}
-          <div className="mb-6">
-            <Button variant="ghost" asChild className="mb-4">
-              <Link href="/evaluaciones/mis-evaluaciones">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Volver a mis evaluaciones
-              </Link>
-            </Button>
-
-            <h1 className="text-3xl font-bold tracking-tight">
-              Evaluar Competencia
-            </h1>
-            <p className="text-muted-foreground">
-              Evalúa a los estudiantes en la competencia asignada
-            </p>
-          </div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Evaluar Competencia
+          </h1>
+          <p className="text-muted-foreground">
+            Evalúa a los estudiantes en la competencia asignada
+          </p>
 
           {/* Información de la asignación */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">

@@ -6,11 +6,7 @@ import {
 } from "@/shared/components/ui/card";
 import { Users } from "lucide-react";
 import { CompetencyAssignmentByCareerYearDto } from "@/shared/types/evaluation";
-import { CareerYear } from "@/shared/types/enums";
-import {
-  mapCareerYearStringToNumber,
-  getDefaultCareerYear,
-} from "@/shared/utils/enum-helpers";
+
 import { CareerYearCard } from "@/features/evaluations/components/evaluation-detail/career-year-card";
 
 interface CareerAssignmentsSectionProps {
@@ -57,22 +53,16 @@ export function CareerAssignmentsSection({
               </div>
               <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-6">
                 {Object.entries(career.assignments).map(
-                  ([yearKey, assignments]) => {
-                    const yearNumber =
-                      mapCareerYearStringToNumber(yearKey) ||
-                      getDefaultCareerYear();
-
-                    return (
-                      <CareerYearCard
-                        key={yearKey}
-                        year={yearNumber}
-                        assignments={assignments}
-                        careerName={career.careerName}
-                        careerId={career.careerId}
-                        evaluationId={evaluationId}
-                      />
-                    );
-                  }
+                  ([yearKey, assignments]) => (
+                    <CareerYearCard
+                      key={yearKey}
+                      year={yearKey}
+                      assignments={assignments}
+                      careerName={career.careerName}
+                      careerId={career.careerId}
+                      evaluationId={evaluationId}
+                    />
+                  )
                 )}
               </div>
             </div>

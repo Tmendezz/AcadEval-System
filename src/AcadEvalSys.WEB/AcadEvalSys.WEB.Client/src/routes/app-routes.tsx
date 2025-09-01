@@ -6,7 +6,6 @@ import {
   EvaluationsPage,
   CompetencyDetailPage,
   CreateEvaluationPage,
-  ProfessorEvaluationPage,
   ProfessorAllEvaluationsPage,
   AssignmentDetailPage,
   EvaluationToCompleteDetailPage,
@@ -100,11 +99,6 @@ export function AppRoutes() {
           path="/evaluaciones/:evaluationId/carrera/:careerId/año/:year"
           component={CareerYearDetailPage}
         />
-        <Route path="/evaluaciones/:id/evaluar">
-          <ProtectedRoute requiredRoles={[UserRole.Professor]}>
-            <ProfessorEvaluationPage />
-          </ProtectedRoute>
-        </Route>
 
         {/* Carreras - Acceso general para ver */}
         <Route path="/tecnicaturas/:careerId" component={SubjectsPage} />

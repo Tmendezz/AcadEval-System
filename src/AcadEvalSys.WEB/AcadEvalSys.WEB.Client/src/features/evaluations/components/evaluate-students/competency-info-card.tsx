@@ -4,7 +4,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { Target } from "lucide-react";
+import { Calendar, Target } from "lucide-react";
 import { ProfessorAssignmentFromApi } from "../../types/professor-evaluation";
 
 interface CompetencyInfoCardProps {
@@ -23,18 +23,25 @@ export function CompetencyInfoCard({ assignment }: CompetencyInfoCardProps) {
       <CardContent className="space-y-3">
         <div>
           <span className="font-medium">Competencia:</span>
-          <p className="text-muted-foreground">{assignment.competencyName}</p>
+          <span className="text-muted-foreground ml-2">
+            {assignment.competencyName}
+          </span>
         </div>
         <div>
           <span className="font-medium">Descripción:</span>
-          <p className="text-muted-foreground">
+          <span className="text-muted-foreground ml-2">
             {assignment.competencyDescription}
-          </p>
+          </span>
         </div>
-        <div>
-          <span className="font-medium">Asignatura:</span>
-          <p className="text-muted-foreground">{assignment.subjectName}</p>
-        </div>
+        {assignment.periodFrom && assignment.periodTo && (
+          <div className="flex items-center gap-2">
+            <span className="font-medium">Período:</span>
+            <span className="text-muted-foreground">
+              {new Date(assignment.periodFrom).toLocaleDateString()} -{" "}
+              {new Date(assignment.periodTo).toLocaleDateString()}
+            </span>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

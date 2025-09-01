@@ -1,5 +1,6 @@
 using AcadEvalSys.Application.ProfessorCompetencyAssignments.Dtos;
 using AcadEvalSys.Application.StudentCompetencyAssessments.Dtos;
+using AcadEvalSys.Application.Extensions;
 using AcadEvalSys.Domain.Repositories;
 using AutoMapper;
 using MediatR;
@@ -41,6 +42,8 @@ public class GetProfessorAssignmentByIdQueryHandler(
             CompetencyName = assignment.Competency?.Name ?? string.Empty,
             CompetencyDescription = assignment.Competency?.Description ?? string.Empty,
             SubjectName = assignment.Subject?.Name ?? string.Empty,
+            CareerName = assignment.Subject?.TechnicalCareer?.Name ?? string.Empty,
+            CareerYear = assignment.Subject?.Year.ToOrdinalString() ?? string.Empty,
             Status = assignment.Status,
             TotalStudentsCount = assignment.TotalStudentsCount,
             EvaluatedStudentsCount = assignment.EvaluatedStudentsCount,

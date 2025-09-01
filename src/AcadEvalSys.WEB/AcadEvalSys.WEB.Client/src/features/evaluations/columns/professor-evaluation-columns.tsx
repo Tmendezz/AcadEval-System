@@ -108,10 +108,21 @@ export const professorEvaluationColumns: ColumnDef<ProfessorAssignmentFromApi>[]
       minSize: 100,
       cell: ({ row }) => {
         const status = row.original.status;
-        const variant = status === "Completed" ? "default" : "secondary";
+        const variant = status === "Completed" ? "outline" : "secondary";
         const label = status === "Completed" ? "Completada" : "Pendiente";
 
-        return <Badge variant={variant}>{label}</Badge>;
+        return (
+          <Badge
+            className={`text-xs ${
+              status === "Completed"
+                ? "bg-green-100 text-green-800 border-green-200"
+                : "bg-orange-100 text-orange-800 border-orange-200"
+            }`}
+            variant={variant}
+          >
+            {label}
+          </Badge>
+        );
       },
     },
     {

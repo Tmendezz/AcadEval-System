@@ -74,9 +74,9 @@ export function StudentsEvaluationList({
   const getCompetencyLevelColor = (level: CompetencyLevel) => {
     const colors = {
       Ninguno: "bg-gray-500/20 text-gray-600 border-gray-500/30",
-      Inicial: "bg-blue-500/20 text-blue-600 border-blue-500/30",
+      Inicial: "bg-red-500/20 text-red-600 border-red-500/30",
       Intermedio: "bg-yellow-500/20 text-yellow-600 border-yellow-500/30",
-      Avanzado: "bg-orange-500/20 text-orange-600 border-orange-500/30",
+      Avanzado: "bg-blue-500/20 text-blue-600 border-blue-500/30",
       Excelente: "bg-green-500/20 text-green-600 border-green-500/30",
     };
     return colors[level] || colors["Ninguno"];
@@ -279,7 +279,11 @@ export function StudentsEvaluationList({
                     variant={
                       student.status === "Evaluated" ? "default" : "secondary"
                     }
-                    className="text-xs"
+                    className={`text-xs ${
+                      student.status === "Evaluated"
+                        ? "bg-green-100 text-green-800 border-green-200"
+                        : "bg-gray-100 text-gray-800 border-gray-200"
+                    }`}
                   >
                     {student.status === "Evaluated"
                       ? "✓ Evaluado"

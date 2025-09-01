@@ -24,26 +24,22 @@ export function AcademicInfoCard({ assignment }: AcademicInfoCardProps) {
       <CardContent className="space-y-3">
         <div>
           <span className="font-medium">Tecnicatura:</span>
-          <p className="text-muted-foreground">{assignment.careerName}</p>
+          <span className="text-muted-foreground ml-2">
+            {assignment.careerName}
+          </span>
         </div>
         <div>
           <span className="font-medium">Año:</span>
-          <Badge variant="outline">{assignment.careerYear}° Año</Badge>
+          <Badge variant="outline" className="ml-2">
+            {assignment.careerYear}° Año
+          </Badge>
         </div>
-        {assignment.periodFrom && assignment.periodTo && (
-          <div>
-            <span className="font-medium">Período:</span>
-            <div className="text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                <span>
-                  {new Date(assignment.periodFrom).toLocaleDateString()} -{" "}
-                  {new Date(assignment.periodTo).toLocaleDateString()}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
+        <div>
+          <span className="font-medium">Asignatura:</span>
+          <span className="text-muted-foreground ml-2">
+            {assignment.subjectName}
+          </span>
+        </div>
       </CardContent>
     </Card>
   );

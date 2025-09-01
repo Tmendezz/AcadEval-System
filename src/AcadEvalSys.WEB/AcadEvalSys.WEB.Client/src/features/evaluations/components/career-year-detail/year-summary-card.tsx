@@ -33,7 +33,7 @@ export function YearSummaryCard({
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-foreground">
-                  {careerName} - Año {year}
+                  {careerName} - {year} Año
                 </h2>
                 <p className="text-sm text-muted-foreground">
                   Resumen del progreso académico

@@ -1,4 +1,5 @@
 using AcadEvalSys.Application.Evaluations.Commands.CreateInstance;
+using AcadEvalSys.Application.Extensions;
 using AcadEvalSys.Domain.Entities;
 using AcadEvalSys.Domain.Enums;
 using AutoMapper;
@@ -39,7 +40,7 @@ public class EvaluationInstanceProfile : Profile
                             .Select(x => x.Subject!.TechnicalCareer!.Id)
                             .FirstOrDefault(),
                         Assignments = careerGroup
-                            .GroupBy(a => (a.Subject!.Year).ToString())
+                            .GroupBy(a => a.Subject!.Year.ToOrdinalString())
                             .ToDictionary(
                                 yearGroup => yearGroup.Key,
                                 yearGroup => yearGroup.Select(a => new CompetencyAssignmentDto

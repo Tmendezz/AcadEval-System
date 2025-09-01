@@ -53,3 +53,36 @@ export function isValidCareerYearString(yearString: string): boolean {
 export function getDefaultCareerYear(): CareerYear {
   return CareerYear.First;
 }
+
+/**
+ * Convierte el enum CareerYear a su valor numérico
+ * @param careerYear - El año de carrera
+ * @returns El número del año (1, 2, 3)
+ */
+export function careerYearToNumber(careerYear: CareerYear): number {
+  return careerYear;
+}
+
+/**
+ * Convierte el enum CareerYear a su representación en español
+ * @param careerYear - El año de carrera
+ * @returns El año en español (Primero, Segundo, Tercero)
+ */
+export function careerYearToSpanishString(careerYear: CareerYear): string {
+  const yearMapping: Record<CareerYear, string> = {
+    [CareerYear.First]: "Primero",
+    [CareerYear.Second]: "Segundo",
+    [CareerYear.Third]: "Tercero",
+  };
+
+  return yearMapping[careerYear] || careerYear.toString();
+}
+
+/**
+ * Convierte el enum CareerYear a su representación con ordinal
+ * @param careerYear - El año de carrera
+ * @returns El año con ordinal (1°, 2°, 3°)
+ */
+export function careerYearToOrdinalString(careerYear: CareerYear): string {
+  return `${careerYearToNumber(careerYear)}°`;
+}

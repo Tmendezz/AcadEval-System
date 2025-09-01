@@ -20,9 +20,9 @@ export function StudentsListCard({
 }: StudentsListCardProps) {
   const getCompetencyLevelBadge = (level: string) => {
     const colors = {
-      Inicial: "bg-blue-100 text-blue-800 border-blue-200",
+      Inicial: "bg-red-100 text-red-800 border-red-200",
       Intermedio: "bg-yellow-100 text-yellow-800 border-yellow-200",
-      Avanzado: "bg-orange-100 text-orange-800 border-orange-200",
+      Avanzado: "bg-blue-100 text-blue-800 border-blue-200",
       Excelente: "bg-green-100 text-green-800 border-green-200",
     };
 

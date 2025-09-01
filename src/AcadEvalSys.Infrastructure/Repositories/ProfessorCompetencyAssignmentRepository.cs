@@ -90,6 +90,7 @@ public class ProfessorCompetencyAssignmentRepository : IProfessorCompetencyAssig
         return await _context.ProfessorCompetencyAssignments
             .Include(pca => pca.Competency)
             .Include(pca => pca.Subject)
+                .ThenInclude(s => s.TechnicalCareer)
             .Include(pca => pca.CompetencyEvaluationInstance)
             .Include(pca => pca.StudentCompetencyAssessments!)
                 .ThenInclude(sca => sca.Student!)

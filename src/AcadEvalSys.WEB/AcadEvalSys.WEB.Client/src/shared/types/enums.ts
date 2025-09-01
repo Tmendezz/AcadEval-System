@@ -5,7 +5,7 @@ export enum CareerYear {
 }
 
 export const CareerYearLabels: Record<CareerYear, string> = {
-  [CareerYear.First]: "Primer Año",
-  [CareerYear.Second]: "Segundo Año",
-  [CareerYear.Third]: "Tercer Año",
+  [CareerYear.First]: "1° Año",
+  [CareerYear.Second]: "2° Año",
+  [CareerYear.Third]: "3° Año",
 };

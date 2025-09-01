@@ -1,10 +1,9 @@
 import { Users, ChevronRight } from "lucide-react";
 import { CompetencyAssignmentDto } from "@/shared/types/evaluation";
 import { Link } from "wouter";
-import { CareerYear, CareerYearLabels } from "@/shared/types/enums";
 
 interface CareerYearCardProps {
-  year: CareerYear;
+  year: string;
   assignments: CompetencyAssignmentDto[];
   careerName: string;
   evaluationId: string;
@@ -28,7 +27,10 @@ export function CareerYearCard({
 
   return (
     <Link
-      href={`/evaluaciones/${evaluationId}/carrera/${careerId}/año/${year}`}
+      href={`/evaluaciones/${evaluationId}/carrera/${careerId}/año/${year.replace(
+        "°",
+        ""
+      )}`}
     >
       <div className="rounded-xl p-4 transition-all duration-200 cursor-pointer border bg-card hover:shadow-md hover:border-primary/30">
         <div className="flex items-center justify-between mb-4">
@@ -38,7 +40,7 @@ export function CareerYearCard({
             </div>
             <div>
               <h3 className="font-semibold text-lg text-foreground">
-                {year}º Año
+                {year} Año
               </h3>
               <p className="text-xs text-muted-foreground">{careerName}</p>
             </div>
