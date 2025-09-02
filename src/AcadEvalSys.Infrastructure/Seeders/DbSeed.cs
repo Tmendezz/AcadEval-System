@@ -83,14 +83,19 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
 
             if (!dbContext.StudentSubjects.Any())
             {
-                var studentSubject = new StudentSubject
+                // Verificar que el estudiante existe antes de crear StudentSubject
+                var student = await dbContext.Students.FirstOrDefaultAsync(s => s.UserId == studentId);
+                if (student != null)
                 {
-                    StudentId = studentId,
-                    SubjectId = dbContext.Subjects.First().Id,
-                    CreatedByUserId = adminId
-                };
-                dbContext.StudentSubjects.Add(studentSubject);
-                await dbContext.SaveChangesAsync();
+                    var studentSubject = new StudentSubject
+                    {
+                        StudentId = studentId,
+                        SubjectId = dbContext.Subjects.First().Id,
+                        CreatedByUserId = adminId
+                    };
+                    dbContext.StudentSubjects.Add(studentSubject);
+                    await dbContext.SaveChangesAsync();
+                }
             }
 
             if (!dbContext.CompetencyEvaluationInstances.Any())
@@ -147,18 +152,27 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
                 await dbContext.SaveChangesAsync();
                 
 
-                var studentAssessments = CreateStudentCompetencyAssessments(
-                    professorAssignments,
-                    studentId,
-                    adminId);
+                // Verificar que el estudiante existe antes de crear StudentCompetencyAssessments
+                var student = await dbContext.Students.FirstOrDefaultAsync(s => s.UserId == studentId);
+                if (student != null)
+                {
+                    var studentAssessments = CreateStudentCompetencyAssessments(
+                        professorAssignments,
+                        studentId,
+                        adminId);
 
-                Console.WriteLine($"Creating {studentAssessments.Count()} student assessments");
-                Console.WriteLine($"Student ID: {studentId}");
-                
-                dbContext.StudentCompetencyAssessments.AddRange(studentAssessments);
-                await dbContext.SaveChangesAsync();
-                
-                Console.WriteLine($"Created {studentAssessments.Count()} student assessments successfully");
+                    Console.WriteLine($"Creating {studentAssessments.Count()} student assessments");
+                    Console.WriteLine($"Student ID: {studentId}");
+                    
+                    dbContext.StudentCompetencyAssessments.AddRange(studentAssessments);
+                    await dbContext.SaveChangesAsync();
+                    
+                    Console.WriteLine($"Created {studentAssessments.Count()} student assessments successfully");
+                }
+                else
+                {
+                    Console.WriteLine($"Warning: Student with UserId {studentId} not found, skipping student assessments creation");
+                }
             }
         }
     }
