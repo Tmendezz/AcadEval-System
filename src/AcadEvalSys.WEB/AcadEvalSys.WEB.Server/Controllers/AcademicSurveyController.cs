@@ -2,6 +2,7 @@
 using AcadEvalSys.Application.AcademicSurveys.Commands.CreateAcademicSurvey;
 using AcadEvalSys.Application.AcademicSurveys.Commands.PublishAcademicSurvey;
 using AcadEvalSys.Application.AcademicSurveys.Commands.SetSurveySubjects;
+using AcadEvalSys.Application.AcademicSurveys.Commands.SubmitSurveyResponse;
 using AcadEvalSys.Application.AcademicSurveys.Queries.GetAcademicSurvey;
 using AcadEvalSys.Application.AcademicSurveys.Queries.ListAcademicSurveys;
 using AcadEvalSys.Domain.Constants.Constants;
@@ -76,5 +77,16 @@ public class AcademicSurveyController(IMediator mediator) : ControllerBase
     {
         var result = await mediator.Send(new GetAcademicSurveyByIdQuery { Id = id });
         return result is null ? NotFound() : Ok(result);
+    }
+
+    [HttpPost("subjects/{surveySubjectId}/responses")]
+    [Authorize(Roles = $"{UserRoles.Student},{UserRoles.Professor}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> SubmitResponse(Guid surveySubjectId, [FromBody] SubmitSurveyResponseCommand command)
+    { 
+        command.AcademicSurveySubjectId = surveySubjectId;
+        var id = await mediator.Send(command);
+        return Ok(new { id }); 
     }
 }

@@ -175,4 +175,46 @@ public class AcademicSurveyRepository(ApplicationDbContext db) : IAcademicSurvey
     {
         return db.AcademicSurveys.AnyAsync(s => s.IsActive && s.Title == title && (!excludingId.HasValue || s.Id != excludingId.Value), ct);
     }
+
+    public async Task<AcademicSurveySubject?> GetSubjectGraphAsync(Guid surveySubjectId, CancellationToken ct = default)
+    {
+        return await db.AcademicSurveySubjects
+            .Include(s => s.AcademicSurvey!)
+                .ThenInclude(sv => sv.Questions)
+                    .ThenInclude(q => q.Options)
+            .FirstOrDefaultAsync(s => s.Id == surveySubjectId && s.IsActive, ct);
+    }
+
+    public async  Task<AcademicSurveyResponse?> GetResponseAsync(Guid surveySubjectId, string userId, CancellationToken ct = default)
+    {
+        return await db.AcademicSurveyResponses
+            .Include(r => r.QuestionResponses)
+            .FirstOrDefaultAsync(r => r.AcademicSurveySubjectId == surveySubjectId && r.UserId == userId, ct);
+    }
+
+    public async Task<Guid> CreateResponseAsync(AcademicSurveyResponse response, CancellationToken ct = default)
+    {
+        db.AcademicSurveyResponses.Add(response);
+        await db.SaveChangesAsync(ct);
+        return response.Id;
+    }
+
+    public async Task UpdateResponseAsync(AcademicSurveyResponse response, CancellationToken ct = default)
+    {
+        var existing = await db.AcademicSurveyResponses
+            .Include(r => r.QuestionResponses)
+            .FirstOrDefaultAsync(r => r.Id == response.Id, ct);
+
+        if (existing is null)
+            throw new KeyNotFoundException($"Survey response {response.Id} no encontrada.");
+
+        // El handler ya armó la nueva lista: reemplazar para evitar duplicados
+        db.SurveyQuestionResponses.RemoveRange(existing.QuestionResponses);
+        existing.QuestionResponses = response.QuestionResponses;
+
+        existing.SubmittedAt = response.SubmittedAt;
+        existing.UpdatedAt = DateTime.UtcNow;
+
+        await db.SaveChangesAsync(ct);
+    }
 }

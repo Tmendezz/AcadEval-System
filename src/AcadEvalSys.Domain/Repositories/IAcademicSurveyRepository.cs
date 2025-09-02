@@ -20,4 +20,10 @@ public interface IAcademicSurveyRepository
         CancellationToken ct = default);
 
     Task<bool> ExistsTitleAsync(string title, Guid? excludingId = null, CancellationToken ct = default);
+
+    // NUEVOS métodos para registrar respuestas
+    Task<AcademicSurveySubject?> GetSubjectGraphAsync(Guid surveySubjectId, CancellationToken ct = default);
+    Task<AcademicSurveyResponse?> GetResponseAsync(Guid surveySubjectId, string userId, CancellationToken ct = default);
+    Task<Guid> CreateResponseAsync(AcademicSurveyResponse response, CancellationToken ct = default);
+    Task UpdateResponseAsync(AcademicSurveyResponse response, CancellationToken ct = default);
 }
