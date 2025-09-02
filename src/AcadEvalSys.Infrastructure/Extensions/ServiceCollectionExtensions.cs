@@ -7,7 +7,6 @@ using AcadEvalSys.Infrastructure.Persistence;
 using AcadEvalSys.Infrastructure.Repositories;
 using AcadEvalSys.Infrastructure.Seeders;
 using AcadEvalSys.Infrastructure.Services;
-using AcadEvalSys.Infrastructure.Services;
 using AcadEvalSys.Application.Users.Services;
 using AcadEvalSys.Domain.Interfaces;
 using AcadEvalSys.Infrastructure.Services.ReportGeneration;

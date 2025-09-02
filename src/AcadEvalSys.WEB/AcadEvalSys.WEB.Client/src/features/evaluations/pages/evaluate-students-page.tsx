@@ -1,6 +1,5 @@
 import { StudentEvaluationModal } from "../components/student-evaluation-modal";
 import { useEvaluationPageState } from "../hooks/professor-evaluations/use-evaluation-page-state";
-import { EvaluationErrorState } from "../components/evaluate-students/evaluation-error-state";
 import { EvaluationLoadingState } from "../components/evaluate-students/evaluation-loading-state";
 import { EvaluationNotFoundState } from "../components/evaluate-students/evaluation-not-found-state";
 import { EvaluationContent } from "../components/evaluate-students/evaluation-content";

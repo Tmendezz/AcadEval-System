@@ -65,7 +65,7 @@ public class TechnicalCareerController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> CreateCareer(CreateTechnicalCareerCommand command)
     {
         var id = await mediator.Send(command);
-        return CreatedAtAction(nameof(GetById), new { id }, null);
+        return CreatedAtAction(nameof(GetById), new { id }, new { id });
     }
 
     /// <summary>

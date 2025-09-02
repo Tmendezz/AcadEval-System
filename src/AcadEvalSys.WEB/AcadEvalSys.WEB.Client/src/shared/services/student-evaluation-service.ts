@@ -1,6 +1,6 @@
 import { api } from "@/shared/config/axios";
 
-const STUDENT_EVALUATIONS_API_URL = "/api/student-evaluations";
+const STUDENT_EVALUATIONS_API_URL = "/student-evaluations";
 
 export interface StudentReceivedEvaluation {
   id: string;

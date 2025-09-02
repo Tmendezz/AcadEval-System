@@ -22,9 +22,13 @@ public class StudentProfile : Profile
 
         // Mapeo de entidad Student a StudentDto
         CreateMap<Student, StudentDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.UserId))
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.User!.Name))
             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User!.Email))
             .ForMember(dest => dest.TechnicalCareerName, opt => opt.MapFrom(src => src.TechnicalCareer!.Name))
+            .ForMember(dest => dest.CurrentYear, opt => opt.MapFrom(src => (int)src.CurrentYear))
+            .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.User!.EmailConfirmed))
+            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
             .ForMember(dest => dest.EnrolledSubjects, opt => opt.MapFrom(src =>
                 (src.StudentSubjects ?? new List<StudentSubject>())
                     .Where(es => es.Subject != null)

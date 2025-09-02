@@ -12,7 +12,6 @@ import {
   EvaluateStudentsPage,
   StudentEvaluationDetailPage,
 } from "../features/evaluations";
-import ProfessorPendingEvaluationsPage from "../features/evaluations/pages/professor-pending-evaluations-page";
 import StudentReceivedEvaluationsPage from "../features/evaluations/pages/student-received-evaluations-page";
 import EvaluationDetailPage from "../features/evaluations/pages/evaluation-detail-page";
 import CareerYearDetailPage from "../features/evaluations/pages/career-year-detail-page";

@@ -1,5 +1,3 @@
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   PageLayout,
   PageContent,
@@ -12,163 +10,33 @@ import {
 } from "@/shared/components/ui/tabs";
 import { Button } from "@/shared/components/ui/button";
 import { DataSection } from "@/shared/components/ui/data-section";
-import { User, UserPlus, Building2, Plus } from "lucide-react";
-import { technicalCareerService } from "@/features/careers/services/technical-career-service";
-import { professorService } from "@/shared/services/professor-service";
-import { identityAdminService } from "../services/identity-admin-service";
-import {
-  AdminFormDialog,
-  AdminFormValues,
-} from "../components/admin-form-dialog";
-import {
-  ProfessorFormDialog,
-  ProfessorFormValues,
-} from "../components/professor-form-dialog";
+import { User, UserPlus, Building2, Plus, GraduationCap } from "lucide-react";
+import { AdminFormDialog } from "../components/admin-form-dialog";
+import { ProfessorFormDialog } from "../components/professor-form-dialog";
+import { StudentFormDialog } from "../components/student-form-dialog";
 import { adminColumns } from "../columns/admin-columns";
 import { professorColumns } from "../columns/professor-columns";
+import { studentColumns } from "../columns/student-columns";
 import { careerColumns } from "../columns/career-columns";
+import { useAdminOperations } from "../hooks/use-admin-operations";
+import { useProfessorOperations } from "../hooks/use-professor-operations";
+import { useStudentOperations } from "../hooks/use-student-operations";
+import { useCareerOperations } from "../hooks/use-career-operations";
 import { navigate } from "wouter/use-browser-location";
-import type { Professor } from "@/shared/types/professor";
-import type { TechnicalCareer } from "@/shared/types/technical-career";
 
 export default function PersonalPage() {
-  const queryClient = useQueryClient();
-  const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
-  const [selectedAdmin, setSelectedAdmin] = useState<Professor | null>(null);
-  const [isProfessorDialogOpen, setIsProfessorDialogOpen] = useState(false);
-  const [selectedProfessor, setSelectedProfessor] = useState<Professor | null>(
-    null
-  );
+  // Hooks modulares para operaciones
+  const adminOps = useAdminOperations();
+  const professorOps = useProfessorOperations();
+  const studentOps = useStudentOperations();
+  const careerOps = useCareerOperations();
 
-  // Queries
-  const { data: professorsData, isLoading: isLoadingProfessors } = useQuery({
-    queryKey: ["admins"],
-    queryFn: () => professorService.getAllAdmins(),
-    staleTime: 10_000,
-  });
-
-  const { data: careers = [], isLoading: isLoadingCareers } = useQuery({
-    queryKey: ["technical-careers"],
-    queryFn: () => technicalCareerService.getAll(),
-  });
-
-  const { data: professorList, isLoading: isLoadingProfessorList } = useQuery({
-    queryKey: ["professors"],
-    queryFn: async () => {
-      const result = await professorService.getAll();
-      return result.professors;
-    },
-    staleTime: 10_000,
-  });
-
-  const deleteCareer = useMutation({
-    mutationFn: async (id: string) => technicalCareerService.delete(id),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["technical-careers"] });
-    },
-  });
-
-  const admins = professorsData?.admins || [];
-  if (!isLoadingProfessors && admins.length === 0) {
-    // Log de depuración para detectar por qué no hay admins
+  // Log de depuración para detectar por qué no hay admins
+  if (!adminOps.isLoadingProfessors && adminOps.admins.length === 0) {
     console.log("[AdminList] Lista de administradores vacía", {
       userInfo: "Se espera que el usuario actual sea Admin",
     });
   }
-
-  // Mutations
-  const createAdmin = useMutation({
-    mutationFn: async (values: AdminFormValues) => {
-      const id = await identityAdminService.createAdmin({
-        name: values.name,
-        email: values.email,
-        password: values.password || "",
-      });
-      return id;
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["admins"] });
-    },
-  });
-
-  const updateAdmin = useMutation({
-    mutationFn: async (values: AdminFormValues) => {
-      if (!selectedAdmin) throw new Error("No admin selected");
-      // Implementar actualización de admin
-      return selectedAdmin.id;
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["admins"] });
-    },
-  });
-
-  const deleteAdmin = useMutation({
-    mutationFn: async (admin: Professor) => {
-      // Implementar eliminación de admin
-      return admin.id;
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["admins"] });
-    },
-  });
-
-  const createProfessor = useMutation({
-    mutationFn: async (values: ProfessorFormValues) => {
-      const id = await professorService.create({
-        ...values,
-        password: values.password || "",
-      });
-      return id;
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["professors"] });
-    },
-  });
-
-  const updateProfessor = useMutation({
-    mutationFn: async (values: ProfessorFormValues) => {
-      if (!selectedProfessor) throw new Error("No professor selected");
-      const id = await professorService.update(selectedProfessor.id, values);
-      return id;
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["professors"] });
-    },
-  });
-
-  const deleteProfessor = useMutation({
-    mutationFn: async (professor: Professor) => {
-      await professorService.delete(professor.id);
-      return professor.id;
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["professors"] });
-    },
-  });
-
-  const handleNewAdminClick = () => {
-    setSelectedAdmin(null);
-    setIsAdminDialogOpen(true);
-  };
-
-  const handleEditAdmin = (admin: Professor) => {
-    setSelectedAdmin(admin);
-    setIsAdminDialogOpen(true);
-  };
-
-  const handleDeleteAdmin = (admin: Professor) => {
-    deleteAdmin.mutate(admin);
-  };
-
-  const handleEditCareer = (career: TechnicalCareer) => {
-    navigate(`/tecnicaturas/${career.id}/editar`);
-  };
-
-  const handleViewCareer = (career: TechnicalCareer) => {
-    navigate(`/tecnicaturas/${career.id}/asignaturas`);
-  };
-
-  const professors = professorList || [];
 
   return (
     <PageLayout>
@@ -185,9 +53,10 @@ export default function PersonalPage() {
         </div>
 
         <Tabs defaultValue="carreras" className="mt-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="carreras">Carreras</TabsTrigger>
             <TabsTrigger value="profesores">Profesores</TabsTrigger>
+            <TabsTrigger value="estudiantes">Estudiantes</TabsTrigger>
             <TabsTrigger value="administradores">Administradores</TabsTrigger>
           </TabsList>
 
@@ -195,13 +64,13 @@ export default function PersonalPage() {
             <DataSection
               title="Carreras Técnicas"
               description="Crear, editar y eliminar carreras técnicas"
-              data={careers}
+              data={careerOps.careers}
               columns={careerColumns({
-                onEdit: handleEditCareer,
-                onDelete: (c) => deleteCareer.mutate(c.id),
-                onView: handleViewCareer,
+                onEdit: careerOps.handleEditCareer,
+                onDelete: careerOps.handleDeleteCareer,
+                onView: careerOps.handleViewCareer,
               })}
-              isLoading={isLoadingCareers}
+              isLoading={careerOps.isLoadingCareers}
               emptyMessage="No se encontraron carreras"
               emptyIcon={<Building2 className="w-8 h-8" />}
               className="mb-6"
@@ -218,27 +87,42 @@ export default function PersonalPage() {
             <DataSection
               title="Gestión de Profesores"
               description="Crear, editar y eliminar profesores"
-              data={professors}
+              data={professorOps.professors}
               columns={professorColumns({
-                onEdit: (p) => {
-                  setSelectedProfessor(p);
-                  setIsProfessorDialogOpen(true);
-                },
-                onDelete: (p) => deleteProfessor.mutate(p),
+                onEdit: professorOps.handleEditProfessor,
+                onDelete: professorOps.handleDeleteProfessor,
               })}
-              isLoading={isLoadingProfessorList}
+              isLoading={professorOps.isLoadingProfessorList}
               emptyMessage="No se encontraron profesores"
               emptyIcon={<User className="w-8 h-8" />}
               className="mb-6"
               headerActions={
-                <Button
-                  onClick={() => {
-                    setSelectedProfessor(null);
-                    setIsProfessorDialogOpen(true);
-                  }}
-                >
+                <Button onClick={professorOps.handleNewProfessorClick}>
                   <User className="w-4 h-4 mr-2" />
                   Nuevo Profesor
+                </Button>
+              }
+            />
+          </TabsContent>
+
+          <TabsContent value="estudiantes" className="mt-6">
+            <DataSection
+              title="Gestión de Estudiantes"
+              description="Crear, editar y eliminar estudiantes"
+              data={studentOps.students}
+              columns={studentColumns({
+                onEdit: studentOps.handleEditStudent,
+                onDelete: studentOps.handleDeleteStudent,
+                onChangePassword: studentOps.handleChangeStudentPassword,
+              })}
+              isLoading={studentOps.isLoadingStudents}
+              emptyMessage="No se encontraron estudiantes"
+              emptyIcon={<GraduationCap className="w-8 h-8" />}
+              className="mb-6"
+              headerActions={
+                <Button onClick={studentOps.handleNewStudentClick}>
+                  <GraduationCap className="w-4 h-4 mr-2" />
+                  Nuevo Estudiante
                 </Button>
               }
             />
@@ -248,17 +132,17 @@ export default function PersonalPage() {
             <DataSection
               title="Administradores del Sistema"
               description="Gestión de usuarios administradores"
-              data={admins}
+              data={adminOps.admins}
               columns={adminColumns({
-                onEdit: handleEditAdmin,
-                onDelete: handleDeleteAdmin,
+                onEdit: adminOps.handleEditAdmin,
+                onDelete: adminOps.handleDeleteAdmin,
               })}
-              isLoading={isLoadingProfessors}
+              isLoading={adminOps.isLoadingProfessors}
               emptyMessage="No se encontraron administradores"
               emptyIcon={<UserPlus className="w-8 h-8" />}
               className="mb-6"
               headerActions={
-                <Button onClick={handleNewAdminClick}>
+                <Button onClick={adminOps.handleNewAdminClick}>
                   <UserPlus className="w-4 h-4 mr-2" />
                   Nuevo Administrador
                 </Button>
@@ -269,31 +153,46 @@ export default function PersonalPage() {
       </PageContent>
 
       <AdminFormDialog
-        open={isAdminDialogOpen}
-        onOpenChange={setIsAdminDialogOpen}
-        administrator={selectedAdmin}
+        open={adminOps.isAdminDialogOpen}
+        onOpenChange={adminOps.setIsAdminDialogOpen}
+        administrator={adminOps.selectedAdmin}
         onSubmit={async (values) => {
-          if (selectedAdmin) {
-            await updateAdmin.mutateAsync(values);
+          if (adminOps.selectedAdmin) {
+            await adminOps.updateAdmin.mutateAsync(values);
           } else {
-            await createAdmin.mutateAsync(values);
+            await adminOps.createAdmin.mutateAsync(values);
           }
-          setIsAdminDialogOpen(false);
+          adminOps.setIsAdminDialogOpen(false);
         }}
       />
 
       <ProfessorFormDialog
-        open={isProfessorDialogOpen}
-        onOpenChange={setIsProfessorDialogOpen}
-        professor={selectedProfessor}
+        open={professorOps.isProfessorDialogOpen}
+        onOpenChange={professorOps.setIsProfessorDialogOpen}
+        professor={professorOps.selectedProfessor}
         onSubmit={async (values) => {
-          if (selectedProfessor) {
-            await updateProfessor.mutateAsync(values);
+          if (professorOps.selectedProfessor) {
+            await professorOps.updateProfessor.mutateAsync(values);
           } else {
-            await createProfessor.mutateAsync(values);
+            await professorOps.createProfessor.mutateAsync(values);
           }
-          setIsProfessorDialogOpen(false);
+          professorOps.setIsProfessorDialogOpen(false);
         }}
+      />
+
+      <StudentFormDialog
+        open={studentOps.isStudentDialogOpen}
+        onOpenChange={studentOps.setIsStudentDialogOpen}
+        student={studentOps.selectedStudent}
+        onSubmit={async (values) => {
+          if (studentOps.selectedStudent) {
+            await studentOps.updateStudent.mutateAsync(values);
+          } else {
+            await studentOps.createStudent.mutateAsync(values);
+          }
+          studentOps.setIsStudentDialogOpen(false);
+        }}
+        onChangePassword={studentOps.handleChangeStudentPassword}
       />
     </PageLayout>
   );

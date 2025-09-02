@@ -1,5 +1,5 @@
 using AcadEvalSys.Application.Users.Commands.GenerateTemporaryPassword;
-using AcadEvalSys.Application.Users.Commands.ResetPassword;
+using AcadEvalSys.Application.Users.Commands.ChangePassword;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -28,21 +28,24 @@ public class UserPasswordController : ControllerBase
     }
 
     /// <summary>
-    /// Resetear contraseña de un usuario
+    /// Cambiar contraseña de un usuario
     /// </summary>
-    [HttpPost("reset")]
-    public async Task<IActionResult> ResetPassword([FromBody] ResetUserPasswordRequest request)
+    [HttpPost("change")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangeUserPasswordRequest request)
     {
         try
         {
-            var command = new ResetUserPasswordCommand
-            {
-                UserId = request.UserId,
-                NewPassword = request.NewPassword
-            };
-
+            var command = new ChangePasswordCommand(request.UserId, request.NewPassword);
             var result = await _mediator.Send(command);
-            return Ok(new { message = "Contraseña reseteada exitosamente", userId = result });
+            
+            if (result)
+            {
+                return Ok(new { message = "Contraseña cambiada exitosamente", userId = request.UserId });
+            }
+            else
+            {
+                return NotFound(new { error = "Usuario no encontrado" });
+            }
         }
         catch (Exception ex)
         {
@@ -73,7 +76,7 @@ public class UserPasswordController : ControllerBase
     }
 }
 
-public class ResetUserPasswordRequest
+public class ChangeUserPasswordRequest
 {
     public string UserId { get; set; } = string.Empty;
     public string NewPassword { get; set; } = string.Empty;
