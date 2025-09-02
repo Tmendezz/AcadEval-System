@@ -64,7 +64,7 @@ public class EnrollStudentInSubjectCommandHandler(
             logger.LogInformation("Student {StudentId} enrolled in subject {SubjectId} of career {CareerId} successfully", request.StudentId, request.SubjectId, request.TechnicalCareerId);
             return true;
         }
-        catch (InvalidOperationException ex)
+        catch (Exception ex)
         {
             logger.LogError(ex, "Error enrolling student {StudentId} in subject {SubjectId} of career {CareerId}", request.StudentId, request.SubjectId, request.TechnicalCareerId);
             return false;
