@@ -53,8 +53,7 @@ export default function EvaluationsDashboard() {
       key: "totalAssignments",
       label: "Total Asignaciones",
       value: evaluations.reduce(
-        (sum: number, e: Evaluation) =>
-          sum + e.totalProfessorAssignmentsCount,
+        (sum: number, e: Evaluation) => sum + e.totalProfessorAssignmentsCount,
         0
       ),
       icon: <Brain className="h-4 w-4" />,
