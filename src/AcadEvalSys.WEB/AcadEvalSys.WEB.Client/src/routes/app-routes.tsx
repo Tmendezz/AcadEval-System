@@ -98,6 +98,14 @@ export function AppRoutes() {
           component={CareerYearDetailPage}
         />
 
+        {/* Carreras - Solo para administradores y coordinadores */}
+        <Route path="/tecnicaturas/nueva">
+          <CreateTechnicalCareerPage />
+        </Route>
+        <Route path="/tecnicaturas/:careerId/editar">
+          <EditTechnicalCareerPage />
+        </Route>
+
         {/* Carreras - Acceso general para ver */}
         <Route path="/tecnicaturas/:careerId" component={SubjectsPage} />
         <Route
@@ -108,14 +116,6 @@ export function AppRoutes() {
           path="/tecnicaturas/:careerId/asignaturas/:subjectId"
           component={SubjectDetailPage}
         />
-
-        {/* Carreras - Solo para administradores y coordinadores */}
-        <Route path="/tecnicaturas/nueva">
-          <CreateTechnicalCareerPage />
-        </Route>
-        <Route path="/tecnicaturas/:careerId/editar">
-          <EditTechnicalCareerPage />
-        </Route>
 
         {/* Administración - SOLO PARA ADMIN */}
         <Route path="/administradores">
