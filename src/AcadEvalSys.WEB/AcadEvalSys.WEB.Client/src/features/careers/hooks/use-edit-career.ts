@@ -10,6 +10,7 @@ import {
 import { useUpdateTechnicalCareer } from "@/features/administration/hooks/use-technical-careers";
 import * as subjectService from "@/shared/services/subject-service";
 import { useProfessors } from "@/shared/hooks/use-professors";
+import { useDeleteSubject } from "./use-delete-subject";
 import type { Professor } from "@/shared/types/professor";
 import type { Subject } from "@/shared/types/subject";
 
@@ -19,6 +20,7 @@ type SubjectRow = Subject;
 export function useEditCareer(careerId: string | undefined) {
   const queryClient = useQueryClient();
   const updateCareerMutation = useUpdateTechnicalCareer();
+  const deleteSubjectMutation = useDeleteSubject();
 
   // Queries
   const { data: career } = useQuery({
@@ -185,6 +187,18 @@ export function useEditCareer(careerId: string | undefined) {
     );
   };
 
+  const handleDeleteSubject = async (subjectId: string) => {
+    if (!careerId) return;
+    
+    await deleteSubjectMutation.mutateAsync({
+      careerId,
+      subjectId,
+    });
+    
+    // Remover la asignatura de la lista local
+    setRows((prev) => prev.filter((row) => row.id !== subjectId));
+  };
+
   return {
     // Data
     career,
@@ -209,5 +223,6 @@ export function useEditCareer(careerId: string | undefined) {
     // Helper functions
     updateSubjectName,
     updateSubjectProfessor,
+    handleDeleteSubject,
   };
 }

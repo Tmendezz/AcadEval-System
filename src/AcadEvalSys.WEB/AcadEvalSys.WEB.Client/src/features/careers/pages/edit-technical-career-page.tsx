@@ -35,6 +35,7 @@ export default function EditTechnicalCareerPage() {
     // Helper functions
     updateSubjectName,
     updateSubjectProfessor,
+    handleDeleteSubject,
   } = useEditCareer(careerId);
 
   return (
@@ -64,6 +65,7 @@ export default function EditTechnicalCareerPage() {
             onSearchChange={setSearch}
             onSubjectNameChange={updateSubjectName}
             onSubjectProfessorChange={updateSubjectProfessor}
+            onSubjectDelete={handleDeleteSubject}
           />
         ))}
 

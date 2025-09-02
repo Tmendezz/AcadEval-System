@@ -15,8 +15,8 @@ import {
   PageSection,
 } from "@/shared/components/layout/page-layout";
 import { LoadingState } from "@/shared/components/ui/loading-state";
-import { ArrowLeft, GraduationCap, Pencil, Plus } from "lucide-react";
-import { useSubject } from "../hooks";
+import { ArrowLeft, GraduationCap, Pencil, Plus, Trash2 } from "lucide-react";
+import { useSubject, useDeleteSubject } from "../hooks";
 import { EnrolledStudentsManagement } from "../components";
 import { EnrolledStudent } from "@/shared/types/subject";
 import { Student } from "@/shared/types/student";
@@ -29,6 +29,7 @@ export default function SubjectDetailPage() {
   const { careerId, subjectId } = useParams();
 
   const { subject, isLoadingSubject } = useSubject(subjectId!, careerId!);
+  const deleteSubjectMutation = useDeleteSubject();
 
   const listRef = useRef<EnrolledStudentsManagementHandle | null>(null);
   const [selectionState, setSelectionState] = useState({
@@ -57,6 +58,18 @@ export default function SubjectDetailPage() {
           : CareerYear.Third,
       technicalCareerName: enrolled.technicalCareerName,
     }));
+  };
+
+  const handleDeleteSubject = async () => {
+    if (!careerId || !subjectId) return;
+    
+    await deleteSubjectMutation.mutateAsync({
+      careerId,
+      subjectId,
+    });
+    
+    // Navegar de vuelta a la página de la carrera
+    navigate(`/tecnicaturas/${careerId}/asignaturas`);
   };
 
   if (isLoadingSubject) {
@@ -158,6 +171,23 @@ export default function SubjectDetailPage() {
           careerId={careerId!}
           subjectId={subjectId!}
           subjectName={subject.name}
+        />
+        
+        <ConfirmDialog
+          title="Eliminar asignatura"
+          description={`¿Estás seguro de que quieres eliminar la asignatura "${subject.name}"? Esta acción no se puede deshacer.`}
+          confirmText="Eliminar"
+          cancelText="Cancelar"
+          onConfirm={handleDeleteSubject}
+          trigger={
+            <Button 
+              variant="destructive" 
+              disabled={deleteSubjectMutation.isPending}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Eliminar asignatura
+            </Button>
+          }
         />
       </PageContent>
     </PageLayout>

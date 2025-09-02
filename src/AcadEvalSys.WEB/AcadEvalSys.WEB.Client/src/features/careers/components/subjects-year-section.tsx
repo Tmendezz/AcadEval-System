@@ -1,6 +1,8 @@
 import { Input } from "@/shared/components/ui/input";
 import { Card } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
 import { ProfessorCombobox } from "@/shared/components/ui/professor-combobox";
+import { Trash2 } from "lucide-react";
 import type { Subject } from "@/shared/types/subject";
 import type { Professor } from "@/shared/types/professor";
 
@@ -15,6 +17,7 @@ interface SubjectsYearSectionProps {
   onSearchChange: (search: string) => void;
   onSubjectNameChange: (subjectId: string, name: string) => void;
   onSubjectProfessorChange: (subjectId: string, professorId: string) => void;
+  onSubjectDelete?: (subjectId: string) => void;
 }
 
 export function SubjectsYearSection({
@@ -26,6 +29,7 @@ export function SubjectsYearSection({
   onSearchChange,
   onSubjectNameChange,
   onSubjectProfessorChange,
+  onSubjectDelete,
 }: SubjectsYearSectionProps) {
   const yearLabel =
     year === "First" ? "1° Año" : year === "Second" ? "2° Año" : "3° Año";
@@ -57,7 +61,7 @@ export function SubjectsYearSection({
         {yearSubjects.map((subject) => (
           <div
             key={subject.id}
-            className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center"
+            className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end"
           >
             <div className="md:col-span-4">
               <label className="block text-sm font-medium text-muted-foreground mb-2">
@@ -89,6 +93,19 @@ export function SubjectsYearSection({
                 placeholder="Seleccionar profesor"
                 className="w-full"
               />
+            </div>
+
+            <div className="md:col-span-1">
+              {onSubjectDelete && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => onSubjectDelete(subject.id)}
+                  className="w-full"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              )}
             </div>
           </div>
         ))}
