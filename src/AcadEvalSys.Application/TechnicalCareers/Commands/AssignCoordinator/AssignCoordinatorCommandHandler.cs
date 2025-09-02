@@ -44,7 +44,9 @@ public class AssignCoordinatorCommandHandler(
     await coordinatorRepository.RemoveByCareerIdAsync(request.TechnicalCareerId);
     await coordinatorRepository.AddAsync(new Coordinator { UserId = user.Id, TechnicalCareerId = request.TechnicalCareerId });
 
-        await careerRepository.Update();
+        // Actualizar el campo UpdatedAt para auditoría
+        career.UpdatedAt = DateTime.UtcNow;
+        await careerRepository.Update(career);
     }
 }
 

@@ -25,9 +25,13 @@ namespace AcadEvalSys.Application.TechnicalCareers.Commands.UpdateTechnicalCaree
                 throw new NotFoundException(nameof(TechnicalCareer), request.Id.ToString());
             }
 
+            // Mapear los datos del comando a la entidad
             mapper.Map(request, technicalCareer);
+            
+            // Actualizar el campo UpdatedAt para auditoría
+            technicalCareer.UpdatedAt = DateTime.UtcNow;
 
-            await careerRepository.Update();
+            await careerRepository.Update(technicalCareer);
         }
     }
 }
