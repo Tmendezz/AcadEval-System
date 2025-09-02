@@ -3,7 +3,6 @@ import { navigate } from "wouter/use-browser-location";
 import { Button } from "@/shared/components/ui/button";
 import { StatCard } from "@/shared/components/ui/stat-card";
 import { PlusCircle, FileBarChart, Target, Brain, Code } from "lucide-react";
-import { Competency, Evaluation } from "@/shared/types";
 import { getCompetencies } from "@/shared/services/competency-service";
 import { getEvaluations } from "../services/evaluation-service";
 import {
@@ -14,8 +13,10 @@ import {
 } from "@/shared/components/layout/page-layout";
 import { LoadingState } from "@/shared/components/ui/loading-state";
 import { competencyColumns } from "../columns/competency-columns";
-import { columns as evaluationColumns } from "../columns/evaluation-columns";
+import { evaluationColumns } from "../columns/evaluation-columns";
 import { DataSection } from "@/shared/components/ui/data-section";
+import { Evaluation } from "@/shared/types/evaluation";
+import { Competency } from "@/shared/types/competency";
 
 export default function EvaluationsDashboard() {
   // Queries
@@ -53,11 +54,7 @@ export default function EvaluationsDashboard() {
       label: "Total Asignaciones",
       value: evaluations.reduce(
         (sum: number, e: Evaluation) =>
-          sum +
-          e.careerAssignments.reduce(
-            (acc: number, ca) => acc + ca.totalAssignments,
-            0
-          ),
+          sum + e.totalProfessorAssignmentsCount,
         0
       ),
       icon: <Brain className="h-4 w-4" />,
