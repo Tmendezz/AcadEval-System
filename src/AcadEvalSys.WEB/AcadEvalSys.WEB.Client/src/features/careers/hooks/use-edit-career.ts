@@ -189,12 +189,12 @@ export function useEditCareer(careerId: string | undefined) {
 
   const handleDeleteSubject = async (subjectId: string) => {
     if (!careerId) return;
-    
+
     await deleteSubjectMutation.mutateAsync({
       careerId,
       subjectId,
     });
-    
+
     // Remover la asignatura de la lista local
     setRows((prev) => prev.filter((row) => row.id !== subjectId));
   };

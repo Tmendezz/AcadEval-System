@@ -9,7 +9,15 @@ import { Evaluation } from "@/shared/types/evaluation";
 import { Badge } from "@/shared/components/ui/badge";
 import { navigate } from "wouter/use-browser-location";
 
-export const columns: ColumnDef<Evaluation>[] = [
+interface EvaluationColumnsProps {
+  onEdit?: (evaluation: Evaluation) => void;
+  onDelete?: (evaluation: Evaluation) => void;
+}
+
+export const createEvaluationColumns = ({
+  onEdit,
+  onDelete,
+}: EvaluationColumnsProps = {}): ColumnDef<Evaluation>[] => [
   {
     id: "title",
     accessorKey: "title",
@@ -64,14 +72,12 @@ export const columns: ColumnDef<Evaluation>[] = [
     cell: ({ row }) => {
       const handleEdit = (e: React.MouseEvent) => {
         e.stopPropagation();
-        // TODO: Implementar lógica de edición
-        console.log("Editar evaluación:", row.original.id);
+        onEdit?.(row.original);
       };
 
       const handleDelete = (e: React.MouseEvent) => {
         e.stopPropagation();
-        // TODO: Implementar lógica de eliminación
-        console.log("Eliminar evaluación:", row.original.id);
+        onDelete?.(row.original);
       };
 
       const handleView = (e: React.MouseEvent) => {
@@ -89,24 +95,31 @@ export const columns: ColumnDef<Evaluation>[] = [
           >
             <Eye className="w-3 h-3" />
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleEdit}
-            className="h-7 w-7 p-0"
-          >
-            <PencilIcon className="w-3 h-3" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleDelete}
-            className="h-7 w-7 p-0"
-          >
-            <TrashIcon className="w-3 h-3" />
-          </Button>
+          {onEdit && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleEdit}
+              className="h-7 w-7 p-0"
+            >
+              <PencilIcon className="w-3 h-3" />
+            </Button>
+          )}
+          {onDelete && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDelete}
+              className="h-7 w-7 p-0"
+            >
+              <TrashIcon className="w-3 h-3" />
+            </Button>
+          )}
         </div>
       );
     },
   },
 ];
+
+// Exportación por defecto para mantener compatibilidad
+export const evaluationColumns = createEvaluationColumns();

@@ -4,16 +4,31 @@ import {
   PageContent,
   PageSection,
 } from "@/shared/components/layout/page-layout";
-import { useGetEvaluations, useEvaluationFilters } from "../hooks";
+import {
+  useGetEvaluations,
+  useEvaluationFilters,
+  useDeleteEvaluation,
+} from "../hooks";
 import { EvaluationFilters } from "../components";
 import { navigate } from "wouter/use-browser-location";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import { evaluationColumns } from "../columns";
+import { createEvaluationColumns } from "../columns/evaluation-columns";
 import { DataSection } from "@/shared/components/ui/data-section";
+import { useState } from "react";
+import type { Evaluation } from "@/shared/types/evaluation";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/components/ui/dialog";
 
 export default function EvaluationsPage() {
   const { data: evaluations = [], isLoading } = useGetEvaluations();
+  const deleteEvaluationMutation = useDeleteEvaluation();
 
   const {
     filteredData: filteredEvaluations,
@@ -25,8 +40,22 @@ export default function EvaluationsPage() {
     setSortBy,
   } = useEvaluationFilters(evaluations);
 
+  const [evaluationToDelete, setEvaluationToDelete] =
+    useState<Evaluation | null>(null);
+
   const handleNewEvaluation = () => {
     navigate("/evaluaciones/nueva");
+  };
+
+  const handleDeleteEvaluation = (evaluation: Evaluation) => {
+    setEvaluationToDelete(evaluation);
+  };
+
+  const confirmDeleteEvaluation = async () => {
+    if (!evaluationToDelete) return;
+
+    await deleteEvaluationMutation.mutateAsync(evaluationToDelete.id);
+    setEvaluationToDelete(null);
   };
 
   return (
@@ -61,7 +90,9 @@ export default function EvaluationsPage() {
             title="Lista de Evaluaciones"
             description="Gestiona las evaluaciones por competencias"
             data={filteredEvaluations}
-            columns={evaluationColumns}
+            columns={createEvaluationColumns({
+              onDelete: handleDeleteEvaluation,
+            })}
             isLoading={isLoading}
             emptyMessage="No se encontraron evaluaciones"
             emptyIcon="FileBarChart"
@@ -69,6 +100,39 @@ export default function EvaluationsPage() {
           />
         </PageSection>
       </PageContent>
+
+      <Dialog
+        open={!!evaluationToDelete}
+        onOpenChange={() => setEvaluationToDelete(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Eliminar evaluación</DialogTitle>
+            <DialogDescription>
+              ¿Estás seguro de que quieres eliminar la evaluación "
+              {evaluationToDelete?.title}"? Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEvaluationToDelete(null)}
+              disabled={deleteEvaluationMutation.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDeleteEvaluation}
+              disabled={deleteEvaluationMutation.isPending}
+            >
+              {deleteEvaluationMutation.isPending
+                ? "Eliminando..."
+                : "Eliminar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageLayout>
   );
 }

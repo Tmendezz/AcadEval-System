@@ -14,6 +14,7 @@ export { useGetAssignmentStudents } from "./evaluations/queries/use-get-assignme
 
 // Mutations
 export { useFinalizeEvaluation } from "./evaluations/mutations/use-finalize-evaluation";
+export { useDeleteEvaluation } from "./evaluations/mutations/use-delete-evaluation";
 
 // Professor evaluation hooks
 export * from "./professor-evaluations";
