@@ -39,10 +39,10 @@ const COMPETENCY_LEVELS = [
     value: "Inicial",
     label: "Inicial",
     color: {
-      background: "bg-orange-50",
-      text: "text-orange-700",
-      border: "border-orange-200",
-      selected: "bg-red-400",
+      background: "bg-red-50",
+      text: "text-red-700",
+      border: "border-red-200",
+      selected: "bg-red-500",
       selectedText: "text-white",
     },
   },
@@ -50,10 +50,10 @@ const COMPETENCY_LEVELS = [
     value: "Intermedio",
     label: "Intermedio",
     color: {
-      background: "bg-yellow-100",
+      background: "bg-yellow-200",
       text: "text-yellow-800",
       border: "border-yellow-200",
-      selected: "bg-yellow-400",
+      selected: "bg-yellow-500",
       selectedText: "text-white",
     },
   },
@@ -61,7 +61,7 @@ const COMPETENCY_LEVELS = [
     value: "Avanzado",
     label: "Avanzado",
     color: {
-      background: "bg-blue-100",
+      background: "bg-blue-200",
       text: "text-blue-800",
       border: "border-blue-200",
       selected: "bg-blue-500",
@@ -72,7 +72,7 @@ const COMPETENCY_LEVELS = [
     value: "Excelente",
     label: "Excelente",
     color: {
-      background: "bg-green-100",
+      background: "bg-green-200",
       text: "text-green-800",
       border: "border-green-200",
       selected: "bg-green-500",
@@ -202,7 +202,7 @@ export function StudentEvaluationModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="min-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="min-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">
             Evaluar Estudiante
@@ -252,11 +252,7 @@ export function StudentEvaluationModal({
                 <div className="flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-muted-foreground" />
                   <span className="text-muted-foreground">Estado:</span>
-                  <Badge
-                    variant={
-                      student.status === "Evaluated" ? "default" : "outline"
-                    }
-                  >
+                  <Badge variant="outline">
                     {student.status === "Evaluated" ? "Evaluado" : "Pendiente"}
                   </Badge>
                 </div>
@@ -318,30 +314,6 @@ export function StudentEvaluationModal({
                   );
                 })}
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Observaciones */}
-          <Card>
-            <CardContent className="pt-6">
-              <Label
-                htmlFor="observations"
-                className="text-base font-medium mb-3 block"
-              >
-                Observaciones (Opcional)
-              </Label>
-              <Textarea
-                id="observations"
-                placeholder="Agrega comentarios sobre la evaluación del estudiante..."
-                value={observations}
-                onChange={(e) => setObservations(e.target.value)}
-                rows={4}
-                className="resize-none"
-              />
-              <p className="text-xs text-muted-foreground mt-2">
-                Las observaciones ayudan a documentar el razonamiento de la
-                evaluación.
-              </p>
             </CardContent>
           </Card>
 

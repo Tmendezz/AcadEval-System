@@ -125,7 +125,6 @@ export const unenrollStudents = async (
   return data;
 };
 
-// Obtener estudiantes disponibles para una asignatura (desde backend: SubjectController)
 export const getAvailableStudentsForSubject = async (
   careerId: string,
   subjectId: string,
@@ -135,35 +134,7 @@ export const getAvailableStudentsForSubject = async (
   if (year) params.append("year", year);
   const url = `${SUBJECTS_API_URL}/${careerId}/subjects/${subjectId}/available-students?${params.toString()}`;
 
-  type StudentApi = {
-    userId: string;
-    name: string;
-    email: string;
-    currentYear?: number | "First" | "Second" | "Third";
-    technicalCareerName?: string;
-  };
+  const { data } = await api.get<Student[]>(url);
 
-  const { data } = await api.get<StudentApi[]>(url);
-
-  const toYearNumber = (y: StudentApi["currentYear"]): number => {
-    if (typeof y === "number") return y;
-    switch (y) {
-      case "First":
-        return 1;
-      case "Second":
-        return 2;
-      case "Third":
-        return 3;
-      default:
-        return 1;
-    }
-  };
-
-  return (data ?? []).map((s) => ({
-    id: s.userId,
-    name: s.name,
-    email: s.email,
-    currentYear: toYearNumber(s.currentYear),
-    technicalCareerName: s.technicalCareerName ?? "",
-  }));
+  return data;
 };
