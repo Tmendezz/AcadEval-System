@@ -40,12 +40,12 @@ export interface StatisticsConfig<T> {
 
 export interface FilterOptions<T> {
   data: T[];
-  filters: Record<string, any>;
-  filterFn: (item: T, filters: Record<string, any>) => boolean;
+  filters: Record<string, unknown>;
+  filterFn: (item: T, filters: Record<string, unknown>) => boolean;
 }
 
 export interface FilterConfig<T> {
   searchFields: (keyof T)[];
-  filterFields: Record<string, (item: T, value: any) => boolean>;
+  filterFields: Record<string, (item: T, value: unknown) => boolean>;
   sortFields?: Record<string, (a: T, b: T) => number>;
 }

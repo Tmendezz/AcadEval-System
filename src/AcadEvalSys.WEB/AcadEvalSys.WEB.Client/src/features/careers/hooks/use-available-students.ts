@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAvailableStudentsForSubject } from "@/shared/services/subject-service";
+import { getAvailableStudentsForSubject } from "@infrastructure/api/clients/subject-service";
 
 interface UseAvailableStudentsParams {
   careerId: string;

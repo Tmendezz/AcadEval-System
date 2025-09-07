@@ -1,6 +1,6 @@
 "use client";
+import React, { useCallback, useRef, useState } from "react";
 import { Upload } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
 interface FileUploadProps {
@@ -56,7 +56,7 @@ export function FileUpload({
     [validateAndSetFile]
   );
 
-  const handleButtonClick = useCallback((e: React.MouseEvent) => {
+  const handleButtonClick = useCallback(() => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }

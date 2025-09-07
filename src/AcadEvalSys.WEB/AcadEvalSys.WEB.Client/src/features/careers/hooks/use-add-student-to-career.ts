@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { technicalCareerService } from "../services/technical-career-service";
 import { CreateStudentRequest } from "../types";
 import { toast } from "sonner";
-import { getErrorMessage } from "@/shared/lib/error-handler";
+import { getErrorMessage } from "@shared/utils/error-handler";
 
 interface AddStudentToCareerParams {
   careerId: string;
@@ -34,7 +34,7 @@ export const useAddStudentToCareer = () => {
     },
     onError: (error) => {
       console.error("❌ Error adding student to career:", error);
-      const message = getErrorMessage(error as any);
+      const message = getErrorMessage(error as Error);
       toast.error("❌ Error al crear estudiante: " + message);
     },
   });

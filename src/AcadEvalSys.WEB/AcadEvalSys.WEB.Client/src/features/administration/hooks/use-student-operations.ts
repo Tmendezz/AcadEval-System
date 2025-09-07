@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { studentService, Student, StudentFormValues } from "@/features/administration/services/student-service";
+import { toast } from "sonner";
+import { AxiosError } from "axios";
 
 export function useStudentOperations() {
   const queryClient = useQueryClient();
@@ -24,6 +26,13 @@ export function useStudentOperations() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["students"] });
+      toast.success("Estudiante creado exitosamente");
+    },
+    onError: (error) => {
+      const axiosError = error as AxiosError<{ Message?: string }>;
+      const errorMessage = axiosError.response?.data?.Message || "Error al crear el estudiante";
+      toast.error(errorMessage);
+      console.error("Error creating student:", error);
     },
   });
 
@@ -35,6 +44,13 @@ export function useStudentOperations() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["students"] });
+      toast.success("Estudiante actualizado exitosamente");
+    },
+    onError: (error) => {
+      const axiosError = error as AxiosError<{ Message?: string }>;
+      const errorMessage = axiosError.response?.data?.Message || "Error al actualizar el estudiante";
+      toast.error(errorMessage);
+      console.error("Error updating student:", error);
     },
   });
 
@@ -45,6 +61,13 @@ export function useStudentOperations() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["students"] });
+      toast.success("Estudiante eliminado exitosamente");
+    },
+    onError: (error) => {
+      const axiosError = error as AxiosError<{ Message?: string }>;
+      const errorMessage = axiosError.response?.data?.Message || "Error al eliminar el estudiante";
+      toast.error(errorMessage);
+      console.error("Error deleting student:", error);
     },
   });
 
@@ -60,6 +83,13 @@ export function useStudentOperations() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["students"] });
+      toast.success("Contraseña actualizada exitosamente");
+    },
+    onError: (error) => {
+      const axiosError = error as AxiosError<{ Message?: string }>;
+      const errorMessage = axiosError.response?.data?.Message || "Error al cambiar la contraseña";
+      toast.error(errorMessage);
+      console.error("Error changing password:", error);
     },
   });
 

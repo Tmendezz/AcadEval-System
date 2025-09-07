@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getCareerCoordinator } from "@/shared/services/technical-career-service";
+import { getCareerCoordinator } from "@infrastructure/api/clients/technical-career-service";
 
 export function useCareerCoordinator(careerId: string | undefined) {
   return useQuery({

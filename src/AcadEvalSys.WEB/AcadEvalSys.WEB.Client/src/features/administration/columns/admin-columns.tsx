@@ -1,8 +1,9 @@
+import React from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { Edit, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
-import { Professor } from "../types/professor";
+import { Professor } from "@infrastructure/api/types/professor";
 import { ColumnDef } from "@tanstack/react-table";
 
 interface AdminColumnHandlers {

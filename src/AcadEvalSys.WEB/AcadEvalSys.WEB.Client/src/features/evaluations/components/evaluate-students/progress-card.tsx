@@ -6,16 +6,15 @@ import {
 } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { Users, CheckCircle } from "lucide-react";
-import { ProfessorAssignmentFromApi } from "../../types/professor-evaluation";
+import { ProfessorEvaluationAssignment } from "@/features/professor-evaluations/models/professor-evaluation";
 
 interface ProgressCardProps {
-  assignment: ProfessorAssignmentFromApi;
+  assignment: ProfessorEvaluationAssignment;
   evaluatedCount: number;
   pendingCount: number;
 }
 
 export function ProgressCard({
-  assignment,
   evaluatedCount,
   pendingCount,
 }: ProgressCardProps) {

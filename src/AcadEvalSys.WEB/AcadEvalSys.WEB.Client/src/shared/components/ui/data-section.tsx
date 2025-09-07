@@ -8,7 +8,7 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { LoadingState, EmptyState } from "./loading-state";
-import { cn } from "@/shared/lib/cn";
+import { cn } from "@infrastructure/lib/cn";
 
 interface DataSectionProps<TData> {
   title: ReactNode;

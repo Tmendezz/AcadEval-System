@@ -13,7 +13,7 @@ import { AssignmentForm } from "../components/assignment-form";
 import {
   buildExclusionSet,
   filterOptionsById,
-} from "@/shared/lib/unique-options";
+} from "@shared/utils/unique-options";
 import { SmartSelect } from "@/shared/components/ui/smart-select";
 
 interface CareerCompetencyAssignmentsStepProps {
@@ -120,11 +120,7 @@ export function CareerCompetencyAssignmentsStep({
     onAssignmentsChange(newAssignments);
   };
 
-  const ensureAssignmentsForSubjects = (
-    careerId: string,
-    year: number,
-    _subjectIds: string[]
-  ) => {
+  const ensureAssignmentsForSubjects = (careerId: string, year: number) => {
     // Regla: debe existir exactamente una fila por competencia y año; preasignar competencyId.
     const competencyIds = competencies.map((c) => c.id);
     const next = [...assignments];
@@ -336,7 +332,7 @@ function YearSubjectsContent({
   careerId: string;
   year: number;
   yearAssignments: Assignment[];
-  competencies: any[];
+  competencies: { id: string; name: string }[];
   onUpdateAssignment: (
     index: number,
     field: "competencyId" | "subjectId",

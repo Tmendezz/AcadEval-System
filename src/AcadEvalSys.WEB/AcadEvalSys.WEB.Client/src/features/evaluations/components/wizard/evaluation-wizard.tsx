@@ -1,3 +1,4 @@
+import React from "react";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { WIZARD_STEPS } from "../../constants/wizard-steps";
 import { EvaluationFormData } from "../../types/evaluation-form";

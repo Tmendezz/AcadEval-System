@@ -18,7 +18,7 @@ import {
 import {
   buildExclusionSet,
   filterOptionsById,
-} from "@/shared/lib/unique-options";
+} from "@shared/utils/unique-options";
 
 interface CompetencyAssignmentsStepProps {
   assignments: Assignment[];

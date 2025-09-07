@@ -9,7 +9,7 @@ import { DataSection } from "@/shared/components/ui/data-section";
 import { Button } from "@/shared/components/ui/button";
 import { Link } from "wouter";
 import { useStudentReceivedEvaluations } from "../hooks/student-evaluations/use-student-received-evaluations";
-import { StudentReceivedEvaluation } from "@/shared/services/student-evaluation-service";
+import { StudentReceivedEvaluation } from "@infrastructure/api/clients/student-evaluation-service";
 
 export default function StudentReceivedEvaluationsPage() {
   const { data: receivedEvaluations = [], isLoading } =
@@ -66,7 +66,7 @@ export default function StudentReceivedEvaluationsPage() {
       cell: ({ row }: { row: { original: StudentReceivedEvaluation } }) => (
         <div className="flex items-center gap-2">
           <Link
-            href={`/evaluaciones/alumnos/mis-evaluaciones/${row.original.id}`}
+            href={`/estudiante/evaluaciones/${row.original.id}`}
           >
             <Button variant="outline" size="sm" className="gap-2">
               <Eye className="w-4 h-4" />

@@ -1,6 +1,10 @@
-import { api } from "@/shared/config/axios";
+import { api } from "@infrastructure/query/axios";
 import { useAuthStore } from "@/features/auth/store";
-import { User, LoginCredentials, SessionStatus } from "@/shared/types/auth";
+import {
+  User,
+  LoginCredentials,
+  SessionStatus,
+} from "@infrastructure/api/types/auth";
 
 const AUTH_API_URL = "/identity";
 
@@ -13,10 +17,7 @@ export const authService = {
       store.setError(null);
 
       // Llamada a la API de login
-      const response = await api.post(
-        `${AUTH_API_URL}/login?useCookies=true`,
-        credentials
-      );
+      await api.post(`${AUTH_API_URL}/login?useCookies=true`, credentials);
 
       // Obtener información del usuario después del login
       const userInfo = await authService.getCurrentUser();
@@ -25,9 +26,12 @@ export const authService = {
       store.login(userInfo);
 
       return userInfo;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const axiosError = error as {
+        response?: { data?: { message?: string } };
+      };
       const message =
-        error.response?.data?.message || "Error al iniciar sesión";
+        axiosError.response?.data?.message || "Error al iniciar sesión";
       store.setError(message);
       throw error;
     } finally {
@@ -49,8 +53,7 @@ export const authService = {
 
       // Limpiar el store
       store.logout();
-    } catch (error) {
-      console.error("Error al cerrar sesión:", error);
+    } catch {
       // Aún así limpiamos el store local
       store.logout();
     } finally {
@@ -75,7 +78,7 @@ export const authService = {
         `${AUTH_API_URL}/session-check`
       );
       return response.data;
-    } catch (error) {
+    } catch {
       return { isAuthenticated: false };
     }
   },

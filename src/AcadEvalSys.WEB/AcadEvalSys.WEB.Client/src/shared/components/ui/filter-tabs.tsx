@@ -1,5 +1,5 @@
 import { Button } from "@/shared/components/ui/button";
-import { cn } from "@/shared/lib/cn";
+import { cn } from "@infrastructure/lib/cn";
 
 interface FilterOption {
   value: string | number;

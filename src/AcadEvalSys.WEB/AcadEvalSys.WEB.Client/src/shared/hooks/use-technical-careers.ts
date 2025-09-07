@@ -1,9 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getTechnicalCareers,
   getTechnicalCareerById,
-} from "../services/technical-career-service";
-import { TechnicalCareer } from "@/shared/types";
+  updateTechnicalCareer,
+} from "@infrastructure/api/clients/technical-career-service";
+import { UpdateTechnicalCareerRequest } from "@infrastructure/api/types/technical-career";
+import { toast } from "sonner";
 
 export const technicalCareersKeys = {
   all: ["technical-careers"] as const,
@@ -26,5 +28,30 @@ export const useTechnicalCareerById = (id: string) => {
     queryKey: technicalCareersKeys.detail(id),
     queryFn: () => getTechnicalCareerById(id),
     enabled: !!id,
+  });
+};
+
+export const useUpdateTechnicalCareer = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      career,
+    }: {
+      id: string;
+      career: UpdateTechnicalCareerRequest;
+    }) => updateTechnicalCareer(id, career),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: technicalCareersKeys.lists() });
+      queryClient.invalidateQueries({
+        queryKey: technicalCareersKeys.detail(id),
+      });
+      toast.success("Tecnicatura actualizada exitosamente");
+    },
+    onError: (error) => {
+      console.error("Error al actualizar tecnicatura:", error);
+      toast.error("Error al actualizar la tecnicatura");
+    },
   });
 };

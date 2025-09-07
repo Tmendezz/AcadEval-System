@@ -1,10 +1,11 @@
-import { api } from "@/shared/config/axios";
+import { api } from "@infrastructure/query/axios";
 import {
   TechnicalCareer,
   CreateTechnicalCareerRequest,
   UpdateTechnicalCareerRequest,
-} from "../types/technical-career";
-import { ImportStudentsResult, CreateStudentRequest } from "../types";
+} from "../models/technical-career";
+import { ImportStudentsResult } from "../models/import";
+import { CreateStudentRequest } from "../models/student";
 
 const TECHNICAL_CAREERS_API_URL = "/technical-careers";
 

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getProfessors, getProfessorById } from "../services/professor-service";
+import { getProfessors, getProfessorById } from "@infrastructure/api/clients/professor-service";
 
 export const professorsKeys = {
   all: ["professors"] as const,

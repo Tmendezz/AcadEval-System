@@ -1,4 +1,4 @@
-import { api } from "@/shared/config/axios";
+import { api } from "@infrastructure/query/axios";
 
 export interface Student {
   id: string;

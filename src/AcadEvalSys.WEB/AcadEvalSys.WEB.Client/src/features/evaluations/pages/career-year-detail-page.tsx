@@ -1,4 +1,5 @@
 import { useParams } from "wouter";
+import { useEffect } from "react";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import {
   PageLayout,
@@ -23,6 +24,17 @@ export default function CareerYearDetailPage() {
     isLoading,
     error,
   } = useCareerYearData(evaluationId || "", careerId || "", year || "");
+
+  useEffect(() => {
+    console.log("CareerYearDetailPage data:", {
+      evaluation,
+      careerData,
+      yearMetrics,
+      competencyGroups,
+      isLoading,
+      error,
+    });
+  }, [evaluation, careerData, yearMetrics, competencyGroups, isLoading, error]);
 
   if (isLoading) {
     return (

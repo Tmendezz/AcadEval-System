@@ -1,20 +1,15 @@
-// Componentes de competencias
-export { CompetencyHeader } from "./competencies-list/competency-header";
-
-// Componentes de evaluaciones
+// Componentes principales
+export { EvaluationList } from "./EvaluationList";
 export { EvaluationFilters } from "./evaluation-filters";
+export { EvaluationStatistics } from "./evaluation-statistics";
+// StudentEvaluationModal moved to professor-evaluations feature
 
-// Componentes del wizard
-export * from "./wizard";
+// Columnas del módulo de evaluaciones
+export { evaluationColumns } from "./evaluation-columns";
+export { studentEvaluationColumns } from "./student-evaluation-columns";
 
-// Componentes de evaluation-detail
-export * from "./evaluation-detail";
+// Subcomponentes organizados
 export * from "./career-year-detail";
-
-// Componentes de evaluaciones de profesores
-export * from "./professor-evaluations";
-
-// Componentes de evaluación de estudiantes
-export { StudentEvaluationModal } from "./student-evaluation-modal";
-
-
+export * from "./evaluate-students";
+export * from "./evaluation-detail";
+export * from "./wizard";

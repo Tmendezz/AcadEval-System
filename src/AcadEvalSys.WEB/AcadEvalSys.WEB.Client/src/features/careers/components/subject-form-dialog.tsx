@@ -52,8 +52,8 @@ export function SubjectFormDialog({
     defaultValues: {
       name: subject?.name ?? "",
       description: subject?.description ?? "",
-      year: (subject?.year as any) ?? "First",
-      professorId: (subject as any)?.professorId ?? "",
+      year: (subject?.year as "First" | "Second" | "Third") ?? "First",
+      professorId: (subject as { professorId?: string })?.professorId ?? "",
     },
   });
 
@@ -61,8 +61,8 @@ export function SubjectFormDialog({
     form.reset({
       name: subject?.name ?? "",
       description: subject?.description ?? "",
-      year: (subject?.year as any) ?? "First",
-      professorId: (subject as any)?.professorId ?? "",
+      year: (subject?.year as "First" | "Second" | "Third") ?? "First",
+      professorId: (subject as { professorId?: string })?.professorId ?? "",
     });
   }, [subject, form, open]);
 

@@ -3,7 +3,7 @@ import { technicalCareerService } from "../services/technical-career-service";
 import type {
   TechnicalCareer,
   UpdateTechnicalCareerRequest,
-} from "../types/technical-career";
+} from "@infrastructure/api/types/technical-career";
 import { navigate } from "wouter/use-browser-location";
 import { toast } from "sonner";
 

@@ -7,6 +7,7 @@ public class UserListItemDto
     public string Name { get; set; } = string.Empty;
     public string? Phone { get; set; }
     public IEnumerable<string> Roles { get; set; } = [];
+    public bool IsLockedOut { get; set; }
 }
 
 

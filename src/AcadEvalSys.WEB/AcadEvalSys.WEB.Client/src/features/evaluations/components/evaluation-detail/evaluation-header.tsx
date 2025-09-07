@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { Button } from "@/shared/components/ui/button";
-import { ChevronLeft, Target } from "lucide-react";
-import { Evaluation } from "@/shared/types/evaluation";
+import { ChevronLeft } from "lucide-react";
+import { Evaluation } from "@infrastructure/api/types/evaluation";
 
 interface EvaluationHeaderProps {
   evaluation: Evaluation;
@@ -28,16 +28,6 @@ export function EvaluationHeader({ evaluation }: EvaluationHeaderProps) {
               </p>
             )}
           </div>
-        </div>
-
-        {/* Botón para evaluación de profesores */}
-        <div className="flex items-center gap-3">
-          <Link href="/evaluaciones/docentes/mis-evaluaciones">
-            <Button className="gap-2">
-              <Target className="w-4 h-4" />
-              Evaluar Competencias
-            </Button>
-          </Link>
         </div>
       </div>
     </div>

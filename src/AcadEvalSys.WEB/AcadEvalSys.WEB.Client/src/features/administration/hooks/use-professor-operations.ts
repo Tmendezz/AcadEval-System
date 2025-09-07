@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { professorService } from "@/shared/services/professor-service";
-import { Professor } from "@/shared/types/professor";
+import { professorService } from "@infrastructure/api/clients/professor-service";
+import { Professor } from "@infrastructure/api/types/professor";
 import { ProfessorFormValues } from "../components/professor-form-dialog";
+import { toast } from "sonner";
 
 export function useProfessorOperations() {
   const queryClient = useQueryClient();
@@ -10,6 +11,15 @@ export function useProfessorOperations() {
     null
   );
   const [isProfessorDialogOpen, setIsProfessorDialogOpen] = useState(false);
+  const [isAssignmentsModalOpen, setIsAssignmentsModalOpen] = useState(false);
+  const [professorAssignments, setProfessorAssignments] = useState<
+    Array<{
+      id: string;
+      name: string;
+      careerName: string;
+      year: number;
+    }>
+  >([]);
 
   // Query para obtener profesores
   const { data: professorList, isLoading: isLoadingProfessorList } = useQuery({
@@ -34,6 +44,11 @@ export function useProfessorOperations() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["professors"] });
+      toast.success("Profesor creado exitosamente");
+    },
+    onError: (error: any) => {
+      console.error("Error creating professor:", error);
+      toast.error("Error al crear el profesor");
     },
   });
 
@@ -45,16 +60,36 @@ export function useProfessorOperations() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["professors"] });
+      toast.success("Profesor actualizado exitosamente");
+    },
+    onError: (error: any) => {
+      console.error("Error updating professor:", error);
+      toast.error("Error al actualizar el profesor");
     },
   });
 
   const deleteProfessor = useMutation({
     mutationFn: async (professor: Professor) => {
-      await professorService.delete(professor.id);
-      return professor.id;
+      const response = await professorService.delete(professor.id);
+      return { professor, response };
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["professors"] });
+    onSuccess: async (data) => {
+      const { professor, response } = data;
+
+      if (response.success) {
+        toast.success("Profesor eliminado exitosamente");
+        await queryClient.invalidateQueries({ queryKey: ["professors"] });
+      } else if (response.hasAssignments) {
+        // Mostrar modal con las asignaturas asignadas
+        setProfessorAssignments(response.assignedSubjects || []);
+        setIsAssignmentsModalOpen(true);
+      } else {
+        toast.error(response.message || "Error al eliminar el profesor");
+      }
+    },
+    onError: (error) => {
+      console.error("Error al eliminar profesor:", error);
+      toast.error("Error al eliminar el profesor. Intente nuevamente.");
     },
   });
 
@@ -73,11 +108,19 @@ export function useProfessorOperations() {
     deleteProfessor.mutate(professor);
   };
 
+  const handleCloseAssignmentsModal = () => {
+    setIsAssignmentsModalOpen(false);
+    setProfessorAssignments([]);
+  };
+
   return {
     // State
     selectedProfessor,
     isProfessorDialogOpen,
     setIsProfessorDialogOpen,
+    isAssignmentsModalOpen,
+    setIsAssignmentsModalOpen,
+    professorAssignments,
     professors,
     isLoadingProfessorList,
 
@@ -90,5 +133,6 @@ export function useProfessorOperations() {
     handleNewProfessorClick,
     handleEditProfessor,
     handleDeleteProfessor,
+    handleCloseAssignmentsModal,
   };
 }

@@ -1,4 +1,4 @@
-import { UserRole, getFirstRoleLabel } from "@/shared/types/auth";
+import { UserRole, getFirstRoleLabel } from "@infrastructure/api/types/auth";
 
 interface AccessDeniedProps {
   userRole?: UserRole | null;
@@ -19,7 +19,7 @@ export function AccessDenied({
   title = "Acceso Denegado",
   description = "No tienes permisos para acceder a esta página.",
   showBackButton = true,
-  onBack
+  onBack,
 }: AccessDeniedProps) {
   const handleBack = () => {
     if (onBack) {
@@ -36,20 +36,24 @@ export function AccessDenied({
           <h2 className="text-2xl font-bold text-destructive">{title}</h2>
           <p className="text-muted-foreground">{description}</p>
         </div>
-        
+
         <div className="space-y-2 text-sm text-muted-foreground">
           {userRole && (
             <p>
-              <strong>Tu rol:</strong> {getFirstRoleLabel({ roles: [userRole] } as any)}
+              <strong>Tu rol:</strong>{" "}
+              {getFirstRoleLabel({ roles: [userRole] })}
             </p>
           )}
           <p>
-            <strong>Roles requeridos:</strong> {requiredRoles.map(role => getFirstRoleLabel({ roles: [role] } as any)).join(", ")}
+            <strong>Roles requeridos:</strong>{" "}
+            {requiredRoles
+              .map((role) => getFirstRoleLabel({ roles: [role] }))
+              .join(", ")}
           </p>
         </div>
 
         {showBackButton && (
-          <button 
+          <button
             onClick={handleBack}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
           >
@@ -59,4 +63,4 @@ export function AccessDenied({
       </div>
     </div>
   );
-} 
+}

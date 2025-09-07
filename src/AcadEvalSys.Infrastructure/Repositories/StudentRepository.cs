@@ -13,6 +13,7 @@ public class StudentRepository(ApplicationDbContext dbContext, ILogger<StudentRe
         var query = dbContext.Students
             .Include(s => s.User)
             .Include(s => s.TechnicalCareer)
+            .Where(s => s.User!.IsActive) // Solo usuarios activos
             .AsQueryable();
 
         if (!string.IsNullOrEmpty(searchTerm))
@@ -49,7 +50,7 @@ public class StudentRepository(ApplicationDbContext dbContext, ILogger<StudentRe
             .Include(s => s.StudentSubjects!)
                 .ThenInclude(ss => ss.Subject!)
                     .ThenInclude(s => s.TechnicalCareer)
-            .FirstOrDefaultAsync(s => s.UserId == studentId);
+            .FirstOrDefaultAsync(s => s.UserId == studentId && s.User!.IsActive);
     }
 
     public async Task<Student?> GetByUserIdAsync(string userId)
@@ -57,7 +58,7 @@ public class StudentRepository(ApplicationDbContext dbContext, ILogger<StudentRe
         return await dbContext.Students
             .Include(s => s.User)
             .Include(s => s.TechnicalCareer)
-            .FirstOrDefaultAsync(s => s.UserId == userId);
+            .FirstOrDefaultAsync(s => s.UserId == userId && s.User!.IsActive);
     }
 
     public async Task CreateAsync(Student student)

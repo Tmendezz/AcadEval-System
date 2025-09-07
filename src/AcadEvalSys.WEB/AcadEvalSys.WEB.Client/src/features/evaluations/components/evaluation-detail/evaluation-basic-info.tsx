@@ -5,7 +5,7 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
-import { Evaluation } from "@/shared/types/evaluation";
+import { Evaluation } from "@infrastructure/api/types/evaluation";
 
 interface EvaluationBasicInfoProps {
   evaluation: Evaluation;

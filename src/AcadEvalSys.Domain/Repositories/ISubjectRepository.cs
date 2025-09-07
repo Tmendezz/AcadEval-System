@@ -14,6 +14,7 @@ public interface ISubjectRepository
     // Métodos para profesores
     Task AssignProfessorToSubjectAsync(Guid subjectId, string professorId);
     Task RemoveProfessorFromSubjectAsync(Guid subjectId);
+    Task<IEnumerable<Subject>> GetByProfessorIdAsync(string professorId);
     
     // Método para soft delete
     Task DeleteAsync(Subject subject);

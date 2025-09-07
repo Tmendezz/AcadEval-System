@@ -8,7 +8,6 @@ interface WizardNavigationProps {
   canProceed: boolean;
   onPrevious: () => void;
   onNext: () => void;
-  onSubmit?: () => void;
   isSubmitting?: boolean;
 }
 
@@ -18,7 +17,6 @@ export function WizardNavigation({
   canProceed,
   onPrevious,
   onNext,
-  onSubmit,
   isSubmitting = false,
 }: WizardNavigationProps) {
   const isFirstStep = currentStep === 1;

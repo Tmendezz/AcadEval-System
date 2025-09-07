@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { CareerYear } from "@/shared/types/enums";
+import { CareerYear } from "@infrastructure/api/types/enums";
 
 interface FilterState {
   searchTerm: string;

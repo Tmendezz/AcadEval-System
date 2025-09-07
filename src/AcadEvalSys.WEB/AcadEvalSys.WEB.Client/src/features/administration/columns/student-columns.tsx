@@ -13,8 +13,7 @@ interface StudentColumnsProps {
 export const studentColumns = ({
   onEdit,
   onDelete,
-  onChangePassword,
-}: StudentColumnsProps): ColumnDef<Student>[] => [
+}: Omit<StudentColumnsProps, "onChangePassword">): ColumnDef<Student>[] => [
   {
     accessorKey: "name",
     header: "Nombre",

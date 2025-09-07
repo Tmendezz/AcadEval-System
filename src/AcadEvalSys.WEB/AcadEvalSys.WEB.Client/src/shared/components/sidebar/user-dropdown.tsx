@@ -5,7 +5,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuSeparator,
 } from "@/shared/components/ui/dropdown-menu";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { useAuthStore } from "@/features/auth/store";
 import { useLogout } from "@/features/auth/hooks/use-login";
 

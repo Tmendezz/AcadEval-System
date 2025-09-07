@@ -5,7 +5,7 @@ import { useAuthStore } from "../store";
 
 export const useSessionCheck = () => {
   const [isCheckingSession, setIsCheckingSession] = useState(true);
-  const { setUser, setLoading, setError, logout } = useAuthStore();
+  const { setUser, logout } = useAuthStore();
   useEffect(() => {
     const checkSession = async () => {
       try {
@@ -14,7 +14,7 @@ export const useSessionCheck = () => {
           setUser(sessionStatus.user);
         } else {
           logout();
-        } 
+        }
       } catch (error) {
         console.error("Error de conexión al verificar sesión:", error);
         logout();

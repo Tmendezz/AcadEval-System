@@ -117,4 +117,12 @@ public class SubjectRepository(ApplicationDbContext dbContext) : ISubjectReposit
         return await dbContext.Subjects
             .AnyAsync(s => s.IsActive && s.TechnicalCareerId == technicalCareerId && s.ProfessorId == userId);
     }
+
+    public async Task<IEnumerable<Subject>> GetByProfessorIdAsync(string professorId)
+    {
+        return await dbContext.Subjects
+            .Where(s => s.ProfessorId == professorId && s.IsActive)
+            .Include(s => s.TechnicalCareer)
+            .ToListAsync();
+    }
 }

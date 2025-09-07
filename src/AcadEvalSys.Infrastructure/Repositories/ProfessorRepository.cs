@@ -13,7 +13,7 @@ public class ProfessorRepository(ApplicationDbContext dbContext) : IProfessorRep
             .Include(p => p.User)
             .Include(p => p.Subjects!)
                 .ThenInclude(s => s.TechnicalCareer)
-            .FirstOrDefaultAsync(p => p.UserId == professorId);
+            .FirstOrDefaultAsync(p => p.UserId == professorId && p.User!.IsActive);
     }
 
     public async Task<(IEnumerable<Professor> Professors, int TotalCount)> GetAllAsync(int pageNumber, int pageSize, string? searchTerm = null, Guid? technicalCareerId = null)
@@ -22,6 +22,7 @@ public class ProfessorRepository(ApplicationDbContext dbContext) : IProfessorRep
             .Include(p => p.User)
             .Include(p => p.Subjects!)
                 .ThenInclude(s => s.TechnicalCareer)
+            .Where(p => p.User!.IsActive) // Solo usuarios activos
             .AsQueryable();
 
         if (!string.IsNullOrEmpty(searchTerm))

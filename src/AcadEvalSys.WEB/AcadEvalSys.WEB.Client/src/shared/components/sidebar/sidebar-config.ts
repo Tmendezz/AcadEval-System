@@ -6,16 +6,13 @@ import {
   GraduationCap,
   LayoutDashboard,
   Users,
-  Target,
-  CheckCircle,
-  Clock,
   Award,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { technicalCareerService } from "@/features/careers/services/technical-career-service";
 import { NavGroup } from "@/shared/types/ui";
 import { useAuthStore } from "@/features/auth/store";
-import { UserRole } from "@/shared/types/auth";
+import { UserRole } from "@infrastructure/api/types/auth";
 
 export function useSidebarConfig() {
   const { user } = useAuthStore();
@@ -35,7 +32,7 @@ export function useSidebarConfig() {
 
   // Función para verificar si el usuario tiene alguno de los roles especificados
   const hasAnyRole = (roles: UserRole[]): boolean => {
-    return user?.roles.some((role) => roles.includes(role)) || false;
+    return user?.roles.some((role: UserRole) => roles.includes(role)) || false;
   };
 
   const sidebarConfig: Record<string, NavGroup> = {
@@ -83,7 +80,7 @@ export function useSidebarConfig() {
           label: "Evaluaciones",
         },
         {
-          href: "/evaluaciones/competencias",
+          href: "/competencias",
           icon: Brain,
           label: "Competencias",
         },
@@ -97,7 +94,7 @@ export function useSidebarConfig() {
       title: "Evaluaciones por Competencias",
       items: [
         {
-          href: "/evaluaciones/docentes/mis-evaluaciones",
+          href: "/profesor/evaluaciones",
           icon: ClipboardEditIcon,
           label: "Mis Evaluaciones",
         },
@@ -111,7 +108,7 @@ export function useSidebarConfig() {
       title: "Evaluaciones por Competencias",
       items: [
         {
-          href: "/evaluaciones/alumnos/mis-evaluaciones",
+          href: "/estudiante/evaluaciones",
           icon: Award,
           label: "Mis Evaluaciones",
         },
@@ -119,13 +116,13 @@ export function useSidebarConfig() {
     };
   }
 
-  // Tecnicaturas - Solo admin y coordinadores
+  // Carreras Técnicas - Solo admin y coordinadores
   if (hasAnyRole([UserRole.Admin, UserRole.Coordinator])) {
     sidebarConfig.technicalCareers = {
-      title: "Tecnicaturas",
+      title: "Carreras Técnicas",
       items: [
         ...careers.map((career) => ({
-          href: `/tecnicaturas/${career.id}/asignaturas`,
+          href: `/carreras/${career.id}`,
           icon: GraduationCap,
           label: career.name,
         })),
@@ -139,7 +136,7 @@ export function useSidebarConfig() {
       title: "Administración",
       items: [
         {
-          href: "/administradores",
+          href: "/admin",
           icon: Users,
           label: "Gestión Académica",
         },

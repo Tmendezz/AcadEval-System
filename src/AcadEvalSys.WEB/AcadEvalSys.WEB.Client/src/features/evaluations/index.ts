@@ -1,18 +1,23 @@
+// Main container component - follows Screaming Architecture
+export { default as Evaluations } from "./evaluations";
+
 // Pages
 export * from "./pages";
-export { default as EvaluateStudentsPage } from "./pages/evaluate-students-page";
 
-// Componentes reutilizables
-export { EvaluationFilters } from "./components";
-
-// Columnas
-export * from "./columns";
+// Components
+export * from "./components";
 
 // Hooks
-export * from "./hooks/competencies";
-export * from "./hooks/evaluations/queries/use-get-evaluations";
-export * from "./hooks/evaluations/use-evaluation-filters";
-export * from "./hooks/use-evaluation-statistics";
+export * from "./hooks";
 
-// Tipos
-export type { Evaluation, Career } from "./types/types";
+// Models/Types
+export * from "./models";
+
+// Services
+export * from "./services";
+
+// Stores
+export * from "./stores";
+
+// Utils
+export * from "./utils";

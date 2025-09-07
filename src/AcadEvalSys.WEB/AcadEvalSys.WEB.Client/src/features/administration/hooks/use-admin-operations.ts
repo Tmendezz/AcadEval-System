@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { professorService } from "@/shared/services/professor-service";
 import { identityAdminService } from "../services/identity-admin-service";
 import { AdminFormValues } from "../components/admin-form-dialog";
-import { Professor } from "@/shared/types/professor";
+import { Professor } from "@infrastructure/api/types/professor";
 
 export function useAdminOperations() {
   const queryClient = useQueryClient();
@@ -11,13 +10,17 @@ export function useAdminOperations() {
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
 
   // Query para obtener administradores
-  const { data: professorsData, isLoading: isLoadingProfessors } = useQuery({
+  const { data: adminsData, isLoading: isLoadingProfessors } = useQuery({
     queryKey: ["admins"],
-    queryFn: () => professorService.getAllAdmins(),
+    queryFn: () => identityAdminService.getAdmins(),
     staleTime: 10_000,
   });
 
-  const admins = professorsData?.admins || [];
+  const admins: Professor[] = (adminsData?.items || []).map((user) => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+  }));
 
   // Mutations para operaciones CRUD de administradores
   const createAdmin = useMutation({
@@ -35,9 +38,14 @@ export function useAdminOperations() {
   });
 
   const updateAdmin = useMutation({
-    mutationFn: async (_values: AdminFormValues) => {
+    mutationFn: async (values: AdminFormValues) => {
       if (!selectedAdmin) throw new Error("No admin selected");
-      return selectedAdmin.id;
+      await identityAdminService.updateAdmin({
+        id: selectedAdmin.id,
+        name: values.name,
+        email: values.email,
+        password: values.password,
+      });
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["admins"] });
@@ -46,8 +54,7 @@ export function useAdminOperations() {
 
   const deleteAdmin = useMutation({
     mutationFn: async (admin: Professor) => {
-      // Implementar eliminación de admin
-      return admin.id;
+      await identityAdminService.deleteAdmin(admin.id);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["admins"] });

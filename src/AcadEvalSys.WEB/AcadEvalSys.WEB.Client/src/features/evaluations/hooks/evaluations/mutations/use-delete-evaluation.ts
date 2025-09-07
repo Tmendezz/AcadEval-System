@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { deleteEvaluation } from "../../../services/evaluation-service";
+import { deleteEvaluation } from "@infrastructure/api/clients/evaluation-service";
 import { evaluationsKeys } from "../queries/use-get-evaluations";
 
 export const useDeleteEvaluation = () => {

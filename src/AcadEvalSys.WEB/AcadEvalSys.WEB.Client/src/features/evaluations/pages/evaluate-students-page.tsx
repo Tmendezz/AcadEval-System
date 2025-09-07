@@ -1,35 +1,31 @@
-import { StudentEvaluationModal } from "../components/student-evaluation-modal";
-import { useEvaluationPageState } from "../hooks/professor-evaluations/use-evaluation-page-state";
-import { EvaluationLoadingState } from "../components/evaluate-students/evaluation-loading-state";
-import { EvaluationNotFoundState } from "../components/evaluate-students/evaluation-not-found-state";
+import { StudentEvaluationModal } from "@/features/professor-evaluations/components";
 import { EvaluationContent } from "../components/evaluate-students/evaluation-content";
 
-export default function EvaluateStudentsPage() {
-  const {
-    assignmentId,
-    assignment,
-    students,
-    evaluatedStudents,
-    pendingStudents,
-    selectedStudent,
-    isModalOpen,
-    isLoading,
+interface EvaluateStudentsPageProps {
+  assignmentId: string;
+  assignment: { id: string; name: string };
+  students: { id: string; name: string; email: string }[];
+  evaluatedStudents: { id: string; name: string; email: string }[];
+  pendingStudents: { id: string; name: string; email: string }[];
+  selectedStudent: { id: string; name: string; email: string } | null;
+  isModalOpen: boolean;
+  onEvaluateStudent: (student: { id: string; name: string; email: string }) => void;
+  onCloseModal: () => void;
+  onEvaluationComplete: () => void;
+}
 
-    handleEvaluateStudent,
-    handleCloseModal,
-    handleEvaluationComplete,
-  } = useEvaluationPageState();
-
-  // Estado de carga
-  if (isLoading) {
-    return <EvaluationLoadingState />;
-  }
-
-  // Asignación no encontrada
-  if (!assignment) {
-    return <EvaluationNotFoundState />;
-  }
-
+export default function EvaluateStudentsPage({
+  assignmentId,
+  assignment,
+  students,
+  evaluatedStudents,
+  pendingStudents,
+  selectedStudent,
+  isModalOpen,
+  onEvaluateStudent,
+  onCloseModal,
+  onEvaluationComplete,
+}: EvaluateStudentsPageProps) {
   return (
     <>
       <EvaluationContent
@@ -37,17 +33,16 @@ export default function EvaluateStudentsPage() {
         students={students}
         evaluatedStudents={evaluatedStudents}
         pendingStudents={pendingStudents}
-        onEvaluateStudent={handleEvaluateStudent}
+        onEvaluateStudent={onEvaluateStudent}
       />
 
-      {/* Modal de evaluación */}
       {selectedStudent && (
         <StudentEvaluationModal
           student={selectedStudent}
           assignmentId={assignmentId || ""}
           isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          onEvaluationComplete={handleEvaluationComplete}
+          onClose={onCloseModal}
+          onEvaluationComplete={onEvaluationComplete}
         />
       )}
     </>

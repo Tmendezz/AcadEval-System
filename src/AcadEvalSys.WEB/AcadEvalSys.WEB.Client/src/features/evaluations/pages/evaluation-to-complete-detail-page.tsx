@@ -1,5 +1,4 @@
 import { useParams, Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
 import {
   PageLayout,
   PageContent,
@@ -24,13 +23,13 @@ import {
   Clock,
   Target,
 } from "lucide-react";
-import {
-  getProfessorAssignmentById,
-  getStudentsForAssignment,
-} from "../services/professor-evaluation-service";
-import { StudentEvaluationModal } from "../components/student-evaluation-modal";
+import { StudentEvaluationModal } from "@/features/professor-evaluations/components";
 import { useState } from "react";
-import { StudentForEvaluation } from "../types/professor-evaluation";
+import { StudentForEvaluation } from "@/features/professor-evaluations/models";
+import {
+  useProfessorAssignment,
+  useAssignmentStudents,
+} from "@/features/professor-evaluations/hooks";
 
 export default function EvaluationToCompleteDetailPage() {
   const { assignmentId } = useParams<{
@@ -41,21 +40,17 @@ export default function EvaluationToCompleteDetailPage() {
     useState<StudentForEvaluation | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { data: assignment, isLoading: isLoadingAssignment } = useQuery({
-    queryKey: ["professor-assignment", assignmentId],
-    queryFn: () => getProfessorAssignmentById(assignmentId || ""),
-    enabled: !!assignmentId,
-  });
+  const { data: assignment, isLoading: isLoadingAssignment } =
+    useProfessorAssignment(assignmentId || "");
 
-  const { data: students, isLoading: isLoadingStudents } = useQuery({
-    queryKey: ["assignment-students", assignmentId],
-    queryFn: () => getStudentsForAssignment(assignmentId || ""),
-    enabled: !!assignmentId,
-  });
+  const { data: students, isLoading: isLoadingStudents } =
+    useAssignmentStudents(assignmentId || "");
 
   const evaluatedStudents =
-    students?.filter((s) => s.status === "Evaluated") || [];
-  const pendingStudents = students?.filter((s) => s.status === "Pending") || [];
+    students?.filter((s: StudentForEvaluation) => s.status === "Evaluated") ||
+    [];
+  const pendingStudents =
+    students?.filter((s: StudentForEvaluation) => s.status === "Pending") || [];
   const progressPercentage = students
     ? (evaluatedStudents.length / students.length) * 100
     : 0;
@@ -245,7 +240,7 @@ export default function EvaluationToCompleteDetailPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {students.map((student) => (
+                  {students.map((student: StudentForEvaluation) => (
                     <div
                       key={student.studentId}
                       className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors"

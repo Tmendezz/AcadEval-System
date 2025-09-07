@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import * as subjectService from "@/shared/services/subject-service";
-import { studentService } from "@/shared/services/student-service";
-import { CareerYear } from "@/shared/types/enums";
+import * as subjectService from "@infrastructure/api/clients/subject-service";
+import { studentService } from "@infrastructure/api/clients/student-service";
+import { CareerYear } from "@infrastructure/api/types/enums";
 
 export function useBulkEnrollment() {
   const [isEnrollingAll, setIsEnrollingAll] = useState(false);
@@ -38,7 +38,7 @@ export function useBulkEnrollment() {
       }
 
       // Enrolar a todos en todas las materias
-      const tasks: Promise<any>[] = [];
+      const tasks: Promise<void>[] = [];
       for (const subject of subjects) {
         for (const student of students) {
           tasks.push(

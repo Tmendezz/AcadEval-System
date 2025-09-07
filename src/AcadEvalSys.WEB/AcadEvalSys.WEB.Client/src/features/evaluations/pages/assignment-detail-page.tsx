@@ -22,9 +22,9 @@ import {
   Clock,
 } from "lucide-react";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { StudentEvaluationModal } from "../components/student-evaluation-modal";
-import { StudentForEvaluation } from "../types/professor-evaluation";
-import { useGetStudentsForAssignment } from "../hooks/professor-evaluations";
+import { StudentEvaluationModal } from "@/features/professor-evaluations/components";
+import { StudentForEvaluation } from "@/features/professor-evaluations/models";
+import { useAssignmentStudents } from "@/features/professor-evaluations/hooks";
 
 export default function AssignmentDetailPage() {
   const { assignmentId } = useParams<{ assignmentId: string }>();
@@ -32,15 +32,19 @@ export default function AssignmentDetailPage() {
     useState<StudentForEvaluation | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { data: students, isLoading } = useGetStudentsForAssignment(
+  const { data: students, isLoading } = useAssignmentStudents(
     assignmentId || ""
   );
 
   const evaluatedStudents =
-    students?.filter((student) => student.status === "Evaluated") || [];
+    students?.filter(
+      (student: StudentForEvaluation) => student.status === "Evaluated"
+    ) || [];
 
   const pendingStudents =
-    students?.filter((student) => student.status === "Pending") || [];
+    students?.filter(
+      (student: StudentForEvaluation) => student.status === "Pending"
+    ) || [];
 
   const getCompetencyLevelBadge = (level: string) => {
     const colors = {
@@ -179,7 +183,7 @@ export default function AssignmentDetailPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {students.map((student) => (
+                  {students.map((student: StudentForEvaluation) => (
                     <div
                       key={student.studentId}
                       className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors"

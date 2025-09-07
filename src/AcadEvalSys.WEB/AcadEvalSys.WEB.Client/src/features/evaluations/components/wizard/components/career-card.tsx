@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Card,
   CardContent,
@@ -7,7 +8,7 @@ import {
 import { ChevronDown, ChevronRight, Trash2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
-import { Career } from "@/features/evaluations/types/types";
+import { Career } from "@/features/evaluations";
 
 interface CareerCardProps {
   career: Career;
@@ -25,7 +26,6 @@ export function CareerCard({
   isExpanded,
   onToggle,
   children,
-  isCompleted = false,
   onRemove,
   completedYears = 0,
   totalYears = 3,

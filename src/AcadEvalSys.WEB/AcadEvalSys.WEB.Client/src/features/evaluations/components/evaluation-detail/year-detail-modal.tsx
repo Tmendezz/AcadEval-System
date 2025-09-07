@@ -11,8 +11,8 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Progress } from "@/shared/components/ui/progress";
 import { CheckCircle, Clock, Users, Eye, GraduationCap, UserCheck } from "lucide-react";
-import { CompetencyAssignmentDto } from "@/shared/types/evaluation";
-import { api } from "@/shared/config/axios";
+import { CompetencyAssignmentDto } from "@infrastructure/api/types/evaluation";
+import { api } from "@infrastructure/query/axios";
 
 interface YearDetailModalProps {
   year: string;

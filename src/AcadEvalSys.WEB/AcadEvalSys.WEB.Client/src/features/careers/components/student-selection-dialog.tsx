@@ -15,10 +15,10 @@ import { Badge } from "@/shared/components/ui/badge";
 import { LoadingState } from "@/shared/components/ui/loading-state";
 import { Users, Search, UserPlus, Filter, CheckCircle } from "lucide-react";
 import { useAvailableStudents } from "../hooks";
-import { Student } from "@/shared/types/student";
-import { CareerYearLabels } from "@/shared/types/enums";
+import { Student } from "@infrastructure/api/types/student";
+import { CareerYearLabels } from "@infrastructure/api/types/enums";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import * as subjectService from "@/shared/services/subject-service";
+import * as subjectService from "@infrastructure/api/clients/subject-service";
 import { toast } from "sonner";
 
 interface StudentSelectionDialogProps {
@@ -130,7 +130,9 @@ export function StudentSelectionDialog({
           key={year}
           variant={yearFilter === year ? "default" : "outline"}
           size="sm"
-          onClick={() => setYearFilter(year as any)}
+          onClick={() =>
+            setYearFilter(year as "All" | "First" | "Second" | "Third")
+          }
         >
           {year === "All"
             ? "Todos"
@@ -144,7 +146,6 @@ export function StudentSelectionDialog({
 
   const renderStudentCard = (student: Student) => {
     const isSelected = selectedStudents.has(student.id);
-
 
     return (
       <Card

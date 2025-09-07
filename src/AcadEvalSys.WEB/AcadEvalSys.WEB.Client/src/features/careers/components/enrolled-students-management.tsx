@@ -17,8 +17,8 @@ import { Badge } from "@/shared/components/ui/badge";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 
 import { Users, UserMinus, Trash2 } from "lucide-react";
-import { Student } from "@/shared/types/student";
-import { CareerYear, CareerYearLabels } from "@/shared/types/enums";
+import { Student } from "@infrastructure/api/types/student";
+import { CareerYear, CareerYearLabels } from "@infrastructure/api/types/enums";
 import { useUnenrollStudent, useUnenrollStudents } from "../hooks";
 
 interface EnrolledStudentsManagementProps {
@@ -110,7 +110,7 @@ export const EnrolledStudentsManagement = forwardRef<
         subjectId,
         studentId,
       });
-    } catch (error) {
+    } catch {
       // Error ya manejado en el hook
     }
   };
@@ -125,7 +125,7 @@ export const EnrolledStudentsManagement = forwardRef<
         studentIds: Array.from(selectedStudents),
       });
       setSelectedStudents(new Set());
-    } catch (error) {
+    } catch {
       // Error ya manejado en el hook
     }
   };

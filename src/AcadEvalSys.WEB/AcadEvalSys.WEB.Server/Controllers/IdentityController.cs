@@ -3,9 +3,11 @@ using AcadEvalSys.Application.Users.Commands.UnassignUserRole;
 using AcadEvalSys.Application.Users.Queries;
 using AcadEvalSys.Application.Users.Queries.GetCurrentUserInfo;
 using AcadEvalSys.Application.Users.Queries.GetSessionStatus;
-using AcadEvalSys.Application.Users.Queries.GetAdmins;
+using AcadEvalSys.Application.Users.Queries.GetUsersByRole;
 using AcadEvalSys.Application.Users.Dtos;
 using AcadEvalSys.Application.Users.Commands.CreateAdmin;
+using AcadEvalSys.Application.Users.Commands.UpdateAdmin;
+using AcadEvalSys.Application.Users.Commands.DeleteAdmin;
 using AcadEvalSys.Application.Users.Commands.DeactivateUser;
 using AcadEvalSys.Domain.Constants.Constants;
 using MediatR;
@@ -97,13 +99,14 @@ public class IdentityController(IMediator mediator, ILogoutService logoutService
     }
 
         /// <summary>
-        /// Obtiene la lista paginada de usuarios con rol Administrador.
+        /// Obtiene la lista paginada de usuarios por rol.
         /// </summary>
-        [HttpGet("admins")]
+        /// <param name="role">Rol específico a filtrar (opcional). Si no se especifica, retorna todos los usuarios.</param>
+        [HttpGet("users")]
         [Authorize(Roles = UserRoles.Admin)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/json")]
-        public async Task<IActionResult> GetAdmins([FromQuery] GetAdminsQuery query)
+        public async Task<IActionResult> GetUsersByRole([FromQuery] GetUsersByRoleQuery query)
         {
             var result = await mediator.Send(query);
             return Ok(result);
@@ -120,6 +123,35 @@ public class IdentityController(IMediator mediator, ILogoutService logoutService
         {
             var id = await mediator.Send(command);
             return Created($"/identity/admins/{id}", new { id });
+        }
+
+        /// <summary>
+        /// Actualiza un usuario administrador.
+        /// </summary>
+        [HttpPut("admins/{id}")]
+        [Authorize(Roles = UserRoles.Admin)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateAdmin(string id, [FromBody] UpdateAdminUserCommand command)
+        {
+            command.Id = id;
+            await mediator.Send(command);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Elimina un usuario administrador.
+        /// </summary>
+        [HttpDelete("admins/{id}")]
+        [Authorize(Roles = UserRoles.Admin)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteAdmin(string id)
+        {
+            var command = new DeleteAdminUserCommand { Id = id };
+            await mediator.Send(command);
+            return NoContent();
         }
 
         /// <summary>

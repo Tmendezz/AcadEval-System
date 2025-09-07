@@ -9,7 +9,7 @@ import { FormItem } from "@/shared/components/ui/form";
 import { FormLabel } from "@/shared/components/ui/form";
 import { FormControl } from "@/shared/components/ui/form";
 import { Input } from "@/shared/components/ui/input";
-import { getErrorMessage } from "@/shared/lib/error-handler";
+import { getErrorMessage } from "@shared/utils/error-handler";
 
 const loginSchema = z.object({
   email: z.string().email("Ingrese un correo académico válido"),

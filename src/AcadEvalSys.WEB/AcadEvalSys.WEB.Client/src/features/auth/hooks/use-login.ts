@@ -3,7 +3,7 @@ import { authService } from "../services/auth-service";
 import { useAuthStore } from "@/features/auth/store";
 import { navigate } from "wouter/use-browser-location";
 import { toast } from "sonner";
-import { LoginCredentials } from "@/shared/types/auth";
+import { LoginCredentials } from "@infrastructure/api/types/auth";
 
 export const useLogin = () => {
   const { isLoading, error } = useAuthStore();
@@ -13,13 +13,17 @@ export const useLogin = () => {
     onSuccess: () => {
       navigate("/dashboard");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       // Extraer el mensaje del servidor si está disponible
-      const serverMessage =
-        error.response?.data?.detail ||
-        error.response?.data?.title ||
-        error.response?.data?.message;
-      const message = serverMessage || "Error al iniciar sesión";
+      const axiosError = error as {
+        response?: {
+          data?: { detail?: string; title?: string; message?: string };
+        };
+      };
+      const _serverMessage =
+        axiosError.response?.data?.detail ||
+        axiosError.response?.data?.title ||
+        axiosError.response?.data?.message;
 
       // También actualizar el store con el error completo para que se muestre en el formulario
       const store = useAuthStore.getState();
@@ -48,7 +52,7 @@ export const useLogout = () => {
       toast.success("Sesión cerrada correctamente");
       navigate("/auth/login");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error("Error al cerrar sesión:", error);
       toast.error("Error al cerrar sesión");
       navigate("/auth/login");

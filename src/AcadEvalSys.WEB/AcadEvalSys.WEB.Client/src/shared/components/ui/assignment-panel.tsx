@@ -15,8 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { cn } from "@/shared/lib/cn";
-import { filterOptionsById } from "@/shared/lib/unique-options";
+import { cn } from "@infrastructure/lib/cn";
+import { filterOptionsById } from "@shared/utils/unique-options";
 
 interface AssignmentOption {
   id: string;
@@ -40,7 +40,6 @@ interface AssignmentPanelProps {
   selectedId: string;
   onSelectedIdChange: (id: string) => void;
   isLoading?: boolean;
-  emptyMessage?: string;
   className?: string;
   /** Opcional: IDs que deben ocultarse del selector por estar ocupados */
   excludedIds?: Set<string>;
@@ -56,7 +55,6 @@ export function AssignmentPanel({
   selectedId,
   onSelectedIdChange,
   isLoading = false,
-  emptyMessage = "No hay opciones disponibles",
   className,
   excludedIds,
 }: AssignmentPanelProps) {

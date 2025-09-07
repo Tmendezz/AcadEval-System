@@ -1,5 +1,10 @@
+import React from "react";
 import { ChevronsUpDown } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/shared/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,9 +16,9 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/shared/components/ui/sidebar";
-import { cn } from "@/shared/lib/cn";
-import { User, getFirstRoleLabel } from "@/shared/types/auth";
-import { getUserInitials } from "@/shared/lib/utils";
+import { cn } from "@infrastructure/lib/cn";
+import { User, getFirstRoleLabel } from "@infrastructure/api/types/auth";
+import { getUserInitials } from "@infrastructure/lib/utils";
 import { useSidebar } from "@/shared/components/ui/sidebar";
 
 interface AvatarDropdownProps {
@@ -22,13 +27,17 @@ interface AvatarDropdownProps {
   className?: string;
 }
 
-
-
 // Componente reutilizable para el avatar
-function UserAvatar({ user, size = "default" }: { user: User; size?: "default" | "small" }) {
+function UserAvatar({
+  user,
+  size = "default",
+}: {
+  user: User;
+  size?: "default" | "small";
+}) {
   const sizeClasses = {
     default: "h-8 w-8",
-    small: "h-6 w-6"
+    small: "h-6 w-6",
   };
 
   return (
@@ -45,19 +54,27 @@ function UserAvatar({ user, size = "default" }: { user: User; size?: "default" |
 }
 
 // Componente reutilizable para la información del usuario
-function UserInfo({ user, variant = "default" }: { user: User; variant?: "default" | "compact" }) {
+function UserInfo({
+  user,
+  variant = "default",
+}: {
+  user: User;
+  variant?: "default" | "compact";
+}) {
   const isCompact = variant === "compact";
-  
+
   return (
-    <div className={cn(
-      "flex flex-col items-start text-xs min-w-0",
-      isCompact && "grid flex-1 text-left text-sm leading-tight"
-    )}>
+    <div
+      className={cn(
+        "flex flex-col items-start text-xs min-w-0",
+        isCompact && "grid flex-1 text-left text-sm leading-tight"
+      )}
+    >
       <span className="truncate font-xs">{user.name}</span>
       <span className="truncate text-xs text-muted-foreground">
         {getFirstRoleLabel(user)}
       </span>
-    </div>  
+    </div>
   );
 }
 
@@ -72,7 +89,7 @@ export function AvatarDropdown({
     align: "end" as const,
     sideOffset: 4,
   };
-  return ( 
+  return (
     <SidebarMenuItem>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -88,11 +105,8 @@ export function AvatarDropdown({
             <ChevronsUpDown className="ml-auto h-4 w-4 opacity-50 flex-shrink-0" />
           </SidebarMenuButton>
         </DropdownMenuTrigger>
-        
-        <DropdownMenuContent
-          className="w-56 rounded-lg"
-          {...dropdownProps}
-        >
+
+        <DropdownMenuContent className="w-56 rounded-lg" {...dropdownProps}>
           <DropdownMenuLabel className="p-0 font-normal">
             <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
               <UserAvatar user={user} size="small" />

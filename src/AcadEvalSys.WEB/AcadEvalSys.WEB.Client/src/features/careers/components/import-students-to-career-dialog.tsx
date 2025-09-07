@@ -16,7 +16,7 @@ import { useImportStudentsToCareer, useBulkEnrollment } from "../hooks";
 import { ImportStudentsResult } from "../types";
 import { FileUpload } from "./file-upload";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
-import { CareerYear, CareerYearLabels } from "@/shared/types/enums";
+import { CareerYear, CareerYearLabels } from "@infrastructure/api/types/enums";
 import {
   SelectedFileSection,
   FormatHelpSection,

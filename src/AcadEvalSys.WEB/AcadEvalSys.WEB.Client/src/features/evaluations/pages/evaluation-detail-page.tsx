@@ -1,6 +1,6 @@
 import { useParams } from "wouter";
-import { useQuery } from "@tanstack/react-query";
-import { getEvaluationById } from "../services/evaluation-service";
+import { useEffect } from "react";
+import { useGetEvaluationById } from "../hooks";
 import {
   PageLayout,
   PageContent,
@@ -21,15 +21,16 @@ import {
 
 export default function EvaluationDetailPage() {
   const { id } = useParams();
-  const {
-    data: evaluation,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["evaluation", id],
-    queryFn: () => getEvaluationById(id || ""),
-    enabled: !!id,
-  });
+  const { data: evaluation, isLoading, error } = useGetEvaluationById(id || "");
+
+  useEffect(() => {
+    if (error) {
+      console.error("Error fetching evaluation:", error);
+    }
+    if (evaluation) {
+      console.log("Evaluation data received:", evaluation);
+    }
+  }, [evaluation, error]);
 
   if (isLoading) {
     return (
@@ -43,7 +44,32 @@ export default function EvaluationDetailPage() {
     );
   }
 
-  if (error || !evaluation) {
+  if (error) {
+    console.error("Error details:", error);
+    return (
+      <PageLayout>
+        <Link href="/evaluaciones">
+          <Button variant="ghost" className="gap-2">
+            <ChevronLeft className="w-4 h-4" />
+            Volver a Evaluaciones
+          </Button>
+        </Link>
+        <Card className="border-destructive/50">
+          <CardContent className="pt-6 text-center">
+            <h3 className="text-lg font-semibold text-destructive">
+              Error al cargar la evaluación
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              No se pudo cargar la evaluación "{id}". Verifica la consola para
+              más detalles.
+            </p>
+          </CardContent>
+        </Card>
+      </PageLayout>
+    );
+  }
+
+  if (!evaluation) {
     return (
       <PageLayout>
         <Link href="/evaluaciones">

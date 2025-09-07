@@ -30,8 +30,9 @@ import { Button } from "@/shared/components/ui/button";
 import { Separator } from "@/shared/components/ui/separator";
 import { toast } from "sonner";
 import { Student, StudentFormValues } from "../services/student-service";
-import { technicalCareerService } from "@/features/careers/services/technical-career-service";
+import { getTechnicalCareers } from "@infrastructure/api/clients/technical-career-service";
 import { useQuery } from "@tanstack/react-query";
+import type { TechnicalCareer } from "@infrastructure/api/types/technical-career";
 
 const studentFormSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -61,9 +62,9 @@ export function StudentFormDialog({
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
 
-  const { data: careers = [] } = useQuery({
+  const { data: careers = [] } = useQuery<TechnicalCareer[]>({
     queryKey: ["technical-careers"],
-    queryFn: () => technicalCareerService.getAll(),
+    queryFn: getTechnicalCareers,
   });
 
   const form = useForm<StudentFormData>({
@@ -82,7 +83,7 @@ export function StudentFormDialog({
       await onSubmit(values);
       form.reset();
       onOpenChange(false);
-    } catch (error) {
+    } catch {
       toast.error("Error al guardar el estudiante");
     }
   };
@@ -98,7 +99,7 @@ export function StudentFormDialog({
       setNewPassword("");
       setIsChangingPassword(false);
       toast.success("Contraseña actualizada correctamente");
-    } catch (error) {
+    } catch {
       toast.error("Error al cambiar la contraseña");
     }
   };
@@ -302,6 +303,3 @@ export function StudentFormDialog({
     </Dialog>
   );
 }
-
-
-

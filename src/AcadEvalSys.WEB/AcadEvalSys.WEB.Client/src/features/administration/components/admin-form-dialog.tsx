@@ -22,7 +22,7 @@ import {
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { Eye, EyeOff } from "lucide-react";
-import { Professor } from "@/shared/types/professor";
+import { Professor } from "@infrastructure/api/types/professor";
 
 const baseSchema = z.object({
   name: z.string().min(2, "El nombre es obligatorio"),
@@ -30,7 +30,50 @@ const baseSchema = z.object({
   password: z.string().optional(),
 });
 
-export type AdminFormValues = z.infer<typeof baseSchema>;
+const createSchema = z.object({
+  name: z.string().min(2, "El nombre es obligatorio"),
+  email: z.string().email("Email inválido"),
+  password: z
+    .string()
+    .min(8, "La contraseña debe tener al menos 8 caracteres")
+    .regex(/[A-Z]/, "La contraseña debe contener al menos una letra mayúscula")
+    .regex(/[a-z]/, "La contraseña debe contener al menos una letra minúscula")
+    .regex(/[0-9]/, "La contraseña debe contener al menos un número")
+    .regex(
+      /[^A-Za-z0-9]/,
+      "La contraseña debe contener al menos un carácter especial"
+    ),
+});
+
+const editSchema = z.object({
+  name: z.string().min(2, "El nombre es obligatorio"),
+  email: z.string().email("Email inválido"),
+  password: z
+    .string()
+    .optional()
+    .refine(
+      (val) => !val || val.length >= 8,
+      "La contraseña debe tener al menos 8 caracteres"
+    )
+    .refine(
+      (val) => !val || /[A-Z]/.test(val),
+      "La contraseña debe contener al menos una letra mayúscula"
+    )
+    .refine(
+      (val) => !val || /[a-z]/.test(val),
+      "La contraseña debe contener al menos una letra minúscula"
+    )
+    .refine(
+      (val) => !val || /[0-9]/.test(val),
+      "La contraseña debe contener al menos un número"
+    )
+    .refine(
+      (val) => !val || /[^A-Za-z0-9]/.test(val),
+      "La contraseña debe contener al menos un carácter especial"
+    ),
+});
+
+export type AdminFormValues = z.infer<typeof createSchema>;
 
 interface AdminFormDialogProps {
   open: boolean;
@@ -48,8 +91,10 @@ export function AdminFormDialog({
   const isEditing = Boolean(administrator);
   const [showPassword, setShowPassword] = useState(false);
 
+  const schema = isEditing ? editSchema : createSchema;
+
   const form = useForm<AdminFormValues>({
-    resolver: zodResolver(baseSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       name: administrator?.name ?? "",
       email: administrator?.email ?? "",
@@ -162,6 +207,18 @@ export function AdminFormDialog({
                     </div>
                   </FormControl>
                   <FormMessage />
+                  {!isEditing && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      <p>La contraseña debe contener:</p>
+                      <ul className="list-disc list-inside space-y-1 mt-1">
+                        <li>Al menos 8 caracteres</li>
+                        <li>Una letra mayúscula (A-Z)</li>
+                        <li>Una letra minúscula (a-z)</li>
+                        <li>Un número (0-9)</li>
+                        <li>Un carácter especial (!@#$%^&*)</li>
+                      </ul>
+                    </div>
+                  )}
                 </FormItem>
               )}
             />

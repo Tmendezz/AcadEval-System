@@ -6,7 +6,7 @@ import {
 } from "@/shared/components/ui/card";
 import { Progress } from "@/shared/components/ui/progress";
 import { CheckCircle, Clock, Users } from "lucide-react";
-import { Evaluation } from "@/shared/types/evaluation";
+import { Evaluation } from "@infrastructure/api/types/evaluation";
 
 interface EvaluationProgressProps {
   evaluation: Evaluation;

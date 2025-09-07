@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getEvaluationById } from "../services/evaluation-service";
+import { getEvaluationById } from "@infrastructure/api/clients/evaluation-service";
 import { useGetCareerYearAssignmentDetails } from "./evaluations/queries/use-get-assignment-details";
 
 interface CareerYearAssignmentDetail {
@@ -100,7 +100,7 @@ export function useCareerYearData(
   const careerData = useMemo(() => {
     if (!evaluation || !careerId) return null;
     return evaluation.assignmentsByCareer.find(
-      (career: any) => career.careerId === careerId
+      (career: { careerId: string }) => career.careerId === careerId
     );
   }, [evaluation, careerId]);
 

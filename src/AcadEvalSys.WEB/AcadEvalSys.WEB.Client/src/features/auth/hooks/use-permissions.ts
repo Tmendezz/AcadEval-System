@@ -1,5 +1,5 @@
 import { useAuthStore } from "../store";
-import { UserRole, hasAnyRole } from "@/shared/types/auth";
+import { UserRole, hasAnyRole } from "@infrastructure/api/types/auth";
 
 // Hook simple para verificar permisos
 export function usePermissions() {

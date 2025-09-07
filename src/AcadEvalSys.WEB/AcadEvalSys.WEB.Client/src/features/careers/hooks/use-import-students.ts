@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ImportStudentsResult } from "@/features/careers/types/import";
-import * as technicalCareerService from "@/shared/services/technical-career-service";
+import * as technicalCareerService from "@infrastructure/api/clients/technical-career-service";
 import { toast } from "sonner";
 
 interface ImportStudentsParams {
@@ -13,7 +13,7 @@ export const useImportStudents = () => {
   const queryClient = useQueryClient();
 
   return useMutation<ImportStudentsResult, Error, ImportStudentsParams>({
-    mutationFn: async ({ careerId, subjectId, file }) => {
+    mutationFn: async ({ careerId, file }) => {
       return await technicalCareerService.importStudents(careerId, file);
     },
     onSuccess: (data, variables) => {
@@ -21,7 +21,7 @@ export const useImportStudents = () => {
       const {
         usersCreated,
         studentsEnrolled,
-        studentsAlreadyEnrolled,
+        studentsAlreadyEnrolled: _studentsAlreadyEnrolled,
         errors,
       } = data;
 

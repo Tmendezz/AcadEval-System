@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -26,7 +26,7 @@ import {
   X,
 } from "lucide-react";
 import { useImportStudents } from "../hooks";
-import { ImportStudentsResult } from "../types";
+import { ImportStudentsResult } from "@/features/careers";
 import { toast } from "sonner";
 
 interface ImportStudentsDialogProps {
@@ -81,15 +81,17 @@ export function ImportStudentsDialog({
     [validateAndSetFile]
   );
 
-  const handleOpenPicker = useCallback((e: React.MouseEvent) => {
+  const handleOpenPicker = useCallback(() => {
     // No preventDefault/stopPropagation para preservar la user activation
-    const input = fileInputRef.current as any;
+    const input = fileInputRef.current as HTMLInputElement;
     if (!input) return;
     if (typeof input.showPicker === "function") {
       try {
         input.showPicker();
         return;
-      } catch {}
+      } catch {
+        // Fallback to click if showPicker fails
+      }
     }
     input.click();
   }, []);

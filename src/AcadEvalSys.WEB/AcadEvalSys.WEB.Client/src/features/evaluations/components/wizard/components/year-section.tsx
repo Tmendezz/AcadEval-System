@@ -1,3 +1,4 @@
+import React from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { ChevronDown, ChevronRight, Plus, CheckCircle2 } from "lucide-react";

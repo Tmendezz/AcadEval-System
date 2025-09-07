@@ -6,13 +6,13 @@ import {
   assignCareerCoordinator,
   getCareerCoordinator,
   removeCareerCoordinator,
-} from "@/shared/services/technical-career-service";
-import { useUpdateTechnicalCareer } from "@/features/administration/hooks/use-technical-careers";
-import * as subjectService from "@/shared/services/subject-service";
+} from "@infrastructure/api/clients/technical-career-service";
+import { useUpdateTechnicalCareer } from "@/shared/hooks/use-technical-careers";
+import * as subjectService from "@infrastructure/api/clients/subject-service";
 import { useProfessors } from "@/shared/hooks/use-professors";
 import { useDeleteSubject } from "./use-delete-subject";
-import type { Professor } from "@/shared/types/professor";
-import type { Subject } from "@/shared/types/subject";
+import type { Professor } from "@infrastructure/api/types/professor";
+import type { Subject } from "@infrastructure/api/types/subject";
 
 // Local row model matches Subject
 type SubjectRow = Subject;
@@ -108,14 +108,6 @@ export function useEditCareer(careerId: string | undefined) {
           const professorChanged =
             r.professorId !== originalSubject.professorId;
 
-          console.log("Verificando cambios en asignatura:", {
-            subjectId: r.id,
-            nameChanged,
-            professorChanged,
-            oldProfessor: originalSubject.professorId,
-            newProfessor: r.professorId,
-          });
-
           if (nameChanged || professorChanged) {
             const updateData = {
               name: r.name,
@@ -124,10 +116,6 @@ export function useEditCareer(careerId: string | undefined) {
               professorId: r.professorId,
             };
 
-            console.log("Actualizando asignatura:", {
-              subjectId: r.id,
-              updateData,
-            });
             await subjectService.updateSubject(careerId, r.id, updateData);
           }
         }
@@ -171,18 +159,15 @@ export function useEditCareer(careerId: string | undefined) {
   };
 
   const updateSubjectProfessor = (subjectId: string, professorId: string) => {
-    console.log("Actualizando profesor:", { subjectId, professorId });
     setRows((prev) =>
       prev.map((row) => {
         if (row.id !== subjectId) return row;
         const prof = existingProfessors.find((p) => p.id === professorId);
-        const updatedRow = {
+        return {
           ...row,
           professorId,
           professorName: prof?.name || "Profesor asignado",
         } as SubjectRow;
-        console.log("Fila actualizada:", updatedRow);
-        return updatedRow;
       })
     );
   };

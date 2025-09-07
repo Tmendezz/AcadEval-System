@@ -1,14 +1,23 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CareerYear } from "@/shared/types/enums";
-import { getSubjectsByCareer } from "@/shared/services/subject-service";
-import { Subject } from "@/shared/types/subject";
+import { CareerYear } from "@infrastructure/api/types/enums";
+import { getSubjectsByCareer } from "@infrastructure/api/clients/subject-service";
+import { Subject } from "@infrastructure/api/types/subject";
 
 interface UseSubjectsByYearOptions {
   includeEnrolledStudents?: boolean;
   enabled?: boolean;
   initialYear?: CareerYear;
 }
+
+// import { getSubjectsByYear } from "../services";
+
+export const subjectsKeys = {
+  all: (careerId: string) => ["subjects", careerId] as const,
+  lists: (careerId: string) => [...subjectsKeys.all(careerId), "list"] as const,
+  list: (careerId: string, filters: Record<string, unknown>) =>
+    [...subjectsKeys.lists(careerId), filters] as const,
+};
 
 export const useSubjectsByYear = (
   careerId: string,

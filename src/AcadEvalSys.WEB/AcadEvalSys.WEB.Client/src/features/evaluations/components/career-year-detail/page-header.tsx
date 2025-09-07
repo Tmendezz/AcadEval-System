@@ -7,12 +7,7 @@ interface PageHeaderProps {
   evaluationId: string;
 }
 
-export function PageHeader({
-  evaluationTitle,
-  careerName,
-  year,
-  evaluationId,
-}: PageHeaderProps) {
+export function PageHeader({ evaluationTitle }: PageHeaderProps) {
   return (
     <div>
       {/* Título principal */}

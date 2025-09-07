@@ -16,7 +16,10 @@ export const useFiltering = <T>({
 // Hook más avanzado con configuración automática
 export const useAdvancedFiltering = <T>(data: T[], config: FilterConfig<T>) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
+  const [activeFilters, setActiveFilters] = useState<Record<string, unknown>>(
+    {}
+  );
+
   const [sortBy, setSortBy] = useState<string>("createdAtDesc"); // Por defecto, ordenar por fecha de creación (más reciente primero)
 
   const filteredAndSortedData = useMemo(() => {
@@ -50,7 +53,7 @@ export const useAdvancedFiltering = <T>(data: T[], config: FilterConfig<T>) => {
     return result;
   }, [data, searchTerm, activeFilters, sortBy, config]);
 
-  const updateFilter = useCallback((key: string, value: any) => {
+  const updateFilter = useCallback((key: string, value: unknown) => {
     setActiveFilters((prev) => ({
       ...prev,
       [key]: value,

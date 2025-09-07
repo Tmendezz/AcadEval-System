@@ -4,6 +4,9 @@ export * from "./use-competencies";
 // Technical Careers
 export * from "./use-technical-careers";
 
+// Stores
+export * from "../stores/use-competencies-store";
+
 // Subjects
 export * from "./use-subjects";
 

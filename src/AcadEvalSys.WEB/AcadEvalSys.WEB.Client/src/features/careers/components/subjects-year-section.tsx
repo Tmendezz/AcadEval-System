@@ -1,12 +1,12 @@
 import { Input } from "@/shared/components/ui/input";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
-import { ProfessorCombobox } from "@/shared/components/ui/professor-combobox";
+import { ProfessorCombobox } from "./professor-combobox";
 import { Trash2 } from "lucide-react";
-import type { Subject } from "@/shared/types/subject";
-import type { Professor } from "@/shared/types/professor";
+import type { Subject } from "@infrastructure/api/types/subject";
+import type { Professor } from "@infrastructure/api/types/professor";
 
-interface SubjectRow extends Subject {}
+type SubjectRow = Subject;
 
 interface SubjectsYearSectionProps {
   year: "First" | "Second" | "Third";

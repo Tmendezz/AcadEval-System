@@ -14,45 +14,6 @@ Estas reglas definen la estructura y estándares que debés aplicar o validar al
 
 Organizá el proyecto por **módulos de dominio** dentro de `src/features/`, nunca por tipo (`components/`, `services/`, etc).
 
-```plaintext
-src/
-├── assets/               # Recursos estáticos (imágenes, iconos)
-├── features/             # Un módulo por dominio (ej: evaluations, students)
-│   ├── evaluations/
-│   │   ├── components/   # Componentes presentacionales
-│   │   ├── hooks/        # Custom hooks (React Query y lógica UI)
-│   │   ├── services/     # API calls
-│   │   ├── store/        # Estado local del módulo
-│   │   ├── types.ts      # Tipado relacionado
-│   │   └── pages/        # Páginas/rutas del módulo
-├── shared/               # Elementos reutilizables entre módulos
-├── routes/               # Configuración de rutas
-└── main.tsx
-```
-
----
-
-## 📆 Composición de Archivos
-
-### Componente React (`.tsx`)
-
-1. Ordená imports: React → libs → hooks → store → componentes → estilos
-2. Usá hooks al principio
-3. Declárá funciones internas después de los hooks
-4. Separá el `return` del JSX de la lógica
-
-```tsx
-const ExampleComponent = () => {
-  const data = useQuery(...);
-  const store = useStore();
-
-  const handleClick = () => { ... };
-
-  return <div>{data.title}</div>;
-};
-```
-
----
 
 ## 📊 Reglas de Componentización
 

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { UnenrollStudentsResult as UnenrollStudentsApiResult } from "@/shared/services/subject-service";
-import * as subjectService from "@/shared/services/subject-service";
+import type { UnenrollStudentsResult as UnenrollStudentsApiResult } from "@infrastructure/api/clients/subject-service";
+import * as subjectService from "@infrastructure/api/clients/subject-service";
 import { toast } from "sonner";
 
 interface UnenrollStudentParams {

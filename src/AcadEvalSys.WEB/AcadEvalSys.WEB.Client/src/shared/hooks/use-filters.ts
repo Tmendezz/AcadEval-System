@@ -1,5 +1,5 @@
 import { useFilterStore } from "@/shared/stores/filter-store";
-import { CareerYear } from "@/shared/types/enums";
+import { CareerYear } from "@infrastructure/api/types/enums";
 
 export const useFilters = () => {
   const {

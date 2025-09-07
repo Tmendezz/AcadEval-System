@@ -4,11 +4,11 @@ export { useEvaluationWizard } from "./use-evaluation-wizard";
 export { useCareerYearData } from "./use-career-year-data";
 
 // Filter hooks
-export { useCompetencyFilters } from "./competencies/use-competency-filters";
 export { useEvaluationFilters } from "./evaluations/use-evaluation-filters";
 
 // Evaluation hooks
 export { useGetEvaluations } from "./evaluations/queries/use-get-evaluations";
+export { useGetEvaluationById } from "./use-get-evaluation-by-id";
 export { useGetCareerYearAssignmentDetails } from "./evaluations/queries/use-get-assignment-details";
 export { useGetAssignmentStudents } from "./evaluations/queries/use-get-assignment-students";
 
@@ -16,8 +16,7 @@ export { useGetAssignmentStudents } from "./evaluations/queries/use-get-assignme
 export { useFinalizeEvaluation } from "./evaluations/mutations/use-finalize-evaluation";
 export { useDeleteEvaluation } from "./evaluations/mutations/use-delete-evaluation";
 
-// Professor evaluation hooks
-export * from "./professor-evaluations";
+// Professor evaluation hooks moved to professor-evaluations feature
 
 // Shared hooks (re-export from shared)
 export {

@@ -88,7 +88,7 @@ export function AddStudentDialog({
       // Limpiar formulario y cerrar modal
       form.reset();
       onOpenChange(false);
-    } catch (error) {
+    } catch {
       // El error ya se maneja en el hook
     }
   };

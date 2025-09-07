@@ -24,7 +24,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Separator } from "@/shared/components/ui/separator";
 import { Key, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import type { Professor } from "@/shared/types/professor";
+import type { Professor } from "@infrastructure/api/types/professor";
 
 const baseSchema = z.object({
   name: z.string().min(2, "El nombre es obligatorio"),
@@ -103,7 +103,7 @@ export function ProfessorFormDialog({
         const error = await response.json();
         toast.error(error.error || "Error al actualizar contraseña");
       }
-    } catch (error) {
+    } catch {
       toast.error("Error de conexión");
     } finally {
       setIsResetting(false);

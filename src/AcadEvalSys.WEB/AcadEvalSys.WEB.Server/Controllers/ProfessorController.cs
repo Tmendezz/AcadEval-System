@@ -82,16 +82,35 @@ public class ProfessorController(IMediator mediator) : ControllerBase
 
     /// <summary>
     /// Elimina un profesor. Solo los administradores pueden eliminar profesores.
+    /// Si el profesor tiene asignaturas asignadas, devuelve información sobre las asignaciones.
     /// </summary>
     [HttpDelete("{id}")]
     [Authorize(Roles = UserRoles.Admin)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Produces("application/json")]
     public async Task<IActionResult> DeleteProfessor(string id)
     {
         var command = new RemoveProfessorCommand(id);
         var result = await mediator.Send(command);
-        return result ? NoContent() : NotFound();
+        
+        if (result.Success)
+        {
+            return NoContent();
+        }
+        
+        if (result.HasAssignments)
+        {
+            return BadRequest(new
+            {
+                message = result.Message,
+                hasAssignments = result.HasAssignments,
+                assignedSubjects = result.AssignedSubjects
+            });
+        }
+        
+        return NotFound(new { message = result.Message });
     }
 
     /// <summary>

@@ -17,7 +17,7 @@ export const useStatistics = <T>(data: T[], config: StatisticsConfig<T>) => {
 
 // Hook específico para estadísticas de entidades con estudiantes
 export const useEntityStatistics = <
-  T extends { totalStudents?: number; enrolledStudents?: any[] }
+  T extends { totalStudents?: number; enrolledStudents?: { id: string }[] }
 >(
   entities: T[]
 ) => {

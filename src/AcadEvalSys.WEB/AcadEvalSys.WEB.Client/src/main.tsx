@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import { AppProviders } from "./shared/providers/app-providers";
+import { AppProviders } from "@infrastructure/query/app-providers";
 import { AuthRouter } from "./features/auth/components";
 
 const rootElement = document.getElementById("root");

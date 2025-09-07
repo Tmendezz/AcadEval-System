@@ -25,7 +25,7 @@ export function useEvaluationWizard() {
   });
 
   const {
-    handleSubmit,
+    handleSubmit: _handleSubmit,
     setValue,
     watch,
     formState: { errors },

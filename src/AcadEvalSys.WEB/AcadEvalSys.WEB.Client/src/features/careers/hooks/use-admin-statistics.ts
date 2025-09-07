@@ -1,13 +1,13 @@
 import { useMemo } from "react";
 import { Subject } from "../types/subject";
 import { TechnicalCareer } from "../types/technical-career";
-import { CareerYear, CareerYearLabels } from "@/shared/types/enums";
+import { CareerYear, CareerYearLabels } from "@infrastructure/api/types/enums";
 import { useYearConverter } from "@/shared/hooks/use-year-converter";
 import {
   AdminStatistics,
   CareerStatistics,
   YearStatistics,
-} from "@/shared/types/statistics";
+} from "@infrastructure/api/types/statistics";
 
 export const useAdminStatistics = (
   subjects: Subject[],

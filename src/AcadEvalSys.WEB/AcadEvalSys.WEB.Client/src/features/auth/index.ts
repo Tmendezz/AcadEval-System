@@ -1,5 +1,8 @@
 // Exportaciones principales del módulo de autenticación
 
+// Main container component - follows Screaming Architecture
+export { default as Auth } from "./auth";
+
 // Store
 export { useAuthStore } from "./store";
 
@@ -32,10 +35,10 @@ export type {
   LoginCredentials,
   SessionStatus,
   ApiError,
-} from "@/shared/types/auth";
+} from "@infrastructure/api/types/auth";
 export {
   UserRole,
   USER_ROLES,
   getRoleLabel,
   isValidRole,
-} from "@/shared/types/auth";
+} from "@infrastructure/api/types/auth";

@@ -10,13 +10,13 @@ import {
   useDeleteEvaluation,
 } from "../hooks";
 import { EvaluationFilters } from "../components";
+import { evaluationColumns } from "../components/evaluation-columns";
 import { navigate } from "wouter/use-browser-location";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import { createEvaluationColumns } from "../columns/evaluation-columns";
 import { DataSection } from "@/shared/components/ui/data-section";
 import { useState } from "react";
-import type { Evaluation } from "@/shared/types/evaluation";
+import type { Evaluation } from "@infrastructure/api/types/evaluation";
 import {
   Dialog,
   DialogContent,
@@ -32,13 +32,11 @@ export default function EvaluationsPage() {
 
   const {
     filteredData: filteredEvaluations,
-    searchTerm,
-    setSearchTerm,
     activeFilters,
     updateFilter,
     sortBy,
     setSortBy,
-  } = useEvaluationFilters(evaluations);
+  } = useEvaluationFilters(evaluations as Evaluation[]);
 
   const [evaluationToDelete, setEvaluationToDelete] =
     useState<Evaluation | null>(null);
@@ -47,7 +45,7 @@ export default function EvaluationsPage() {
     navigate("/evaluaciones/nueva");
   };
 
-  const handleDeleteEvaluation = (evaluation: Evaluation) => {
+  const _handleDeleteEvaluation = (evaluation: Evaluation) => {
     setEvaluationToDelete(evaluation);
   };
 
@@ -75,8 +73,6 @@ export default function EvaluationsPage() {
       <PageContent>
         <PageSection>
           <EvaluationFilters
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
             statusFilter={activeFilters.status || "all"}
             onStatusFilterChange={(value) => updateFilter("status", value)}
             careerFilter={activeFilters.career || "all"}
@@ -90,9 +86,7 @@ export default function EvaluationsPage() {
             title="Lista de Evaluaciones"
             description="Gestiona las evaluaciones por competencias"
             data={filteredEvaluations}
-            columns={createEvaluationColumns({
-              onDelete: handleDeleteEvaluation,
-            })}
+            columns={evaluationColumns}
             isLoading={isLoading}
             emptyMessage="No se encontraron evaluaciones"
             emptyIcon="FileBarChart"

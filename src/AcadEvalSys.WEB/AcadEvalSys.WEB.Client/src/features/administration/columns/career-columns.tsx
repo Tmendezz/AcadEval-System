@@ -1,6 +1,7 @@
+import React from "react";
 import { Button } from "@/shared/components/ui/button";
-import { Edit, Trash2, Eye, Plus } from "lucide-react";
-import type { TechnicalCareer } from "@/shared/types/technical-career";
+import { Edit, Trash2, Eye } from "lucide-react";
+import type { TechnicalCareer } from "@infrastructure/api/types/technical-career";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { ColumnDef } from "@tanstack/react-table";
 

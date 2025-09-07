@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   getSubjectsByCareer,
   getSubjectById,
-} from "../services/subject-service";
+} from "@infrastructure/api/clients/subject-service";
 
 export const subjectsKeys = {
   all: ["subjects"] as const,

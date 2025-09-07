@@ -1,9 +1,17 @@
-// Componentes del módulo de careers
-export { AddStudentButton } from "./add-student-button";
-export { CareerCoordinatorCard } from "./career-coordinator-card";
-export { ImportStudentsButton } from "./import-students-button";
-export { ImportStudentsDialog } from "./import-students-dialog";
-export { ImportStudentsToCareerButton } from "./import-students-to-career-button";
-export { ImportStudentsToCareerDialog } from "./import-students-to-career-dialog";
-export { EnrolledStudentsManagement } from "./enrolled-students-management";
-export * from "./import-dialog";
+// Columnas del módulo de careers
+export { createSubjectColumns } from "./subject-columns";
+export { studentColumns } from "./student-columns";
+
+// Componentes principales
+export { CareerDetail } from "./CareerDetail";
+
+// Botones
+export * from "./add-student-button";
+export * from "./import-students-to-career-button";
+
+// Componentes principales
+export * from "./CareerDetail";
+export * from "./CreateCareerForm";
+export * from "./EditCareerForm";
+export * from "./SubjectDetail";
+export * from "./enrolled-students-management";

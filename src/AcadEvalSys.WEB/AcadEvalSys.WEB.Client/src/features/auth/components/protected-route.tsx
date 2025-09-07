@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Redirect } from "wouter";
 import { useAuthStore } from "../store";
 import { useSessionCheck } from "../hooks/use-session-check";
-import { UserRole, getFirstRole, hasAnyRole } from "@/shared/types/auth";
+import { UserRole, getFirstRole, hasAnyRole } from "@infrastructure/api/types/auth";
 import { AccessDenied } from "./access-denied";
 import { SessionLoadingScreen } from "@/shared/components/loading-screen";
 
