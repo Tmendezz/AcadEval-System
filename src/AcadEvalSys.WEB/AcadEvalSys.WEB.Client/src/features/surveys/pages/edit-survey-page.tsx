@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useRoute } from 'wouter';
-import { SurveyForm, SurveyQuestion } from '../models/survey-types';
+import { SurveyForm } from '../models/survey-types';
+import type { SurveyQuestion } from '../models/survey-types';
 import { useSurvey, useUpdateSurvey } from '../hooks/use-surveys';
 import { useSurveyFormValidationBasic } from '../hooks/use-survey-form-validation-basic';
 import { SurveyBasicInfoForm } from '../components/survey-basic-info-form';
@@ -134,3 +135,4 @@ export default function EditSurveyPage() {
   );
 }
 
+  

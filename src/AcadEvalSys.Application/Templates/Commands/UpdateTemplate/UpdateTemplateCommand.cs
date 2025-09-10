@@ -10,6 +10,7 @@ namespace AcadEvalSys.Application.Templates.Commands.UpdateTemplate
         [JsonIgnore]
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         public SurveyTemplateType SurveyType { get; set; }
         public bool IsDraft { get; set; }
         public List<UpdateSurveyTemplateQuestionDto> Questions { get; set; } = new();

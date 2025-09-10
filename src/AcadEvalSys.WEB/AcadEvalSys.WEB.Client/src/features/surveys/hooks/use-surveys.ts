@@ -16,6 +16,8 @@ export function useSurveys(filters?: SurveyFilters) {
   return useQuery({
     queryKey: surveyKeys.list(filters),
     queryFn: () => surveyService.getSurveys(filters),
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 }
 
@@ -24,6 +26,8 @@ export function useSurvey(id: string) {
     queryKey: surveyKeys.detail(id),
     queryFn: () => surveyService.getSurveyById(id),
     enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 20 * 60 * 1000,
   });
 }
 
@@ -45,7 +49,7 @@ export function useUpdateSurvey() {
   return useMutation({
     mutationFn: ({ id, survey }: { id: string; survey: SurveyForm }) =>
       surveyService.updateSurvey(id, survey),
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: surveyKeys.lists() });
       queryClient.invalidateQueries({ queryKey: surveyKeys.detail(variables.id) });
     },
@@ -80,7 +84,7 @@ export function usePublishSurvey() {
 
   return useMutation({
     mutationFn: (id: string) => surveyService.publishSurvey(id),
-    onSuccess: (data, id) => {
+    onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: surveyKeys.lists() });
       queryClient.invalidateQueries({ queryKey: surveyKeys.detail(id) });
     },
@@ -92,7 +96,7 @@ export function useCloseSurvey() {
 
   return useMutation({
     mutationFn: (id: string) => surveyService.closeSurvey(id),
-    onSuccess: (data, id) => {
+    onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: surveyKeys.lists() });
       queryClient.invalidateQueries({ queryKey: surveyKeys.detail(id) });
     },
@@ -104,7 +108,7 @@ export function useArchiveSurvey() {
 
   return useMutation({
     mutationFn: (id: string) => surveyService.archiveSurvey(id),
-    onSuccess: (data, id) => {
+    onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: surveyKeys.lists() });
       queryClient.invalidateQueries({ queryKey: surveyKeys.detail(id) });
     },

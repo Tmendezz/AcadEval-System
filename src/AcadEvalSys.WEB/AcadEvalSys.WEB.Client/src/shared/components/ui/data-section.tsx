@@ -11,7 +11,7 @@ import { LoadingState, EmptyState } from "./loading-state";
 import { cn } from "@infrastructure/lib/cn";
 
 interface DataSectionProps<TData> {
-  title: ReactNode;
+  title?: ReactNode;
   description?: string;
   data: TData[];
   columns: ColumnDef<TData>[];
@@ -39,15 +39,17 @@ export function DataSection<TData>({
 }: DataSectionProps<TData>) {
   return (
     <Card className={cn("", className)}>
-      <CardHeader>
-        <div className="flex items-center justify-between gap-4">
-          <CardTitle>{title}</CardTitle>
-          {headerActions}
-        </div>
-        {description && (
-          <p className="text-sm text-muted-foreground">{description}</p>
-        )}
-      </CardHeader>
+      {(title || headerActions || description) && (
+        <CardHeader>
+          <div className="flex items-center justify-between gap-4">
+            {title && <CardTitle>{title}</CardTitle>}
+            {headerActions}
+          </div>
+          {description && (
+            <p className="text-sm text-muted-foreground">{description}</p>
+          )}
+        </CardHeader>
+      )}
       <CardContent>
         {isLoading ? (
           <LoadingState message="Cargando datos..." />

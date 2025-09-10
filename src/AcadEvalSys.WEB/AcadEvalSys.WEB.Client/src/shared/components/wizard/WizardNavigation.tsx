@@ -3,12 +3,13 @@ import { Separator } from "@/shared/components/ui/separator";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface WizardNavigationProps {
-  currentStep: number;
+  currentStep: number; // 1-based
   totalSteps: number;
   canProceed: boolean;
   onPrevious: () => void;
-  onNext: () => void;
+  onNext: () => void; // caller decide si avanza o finaliza
   isSubmitting?: boolean;
+  finishLabel?: string;
 }
 
 export function WizardNavigation({
@@ -18,34 +19,10 @@ export function WizardNavigation({
   onPrevious,
   onNext,
   isSubmitting = false,
+  finishLabel = "Finalizar",
 }: WizardNavigationProps) {
   const isFirstStep = currentStep === 1;
   const isLastStep = currentStep === totalSteps;
-
-  const handleNext = () => {
-    console.log("WizardNavigation - Botón Siguiente clickeado:", {
-      currentStep,
-      totalSteps,
-      canProceed,
-    });
-    onNext();
-  };
-
-  const handlePrevious = () => {
-    console.log("WizardNavigation - Botón Anterior clickeado:", {
-      currentStep,
-      totalSteps,
-    });
-    onPrevious();
-  };
-
-  console.log("WizardNavigation - Renderizando:", {
-    currentStep,
-    totalSteps,
-    canProceed,
-    isFirstStep,
-    isLastStep,
-  });
 
   return (
     <>
@@ -55,7 +32,7 @@ export function WizardNavigation({
         <Button
           type="button"
           variant="outline"
-          onClick={handlePrevious}
+          onClick={onPrevious}
           disabled={isFirstStep}
         >
           <ChevronLeft className="w-4 h-4 mr-2" />
@@ -64,13 +41,13 @@ export function WizardNavigation({
 
         <div className="flex gap-2">
           {!isLastStep ? (
-            <Button type="button" onClick={handleNext} disabled={!canProceed}>
+            <Button type="button" onClick={onNext} disabled={!canProceed}>
               Siguiente
               <ChevronRight className="w-4 h-4 ml-2" />
             </Button>
           ) : (
-            <Button type="submit" disabled={!canProceed || isSubmitting}>
-              {isSubmitting ? "Creando..." : "Crear Evaluación"}
+            <Button type="button" onClick={onNext} disabled={!canProceed || isSubmitting}>
+              {isSubmitting ? "Procesando..." : finishLabel}
             </Button>
           )}
         </div>
@@ -78,3 +55,5 @@ export function WizardNavigation({
     </>
   );
 }
+
+

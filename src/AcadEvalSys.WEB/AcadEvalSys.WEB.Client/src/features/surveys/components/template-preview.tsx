@@ -3,7 +3,7 @@ import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
 import { SurveyTemplate, QuestionType } from '../models/survey-template-types';
-import { getSurveyTemplateTypeLabel, getQuestionTypeLabel } from '../models/survey-template-types';
+import { getSurveyTemplateTypeLabel, getQuestionTypeLabel } from '../utils/survey-template-formatters';
 
 interface TemplatePreviewProps {
   template: SurveyTemplate | null;

@@ -38,8 +38,17 @@ class SurveyTemplateService {
 
   // Crear nueva plantilla
   async createTemplate(data: SurveyTemplateForm): Promise<string> {
-    const response = await api.post<{ id: string }>(this.baseUrl, data);
-    return response.data.id;
+    console.log('🚀 Enviando POST a /survey-templates con:', JSON.stringify(data, null, 2));
+    
+    try {
+      const response = await api.post<{ id: string }>(this.baseUrl, data);
+      console.log('✅ Respuesta exitosa:', response.data);
+      return response.data.id;
+    } catch (error: any) {
+      console.error('❌ Error en createTemplate:', error);
+      console.error('📄 Detalles del error:', error.response?.data);
+      throw error;
+    }
   }
 
   // Actualizar plantilla existente
@@ -57,7 +66,7 @@ class SurveyTemplateService {
     const originalTemplate = await this.getTemplateById(id);
     
     const duplicateData: SurveyTemplateForm = {
-      title: newName,
+      name: newName,
       description: originalTemplate.description,
       surveyType: originalTemplate.surveyType,
       isDraft: true, // Las copias siempre son borradores
@@ -68,7 +77,9 @@ class SurveyTemplateService {
         required: q.required,
         options: q.options.map(opt => ({
           text: opt.text,
+          value: opt.value || opt.text, // Usar text como value si no existe
           order: opt.order,
+          allowOpenText: opt.allowOpenText || false,
         })),
       })),
     };
@@ -81,7 +92,7 @@ class SurveyTemplateService {
     const template = await this.getTemplateById(id);
     
     const updateData: SurveyTemplateForm = {
-      title: template.title,
+      name: template.title,
       description: template.description,
       surveyType: template.surveyType,
       isDraft: false,

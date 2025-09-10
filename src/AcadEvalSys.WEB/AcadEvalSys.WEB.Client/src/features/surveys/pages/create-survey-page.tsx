@@ -1,26 +1,25 @@
 import { useState } from 'react';
 import { useLocation } from 'wouter';
-import { SurveyForm, SurveyQuestion } from '../models/survey-types';
+import { SurveyForm } from '../models/survey-types';
 import { useCreateSurvey } from '../hooks/use-surveys';
 import { useSurveyFormValidationBasic } from '../hooks/use-survey-form-validation-basic';
-import { SurveyBasicInfoForm } from '../components/survey-basic-info-form';
-import { SurveyQuestionsEditor } from '../components/survey-questions-editor';
-import { SurveyFormActionsBasic } from '../components/survey-form-actions-basic';
-import { PageContent, PageHeader, PageLayout } from '@/shared/components/layout/page-layout';
-import { Button } from '@/shared/components/ui/button';
-import { Plus } from 'lucide-react';
+// Settings son internas del wizard
+import { SurveyWizard } from '../components/wizard/survey-wizard';
+import { PageContent, PageLayout } from '@/shared/components/layout/page-layout';
+// Reemplazado por wizard
 
 export default function CreateSurveyPage() {
   const [, setLocation] = useLocation();
   const createSurveyMutation = useCreateSurvey();
 
-  const [formData, setFormData] = useState<SurveyForm>({
+  const [formData] = useState<SurveyForm>({
     title: '',
     description: '',
     questions: [],
   });
+  // Configuración gestionada dentro del Wizard
 
-  const { errors, validateForm, clearErrors } = useSurveyFormValidationBasic();
+  const { validateForm } = useSurveyFormValidationBasic();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,47 +40,22 @@ export default function CreateSurveyPage() {
     setLocation('/encuestas');
   };
 
-  const handleBasicInfoChange = (updates: Partial<SurveyForm>) => {
-    setFormData(prev => ({ ...prev, ...updates }));
-    clearErrors();
-  };
-
-  const handleQuestionsChange = (questions: SurveyQuestion[]) => {
-    setFormData(prev => ({ ...prev, questions }));
-    clearErrors();
-  };
+  // Manejo de cambios ahora es interno del Wizard
 
   return (
     <PageLayout>
-      <PageHeader
-        title="Crear Nueva Encuesta"
-        description="Crea una encuesta personalizada con tus propias preguntas"
-      >
-        <Button onClick={handleSubmit}>
-          <Plus className="w-4 h-4 mr-2" />
-          Crear Encuesta
-        </Button>
-      </PageHeader>
+      {/* Header intencionalmente vacío para evitar redundancia con la sección */}
       <PageContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-        <SurveyBasicInfoForm
-          title={formData.title}
-          description={formData.description}
-          onChange={handleBasicInfoChange}
-          errors={errors}
-        />
-
-        <SurveyQuestionsEditor
-          questions={formData.questions}
-          onChange={handleQuestionsChange}
-          errors={errors}
-        />
-
-        <SurveyFormActionsBasic
-          onCancel={handleCancel}
-          submitLabel="Crear Encuesta"
-          isLoading={createSurveyMutation.isPending}
-        />
+          {/* Wizard de creación */}
+          <SurveyWizard
+            onSubmit={async ({ form }) => {
+              await createSurveyMutation.mutateAsync(form);
+              setLocation('/encuestas');
+            }}
+            onCancel={handleCancel}
+            isSubmitting={createSurveyMutation.isPending}
+          />
         </form>
       </PageContent>
       </PageLayout>

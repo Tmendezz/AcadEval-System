@@ -1,6 +1,5 @@
-import { Plus, Trash2, GripVertical } from 'lucide-react';
+import { Plus, GripVertical, Trash2 } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Switch } from '@/shared/components/ui/switch';
@@ -13,7 +12,8 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 import { SurveyTemplateQuestion, QuestionType } from '../models/survey-template-types';
-import { getQuestionTypeLabel } from '../models/survey-template-types';
+import { QuestionOptionRow } from './questions/QuestionOptionRow';
+import { getQuestionTypeLabel } from '../utils/survey-template-formatters';
 import {
   DndContext,
   closestCenter,
@@ -109,7 +109,7 @@ function SortableQuestionItem({
 
         <div className="space-y-4">
           <div>
-            <Label>Texto de la pregunta</Label>
+            <Label className="mb-1 block">Texto de la pregunta</Label>
             <Textarea
               value={question.text}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => 
@@ -127,7 +127,7 @@ function SortableQuestionItem({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Tipo de pregunta</Label>
+              <Label className="mb-1 block">Tipo de pregunta</Label>
               <Select
                 value={question.type.toString()}
                 onValueChange={(value: string) => onUpdate(questionIndex, { 
@@ -167,7 +167,7 @@ function SortableQuestionItem({
           {(question.type === QuestionType.SingleChoice || question.type === QuestionType.MultipleChoice) && (
             <div>
               <div className="flex items-center justify-between mb-2">
-                <Label>Opciones de respuesta</Label>
+                <Label className="mb-1 block">Opciones de respuesta</Label>
                 <Button
                   type="button"
                   variant="outline"
@@ -186,24 +186,13 @@ function SortableQuestionItem({
               ) : (
                 <div className="space-y-2">
                   {question.options.map((option, optionIndex) => (
-                    <div key={optionIndex} className="flex items-center gap-2">
-                      <Input
-                        value={option.text}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                          onUpdateOption(questionIndex, optionIndex, e.target.value)
-                        }
-                        placeholder={`Opción ${optionIndex + 1}`}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onRemoveOption(questionIndex, optionIndex)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <QuestionOptionRow
+                      key={optionIndex}
+                      value={option.text}
+                      onChange={(v) => onUpdateOption(questionIndex, optionIndex, v)}
+                      onRemove={() => onRemoveOption(questionIndex, optionIndex)}
+                      placeholder={`Opción ${optionIndex + 1}`}
+                    />
                   ))}
                 </div>
               )}
@@ -265,7 +254,9 @@ export function SurveyQuestionsEditor({
     const question = questions[questionIndex];
     const newOption = {
       text: '',
+      value: '',
       order: question.options.length,
+      allowOpenText: false,
     };
 
     updateQuestion(questionIndex, {
@@ -276,7 +267,7 @@ export function SurveyQuestionsEditor({
   const updateOption = (questionIndex: number, optionIndex: number, text: string) => {
     const question = questions[questionIndex];
     const updatedOptions = question.options.map((opt, i) => 
-      i === optionIndex ? { ...opt, text } : opt
+      i === optionIndex ? { ...opt, text, value: text } : opt
     );
 
     updateQuestion(questionIndex, { options: updatedOptions });

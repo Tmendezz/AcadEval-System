@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using AcadEvalSys.Domain.Entities;
+using AcadEvalSys.Application.Templates.Commands.CreateTemplate;
 
 namespace AcadEvalSys.Application.Templates.Dtos
 {
@@ -26,6 +27,17 @@ namespace AcadEvalSys.Application.Templates.Dtos
 
             // Mapping para crear plantilla - ADDED
             CreateMap<CreateSurveyTemplateDto, SurveyTemplate>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedByUserId, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedByUserId, opt => opt.Ignore())
+                .ForMember(dest => dest.Version, opt => opt.Ignore())
+                .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
+                .ForMember(dest => dest.Questions, opt => opt.MapFrom(src => src.Questions));
+
+            // Mapping para command de crear plantilla
+            CreateMap<CreateSurveyTemplateCommand, SurveyTemplate>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())

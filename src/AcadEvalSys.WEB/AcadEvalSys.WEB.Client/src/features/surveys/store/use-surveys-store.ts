@@ -1,55 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { create } from "zustand";
-
-interface Survey {
-  id: string;
-  title: string;
-  description: string;
-  type: "student_evaluation" | "professor_feedback" | "course_evaluation";
-  status: "draft" | "active" | "completed" | "archived";
-  questions: SurveyQuestion[];
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-  targetAudience: "students" | "professors" | "coordinators";
-  responses: SurveyResponse[];
-  responseCount?: number;
-}
-
-interface SurveyQuestion {
-  id: string;
-  order: number;
-  type: "multiple_choice" | "rating" | "text" | "yes_no";
-  question: string;
-  required: boolean;
-  options?: string[];
-  minRating?: number;
-  maxRating?: number;
-}
-
-interface SurveyResponse {
-  id: string;
-  surveyId: string;
-  respondentId: string;
-  respondentType: "student" | "professor" | "coordinator";
-  answers: SurveyAnswer[];
-  completedAt: string;
-  isAnonymous: boolean;
-}
-
-interface SurveyAnswer {
-  questionId: string;
-  value: string | number;
-  textValue?: string;
-}
-
-interface SurveyFormData {
-  title: string;
-  description: string;
-  type: Survey["type"];
-  targetAudience: Survey["targetAudience"];
-  questions: Omit<SurveyQuestion, "id">[];
-}
+import { Survey, SurveyFormData } from "../types/surveys";
+import { initialFormData } from "../constants/surveys";
 
 interface SurveysState {
   // Estado de encuestas
@@ -63,11 +15,6 @@ interface SurveysState {
   isEditing: boolean;
   formData: SurveyFormData | null;
   formErrors: Record<string, string>;
-
-  // Estado de respuestas
-  responses: SurveyResponse[];
-  isLoadingResponses: boolean;
-  responsesError: string | null;
 
   // Filtros y búsqueda
   searchTerm: string;
@@ -107,11 +54,6 @@ interface SurveysState {
   setCreating: (isCreating: boolean) => void;
   setEditing: (isEditing: boolean) => void;
 
-  // Acciones de respuestas
-  setResponses: (responses: SurveyResponse[]) => void;
-  addResponse: (response: SurveyResponse) => void;
-  setLoadingResponses: (isLoading: boolean) => void;
-  setResponsesError: (error: string | null) => void;
 
   // Acciones de filtros
   setSearchTerm: (term: string) => void;
@@ -133,34 +75,15 @@ interface SurveysState {
   closeResponsesModal: () => void;
   closeAllModals: () => void;
 
-  // Funciones de utilidad
-  getFilteredSurveys: () => Survey[];
-  getSurveyResponseCount: (surveyId: string) => number;
-  getSurveyCompletionRate: (surveyId: string) => number;
-  getResponsesByQuestion: (
-    surveyId: string,
-    questionId: string
-  ) => SurveyAnswer[];
+  // Funciones de utilidad (filtrado se realiza en componentes con React Query)
 }
 
-const initialFormData: SurveyFormData = {
-  title: "",
-  description: "",
-  type: "student_evaluation",
-  targetAudience: "students",
-  questions: [],
-};
+// Las constantes y tipos ahora se importan desde archivos dedicados
 
-const _initialStats = {
-  totalSurveys: 0,
-  activeSurveys: 0,
-  totalResponses: 0,
-  averageCompletionRate: 0,
-};
-
-export const useSurveysStore = create<SurveysState>((set, get) => ({
+// Nota: limitar este store a estado de UI. Server state se maneja con React Query.
+export const useSurveysStore = create<SurveysState>((set) => ({
   // Estado inicial
-  surveys: [],
+  surveys: [], // deprecated: no poblar desde red
   selectedSurvey: null,
   isLoading: false,
   error: null,
@@ -168,9 +91,7 @@ export const useSurveysStore = create<SurveysState>((set, get) => ({
   isEditing: false,
   formData: null,
   formErrors: {},
-  responses: [],
-  isLoadingResponses: false,
-  responsesError: null,
+  // Estado de respuestas removido
   searchTerm: "",
   statusFilter: "all",
   typeFilter: "all",
@@ -220,14 +141,7 @@ export const useSurveysStore = create<SurveysState>((set, get) => ({
   setCreating: (isCreating) => set({ isCreating }),
   setEditing: (isEditing) => set({ isEditing }),
 
-  // Acciones de respuestas
-  setResponses: (responses) => set({ responses }),
-  addResponse: (response) =>
-    set((state) => ({
-      responses: [...state.responses, response],
-    })),
-  setLoadingResponses: (isLoading) => set({ isLoadingResponses: isLoading }),
-  setResponsesError: (error) => set({ responsesError: error }),
+  // Acciones de respuestas removidas
 
   // Acciones de filtros
   setSearchTerm: (term) => set({ searchTerm: term }),
@@ -316,48 +230,5 @@ export const useSurveysStore = create<SurveysState>((set, get) => ({
       isEditing: false,
     }),
 
-  // Funciones de utilidad
-  getFilteredSurveys: () => {
-    const { surveys, searchTerm, statusFilter, typeFilter } = get();
 
-    return surveys.filter((survey) => {
-      const matchesSearch =
-        searchTerm === "" ||
-        survey.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        survey.description.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchesStatus =
-        statusFilter === "all" || survey.status === statusFilter;
-      const matchesType = typeFilter === "all" || survey.type === typeFilter;
-
-      return matchesSearch && matchesStatus && matchesType;
-    });
-  },
-
-  getSurveyResponseCount: (surveyId) => {
-    const { responses } = get();
-    return responses.filter((response) => response.surveyId === surveyId)
-      .length;
-  },
-
-  getSurveyCompletionRate: (surveyId) => {
-    const { surveys } = get();
-    const survey = surveys.find((s) => s.id === surveyId);
-    if (!survey) return 0;
-
-    const responseCount = get().getSurveyResponseCount(surveyId);
-    // Aquí deberías calcular el total de usuarios objetivo
-    // Por ahora uso un valor estimado
-    const totalTargetUsers = 100;
-
-    return responseCount > 0 ? (responseCount / totalTargetUsers) * 100 : 0;
-  },
-
-  getResponsesByQuestion: (surveyId, questionId) => {
-    const { responses } = get();
-    return responses
-      .filter((response) => response.surveyId === surveyId)
-      .flatMap((response) => response.answers)
-      .filter((answer) => answer.questionId === questionId);
-  },
 }));

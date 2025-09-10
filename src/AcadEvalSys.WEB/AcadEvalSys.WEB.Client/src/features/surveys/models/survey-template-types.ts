@@ -22,7 +22,9 @@ export enum SurveyTemplateStatus {
 export interface SurveyTemplateOption {
   id?: string;
   text: string;
+  value: string;
   order: number;
+  allowOpenText?: boolean;
 }
 
 export interface SurveyTemplateQuestion {
@@ -61,7 +63,7 @@ export interface SurveyTemplateListItem {
 }
 
 export interface SurveyTemplateForm {
-  title: string;
+  name: string;
   description: string;
   surveyType: SurveyTemplateType;
   isDraft: boolean;

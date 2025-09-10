@@ -4,20 +4,20 @@ import { SurveyListItem, SurveyStatus } from '../models/survey-types';
 import { useSurveys } from '../hooks/use-surveys';
 import { SurveyList } from '../components/SurveyList';
 import { Button } from '@/shared/components/ui/button';
-import { Plus, Filter } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/components/ui/select';
-import { Input } from '@/shared/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Plus } from 'lucide-react';
+// Filtros pendientes de habilitar
+// import { Input } from '@/shared/components/ui/input';
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from '@/shared/components/ui/select';
 import { PageContent, PageHeader, PageLayout } from '@/shared/components/layout/page-layout';
 
 export default function SurveysPage() {
-  const [filters, setFilters] = useState({
+  const [filters] = useState({
     status: undefined as SurveyStatus | undefined,
     search: '',
   });
@@ -33,20 +33,6 @@ export default function SurveysPage() {
 
   const handleEditSurvey = (survey: SurveyListItem) => {
     setLocation(`/encuestas/editar/${survey.id}`);
-  };
-
-  const handleStatusFilterChange = (value: string) => {
-    setFilters(prev => ({
-      ...prev,
-      status: value === 'all' ? undefined : Number(value) as SurveyStatus,
-    }));
-  };
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters(prev => ({
-      ...prev,
-      search: e.target.value,
-    }));
   };
 
   return (
