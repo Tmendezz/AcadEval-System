@@ -14,15 +14,15 @@ namespace AcadEvalSys.Application.Surveys.Templates.Commands.CreateSurveyTemplat
         public async Task<Guid> Handle(CreateSurveyTemplateCommand request, CancellationToken ct)
         {
             logger.LogInformation("Creating SurveyTemplate with name: {Name} and type: {Type}",
-                request.Dto.Name, request.Dto.SurveyType);
+                request.Dto.Title, request.Dto.SurveyType);
 
             var user = userContext.GetCurrentUser()
                 ?? throw new UnauthorizedAccessException("User must be authenticated to create survey templates.");
 
             var exists = await surveyTemplateRepository.ExistsNameAsync(
-                request.Dto.Name, request.Dto.SurveyType, excludingId: null, ct);
+                request.Dto.Title, request.Dto.SurveyType, excludingId: null, ct);
             if (exists)
-                throw new InvalidOperationException($"Ya existe una plantilla '{request.Dto.Name}' para '{request.Dto.SurveyType}'.");
+                throw new InvalidOperationException($"Ya existe una plantilla '{request.Dto.Title}' para '{request.Dto.SurveyType}'.");
 
             var template = mapper.Map<SurveyTemplate>(request.Dto);
             template.CreatedAt = DateTime.UtcNow;

@@ -144,7 +144,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         builder.Entity<SurveyTemplate>(entity =>
         {
-            entity.Property(st => st.Name).IsRequired().HasMaxLength(200);
+            entity.Property(st => st.Title).IsRequired().HasMaxLength(200);
 
             entity.HasMany(st => st.Questions)
                 .WithOne()

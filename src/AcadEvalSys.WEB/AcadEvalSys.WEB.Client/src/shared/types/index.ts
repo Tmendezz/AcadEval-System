@@ -15,3 +15,4 @@ export * from "./navigation";
 // Domain-specific
 export * from "./evaluation";
 export * from "./statistics";
+export * from "./survey-template";

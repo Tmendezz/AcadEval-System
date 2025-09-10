@@ -9,3 +9,6 @@ export * from "./subject-service";
 
 // Professors
 export * from "./professor-service";
+
+// Survey Templates
+export * from "./survey-template-service";

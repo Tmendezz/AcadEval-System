@@ -11,6 +11,9 @@ import {
   CreateSurveyPage,
   SurveysPage,
   TemplatesPage,
+  CreateTemplatePage,
+  EditTemplatePage,
+  ViewTemplatePage,
 } from "../features/surveys";
 import { PersonalPage } from "../features/administration";
 import { SubjectDetailPage, SubjectsPage } from "../features/careers";
@@ -23,6 +26,9 @@ export function AppRoutes() {
         <Route path="/" component={DashboardPage} />
         <Route path="/surveys" component={SurveysPage} />
         <Route path="/surveys/templates" component={TemplatesPage} />
+        <Route path="/surveys/templates/new" component={CreateTemplatePage} />
+        <Route path="/surveys/templates/:id" component={ViewTemplatePage} />
+        <Route path="/surveys/templates/:id/edit" component={EditTemplatePage} />
         <Route path="/surveys/new" component={CreateSurveyPage} />
 
         {/* Evaluaciones */}
