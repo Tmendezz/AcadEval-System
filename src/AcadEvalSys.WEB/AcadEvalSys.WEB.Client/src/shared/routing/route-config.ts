@@ -19,24 +19,55 @@ export const routes: RouteConfig[] = [
   },
 
   // Surveys
+  
   {
-    path: "/surveys",
-    component: React.lazy(() => import("@/features/surveys/surveys")),
+    path: "/encuestas",
+    component: React.lazy(
+      () => import("@/features/surveys/pages/surveys-page")
+    ),
     title: "Encuestas",
   },
   {
-    path: "/surveys/nueva",
+    path: "/encuestas/crear",
     component: React.lazy(
       () => import("@/features/surveys/pages/create-survey-page")
     ),
-    title: "Nueva Encuesta",
+    title: "Crear Encuesta",
   },
   {
-    path: "/surveys/templates",
+    path: "/encuestas/editar/:id",
+    component: React.lazy(
+      () => import("@/features/surveys/pages/edit-survey-page")
+    ),
+    title: "Editar Encuesta",
+  },
+  {
+    path: "/encuestas/plantillas",
     component: React.lazy(
       () => import("@/features/surveys/pages/templates-page")
     ),
     title: "Plantillas de Encuestas",
+  },
+  {
+    path: "/templates",
+    component: React.lazy(
+      () => import("@/features/surveys/pages/templates-page")
+    ),
+    title: "Plantillas de Encuestas",
+  },
+  {
+    path: "/templates/crear",
+    component: React.lazy(
+      () => import("@/features/surveys/pages/create-template-page")
+    ),
+    title: "Crear Plantilla",
+  },
+  {
+    path: "/templates/editar/:id",
+    component: React.lazy(
+      () => import("@/features/surveys/pages/edit-template-page")
+    ),
+    title: "Editar Plantilla",
   },
 
   // Evaluations

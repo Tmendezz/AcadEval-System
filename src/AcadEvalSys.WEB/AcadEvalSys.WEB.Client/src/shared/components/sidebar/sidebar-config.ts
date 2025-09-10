@@ -53,7 +53,7 @@ export function useSidebarConfig() {
     title: "Encuestas Académicas",
     items: [
       {
-        href: "/surveys",
+        href: "/encuestas",
         icon: BarChart3,
         label: "Mis Encuestas",
       },
@@ -63,7 +63,7 @@ export function useSidebarConfig() {
   // Solo admin y coordinadores ven plantillas
   if (hasAnyRole([UserRole.Admin, UserRole.Coordinator])) {
     sidebarConfig.surveys.items.push({
-      href: "/surveys/templates",
+      href: "/encuestas/plantillas",
       icon: Copy,
       label: "Plantillas",
     });
