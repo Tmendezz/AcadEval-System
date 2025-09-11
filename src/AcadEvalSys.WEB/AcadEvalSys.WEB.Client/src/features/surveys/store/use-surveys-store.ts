@@ -16,6 +16,9 @@ interface SurveysState {
   formData: SurveyFormData | null;
   formErrors: Record<string, string>;
 
+  // Estado de plantilla seleccionada
+  selectedTemplateId: string | null;
+
   // Filtros y búsqueda
   searchTerm: string;
   statusFilter: Survey["status"] | "all";
@@ -54,6 +57,9 @@ interface SurveysState {
   setCreating: (isCreating: boolean) => void;
   setEditing: (isEditing: boolean) => void;
 
+  // Acciones de plantilla
+  setSelectedTemplateId: (templateId: string | null) => void;
+
 
   // Acciones de filtros
   setSearchTerm: (term: string) => void;
@@ -91,6 +97,7 @@ export const useSurveysStore = create<SurveysState>((set) => ({
   isEditing: false,
   formData: null,
   formErrors: {},
+  selectedTemplateId: null,
   // Estado de respuestas removido
   searchTerm: "",
   statusFilter: "all",
@@ -140,6 +147,9 @@ export const useSurveysStore = create<SurveysState>((set) => ({
   clearFormErrors: () => set({ formErrors: {} }),
   setCreating: (isCreating) => set({ isCreating }),
   setEditing: (isEditing) => set({ isEditing }),
+
+  // Acciones de plantilla
+  setSelectedTemplateId: (templateId) => set({ selectedTemplateId: templateId }),
 
   // Acciones de respuestas removidas
 

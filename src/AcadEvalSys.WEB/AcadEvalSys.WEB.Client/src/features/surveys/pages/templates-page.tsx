@@ -9,11 +9,13 @@ import { useLocation } from "wouter";
 import { TemplateCards } from "../components/template-cards";
 import { useSurveyTemplates } from "../hooks/use-survey-templates";
 import { useState } from "react";
+import { useSurveysStore } from "../store/use-surveys-store";
 
 export default function TemplatesPage() {
   const [, setLocation] = useLocation();
   const { data: templates = [], isLoading } = useSurveyTemplates();
   const [isNavigating, setIsNavigating] = useState(false);
+  const { setSelectedTemplateId } = useSurveysStore();
   
   const handleCreateTemplate = () => {
     setLocation('/templates/crear');
@@ -39,8 +41,10 @@ export default function TemplatesPage() {
             onUseTemplate={async (t) => {
               if (isNavigating) return;
               setIsNavigating(true);
-              // Navegar al page de creación con la plantilla precargada
-              setLocation(`/encuestas/crear?templateId=${encodeURIComponent(t.id)}`);
+              // Guardar el ID de la plantilla en el store
+              setSelectedTemplateId(t.id);
+              // Navegar al page de creación
+              setLocation('/encuestas/crear');
             }}
           />
         )}

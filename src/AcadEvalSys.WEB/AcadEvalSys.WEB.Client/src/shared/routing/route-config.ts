@@ -70,13 +70,28 @@ export const routes: RouteConfig[] = [
     title: "Editar Plantilla",
   },
 
-  // Student survey runner
+  // Student surveys
+  {
+    path: "/encuestas/alumno",
+    component: React.lazy(
+      () => import("@/features/surveys/pages/student-surveys-list-page")
+    ),
+    title: "Mis Encuestas",
+  },
   {
     path: "/encuestas/alumno/responder/:id",
     component: React.lazy(
       () => import("@/features/surveys/pages/student-survey-page")
     ),
     title: "Responder Encuesta",
+  },
+  // Teacher surveys
+  {
+    path: "/encuestas/docente",
+    component: React.lazy(
+      () => import("@/features/surveys/pages/teacher-surveys-list-page")
+    ),
+    title: "Mis Encuestas",
   },
   {
     path: "/encuestas/docente/responder/:id",

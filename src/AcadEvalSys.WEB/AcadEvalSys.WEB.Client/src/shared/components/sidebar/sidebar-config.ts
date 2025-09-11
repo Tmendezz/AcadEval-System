@@ -100,6 +100,18 @@ export function useSidebarConfig() {
         },
       ],
     };
+
+    // Encuestas del docente
+    sidebarConfig.professorSurveys = {
+      title: "Encuestas Académicas",
+      items: [
+        {
+          href: "/encuestas/docente",
+          icon: BarChart3,
+          label: "Mis Encuestas",
+        },
+      ],
+    };
   }
 
   // Dashboard del estudiante - Solo para estudiantes
@@ -111,6 +123,18 @@ export function useSidebarConfig() {
           href: "/estudiante/evaluaciones",
           icon: Award,
           label: "Mis Evaluaciones",
+        },
+      ],
+    };
+
+    // Encuestas del alumno
+    sidebarConfig.studentSurveys = {
+      title: "Encuestas Académicas",
+      items: [
+        {
+          href: "/encuestas/alumno",
+          icon: BarChart3,
+          label: "Mis Encuestas",
         },
       ],
     };

@@ -1,4 +1,5 @@
-import { SurveyStatus, QuestionType } from "../models/survey-types";
+import { SurveyStatus } from "../models/survey-types";
+import { QuestionType } from "../models/survey-template-types";
 
 export function getSurveyStatusLabel(status: SurveyStatus): string {
   switch (status) {
@@ -8,8 +9,6 @@ export function getSurveyStatusLabel(status: SurveyStatus): string {
       return 'Publicada';
     case SurveyStatus.Closed:
       return 'Cerrada';
-    case SurveyStatus.Archived:
-      return 'Archivada';
     default:
       return 'Desconocido';
   }

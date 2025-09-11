@@ -1,17 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { WizardStepIndicator } from '@/shared/components/wizard/WizardStepIndicator';
 import { WizardStepTitle } from '@/shared/components/wizard/WizardStepTitle';
 import { WizardNavigation } from '@/shared/components/wizard/WizardNavigation';
-import { SurveyForm, SurveyQuestion } from '../../models/survey-types';
+import { SurveyTemplateForm, SurveyTemplateQuestion } from '../../models/survey-template-types';
 import { SurveyBasicInfoForm } from '../survey-basic-info-form';
 import { SurveyQuestionsEditor } from '../survey-questions-editor';
 import { SurveySettingsForm, SurveyAudience } from '../survey-settings-form';
-// Mantener acciones locales si se necesitan en otros flujos
-import type { SurveyTemplateQuestion } from '../../models/survey-template-types';
+import { validateStep } from '../../schemas/survey-validation-schemas';
 
 interface SurveyWizardProps {
-  onSubmit: (payload: { form: SurveyForm; settings: { audience: SurveyAudience; isAnonymous: boolean } }) => Promise<void> | void;
+  onSubmit: (payload: { form: SurveyTemplateForm; settings: { audience: SurveyAudience; isAnonymous: boolean } }) => Promise<void> | void;
   onCancel: () => void;
   isSubmitting?: boolean;
   initialTemplate?: {
@@ -19,17 +18,33 @@ interface SurveyWizardProps {
     description?: string;
     questions?: SurveyTemplateQuestion[];
   };
-  fixedQuestions?: SurveyQuestion[]; // si se provee, el editor se bloquea y usa estas preguntas
+  fixedQuestions?: SurveyTemplateQuestion[]; // si se provee, el editor se bloquea y usa estas preguntas
 }
 
 export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = false, initialTemplate, fixedQuestions }: SurveyWizardProps) {
   const [currentStep, setCurrentStep] = useState<number>(0);
-  const [form, setForm] = useState<SurveyForm>(() => ({
+  const [form, setForm] = useState<SurveyTemplateForm>(() => ({
     title: initialTemplate?.title || '',
     description: initialTemplate?.description || '',
-    questions: (fixedQuestions || (initialTemplate?.questions as unknown as SurveyQuestion[])) || [],
+    questions: (fixedQuestions || initialTemplate?.questions) || [],
+    surveyType: 0, // Default to Student
+    isDraft: true,
   }));
   const [settings, setSettings] = useState<{ audience: SurveyAudience; isAnonymous: boolean }>({ audience: 'students', isAnonymous: true });
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  // Actualizar el formulario cuando lleguen los datos de la plantilla
+  useEffect(() => {
+    if (initialTemplate && !fixedQuestions) {
+      setForm({
+        title: initialTemplate.title || '',
+        description: initialTemplate.description || '',
+        questions: initialTemplate.questions || [],
+        surveyType: 0,
+        isDraft: true,
+      });
+    }
+  }, [initialTemplate, fixedQuestions]);
 
   const steps = [
     { id: 0, title: 'Diseñar formulario', description: 'Define el título, la descripción y agrega preguntas' },
@@ -40,7 +55,23 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
   const goNext = () => setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
   const goPrev = () => setCurrentStep((s) => Math.max(s - 1, 0));
 
+  // Validar el paso actual
+  const validateCurrentStep = useCallback((): boolean => {
+    const validationResult = validateStep(currentStep, form);
+    setValidationErrors(validationResult.errors);
+    return validationResult.isValid;
+  }, [currentStep, form]);
+
+  const canProceed = useMemo((): boolean => {
+    const validationResult = validateStep(currentStep, form);
+    return validationResult.isValid;
+  }, [currentStep, form]);
+
   const handleSubmit = async () => {
+    // Validar todo antes de enviar
+    if (!validateCurrentStep()) {
+      return;
+    }
     await onSubmit({ form, settings });
   };
 
@@ -60,11 +91,13 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
               title={form.title}
               description={form.description}
               onChange={(u) => setForm((prev) => ({ ...prev, ...u }))}
+              errors={validationErrors}
             />
             <SurveyQuestionsEditor
               questions={form.questions}
-              onChange={(q: SurveyQuestion[]) => setForm((prev) => ({ ...prev, questions: q }))}
+              onChange={(q: SurveyTemplateQuestion[]) => setForm((prev) => ({ ...prev, questions: q }))}
               showAddButton={!fixedQuestions}
+              errors={validationErrors}
             />
           </div>
         )}
@@ -96,10 +129,15 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
         <WizardNavigation
           currentStep={currentStep + 1}
           totalSteps={steps.length}
-          canProceed={true}
+          canProceed={canProceed}
           onPrevious={goPrev}
           onNext={async () => {
-            if (currentStep < steps.length - 1) return goNext();
+            if (currentStep < steps.length - 1) {
+              if (canProceed) {
+                return goNext();
+              }
+              return;
+            }
             await handleSubmit();
           }}
           isSubmitting={isSubmitting}

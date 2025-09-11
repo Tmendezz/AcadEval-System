@@ -10,7 +10,7 @@ export default function EditTemplatePage() {
   const { data: template, isLoading } = useSurveyTemplate(id);
   const updateMutation = useUpdateSurveyTemplate();
 
-  if (isLoading || !template) {
+  if (isLoading) {
     return (
       <PageLayout>
         <PageContent>
@@ -19,6 +19,21 @@ export default function EditTemplatePage() {
       </PageLayout>
     );
   }
+
+  if (!template) {
+    return (
+      <PageLayout>
+        <PageContent>
+          <div className="text-sm text-red-600">No se pudo cargar la plantilla con ID: {id}</div>
+        </PageContent>
+      </PageLayout>
+    );
+  }
+
+  // Debug: verificar datos del template desde el backend
+  console.log('🔍 Template from backend:', template);
+  console.log('🔍 Template title from backend:', template.title);
+  console.log('🔍 Template description from backend:', template.description);
 
   return (
     <PageLayout>
@@ -30,6 +45,13 @@ export default function EditTemplatePage() {
           }}
           onCancel={() => setLocation('/templates')}
           isSubmitting={updateMutation.isPending}
+          initialData={{
+            title: template.title,
+            description: template.description,
+            surveyType: template.surveyType,
+            isDraft: template.isDraft,
+            questions: template.questions,
+          }}
         />
       </PageContent>
     </PageLayout>

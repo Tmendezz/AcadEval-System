@@ -39,10 +39,15 @@ export const surveyTemplateService = {
   // Crear nueva plantilla
   async createTemplate(data: SurveyTemplateForm): Promise<string> {
     try {
-      console.log('Enviando POST a /survey-templates con:', data);
+      console.log('Enviando POST a /survey-templates con:', JSON.stringify(data, null, 2));
       const { data: response } = await api.post<string>(SURVEY_TEMPLATES_API_URL, data);
       return response;
     } catch (error: any) {
+      console.error('Error al crear plantilla:', error);
+      console.error('Response data:', error.response?.data);
+      if (error.response?.data?.errors) {
+        console.error('Errores de validación:', error.response.data.errors);
+      }
       throw error;
     }
   },

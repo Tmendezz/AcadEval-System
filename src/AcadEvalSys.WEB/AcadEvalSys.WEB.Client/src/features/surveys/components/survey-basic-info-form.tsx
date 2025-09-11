@@ -10,6 +10,10 @@ export interface SurveyBasicInfoFormProps {
   errors?: Record<string, string>;
   maxTitleLength?: number;
   maxDescriptionLength?: number;
+  // Si es true, adapta los textos para PLANTILLAS
+  isTemplate?: boolean;
+  // Si es true, deshabilita la edición de título y descripción
+  isReadOnly?: boolean;
 }
 
 export function SurveyBasicInfoForm({ 
@@ -19,7 +23,11 @@ export function SurveyBasicInfoForm({
   errors,
   maxTitleLength = 120,
   maxDescriptionLength = 300,
+  isTemplate = false,
+  isReadOnly = false,
 }: SurveyBasicInfoFormProps) {
+  // Debug: verificar props recibidas
+  console.log('🔍 SurveyBasicInfoForm props:', { title, description, isTemplate, isReadOnly });
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange({ title: e.target.value });
   };
@@ -31,18 +39,20 @@ export function SurveyBasicInfoForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Información Básica de la Encuesta</CardTitle>
+        <CardTitle>{isTemplate ? 'Información Básica de la Plantilla' : 'Información Básica de la Encuesta'}</CardTitle>
+      
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="title" className="mb-1 block">Título de la Encuesta *</Label>
+          <Label htmlFor="title" className="mb-1 block">{isTemplate ? 'Título de la Plantilla *' : 'Título de la Encuesta *'}</Label>
           <Input
             id="title"
             value={title}
             onChange={handleTitleChange}
-            placeholder="Ingresa el título de la encuesta"
-            className={errors?.title ? 'border-destructive' : ''}
+            placeholder={isTemplate ? 'Ingresa el título de la plantilla' : 'Ingresa el título de la encuesta'}
+            className={`${errors?.title ? 'border-destructive' : ''} ${isReadOnly ? 'bg-muted cursor-not-allowed' : ''}`}
             maxLength={maxTitleLength}
+            disabled={isReadOnly}
           />
           <div className="flex justify-end text-xs text-muted-foreground">
             {title.length}/{maxTitleLength}
@@ -53,15 +63,16 @@ export function SurveyBasicInfoForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="description" className="mb-1 block">Descripción</Label>
+          <Label htmlFor="description" className="mb-1 block">{isTemplate ? 'Descripción de la Plantilla' : 'Descripción'}</Label>
           <Textarea
             id="description"
             value={description}
             onChange={handleDescriptionChange}
-            placeholder="Describe el propósito de la encuesta"
+            placeholder={isTemplate ? 'Describe el propósito de la plantilla' : 'Describe el propósito de la encuesta'}
             rows={3}
-            className={errors?.description ? 'border-destructive' : ''}
+            className={`${errors?.description ? 'border-destructive' : ''} ${isReadOnly ? 'bg-muted cursor-not-allowed' : ''}`}
             maxLength={maxDescriptionLength}
+            disabled={isReadOnly}
           />
           <div className="flex justify-end text-xs text-muted-foreground">
             {description.length}/{maxDescriptionLength}

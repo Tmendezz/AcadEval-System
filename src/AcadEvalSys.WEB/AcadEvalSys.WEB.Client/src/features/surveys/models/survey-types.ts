@@ -1,105 +1,56 @@
+// Enums
 export enum SurveyStatus {
   Draft = 0,
   Published = 1,
   Closed = 2,
-  Archived = 3,
 }
 
-export enum QuestionType {
-  SingleChoice = 0,
-  MultipleChoice = 1,
-  OpenText = 2,
+export enum CareerYear {
+  First = 1,
+  Second = 2,
+  Third = 3,
 }
 
-export interface SurveyOption {
-  text: string;
-  order: number;
+// DTOs
+export interface SurveyAudienceDto {
+  TechnicalCareerId: string;
+  TechnicalCareerName: string;
+  Year: CareerYear;
+  YearDisplayName: string;
 }
 
-export interface SurveyQuestion {
-  text: string;
-  type: QuestionType;
-  order: number;
-  required: boolean;
-  options: SurveyOption[];
-}
-
-export interface Survey {
+export interface AcademicSurveyDto {
   id: string;
   title: string;
   description: string;
   status: SurveyStatus;
-  questions: SurveyQuestion[];
-  createdBy: string;
-  createdAt: Date;
-  updatedAt: Date;
-  publishedAt?: Date;
-  closedAt?: Date;
+  publishAt?: string;
+  closeAt?: string;
+  createdAt: string;
+  updatedAt?: string;
+  audiences: SurveyAudienceDto[];
 }
 
-export interface SurveyListItem {
+export interface CreateAcademicSurveyRequest {
+  title: string;
+  templateId: string;
+  publishAt?: string;
+  closeAt?: string;
+  audiences: SurveyAudienceDto[];
+}
+
+export interface SetSurveyAudienceRequest {
+  surveyId: string;
+  audiences: SurveyAudienceDto[];
+}
+
+// Helper types
+export interface CareerOption {
   id: string;
-  title: string;
-  description: string;
-  status: SurveyStatus;
-  questionsCount: number;
-  createdBy: string;
-  createdAt: Date;
-  updatedAt: Date;
-  publishedAt?: Date;
-  closedAt?: Date;
+  name: string;
 }
 
-export interface SurveyForm {
-  title: string;
-  description: string;
-  questions: SurveyQuestion[];
-}
-
-export interface SurveyFilters {
-  status?: SurveyStatus;
-  search?: string;
-  createdBy?: string;
-}
-
-// Utility functions
-export function getSurveyStatusLabel(status: SurveyStatus): string {
-  switch (status) {
-    case SurveyStatus.Draft:
-      return 'Borrador';
-    case SurveyStatus.Published:
-      return 'Publicada';
-    case SurveyStatus.Closed:
-      return 'Cerrada';
-    case SurveyStatus.Archived:
-      return 'Archivada';
-    default:
-      return 'Desconocido';
-  }
-}
-
-export function getQuestionTypeLabel(type: QuestionType): string {
-  switch (type) {
-    case QuestionType.SingleChoice:
-      return 'Opción única';
-    case QuestionType.MultipleChoice:
-      return 'Opción múltiple';
-    case QuestionType.OpenText:
-      return 'Texto libre';
-    default:
-      return 'Desconocido';
-  }
-}
-
-export function getQuestionTypeIcon(type: QuestionType): string {
-  switch (type) {
-    case QuestionType.SingleChoice:
-      return '🔘';
-    case QuestionType.MultipleChoice:
-      return '☑️';
-    case QuestionType.OpenText:
-      return '📝';
-    default:
-      return '❓';
-  }
+export interface YearOption {
+  value: CareerYear;
+  label: string;
 }
