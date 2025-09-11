@@ -72,38 +72,14 @@ public class SurveyTemplateController(IMediator mediator) : ControllerBase
     [Produces("application/json")]
     public async Task<IActionResult> CreateTemplate([FromBody] CreateSurveyTemplateCommand command)
     {
-        // 🔍 LOGS DETALLADOS CON SERILOG
-        Log.Information("📝 [CreateTemplate] Iniciando creación de plantilla");
-        Log.Information("📝 [CreateTemplate] Datos recibidos - Name: {Name}, Description: {Description}, SurveyType: {SurveyType}, IsDraft: {IsDraft}", 
-            command.Name, command.Description, command.SurveyType, command.IsDraft);
-        
-        Log.Information("❓ [CreateTemplate] Total de preguntas: {QuestionCount}", command.Questions.Count);
-        
-        for (int i = 0; i < command.Questions.Count; i++)
-        {
-            var q = command.Questions[i];
-            Log.Information("  📋 [CreateTemplate] Pregunta {Index}: Text='{Text}', Type={Type}, Order={Order}, Required={Required}, Options={OptionCount}", 
-                i, q.Text, q.Type, q.Order, q.Required, q.Options.Count);
-            
-            for (int j = 0; j < q.Options.Count; j++)
-            {
-                var opt = q.Options[j];
-                Log.Information("    🔸 [CreateTemplate] Opción {OptIndex}: Text='{OptText}', Value='{OptValue}', Order={OptOrder}, AllowOpenText={AllowOpenText}", 
-                    j, opt.Text, opt.Value, opt.Order, opt.AllowOpenText);
-            }
-        }
-        
         try
         {
-            Log.Information("🚀 [CreateTemplate] Enviando comando al handler...");
             var id = await mediator.Send(command);
-            Log.Information("✅ [CreateTemplate] Plantilla creada exitosamente con ID: {TemplateId}", id);
             return CreatedAtAction(nameof(GetTemplateById), new { id }, null);
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "❌ [CreateTemplate] Error al crear plantilla: {ErrorMessage}", ex.Message);
-            Log.Error(ex, "❌ [CreateTemplate] Stack trace: {StackTrace}", ex.StackTrace);
+            Log.Error(ex, "Error al crear plantilla: {ErrorMessage}", ex.Message);
             throw;
         }
     }

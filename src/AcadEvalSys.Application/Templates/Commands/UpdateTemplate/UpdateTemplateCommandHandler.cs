@@ -33,13 +33,13 @@ namespace AcadEvalSys.Application.Templates.Commands.UpdateTemplate
             }
 
             // Check for duplicate names if the name is being changed
-            if (!string.Equals(existingTemplate.Name, request.Name, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(existingTemplate.Title, request.Title, StringComparison.OrdinalIgnoreCase))
             {
-                var nameExists = await surveyTemplateRepository.ExistsNameAsync(request.Name, request.SurveyType, request.Id, ct);
+                var nameExists = await surveyTemplateRepository.ExistsNameAsync(request.Title, request.SurveyType, request.Id, ct);
                 if (nameExists)
                 {
-                    logger.LogWarning("SurveyTemplate with name '{Name}' and type '{Type}' already exists", request.Name, request.SurveyType);
-                    throw new InvalidOperationException($"A survey template with the name '{request.Name}' and type '{request.SurveyType}' already exists.");
+                    logger.LogWarning("SurveyTemplate with name '{Name}' and type '{Type}' already exists", request.Title, request.SurveyType);
+                    throw new InvalidOperationException($"A survey template with the name '{request.Title}' and type '{request.SurveyType}' already exists.");
                 }
             }
 
@@ -55,7 +55,8 @@ namespace AcadEvalSys.Application.Templates.Commands.UpdateTemplate
             // }
 
             // Update template properties
-            existingTemplate.Name = request.Name;
+            existingTemplate.Title = request.Title;
+            existingTemplate.Description = request.Description;
             existingTemplate.SurveyType = request.SurveyType;
             existingTemplate.IsDraft = request.IsDraft;
             existingTemplate.UpdatedAt = DateTime.UtcNow;
@@ -107,7 +108,11 @@ namespace AcadEvalSys.Application.Templates.Commands.UpdateTemplate
 
                 // Update question properties
                 question.Text = questionDto.Text;
-                question.Type = Enum.Parse<QuestionType>(questionDto.Type, ignoreCase: true);
+                if (!Enum.TryParse<QuestionType>(questionDto.Type, ignoreCase: true, out var questionType))
+                {
+                    throw new ArgumentException($"Invalid question type: {questionDto.Type}");
+                }
+                question.Type = questionType;
                 question.Order = questionDto.Order;
                 question.isRequired = questionDto.IsRequired;
 

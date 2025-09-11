@@ -50,7 +50,6 @@ export default function EditSurveyPage() {
       await updateSurveyMutation.mutateAsync({ id: surveyId, survey: formData });
       setLocation('/encuestas');
     } catch (error) {
-      console.error('Error al actualizar la encuesta:', error);
     }
   };
 

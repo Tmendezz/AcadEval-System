@@ -18,7 +18,7 @@ interface TemplateWizardProps {
 export function TemplateWizard({ onSubmit, onCancel, isSubmitting = false }: TemplateWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [form, setForm] = useState<SurveyTemplateForm>({
-    name: '',
+    title: '',
     description: '',
     surveyType: SurveyTemplateType.Student,
     isDraft: true,
@@ -36,7 +36,7 @@ export function TemplateWizard({ onSubmit, onCancel, isSubmitting = false }: Tem
 
   const canProceed = () => {
     if (currentStep === 0) {
-      return form.name.trim().length > 0;
+      return form.title.trim().length > 0;
     }
     return true;
   };
@@ -55,11 +55,6 @@ export function TemplateWizard({ onSubmit, onCancel, isSubmitting = false }: Tem
       }))
     };
     
-    // 🔍 LOGS PARA DEBUG
-    console.log('📝 Formulario original:', form);
-    console.log('🧹 Formulario limpio:', cleanedForm);
-    console.log('📤 Enviando payload:', JSON.stringify(cleanedForm, null, 2));
-    
     await onSubmit(cleanedForm);
   };
 
@@ -73,11 +68,11 @@ export function TemplateWizard({ onSubmit, onCancel, isSubmitting = false }: Tem
           <div className="space-y-6">
             <WizardStepTitle currentStep={currentStep} steps={steps} />
             <SurveyBasicInfoForm
-              title={form.name}
+              title={form.title}
               description={form.description}
               onChange={(updates) => setForm((prev) => ({ 
                 ...prev, 
-                name: updates.title || prev.name,
+                title: updates.title || prev.title,
                 description: updates.description || prev.description
               }))}
             />
@@ -110,7 +105,7 @@ export function TemplateWizard({ onSubmit, onCancel, isSubmitting = false }: Tem
           <div className="space-y-6">
             <WizardStepTitle currentStep={currentStep} steps={steps} />
             <div className="rounded-md border p-4 text-sm space-y-2">
-              <div><strong>Título:</strong> {form.name || 'Sin título'}</div>
+              <div><strong>Título:</strong> {form.title || 'Sin título'}</div>
               <div><strong>Descripción:</strong> {form.description || 'Sin descripción'}</div>
               <div><strong>Preguntas:</strong> {form.questions.length}</div>
               <div><strong>Tipo:</strong> {form.surveyType === SurveyTemplateType.Student ? 'Estudiantes' : 'Profesores'}</div>

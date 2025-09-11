@@ -3,6 +3,7 @@ using System;
 using AcadEvalSys.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AcadEvalSys.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250904203632_TemplatesPropsFixes")]
+    partial class TemplatesPropsFixes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -316,8 +319,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
 
                     b.HasKey("UserId");
 
-                    b.HasIndex("TechnicalCareerId")
-                        .IsUnique();
+                    b.HasIndex("TechnicalCareerId");
 
                     b.ToTable("Coordinators");
                 });
@@ -417,7 +419,7 @@ namespace AcadEvalSys.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int?>("CompetencyLevel")
+                    b.Property<int>("CompetencyLevel")
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("CompletedAt")
@@ -431,9 +433,6 @@ namespace AcadEvalSys.Infrastructure.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
-
-                    b.Property<string>("Observations")
-                        .HasColumnType("text");
 
                     b.Property<Guid>("ProfessorCompetencyAssignmentId")
                         .HasColumnType("uuid");
@@ -536,9 +535,6 @@ namespace AcadEvalSys.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
-
-                    b.Property<int>("AcademicYear")
-                        .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -985,9 +981,6 @@ namespace AcadEvalSys.Infrastructure.Migrations
                         .HasColumnType("character varying(256)");
 
                     b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("LockoutEnabled")

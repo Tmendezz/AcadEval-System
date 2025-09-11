@@ -32,7 +32,6 @@ export default function CreateSurveyPage() {
       await createSurveyMutation.mutateAsync(formData);
       setLocation('/encuestas');
     } catch (error) {
-      console.error('Error al crear la encuesta:', error);
     }
   };
 

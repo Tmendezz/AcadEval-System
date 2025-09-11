@@ -10,11 +10,13 @@ namespace AcadEvalSys.Application.Templates.Dtos
         {
             // Mapping para lectura completa de template
             CreateMap<SurveyTemplate, SurveyTemplateReadDto>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Title)) // FIX: Mapear Title a Name
                 .ForMember(dest => dest.Questions, opt => opt.MapFrom(src => src.Questions.OrderBy(q => q.Order)));
 
             // Mapping para listado de templates
             CreateMap<SurveyTemplate, SurveyTemplateListItemDto>()
-                .ForMember(dest => dest.UpdatedAtOrCreatedAt, opt => opt.MapFrom(src => src.UpdatedAt ?? src.CreatedAt));
+                .ForMember(dest => dest.UpdatedAtOrCreatedAt, opt => opt.MapFrom(src => src.UpdatedAt ?? src.CreatedAt))
+                .ForMember(dest => dest.QuestionCount, opt => opt.MapFrom(src => src.Questions.Count));
 
             // Mapping para preguntas
             CreateMap<SurveyTemplateQuestion, SurveyTemplateQuestionDto>()
@@ -70,7 +72,7 @@ namespace AcadEvalSys.Application.Templates.Dtos
                 .ForMember(dest => dest.TemplateQuestionId, opt => opt.Ignore())
                 .ForMember(dest => dest.SurveyTemplateQuestion, opt => opt.Ignore());
         }
-        
+
         // Helper method for safe value parsing
         private static int ParseValue(string value)
         {

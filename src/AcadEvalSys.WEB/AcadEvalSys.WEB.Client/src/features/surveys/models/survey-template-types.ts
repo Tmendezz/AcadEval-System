@@ -63,7 +63,7 @@ export interface SurveyTemplateListItem {
 }
 
 export interface SurveyTemplateForm {
-  name: string;
+  title: string;
   description: string;
   surveyType: SurveyTemplateType;
   isDraft: boolean;
@@ -74,6 +74,23 @@ export interface SurveyTemplateFilters {
   searchTerm?: string;
   surveyType?: SurveyTemplateType;
   isDraft?: boolean;
+}
+
+export interface CreateSurveyTemplateRequest {
+  title: string;
+  description: string;
+  surveyType: SurveyTemplateType;
+  isDraft: boolean;
+  questions: SurveyTemplateQuestion[];
+}
+
+export interface UpdateSurveyTemplateRequest {
+  title: string;
+  description: string;
+  surveyType: SurveyTemplateType;
+  isDraft: boolean;
+  rowVersion?: string;
+  questions: SurveyTemplateQuestion[];
 }
 
 // Utilidades

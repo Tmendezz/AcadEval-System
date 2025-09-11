@@ -10,7 +10,7 @@ namespace AcadEvalSys.Application.Templates.Commands.UpdateTemplate
                 .NotEmpty()
                 .WithMessage("Template ID is required.");
 
-            RuleFor(x => x.Name)
+            RuleFor(x => x.Title)
                 .NotEmpty()
                 .WithMessage("Template name is required.")
                 .MaximumLength(200)
@@ -40,8 +40,8 @@ namespace AcadEvalSys.Application.Templates.Commands.UpdateTemplate
                 q.RuleFor(y => y.Type)
                     .NotEmpty()
                     .WithMessage("Question type is required.")
-                    .Must(type => new[] { "text", "single_choice", "multiple_choice", "rating" }.Contains(type))
-                    .WithMessage("Invalid question type. Allowed types: text, single_choice, multiple_choice, rating.");
+                    .Must(type => new[] { "SingleChoice", "MultipleChoice", "OpenText" }.Contains(type)) // ✅ Usar nombres de enum
+                    .WithMessage("Invalid question type. Allowed types: SingleChoice, MultipleChoice, OpenText.");
 
                 q.RuleFor(y => y.Order)
                     .GreaterThan(0)

@@ -19,7 +19,6 @@ namespace AcadEvalSys.Infrastructure.Repositories
         {
             return await dbContext.SurveyTemplates
                 .AnyAsync(s => s.IsActive
-                && s.Name == name
                 && s.SurveyType == type
                 && (!excludingId.HasValue || s.Id != excludingId.Value), ct);
         }
@@ -50,10 +49,11 @@ namespace AcadEvalSys.Infrastructure.Repositories
         public async Task<IReadOnlyList<SurveyTemplate>> ListAsync(bool? isDraft = null, string? search = null, SurveyTemplateType? type = null, CancellationToken ct = default)
         {
             return await dbContext.SurveyTemplates
+                .Include(t => t.Questions)
                 .Where(c => c.IsActive)
                 .Where(c => !isDraft.HasValue || c.IsDraft == isDraft.Value)
                 .Where(c => !type.HasValue || c.SurveyType == type.Value)
-                .Where(c => string.IsNullOrEmpty(search) || c.Name.Contains(search))
+                .Where(c => string.IsNullOrEmpty(search) || c.Title.Contains(search))
                 .OrderByDescending(c => c.UpdatedAt ?? c.CreatedAt)
                 .ToListAsync(ct);
         }
@@ -111,7 +111,8 @@ namespace AcadEvalSys.Infrastructure.Repositories
             var now = DateTime.UtcNow;
 
             // ---- actualizar cabecera ----
-            current.Name = incoming.Name;
+            current.Title = incoming.Title;
+            current.Description = incoming.Description;
             current.SurveyType = incoming.SurveyType;
             current.IsDraft = incoming.IsDraft;
             current.UpdatedAt = now;

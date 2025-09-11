@@ -10,13 +10,6 @@ namespace AcadEvalSys.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "Description",
-                table: "SurveyTemplates",
-                type: "text",
-                nullable: false,
-                defaultValue: "");
-
             migrationBuilder.AlterColumn<int>(
                 name: "CompetencyLevel",
                 table: "StudentCompetencyAssessments",
@@ -29,10 +22,6 @@ namespace AcadEvalSys.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "Description",
-                table: "SurveyTemplates");
-
             migrationBuilder.AlterColumn<int>(
                 name: "CompetencyLevel",
                 table: "StudentCompetencyAssessments",

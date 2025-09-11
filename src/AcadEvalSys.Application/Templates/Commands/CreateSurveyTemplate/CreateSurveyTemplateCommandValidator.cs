@@ -7,12 +7,12 @@ public class CreateSurveyTemplateCommandValidator : AbstractValidator<CreateSurv
 {
     public CreateSurveyTemplateCommandValidator()
     {
-        RuleFor(x => x.Name)
-            .NotEmpty().WithMessage("El nombre es requerido.")
-            .MaximumLength(200);
+        RuleFor(x => x.Title)
+            .NotEmpty().WithMessage("El título es requerido.")
+            .MaximumLength(200).WithMessage("El título no puede exceder los 200 caracteres.");
 
         RuleFor(x => x.Description)
-            .MaximumLength(500);
+            .MaximumLength(500).WithMessage("La descripción no puede exceder los 500 caracteres.");
 
         RuleFor(x => x.SurveyType)
             .IsInEnum().WithMessage("Tipo de encuesta inválido.");
@@ -24,7 +24,7 @@ public class CreateSurveyTemplateCommandValidator : AbstractValidator<CreateSurv
                 .NotEmpty().WithMessage("Debe incluir al menos una pregunta para publicar.");
         });
 
-        // Validación de cada pregunta (inline, sin validator aparte)
+        // Validación de cada pregunta
         RuleForEach(x => x.Questions).ChildRules(q =>
         {
             q.RuleFor(y => y.Text).NotEmpty().WithMessage("El texto de la pregunta es requerido.");
