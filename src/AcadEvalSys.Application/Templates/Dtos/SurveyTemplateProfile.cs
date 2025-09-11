@@ -25,7 +25,7 @@ namespace AcadEvalSys.Application.Templates.Dtos
 
             // Mapping para opciones de preguntas
             CreateMap<SurveyTemplateQuestionOption, SurveyTemplateOptionDto>()
-                .ForMember(dest => dest.Value, opt => opt.MapFrom(src => src.Value.ToString()));
+                .ForMember(dest => dest.Value, opt => opt.MapFrom(src => src.Value));
 
             // Mapping para crear plantilla - ADDED
             CreateMap<CreateSurveyTemplateDto, SurveyTemplate>()
@@ -67,16 +67,11 @@ namespace AcadEvalSys.Application.Templates.Dtos
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedByUserId, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedByUserId, opt => opt.Ignore())
-                .ForMember(dest => dest.Value, opt => opt.MapFrom(src => ParseValue(src.Value)))
+                .ForMember(dest => dest.Value, opt => opt.MapFrom(src => src.Value))
                 .ForMember(dest => dest.Order, opt => opt.MapFrom(src => src.Order))
                 .ForMember(dest => dest.TemplateQuestionId, opt => opt.Ignore())
                 .ForMember(dest => dest.SurveyTemplateQuestion, opt => opt.Ignore());
         }
 
-        // Helper method for safe value parsing
-        private static int ParseValue(string value)
-        {
-            return int.TryParse(value, out int result) ? result : 0;
-        }
     }
 }

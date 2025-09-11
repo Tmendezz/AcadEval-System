@@ -39,6 +39,7 @@ export const surveyTemplateService = {
   // Crear nueva plantilla
   async createTemplate(data: SurveyTemplateForm): Promise<string> {
     try {
+      console.log('Enviando POST a /survey-templates con:', data);
       const { data: response } = await api.post<string>(SURVEY_TEMPLATES_API_URL, data);
       return response;
     } catch (error: any) {
@@ -74,7 +75,7 @@ export const surveyTemplateService = {
           required: q.required,
           options: q.options.map(opt => ({
             text: opt.text,
-            value: opt.value || opt.text, // Usar text como value si no existe
+            value: typeof opt.value === 'number' ? opt.value : Number(opt.value ?? 0),
             order: opt.order,
             allowOpenText: opt.allowOpenText || false,
           })),

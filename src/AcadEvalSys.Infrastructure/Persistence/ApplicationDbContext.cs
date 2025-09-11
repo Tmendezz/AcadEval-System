@@ -226,11 +226,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<AcademicSurveyResponse>(entity =>
         {
             entity.Property(r => r.UserId).IsRequired();
-            entity.HasOne<User>()
+            
+            // Relación con User (quien respondió la encuesta)
+            entity.HasOne(r => r.User)
                 .WithMany()
                 .HasForeignKey(r => r.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Relación con AcademicSurveySubject
             entity.HasOne<AcademicSurveySubject>()
                 .WithMany(s => s.Responses)
                 .HasForeignKey(r => r.AcademicSurveySubjectId)

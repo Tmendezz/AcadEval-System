@@ -19,6 +19,7 @@ namespace AcadEvalSys.Infrastructure.Repositories
         {
             return await dbContext.SurveyTemplates
                 .AnyAsync(s => s.IsActive
+                && s.Title == name
                 && s.SurveyType == type
                 && (!excludingId.HasValue || s.Id != excludingId.Value), ct);
         }

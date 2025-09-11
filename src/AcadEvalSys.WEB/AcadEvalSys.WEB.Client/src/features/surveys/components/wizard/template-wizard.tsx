@@ -47,10 +47,10 @@ export function TemplateWizard({ onSubmit, onCancel, isSubmitting = false }: Tem
       ...form,
       questions: form.questions.map((question, index) => ({
         ...question,
-        order: index, // Asegurar que el orden sea secuencial
+        order: question.order || (index + 1), // Usar el order original o index + 1
         options: question.type === QuestionType.OpenText ? [] : question.options.map((option, optIndex) => ({
           ...option,
-          order: optIndex // Asegurar que el orden de opciones sea secuencial
+          order: option.order || (optIndex + 1) // Usar el order original o optIndex + 1
         }))
       }))
     };

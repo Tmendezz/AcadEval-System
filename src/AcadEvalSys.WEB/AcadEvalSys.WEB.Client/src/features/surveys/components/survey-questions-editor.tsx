@@ -228,7 +228,7 @@ export function SurveyQuestionsEditor({
     const newQuestion: SurveyTemplateQuestion = {
       text: '',
       type: QuestionType.SingleChoice,
-      order: questions.length,
+      order: questions.length + 1,
       required: true,
       options: [],
     };
@@ -246,16 +246,17 @@ export function SurveyQuestionsEditor({
   const removeQuestion = (index: number) => {
     const updatedQuestions = questions
       .filter((_, i) => i !== index)
-      .map((q, i) => ({ ...q, order: i }));
+      .map((q, i) => ({ ...q, order: i + 1 }));
     onChange(updatedQuestions);
   };
 
   const addOption = (questionIndex: number) => {
     const question = questions[questionIndex];
+    const newOrder = question.options.length + 1;
     const newOption = {
       text: '',
-      value: '',
-      order: question.options.length,
+      value: newOrder,
+      order: newOrder,
       allowOpenText: false,
     };
 
@@ -267,7 +268,7 @@ export function SurveyQuestionsEditor({
   const updateOption = (questionIndex: number, optionIndex: number, text: string) => {
     const question = questions[questionIndex];
     const updatedOptions = question.options.map((opt, i) => 
-      i === optionIndex ? { ...opt, text, value: text } : opt
+      i === optionIndex ? { ...opt, text, value: opt.order } : opt
     );
 
     updateQuestion(questionIndex, { options: updatedOptions });
@@ -277,7 +278,10 @@ export function SurveyQuestionsEditor({
     const question = questions[questionIndex];
     const updatedOptions = question.options
       .filter((_, i) => i !== optionIndex)
-      .map((opt, i) => ({ ...opt, order: i }));
+      .map((opt, i) => {
+        const newOrder = i + 1;
+        return { ...opt, order: newOrder, value: newOrder };
+      });
 
     updateQuestion(questionIndex, { options: updatedOptions });
   };

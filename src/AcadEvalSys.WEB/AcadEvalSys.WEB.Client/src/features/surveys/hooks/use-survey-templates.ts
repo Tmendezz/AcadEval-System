@@ -45,7 +45,7 @@ export function useCreateSurveyTemplate() {
       queryClient.invalidateQueries({ queryKey: surveyTemplateKeys.lists() });
       
       toast.success('Plantilla creada exitosamente', {
-        description: `La plantilla "${variables.name}" ha sido creada.`,
+        description: `La plantilla "${variables.title}" ha sido creada.`,
       });
     },
     onError: (error: any) => {
@@ -69,7 +69,7 @@ export function useUpdateSurveyTemplate() {
       queryClient.invalidateQueries({ queryKey: surveyTemplateKeys.detail(id) });
       
       toast.success('Plantilla actualizada exitosamente', {
-        description: `La plantilla "${data.name}" ha sido actualizada.`,
+          description: `La plantilla "${data.title}" ha sido actualizada.`,
       });
     },
     onError: (error: any) => {

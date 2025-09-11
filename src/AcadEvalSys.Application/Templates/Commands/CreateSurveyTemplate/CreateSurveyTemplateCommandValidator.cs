@@ -39,7 +39,7 @@ public class CreateSurveyTemplateCommandValidator : AbstractValidator<CreateSurv
 
                 q.RuleForEach(y => y.Options).ChildRules(o =>
                 {
-                    o.RuleFor(z => z.Value).NotEmpty().MaximumLength(100);
+                    o.RuleFor(z => z.Value).NotEmpty();
                     o.RuleFor(z => z.Text).NotEmpty();
                     o.RuleFor(z => z.Order).GreaterThan(0);
                 });
@@ -68,8 +68,8 @@ public class CreateSurveyTemplateCommandValidator : AbstractValidator<CreateSurv
                     if (dupOptOrders.Any())
                         ctx.AddFailure($"Pregunta '{q.Text}': órdenes de opciones repetidos: {string.Join(", ", dupOptOrders)}");
 
-                    var dupOptValues = q.Options.Where(o => !string.IsNullOrEmpty(o.Value))
-                        .GroupBy(o => o.Value.Trim()).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
+                    var dupOptValues = q.Options.Where(o => o.Value != null)
+                        .GroupBy(o => o.Value).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
                     if (dupOptValues.Any())
                         ctx.AddFailure($"Pregunta '{q.Text}': values de opciones repetidos: {string.Join(", ", dupOptValues)}");
                 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'wouter';
 import { SurveyForm } from '../models/survey-types';
 import { useCreateSurvey } from '../hooks/use-surveys';
@@ -6,11 +6,14 @@ import { useSurveyFormValidationBasic } from '../hooks/use-survey-form-validatio
 // Settings son internas del wizard
 import { SurveyWizard } from '../components/wizard/survey-wizard';
 import { PageContent, PageLayout } from '@/shared/components/layout/page-layout';
+import { useSurveyTemplate } from '../hooks/use-survey-templates';
 // Reemplazado por wizard
 
 export default function CreateSurveyPage() {
   const [, setLocation] = useLocation();
   const createSurveyMutation = useCreateSurvey();
+  const templateId = useMemo(() => new URLSearchParams(window.location.search).get('templateId') || '', []);
+  const { data: templateData, isFetching: isFetchingTemplate } = useSurveyTemplate(templateId, !!templateId);
 
   const [formData] = useState<SurveyForm>({
     title: '',
@@ -54,6 +57,11 @@ export default function CreateSurveyPage() {
             }}
             onCancel={handleCancel}
             isSubmitting={createSurveyMutation.isPending}
+            initialTemplate={templateData ? {
+              title: templateData.title,
+              description: templateData.description,
+              questions: templateData.questions,
+            } : undefined}
           />
         </form>
       </PageContent>
