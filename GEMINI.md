@@ -55,7 +55,6 @@ When creating new projects:
 ```
 src/
 features/
-  [feature-name].tsx    # Main container
   [feature-name]/
     components/    # Feature-specific components
     services/    # Feature-specific services

@@ -12,8 +12,12 @@ export interface SurveyBasicInfoFormProps {
   maxDescriptionLength?: number;
   // Si es true, adapta los textos para PLANTILLAS
   isTemplate?: boolean;
-  // Si es true, deshabilita la edición de título y descripción
-  isReadOnly?: boolean;
+  // Si es true, deshabilita la edición del título
+  isTitleDisabled?: boolean;
+  // Si es true, deshabilita la edición de la descripción
+  isDescriptionDisabled?: boolean;
+  // Si es false, oculta el campo de descripción
+  showDescription?: boolean;
 }
 
 export function SurveyBasicInfoForm({ 
@@ -24,10 +28,10 @@ export function SurveyBasicInfoForm({
   maxTitleLength = 120,
   maxDescriptionLength = 300,
   isTemplate = false,
-  isReadOnly = false,
+  isTitleDisabled = false,
+  isDescriptionDisabled = false,
+  showDescription = true,
 }: SurveyBasicInfoFormProps) {
-  // Debug: verificar props recibidas
-  console.log('🔍 SurveyBasicInfoForm props:', { title, description, isTemplate, isReadOnly });
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange({ title: e.target.value });
   };
@@ -50,9 +54,9 @@ export function SurveyBasicInfoForm({
             value={title}
             onChange={handleTitleChange}
             placeholder={isTemplate ? 'Ingresa el título de la plantilla' : 'Ingresa el título de la encuesta'}
-            className={`${errors?.title ? 'border-destructive' : ''} ${isReadOnly ? 'bg-muted cursor-not-allowed' : ''}`}
+            className={`${errors?.title ? 'border-destructive' : ''}`}
             maxLength={maxTitleLength}
-            disabled={isReadOnly}
+            disabled={isTitleDisabled}
           />
           <div className="flex justify-end text-xs text-muted-foreground">
             {title.length}/{maxTitleLength}
@@ -62,25 +66,27 @@ export function SurveyBasicInfoForm({
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="description" className="mb-1 block">{isTemplate ? 'Descripción de la Plantilla' : 'Descripción'}</Label>
-          <Textarea
-            id="description"
-            value={description}
-            onChange={handleDescriptionChange}
-            placeholder={isTemplate ? 'Describe el propósito de la plantilla' : 'Describe el propósito de la encuesta'}
-            rows={3}
-            className={`${errors?.description ? 'border-destructive' : ''} ${isReadOnly ? 'bg-muted cursor-not-allowed' : ''}`}
-            maxLength={maxDescriptionLength}
-            disabled={isReadOnly}
-          />
-          <div className="flex justify-end text-xs text-muted-foreground">
-            {description.length}/{maxDescriptionLength}
+        {showDescription && (
+          <div className="space-y-2">
+            <Label htmlFor="description" className="mb-1 block">{isTemplate ? 'Descripción de la Plantilla' : 'Descripción'}</Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={handleDescriptionChange}
+              placeholder={isTemplate ? 'Describe el propósito de la plantilla' : 'Describe el propósito de la encuesta'}
+              rows={3}
+              className={`${errors?.description ? 'border-destructive' : ''}`}
+              maxLength={maxDescriptionLength}
+              disabled={isDescriptionDisabled}
+            />
+            <div className="flex justify-end text-xs text-muted-foreground">
+              {description.length}/{maxDescriptionLength}
+            </div>
+            {errors?.description && (
+              <p className="text-sm text-destructive">{errors.description}</p>
+            )}
           </div>
-          {errors?.description && (
-            <p className="text-sm text-destructive">{errors.description}</p>
-          )}
-        </div>
+        )}
       </CardContent>
     </Card>
   );

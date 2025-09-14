@@ -48,7 +48,7 @@ namespace AcadEvalSys.Application.Templates.Commands.UpdateTemplate
                     .WithMessage("Question order must be greater than 0.");
 
                 // If question is choice type, require options
-                q.When(y => y.Type is "single_choice" or "multiple_choice", () =>
+                q.When(y => y.Type is "SingleChoice" or "MultipleChoice", () =>
                 {
                     q.RuleFor(y => y.Options)
                         .NotEmpty()

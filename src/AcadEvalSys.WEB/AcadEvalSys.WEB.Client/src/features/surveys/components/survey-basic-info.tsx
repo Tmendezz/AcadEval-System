@@ -70,19 +70,19 @@ export function SurveyBasicInfo({
             <div>
               <Label htmlFor="surveyType">Tipo de encuesta</Label>
               <Select
-                value={data.surveyType.toString()}
+                value={data.surveyType}
                 onValueChange={(value: string) => onChange({ 
-                  surveyType: Number(value) as SurveyTemplateType 
+                  surveyType: value as SurveyTemplateType 
                 })}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={SurveyTemplateType.Student.toString()}>
+                  <SelectItem value="Student">
                     Para Estudiantes
                   </SelectItem>
-                  <SelectItem value={SurveyTemplateType.Professor.toString()}>
+                  <SelectItem value="Professor">
                     Para Profesores
                   </SelectItem>
                 </SelectContent>

@@ -7,10 +7,18 @@ import { SurveyTemplateForm, SurveyTemplateQuestion } from '../../models/survey-
 import { SurveyBasicInfoForm } from '../survey-basic-info-form';
 import { SurveyQuestionsEditor } from '../survey-questions-editor';
 import { SurveySettingsForm, SurveyAudience } from '../survey-settings-form';
+import { AudienceCombination, TechnicalCareer } from '../survey-audience-selector';
 import { validateStep } from '../../schemas/survey-validation-schemas';
 
 interface SurveyWizardProps {
-  onSubmit: (payload: { form: SurveyTemplateForm; settings: { audience: SurveyAudience; isAnonymous: boolean } }) => Promise<void> | void;
+  onSubmit: (payload: { 
+    form: SurveyTemplateForm; 
+    settings: { 
+      audience: SurveyAudience; 
+      isAnonymous: boolean;
+      selectedAudiences: AudienceCombination[];
+    } 
+  }) => Promise<void> | void;
   onCancel: () => void;
   isSubmitting?: boolean;
   initialTemplate?: {
@@ -19,30 +27,74 @@ interface SurveyWizardProps {
     questions?: SurveyTemplateQuestion[];
   };
   fixedQuestions?: SurveyTemplateQuestion[]; // si se provee, el editor se bloquea y usa estas preguntas
+  careers: TechnicalCareer[];
+  years: number[];
 }
 
-export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = false, initialTemplate, fixedQuestions }: SurveyWizardProps) {
+export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = false, initialTemplate, fixedQuestions, careers, years }: SurveyWizardProps) {
   const [currentStep, setCurrentStep] = useState<number>(0);
+  const normalizeType = (t: any): 'SingleChoice' | 'MultipleChoice' | 'OpenText' => {
+    if (typeof t === 'string' && ['SingleChoice', 'MultipleChoice', 'OpenText'].includes(t)) {
+      return t as 'SingleChoice' | 'MultipleChoice' | 'OpenText';
+    }
+    if (typeof t === 'number') {
+      const map: Record<number, 'SingleChoice' | 'MultipleChoice' | 'OpenText'> = { 
+        0: 'SingleChoice', 
+        1: 'MultipleChoice', 
+        2: 'OpenText' 
+      };
+      return map[t] ?? 'SingleChoice';
+    }
+    return 'SingleChoice';
+  };
+
   const [form, setForm] = useState<SurveyTemplateForm>(() => ({
     title: initialTemplate?.title || '',
     description: initialTemplate?.description || '',
-    questions: (fixedQuestions || initialTemplate?.questions) || [],
-    surveyType: 0, // Default to Student
+    questions: (fixedQuestions || initialTemplate?.questions || []).map((q, qi) => ({
+      ...q,
+      type: normalizeType((q as any).type),
+      order: q.order ?? qi + 1,
+      options: (q.options || []).map((o, oi) => ({
+        ...o,
+        order: o.order ?? oi + 1,
+        value: typeof o.value === 'string' ? o.value : String(o.value ?? (o.order ?? oi + 1)),
+      })),
+    })),
+    surveyType: 'Student', // Default to Student
     isDraft: true,
   }));
-  const [settings, setSettings] = useState<{ audience: SurveyAudience; isAnonymous: boolean }>({ audience: 'students', isAnonymous: true });
+  const [settings, setSettings] = useState<{ 
+    audience: SurveyAudience; 
+    isAnonymous: boolean;
+    selectedAudiences: AudienceCombination[];
+  }>({ 
+    audience: 'students', 
+    isAnonymous: true,
+    selectedAudiences: []
+  });
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   // Actualizar el formulario cuando lleguen los datos de la plantilla
   useEffect(() => {
-    if (initialTemplate && !fixedQuestions) {
-      setForm({
-        title: initialTemplate.title || '',
-        description: initialTemplate.description || '',
-        questions: initialTemplate.questions || [],
-        surveyType: 0,
-        isDraft: true,
-      });
+    const templateQuestions = fixedQuestions || initialTemplate?.questions;
+    if (templateQuestions) {
+      const normalized = templateQuestions.map((q, qi) => ({
+        ...q,
+        type: normalizeType((q as any).type),
+        order: q.order ?? qi + 1,
+        options: (q.options || []).map((o, oi) => ({
+          ...o,
+          order: o.order ?? oi + 1,
+          value: typeof o.value === 'string' ? o.value : String(o.value ?? (o.order ?? oi + 1)),
+        })),
+      }));
+      setForm(prevForm => ({
+        ...prevForm,
+        title: initialTemplate?.title || prevForm.title,
+        description: initialTemplate?.description || prevForm.description,
+        questions: normalized,
+      }));
     }
   }, [initialTemplate, fixedQuestions]);
 
@@ -92,12 +144,15 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
               description={form.description}
               onChange={(u) => setForm((prev) => ({ ...prev, ...u }))}
               errors={validationErrors}
+              isDescriptionDisabled={true}
+              showDescription={false}
             />
             <SurveyQuestionsEditor
               questions={form.questions}
               onChange={(q: SurveyTemplateQuestion[]) => setForm((prev) => ({ ...prev, questions: q }))}
               showAddButton={!fixedQuestions}
               errors={validationErrors}
+              isReadOnly={!!fixedQuestions}
             />
           </div>
         )}
@@ -108,7 +163,10 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
             <SurveySettingsForm
               audience={settings.audience}
               isAnonymous={settings.isAnonymous}
+              selectedAudiences={settings.selectedAudiences}
               onChange={(u) => setSettings((prev) => ({ ...prev, ...u }))}
+              careers={careers}
+              years={years}
             />
           </div>
         )}
@@ -120,8 +178,18 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
               <div className="mb-2"><strong>Título:</strong> {form.title || '—'}</div>
               <div className="mb-2"><strong>Descripción:</strong> {form.description || '—'}</div>
               <div className="mb-2"><strong>Preguntas:</strong> {form.questions.length}</div>
-              <div className="mb-2"><strong>Audiencia:</strong> {settings.audience}</div>
-              <div><strong>Respuestas anónimas:</strong> {settings.isAnonymous ? 'Sí' : 'No'}</div>
+              <div className="mb-2"><strong>Tipo de audiencia:</strong> {settings.audience}</div>
+              <div className="mb-2"><strong>Respuestas anónimas:</strong> {settings.isAnonymous ? 'Sí' : 'No'}</div>
+              <div className="mb-2"><strong>Audiencia específica:</strong></div>
+              {settings.selectedAudiences.length > 0 ? (
+                <div className="ml-4 text-sm">
+                  {settings.selectedAudiences.map((audience, index) => (
+                    <div key={index}>• {audience.careerName} - {audience.year}° Año</div>
+                  ))}
+                </div>
+              ) : (
+                <div className="ml-4 text-sm text-muted-foreground">Ninguna seleccionada</div>
+              )}
             </div>
           </div>
         )}

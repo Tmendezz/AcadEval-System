@@ -1,10 +1,13 @@
-import { QuestionType, SurveyTemplateStatus, SurveyTemplateType } from "../models/survey-template-types";
+import { SurveyTemplateStatus, SurveyTemplateType } from "../models/survey-template-types";
+
+// Definir QuestionType localmente
+type QuestionType = 'SingleChoice' | 'MultipleChoice' | 'OpenText';
 
 export const getSurveyTemplateTypeLabel = (type: SurveyTemplateType): string => {
   switch (type) {
-    case SurveyTemplateType.Student:
+    case 'Student':
       return 'Estudiantes';
-    case SurveyTemplateType.Professor:
+    case 'Professor':
       return 'Profesores';
     default:
       return 'Desconocido';
@@ -13,11 +16,11 @@ export const getSurveyTemplateTypeLabel = (type: SurveyTemplateType): string => 
 
 export const getQuestionTypeLabel = (type: QuestionType): string => {
   switch (type) {
-    case QuestionType.SingleChoice:
+    case 'SingleChoice':
       return 'Opción única';
-    case QuestionType.MultipleChoice:
+    case 'MultipleChoice':
       return 'Múltiple opción';
-    case QuestionType.OpenText:
+    case 'OpenText':
       return 'Texto abierto';
     default:
       return 'Desconocido';
@@ -26,11 +29,11 @@ export const getQuestionTypeLabel = (type: QuestionType): string => {
 
 export const getQuestionTypeIcon = (type: QuestionType): string => {
   switch (type) {
-    case QuestionType.SingleChoice:
+    case 'SingleChoice':
       return 'radio_button_checked';
-    case QuestionType.MultipleChoice:
+    case 'MultipleChoice':
       return 'check_box';
-    case QuestionType.OpenText:
+    case 'OpenText':
       return 'text_fields';
     default:
       return 'help';
@@ -39,15 +42,15 @@ export const getQuestionTypeIcon = (type: QuestionType): string => {
 
 export const getSurveyTemplateStatusLabel = (status: SurveyTemplateStatus): string => {
   switch (status) {
-    case SurveyTemplateStatus.Draft:
+    case 'Draft':
       return 'Borrador';
-    case SurveyTemplateStatus.Scheduled:
+    case 'Scheduled':
       return 'Programada';
-    case SurveyTemplateStatus.Published:
+    case 'Published':
       return 'Publicada';
-    case SurveyTemplateStatus.Closed:
+    case 'Closed':
       return 'Cerrada';
-    case SurveyTemplateStatus.Archived:
+    case 'Archived':
       return 'Archivada';
     default:
       return 'Desconocido';

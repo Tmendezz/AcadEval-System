@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
-import { SurveyForm, SurveyQuestion } from '../models/survey-types';
 import { useCreateSurvey } from '../hooks/use-surveys';
 import { useSurveyFormValidationBasic } from '../hooks/use-survey-form-validation-basic';
 // Settings son internas del wizard
@@ -8,6 +7,8 @@ import { SurveyWizard } from '../components/wizard/survey-wizard';
 import { PageContent, PageLayout } from '@/shared/components/layout/page-layout';
 import { useSurveyTemplate } from '../hooks/use-survey-templates';
 import { useSurveysStore } from '../store/use-surveys-store';
+import { SurveyForm, SurveyQuestion } from '..';
+import { TechnicalCareer } from '../components/survey-audience-selector';
 // Reemplazado por wizard
 
 export default function CreateSurveyPage() {
@@ -15,6 +16,16 @@ export default function CreateSurveyPage() {
   const createSurveyMutation = useCreateSurvey();
   const { selectedTemplateId, setSelectedTemplateId } = useSurveysStore();
   const { data: templateData, isFetching: isFetchingTemplate } = useSurveyTemplate(selectedTemplateId || '', !!selectedTemplateId);
+
+  // Datos mock para carreras técnicas y años
+  const careers: TechnicalCareer[] = [
+    { id: '1', name: 'Tecnicatura en Desarrollo de Software' },
+    { id: '2', name: 'Tecnicatura en Redes y Telecomunicaciones' },
+    { id: '3', name: 'Tecnicatura en Sistemas' },
+    { id: '4', name: 'Tecnicatura en Seguridad Informática' },
+  ];
+
+  const years = [1, 2, 3];
 
   const [formData] = useState<SurveyForm>({
     title: '',
@@ -24,20 +35,6 @@ export default function CreateSurveyPage() {
   // Configuración gestionada dentro del Wizard
 
   const { validateForm } = useSurveyFormValidationBasic();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm(formData)) {
-      return;
-    }
-
-    try {
-      await createSurveyMutation.mutateAsync(formData);
-      setLocation('/encuestas');
-    } catch (error) {
-    }
-  };
 
   const handleCancel = () => {
     setSelectedTemplateId(null);
@@ -71,28 +68,43 @@ export default function CreateSurveyPage() {
 
   return (
     <PageLayout>
-      {/* Header intencionalmente vacío para evitar redundancia con la sección */}
       <PageContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Wizard de creación */}
-          <SurveyWizard
-            onSubmit={async ({ form }) => {
-              await createSurveyMutation.mutateAsync(form);
-              setSelectedTemplateId(null);
-              setLocation('/encuestas');
-            }}
-            onCancel={handleCancel}
-            isSubmitting={createSurveyMutation.isPending}
-            initialTemplate={templateData ? {
-              title: templateData.title,
-              description: templateData.description,
-              questions: templateData.questions,
-            } : undefined}
-            fixedQuestions={templateData ? (templateData.questions as unknown as SurveyQuestion[]) : undefined}
-          />
-        </form>
-      </PageContent>
-      </PageLayout>
+        {/* Wizard de creación (sin botón de submit en el page) */}
+        <SurveyWizard
+          onSubmit={async ({ form, settings }) => {
+              if (!selectedTemplateId) {
+                // TODO: Mostrar un error al usuario
+                console.error("Error: No se ha seleccionado una plantilla.");
+                return;
+              }
 
-    )}
-  
+              // El backend espera un objeto con `templateId`, no la lista de preguntas.
+              const surveyToCreate = {
+                title: form.title,
+                description: form.description, // La descripción no se usa en el comando de backend, pero la dejamos por si acaso
+                templateId: selectedTemplateId,
+                audiences: settings.selectedAudiences.map(a => ({
+                  careerId: a.careerId,
+                  year: a.year
+                })), 
+              };
+
+            await createSurveyMutation.mutateAsync(surveyToCreate as any);
+            setSelectedTemplateId(null);
+            setLocation('/encuestas');
+          }}
+          onCancel={handleCancel}
+          isSubmitting={createSurveyMutation.isPending}
+          initialTemplate={templateData ? {
+            title: templateData.title,
+            description: templateData.description,
+            questions: templateData.questions,
+          } : undefined}
+          fixedQuestions={templateData ? (templateData.questions as unknown as SurveyQuestion[]) : undefined}
+          careers={careers}
+          years={years}
+        />
+      </PageContent>
+    </PageLayout>
+  );
+}

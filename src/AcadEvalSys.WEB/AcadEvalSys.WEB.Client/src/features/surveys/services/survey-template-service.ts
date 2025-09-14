@@ -39,16 +39,23 @@ export const surveyTemplateService = {
   // Crear nueva plantilla
   async createTemplate(data: SurveyTemplateForm): Promise<string> {
     try {
-      console.log('Enviando POST a /survey-templates con:', JSON.stringify(data, null, 2));
       const { data: response } = await api.post<string>(SURVEY_TEMPLATES_API_URL, data);
       return response;
     } catch (error: any) {
-      console.error('Error al crear plantilla:', error);
-      console.error('Response data:', error.response?.data);
-      if (error.response?.data?.errors) {
-        console.error('Errores de validación:', error.response.data.errors);
+      const errorMessage = error.response?.data?.title || 'Error al crear plantilla';
+      const validationErrors = error.response?.data?.errors;
+      
+      if (validationErrors) {
+        console.error('Errores de validación:', validationErrors);
+        // Crear un error más descriptivo con los detalles de validación
+        const errorDetails = Object.entries(validationErrors)
+          .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+          .join('; ');
+        
+        throw new Error(`${errorMessage}. Detalles: ${errorDetails}`);
       }
-      throw error;
+      
+      throw new Error(errorMessage);
     }
   },
 
@@ -80,7 +87,7 @@ export const surveyTemplateService = {
           required: q.required,
           options: q.options.map(opt => ({
             text: opt.text,
-            value: typeof opt.value === 'number' ? opt.value : Number(opt.value ?? 0),
+            value: typeof opt.value === 'string' ? opt.value : String(opt.value ?? 0),
             order: opt.order,
             allowOpenText: opt.allowOpenText || false,
           })),

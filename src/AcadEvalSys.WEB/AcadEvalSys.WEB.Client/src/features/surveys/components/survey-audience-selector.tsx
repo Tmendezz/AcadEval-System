@@ -1,130 +1,82 @@
-import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Checkbox } from '@/shared/components/ui/checkbox';
 import { Label } from '@/shared/components/ui/label';
-import { Badge } from '@/shared/components/ui/badge';
-import { Button } from '@/shared/components/ui/button';
-import { Plus, X } from 'lucide-react';
+import { Checkbox } from '@/shared/components/ui/checkbox';
+import { useMemo } from 'react';
 
-interface CareerYearOption {
+export interface TechnicalCareer {
+  id: string;
+  name: string;
+}
+
+export interface AudienceCombination {
   careerId: string;
   careerName: string;
   year: number;
-  yearLabel: string;
 }
 
-interface SurveyAudienceSelectorProps {
-  selectedAudiences: CareerYearOption[];
-  onAudiencesChange: (audiences: CareerYearOption[]) => void;
-  availableCareers: Array<{ id: string; name: string }>;
-  availableYears: Array<{ value: number; label: string }>;
+export interface SurveyAudienceSelectorProps {
+  selectedAudiences: AudienceCombination[];
+  onAudiencesChange: (audiences: AudienceCombination[]) => void;
+  careers: TechnicalCareer[];
+  years: number[];
 }
 
 export function SurveyAudienceSelector({ 
   selectedAudiences, 
   onAudiencesChange, 
-  availableCareers, 
-  availableYears 
+  careers, 
+  years 
 }: SurveyAudienceSelectorProps) {
-  // Usar useMemo para evitar re-renders innecesarios
+  
   const selectedCombinations = useMemo(() => {
-    return new Set(selectedAudiences.map(a => `${a.careerId}-${a.year}`));
+    return selectedAudiences.map(a => `${a.careerId}-${a.year}`);
   }, [selectedAudiences]);
 
-  const handleCareerYearToggle = (careerId: string, year: number) => {
-    const key = `${careerId}-${year}`;
-    const newCombinations = new Set(selectedCombinations);
+  const handleCombinationChange = (careerId: string, careerName: string, year: number, checked: boolean) => {
+    const combination = `${careerId}-${year}`;
     
-    if (newCombinations.has(key)) {
-      newCombinations.delete(key);
+    if (checked) {
+      // Agregar combinación
+      const newAudience: AudienceCombination = { careerId, careerName, year };
+      onAudiencesChange([...selectedAudiences, newAudience]);
     } else {
-      newCombinations.add(key);
+      // Remover combinación
+      onAudiencesChange(selectedAudiences.filter(a => `${a.careerId}-${a.year}` !== combination));
     }
-    
-    // Actualizar audiences directamente
-    const newAudiences: CareerYearOption[] = [];
-    newCombinations.forEach(combination => {
-      const [careerId, yearStr] = combination.split('-');
-      const year = parseInt(yearStr);
-      const career = availableCareers.find(c => c.id === careerId);
-      const yearInfo = availableYears.find(y => y.value === year);
-      
-      if (career && yearInfo) {
-        newAudiences.push({
-          careerId: careerId,
-          careerName: career.name,
-          year: year,
-          yearLabel: yearInfo.label
-        });
-      }
-    });
-    
-    onAudiencesChange(newAudiences);
-  };
-
-  const selectAll = () => {
-    const allAudiences: CareerYearOption[] = [];
-    availableCareers.forEach(career => {
-      availableYears.forEach(year => {
-        allAudiences.push({
-          careerId: career.id,
-          careerName: career.name,
-          year: year.value,
-          yearLabel: year.label
-        });
-      });
-    });
-    
-    onAudiencesChange(allAudiences);
-  };
-
-  const clearAll = () => {
-    onAudiencesChange([]);
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>Configuración de Audiencia</span>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={selectAll}>
-              <Plus className="w-4 h-4 mr-1" />
-              Seleccionar Todo
-            </Button>
-            <Button variant="outline" size="sm" onClick={clearAll}>
-              <X className="w-4 h-4 mr-1" />
-              Limpiar
-            </Button>
-          </div>
-        </CardTitle>
+        <CardTitle>Configurar Audiencia</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Selecciona las tecnicaturas y años de cursado para esta encuesta
+        </p>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="text-sm text-muted-foreground">
-          Selecciona las carreras y años a los que se enviará la encuesta:
-        </div>
-        
-        <div className="space-y-4">
-          {availableCareers.map(career => (
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 gap-4">
+          {careers.map((career) => (
             <div key={career.id} className="space-y-2">
-              <Label className="text-base font-medium">{career.name}</Label>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                {availableYears.map(year => {
-                  const key = `${career.id}-${year.value}`;
-                  const isSelected = selectedCombinations.has(key);
+              <Label className="text-sm font-medium">{career.name}</Label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {years.map((year) => {
+                  const combination = `${career.id}-${year}`;
+                  const isSelected = selectedCombinations.includes(combination);
                   
                   return (
-                    <div key={key} className="flex items-center space-x-2">
+                    <div key={year} className="flex items-center space-x-2">
                       <Checkbox
-                        id={key}
+                        id={combination}
                         checked={isSelected}
-                        onCheckedChange={() => handleCareerYearToggle(career.id, year.value)}
+                        onCheckedChange={(checked) => 
+                          handleCombinationChange(career.id, career.name, year, !!checked)
+                        }
                       />
                       <Label 
-                        htmlFor={key} 
+                        htmlFor={combination} 
                         className="text-sm font-normal cursor-pointer"
                       >
-                        {year.label}
+                        {year}° Año
                       </Label>
                     </div>
                   );
@@ -133,15 +85,15 @@ export function SurveyAudienceSelector({
             </div>
           ))}
         </div>
-
+        
         {selectedAudiences.length > 0 && (
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Audiencia seleccionada:</Label>
-            <div className="flex flex-wrap gap-2">
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <Label className="text-sm font-medium text-blue-900">Audiencia seleccionada:</Label>
+            <div className="mt-1 text-sm text-blue-800">
               {selectedAudiences.map((audience, index) => (
-                <Badge key={index} variant="secondary">
-                  {audience.careerName} - {audience.yearLabel}
-                </Badge>
+                <div key={index}>
+                  {audience.careerName} - {audience.year}° Año
+                </div>
               ))}
             </div>
           </div>

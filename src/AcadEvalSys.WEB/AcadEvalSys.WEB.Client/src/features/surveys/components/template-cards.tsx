@@ -2,12 +2,11 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/shared/c
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import { useLocation } from 'wouter';
-import { SurveyTemplateListItem, SurveyTemplateType } from '../models/survey-template-types';
+import { SurveyTemplateListItem } from '../models/survey-template-types';
 import { useDeleteSurveyTemplate } from '../hooks/use-survey-templates';
 import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { ConfirmDialog } from '@/shared/components/ui/confirm-dialog';
-import { ErrorDialog } from '@/shared/components/ui/error-dialog';
 
 
 interface TemplateCardsProps {
@@ -19,29 +18,15 @@ export function TemplateCards({ templates, onUseTemplate }: TemplateCardsProps) 
   const [, setLocation] = useLocation();
   const deleteTemplate = useDeleteSurveyTemplate();
   const [error, setError] = useState<unknown>(null);
-  const [showErrorDialog, setShowErrorDialog] = useState(false);
 
   const handleDelete = async (template: SurveyTemplateListItem) => {
     try {
       await deleteTemplate.mutateAsync(template.id);
     } catch (error) {
       setError(error);
-      setShowErrorDialog(true);
     }
   };
 
-  const handleRetryDelete = async () => {
-    if (!error) return;
-    
-    try {
-      // Reintentar la última operación fallida
-      // Como no tenemos el template específico, cerramos el error dialog
-      setShowErrorDialog(false);
-      setError(null);
-    } catch (error) {
-      setError(error);
-    }
-  };
 
   return (
     <>
@@ -52,7 +37,7 @@ export function TemplateCards({ templates, onUseTemplate }: TemplateCardsProps) 
               <CardTitle className="line-clamp-2">{t.title}</CardTitle>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Badge variant="outline">
-                  {t.surveyType === SurveyTemplateType.Student ? 'Estudiantes' : 'Profesores'}
+                  {t.surveyType === 'Student' ? 'Estudiantes' : 'Profesores'}
                 </Badge>
                 <span>{t.questionCount} preguntas</span>
               </div>

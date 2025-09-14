@@ -1,28 +1,36 @@
-// Enums
-export enum SurveyTemplateType {
-  Student = 0,
-  Professor = 1,
-}
+// Union Types (más escalables y mantenibles)
+export type SurveyTemplateType = 'Student' | 'Professor';
+export type QuestionType = 'SingleChoice' | 'MultipleChoice' | 'OpenText';
+export type SurveyTemplateStatus = 'Draft' | 'Scheduled' | 'Published' | 'Closed' | 'Archived';
 
-export enum QuestionType {
-  SingleChoice = 0,
-  MultipleChoice = 1,
-  OpenText = 2,
-}
+// Re-export para compatibilidad
+export type { QuestionType as QuestionTypeEnum };
 
-export enum SurveyTemplateStatus {
-  Draft = 0,
-  Scheduled = 1,
-  Published = 2,
-  Closed = 3,
-  Archived = 4,
-}
+// Constantes para compatibilidad y validación
+export const SURVEY_TEMPLATE_TYPES = {
+  Student: 'Student' as const,
+  Professor: 'Professor' as const,
+} as const;
+
+export const QUESTION_TYPES = {
+  SingleChoice: 'SingleChoice' as const,
+  MultipleChoice: 'MultipleChoice' as const,
+  OpenText: 'OpenText' as const,
+} as const;
+
+export const SURVEY_TEMPLATE_STATUSES = {
+  Draft: 'Draft' as const,
+  Scheduled: 'Scheduled' as const,
+  Published: 'Published' as const,
+  Closed: 'Closed' as const,
+  Archived: 'Archived' as const,
+} as const;
 
 // Tipos de dominio
 export interface SurveyTemplateOption {
   id?: string;
   text: string;
-  value: number;
+  value: string;
   order: number;
   allowOpenText?: boolean;
 }
@@ -93,12 +101,12 @@ export interface UpdateSurveyTemplateRequest {
   questions: SurveyTemplateQuestion[];
 }
 
-// Utilidades
+// Utilidades con union types
 export const getSurveyTemplateTypeLabel = (type: SurveyTemplateType): string => {
   switch (type) {
-    case SurveyTemplateType.Student:
+    case 'Student':
       return 'Estudiantes';
-    case SurveyTemplateType.Professor:
+    case 'Professor':
       return 'Profesores';
     default:
       return 'Desconocido';
@@ -107,11 +115,11 @@ export const getSurveyTemplateTypeLabel = (type: SurveyTemplateType): string => 
 
 export const getQuestionTypeLabel = (type: QuestionType): string => {
   switch (type) {
-    case QuestionType.SingleChoice:
+    case 'SingleChoice':
       return 'Opción única';
-    case QuestionType.MultipleChoice:
+    case 'MultipleChoice':
       return 'Múltiple opción';
-    case QuestionType.OpenText:
+    case 'OpenText':
       return 'Texto abierto';
     default:
       return 'Desconocido';
@@ -120,11 +128,11 @@ export const getQuestionTypeLabel = (type: QuestionType): string => {
 
 export const getQuestionTypeIcon = (type: QuestionType): string => {
   switch (type) {
-    case QuestionType.SingleChoice:
+    case 'SingleChoice':
       return 'radio_button_checked';
-    case QuestionType.MultipleChoice:
+    case 'MultipleChoice':
       return 'check_box';
-    case QuestionType.OpenText:
+    case 'OpenText':
       return 'text_fields';
     default:
       return 'help';
@@ -133,15 +141,15 @@ export const getQuestionTypeIcon = (type: QuestionType): string => {
 
 export const getSurveyTemplateStatusLabel = (status: SurveyTemplateStatus): string => {
   switch (status) {
-    case SurveyTemplateStatus.Draft:
+    case 'Draft':
       return 'Borrador';
-    case SurveyTemplateStatus.Scheduled:
+    case 'Scheduled':
       return 'Programada';
-    case SurveyTemplateStatus.Published:
+    case 'Published':
       return 'Publicada';
-    case SurveyTemplateStatus.Closed:
+    case 'Closed':
       return 'Cerrada';
-    case SurveyTemplateStatus.Archived:
+    case 'Archived':
       return 'Archivada';
     default:
       return 'Desconocido';

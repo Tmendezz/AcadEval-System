@@ -11,7 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/components/ui/select';
-import { SurveyTemplateQuestion, QuestionType } from '../models/survey-template-types';
+import { SurveyTemplateQuestion } from '../models/survey-template-types';
+
+// Definir QuestionType localmente para evitar problemas de import
+type QuestionType = 'SingleChoice' | 'MultipleChoice' | 'OpenText';
 import { QuestionOptionRow } from './questions/QuestionOptionRow';
 import { getQuestionTypeLabel } from '../utils/survey-template-formatters';
 import {
@@ -40,6 +43,7 @@ interface SurveyQuestionsEditorProps {
   errors?: Record<string, string>;
   title?: string;
   showAddButton?: boolean;
+  isReadOnly?: boolean;
 }
 
 interface SortableQuestionItemProps {
@@ -51,17 +55,19 @@ interface SortableQuestionItemProps {
   onUpdateOption: (questionIndex: number, optionIndex: number, text: string) => void;
   onRemoveOption: (questionIndex: number, optionIndex: number) => void;
   errors: Record<string, string>;
+  isReadOnly?: boolean;
 }
 
 function SortableQuestionItem({
-  question,                                               
+  question,
   questionIndex,
   onUpdate,
-  onRemove,                                                                                                         
+  onRemove,
   onAddOption,
   onUpdateOption,
   onRemoveOption,
   errors,
+  isReadOnly = false,
 }: SortableQuestionItemProps) {
   const {
     attributes,
@@ -70,7 +76,7 @@ function SortableQuestionItem({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: questionIndex });
+  } = useSortable({ id: question.id || questionIndex, disabled: isReadOnly });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -79,8 +85,8 @@ function SortableQuestionItem({
   };
 
   return (
-    <Card 
-      ref={setNodeRef} 
+    <Card
+      ref={setNodeRef}
       style={style}
       className={`border-l-4 border-l-blue-500 ${isDragging ? 'shadow-lg' : ''}`}
     >
@@ -90,7 +96,7 @@ function SortableQuestionItem({
             <div
               {...attributes}
               {...listeners}
-              className="cursor-grab active:cursor-grabbing p-1 hover:bg-gray-100 rounded"
+              className={`p-1 hover:bg-gray-100 rounded ${isReadOnly ? 'cursor-not-allowed' : 'cursor-grab active:cursor-grabbing'}`}
             >
               <GripVertical className="h-4 w-4 text-muted-foreground" />
             </div>
@@ -102,6 +108,7 @@ function SortableQuestionItem({
             size="sm"
             onClick={() => onRemove(questionIndex)}
             className="text-red-600 hover:text-red-700"
+            disabled={isReadOnly}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -112,11 +119,12 @@ function SortableQuestionItem({
             <Label className="mb-1 block">Texto de la pregunta</Label>
             <Textarea
               value={question.text}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => 
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 onUpdate(questionIndex, { text: e.target.value })
               }
               placeholder="¿Cuál es tu pregunta?"
-              className={errors[`question_${questionIndex}_text`] ? 'border-red-500' : ''}
+              className={`${errors[`question_${questionIndex}_text`] ? 'border-red-500' : ''}`}
+              disabled={isReadOnly}
             />
             {errors[`question_${questionIndex}_text`] && (
               <p className="text-sm text-red-500 mt-1">
@@ -129,23 +137,24 @@ function SortableQuestionItem({
             <div>
               <Label className="mb-1 block">Tipo de pregunta</Label>
               <Select
-                value={question.type.toString()}
-                onValueChange={(value: string) => onUpdate(questionIndex, { 
-                  type: Number(value) as QuestionType 
+                value={question.type}
+                onValueChange={(value: string) => onUpdate(questionIndex, {
+                  type: value as QuestionType
                 })}
+                disabled={isReadOnly}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Seleccione un tipo" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={QuestionType.SingleChoice.toString()}>
-                    {getQuestionTypeLabel(QuestionType.SingleChoice)}
+                  <SelectItem value="SingleChoice">
+                    {getQuestionTypeLabel('SingleChoice')}
                   </SelectItem>
-                  <SelectItem value={QuestionType.MultipleChoice.toString()}>
-                    {getQuestionTypeLabel(QuestionType.MultipleChoice)}
+                  <SelectItem value="MultipleChoice">
+                    {getQuestionTypeLabel('MultipleChoice')}
                   </SelectItem>
-                  <SelectItem value={QuestionType.OpenText.toString()}>
-                    {getQuestionTypeLabel(QuestionType.OpenText)}
+                  <SelectItem value="OpenText">
+                    {getQuestionTypeLabel('OpenText')}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -155,16 +164,17 @@ function SortableQuestionItem({
               <Switch
                 id={`required_${questionIndex}`}
                 checked={question.required}
-                onCheckedChange={(checked: boolean) => 
+                onCheckedChange={(checked: boolean) =>
                   onUpdate(questionIndex, { required: checked })
                 }
+                disabled={isReadOnly}
               />
-              <Label htmlFor={`required_${questionIndex}`}>Pregunta obligatoria</Label>
+              <Label htmlFor={`required_${questionIndex}`} className={isReadOnly ? 'cursor-not-allowed' : ''}>Pregunta obligatoria</Label>
             </div>
           </div>
 
           {/* Opciones para preguntas de opción múltiple */}
-          {(question.type === QuestionType.SingleChoice || question.type === QuestionType.MultipleChoice) && (
+          {(question.type === 'SingleChoice' || question.type === 'MultipleChoice') && (
             <div>
               <div className="flex items-center justify-between mb-2">
                 <Label className="mb-1 block">Opciones de respuesta</Label>
@@ -173,12 +183,13 @@ function SortableQuestionItem({
                   variant="outline"
                   size="sm"
                   onClick={() => onAddOption(questionIndex)}
+                  disabled={isReadOnly}
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Agregar Opción
                 </Button>
               </div>
-              
+
               {question.options.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   No hay opciones agregadas
@@ -187,16 +198,17 @@ function SortableQuestionItem({
                 <div className="space-y-2">
                   {question.options.map((option, optionIndex) => (
                     <QuestionOptionRow
-                      key={optionIndex}
+                      key={option.id || optionIndex}
                       value={option.text}
                       onChange={(v) => onUpdateOption(questionIndex, optionIndex, v)}
                       onRemove={() => onRemoveOption(questionIndex, optionIndex)}
                       placeholder={`Opción ${optionIndex + 1}`}
+                      isReadOnly={isReadOnly}
                     />
                   ))}
                 </div>
               )}
-              
+
               {errors[`question_${questionIndex}_options`] && (
                 <p className="text-sm text-red-500 mt-1">
                   {errors[`question_${questionIndex}_options`]}
@@ -216,6 +228,7 @@ export function SurveyQuestionsEditor({
   errors = {},
   title = "Preguntas",
   showAddButton = true,
+  isReadOnly = false,
 }: SurveyQuestionsEditorProps) {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -225,9 +238,11 @@ export function SurveyQuestionsEditor({
   );
 
   const addQuestion = () => {
+    if (isReadOnly) return;
     const newQuestion: SurveyTemplateQuestion = {
+      id: `new_${Date.now()}`,
       text: '',
-      type: QuestionType.SingleChoice,
+      type: 'SingleChoice',
       order: questions.length + 1,
       required: true,
       options: [],
@@ -237,13 +252,25 @@ export function SurveyQuestionsEditor({
   };
 
   const updateQuestion = (index: number, updates: Partial<SurveyTemplateQuestion>) => {
-    const updatedQuestions = questions.map((q, i) => 
-      i === index ? { ...q, ...updates } : q
-    );
+    if (isReadOnly) return;
+    const updatedQuestions = questions.map((q, i) => {
+      if (i === index) {
+        const updatedQuestion = { ...q, ...updates };
+        
+        // Si se cambia a texto abierto, limpiar las opciones
+        if (updates.type === 'OpenText') {
+          updatedQuestion.options = [];
+        }
+        
+        return updatedQuestion;
+      }
+      return q;
+    });
     onChange(updatedQuestions);
   };
 
   const removeQuestion = (index: number) => {
+    if (isReadOnly) return;
     const updatedQuestions = questions
       .filter((_, i) => i !== index)
       .map((q, i) => ({ ...q, order: i + 1 }));
@@ -251,11 +278,13 @@ export function SurveyQuestionsEditor({
   };
 
   const addOption = (questionIndex: number) => {
+    if (isReadOnly) return;
     const question = questions[questionIndex];
     const newOrder = question.options.length + 1;
     const newOption = {
+      id: `new_opt_${Date.now()}`,
       text: '',
-      value: newOrder,
+      value: newOrder.toString(),
       order: newOrder,
       allowOpenText: false,
     };
@@ -266,32 +295,37 @@ export function SurveyQuestionsEditor({
   };
 
   const updateOption = (questionIndex: number, optionIndex: number, text: string) => {
+    if (isReadOnly) return;
     const question = questions[questionIndex];
-    const updatedOptions = question.options.map((opt, i) => 
-      i === optionIndex ? { ...opt, text, value: opt.order } : opt
+    const updatedOptions = question.options.map((opt, i) =>
+      i === optionIndex ? { ...opt, text, value: opt.order.toString() } : opt
     );
 
     updateQuestion(questionIndex, { options: updatedOptions });
   };
 
   const removeOption = (questionIndex: number, optionIndex: number) => {
+    if (isReadOnly) return;
     const question = questions[questionIndex];
     const updatedOptions = question.options
       .filter((_, i) => i !== optionIndex)
       .map((opt, i) => {
         const newOrder = i + 1;
-        return { ...opt, order: newOrder, value: newOrder };
+        return { ...opt, order: newOrder, value: newOrder.toString() };
       });
 
     updateQuestion(questionIndex, { options: updatedOptions });
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
+    if (isReadOnly) return;
     const { active, over } = event;
 
     if (active.id !== over?.id) {
-      const oldIndex = questions.findIndex((_, index) => index === active.id);
-      const newIndex = questions.findIndex((_, index) => index === over?.id);
+      const oldIndex = questions.findIndex((q) => q.id === active.id);
+      const newIndex = questions.findIndex((q) => q.id === over?.id);
+
+      if (oldIndex === -1 || newIndex === -1) return;
 
       const reorderedQuestions = arrayMove(questions, oldIndex, newIndex);
       const updatedQuestions = reorderedQuestions.map((q, i) => ({ ...q, order: i }));
@@ -305,7 +339,7 @@ export function SurveyQuestionsEditor({
         <div className="flex items-center justify-between">
           <CardTitle>{title}</CardTitle>
           {showAddButton && (
-            <Button type="button" onClick={addQuestion} variant="outline" size="sm">
+            <Button type="button" onClick={addQuestion} variant="outline" size="sm" disabled={isReadOnly}>
               <Plus className="h-4 w-4 mr-2" />
               Agregar Pregunta
             </Button>
@@ -316,7 +350,7 @@ export function SurveyQuestionsEditor({
         {questions.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <p>No hay preguntas agregadas</p>
-            {showAddButton && (
+            {showAddButton && !isReadOnly && (
               <p className="text-sm">Haz clic en "Agregar Pregunta" para comenzar</p>
             )}
           </div>
@@ -327,13 +361,13 @@ export function SurveyQuestionsEditor({
             onDragEnd={handleDragEnd}
           >
             <SortableContext
-              items={questions.map((_, index) => index)}
+              items={questions.map(q => q.id || q.order)}
               strategy={verticalListSortingStrategy}
             >
               <div className="space-y-4">
                 {questions.map((question, questionIndex) => (
                   <SortableQuestionItem
-                    key={questionIndex}
+                    key={question.id || questionIndex}
                     question={question}
                     questionIndex={questionIndex}
                     onUpdate={updateQuestion}
@@ -342,6 +376,7 @@ export function SurveyQuestionsEditor({
                     onUpdateOption={updateOption}
                     onRemoveOption={removeOption}
                     errors={errors}
+                    isReadOnly={isReadOnly}
                   />
                 ))}
               </div>

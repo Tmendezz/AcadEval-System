@@ -30,11 +30,6 @@ export default function EditTemplatePage() {
     );
   }
 
-  // Debug: verificar datos del template desde el backend
-  console.log('🔍 Template from backend:', template);
-  console.log('🔍 Template title from backend:', template.title);
-  console.log('🔍 Template description from backend:', template.description);
-
   return (
     <PageLayout>
       <PageContent>
@@ -43,7 +38,6 @@ export default function EditTemplatePage() {
             await updateMutation.mutateAsync({ id, data: payload });
             setLocation('/templates');
           }}
-          onCancel={() => setLocation('/templates')}
           isSubmitting={updateMutation.isPending}
           initialData={{
             title: template.title,

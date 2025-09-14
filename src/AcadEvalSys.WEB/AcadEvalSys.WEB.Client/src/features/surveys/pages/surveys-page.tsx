@@ -1,19 +1,10 @@
 import { useState } from 'react';
 import { useLocation } from 'wouter';
-import { SurveyListItem, SurveyStatus } from '../models/survey-types';
+import { SurveyStatus } from '../models/survey-types';
+import { SurveyListItem } from '..';
 import { useSurveys } from '../hooks/use-surveys';
 import { SurveyList } from '../components/SurveyList';
-import { Button } from '@/shared/components/ui/button';
-import { Plus } from 'lucide-react';
-// Filtros pendientes de habilitar
-// import { Input } from '@/shared/components/ui/input';
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from '@/shared/components/ui/select';
+
 import { PageContent, PageHeader, PageLayout } from '@/shared/components/layout/page-layout';
 
 export default function SurveysPage() {
@@ -27,9 +18,6 @@ export default function SurveysPage() {
   const { data: surveys = [], isLoading, error } = useSurveys(filters);
 
 
-  const handleCreateSurvey = () => {
-    setLocation('/encuestas/crear');
-  };
 
   const handleEditSurvey = (survey: SurveyListItem) => {
     setLocation(`/encuestas/editar/${survey.id}`);
@@ -41,10 +29,7 @@ export default function SurveysPage() {
         title="Encuestas"
         description="Gestiona tus encuestas académicas"
       >
-        <Button onClick={handleCreateSurvey}>
-          <Plus className="w-4 h-4 mr-2" />
-          Crear Encuesta
-        </Button>
+        
       </PageHeader>
       <PageContent> 
 

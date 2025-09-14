@@ -1,5 +1,6 @@
 import { SurveyStatus } from "../models/survey-types";
-import { QuestionType } from "../models/survey-template-types";
+// Definir QuestionType localmente
+type QuestionType = 'SingleChoice' | 'MultipleChoice' | 'OpenText';
 
 export function getSurveyStatusLabel(status: SurveyStatus): string {
   switch (status) {
@@ -16,11 +17,11 @@ export function getSurveyStatusLabel(status: SurveyStatus): string {
 
 export function getQuestionTypeLabel(type: QuestionType): string {
   switch (type) {
-    case QuestionType.SingleChoice:
+    case 'SingleChoice':
       return 'Opción única';
-    case QuestionType.MultipleChoice:
+    case 'MultipleChoice':
       return 'Opción múltiple';
-    case QuestionType.OpenText:
+    case 'OpenText':
       return 'Texto libre';
     default:
       return 'Desconocido';
@@ -29,11 +30,11 @@ export function getQuestionTypeLabel(type: QuestionType): string {
 
 export function getQuestionTypeIcon(type: QuestionType): string {
   switch (type) {
-    case QuestionType.SingleChoice:
+    case 'SingleChoice':
       return '🔘';
-    case QuestionType.MultipleChoice:
+    case 'MultipleChoice':
       return '☑️';
-    case QuestionType.OpenText:
+    case 'OpenText':
       return '📝';
     default:
       return '❓';

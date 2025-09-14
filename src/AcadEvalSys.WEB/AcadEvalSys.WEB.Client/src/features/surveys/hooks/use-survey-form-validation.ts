@@ -1,5 +1,8 @@
 import { useState, useCallback } from 'react';
-import { SurveyTemplateQuestion, QuestionType } from '../models/survey-template-types';
+import { SurveyTemplateQuestion } from '../models/survey-template-types';
+
+// Definir QuestionType localmente
+type QuestionType = 'SingleChoice' | 'MultipleChoice' | 'OpenText';
 
 export interface SurveyBasicInfo {
   title: string;
@@ -46,7 +49,7 @@ export function useSurveyFormValidation() {
         newErrors[`question_${index}_text`] = 'El texto de la pregunta es requerido';
       }
 
-      if ((question.type === QuestionType.SingleChoice || question.type === QuestionType.MultipleChoice) && question.options.length === 0) {
+      if ((question.type === 'SingleChoice' || question.type === 'MultipleChoice') && question.options.length === 0) {
         newErrors[`question_${index}_options`] = 'Las preguntas de opción múltiple deben tener al menos una opción';
       }
     });

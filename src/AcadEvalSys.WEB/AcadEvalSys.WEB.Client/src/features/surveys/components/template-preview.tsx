@@ -2,7 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
-import { SurveyTemplate, QuestionType } from '../models/survey-template-types';
+import { SurveyTemplate } from '../models/survey-template-types';
+
+// Definir QuestionType localmente
+type QuestionType = 'SingleChoice' | 'MultipleChoice' | 'OpenText';
 import { getSurveyTemplateTypeLabel, getQuestionTypeLabel } from '../utils/survey-template-formatters';
 
 interface TemplatePreviewProps {
@@ -38,7 +41,7 @@ export function TemplatePreview({ template, isOpen, onClose }: TemplatePreviewPr
           </div>
 
           {/* Renderizar opciones según el tipo */}
-          {question.type === QuestionType.SingleChoice && (
+          {question.type === 'SingleChoice' && (
             <div className="space-y-2">
               {question.options.map((option: any, optionIndex: number) => (
                 <div key={optionIndex} className="flex items-center space-x-2">
@@ -54,7 +57,7 @@ export function TemplatePreview({ template, isOpen, onClose }: TemplatePreviewPr
             </div>
           )}
 
-          {question.type === QuestionType.MultipleChoice && (
+          {question.type === 'MultipleChoice' && (
             <div className="space-y-2">
               {question.options.map((option: any, optionIndex: number) => (
                 <div key={optionIndex} className="flex items-center space-x-2">
@@ -69,7 +72,7 @@ export function TemplatePreview({ template, isOpen, onClose }: TemplatePreviewPr
             </div>
           )}
 
-          {question.type === QuestionType.OpenText && (
+          {question.type === 'OpenText' && (
             <div>
               <textarea
                 disabled

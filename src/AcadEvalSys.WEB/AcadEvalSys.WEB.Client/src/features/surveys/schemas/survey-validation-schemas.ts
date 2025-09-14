@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { QuestionType } from '../models/survey-template-types';
+// Definir QuestionType localmente
+type QuestionType = 'SingleChoice' | 'MultipleChoice' | 'OpenText';
 
 // Esquema para opciones de pregunta
 export const QuestionOptionSchema = z.object({
@@ -18,7 +19,7 @@ export const QuestionSchema = z.object({
   options: z.array(QuestionOptionSchema).optional(),
 }).refine((data) => {
   // Validar que las preguntas de opción múltiple tengan al menos una opción
-  if ((data.type === QuestionType.SingleChoice || data.type === QuestionType.MultipleChoice)) {
+  if ((data.type === 'SingleChoice' || data.type === 'MultipleChoice')) {
     return data.options && data.options.length > 0;
   }
   return true;
@@ -27,7 +28,7 @@ export const QuestionSchema = z.object({
   path: ['options'],
 }).refine((data) => {
   // Validar que las preguntas de texto abierto no tengan opciones
-  if (data.type === QuestionType.OpenText) {
+  if (data.type === 'OpenText') {
     return !data.options || data.options.length === 0;
   }
   return true;

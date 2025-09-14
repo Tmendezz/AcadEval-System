@@ -15,7 +15,6 @@ export default function CreateTemplatePage() {
             await createMutation.mutateAsync(payload);
             setLocation('/templates');
           }}
-          onCancel={() => setLocation('/templates')}
           isSubmitting={createMutation.isPending}
         />
       </PageContent>
