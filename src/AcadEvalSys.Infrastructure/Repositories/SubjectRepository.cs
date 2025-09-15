@@ -1,4 +1,5 @@
 using AcadEvalSys.Domain.Entities;
+using AcadEvalSys.Domain.Enums;
 using AcadEvalSys.Domain.Repositories;
 using AcadEvalSys.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -124,5 +125,23 @@ public class SubjectRepository(ApplicationDbContext dbContext) : ISubjectReposit
             .Where(s => s.ProfessorId == professorId && s.IsActive)
             .Include(s => s.TechnicalCareer)
             .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Subject>> GetByCareerAndYearsAsync(
+        IEnumerable<Guid> careerIds, 
+        IEnumerable<CareerYear> years, 
+        CancellationToken cancellationToken = default)
+    {
+        var careerIdsList = careerIds.ToList();
+        var yearsList = years.ToList();
+
+        return await dbContext.Subjects
+            .Where(s => s.IsActive && 
+                       careerIdsList.Contains(s.TechnicalCareerId ?? Guid.Empty) &&
+                       yearsList.Contains(s.Year))
+            .Include(s => s.TechnicalCareer)
+            .Include(s => s.Professor!)
+                .ThenInclude(p => p.User)
+            .ToListAsync(cancellationToken);
     }
 }

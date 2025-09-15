@@ -5,7 +5,7 @@ type QuestionType = 'SingleChoice' | 'MultipleChoice' | 'OpenText';
 // Esquema para opciones de pregunta
 export const QuestionOptionSchema = z.object({
   text: z.string().min(1, 'El texto de la opción es obligatorio'),
-  value: z.number().optional(),
+  value: z.string().optional(),
   order: z.number().optional(),
   allowOpenText: z.boolean().optional(),
 });
@@ -13,7 +13,7 @@ export const QuestionOptionSchema = z.object({
 // Esquema para una pregunta individual
 export const QuestionSchema = z.object({
   text: z.string().min(1, 'El texto de la pregunta es obligatorio'),
-  type: z.nativeEnum(QuestionType),
+  type: z.enum(['SingleChoice', 'MultipleChoice', 'OpenText']),
   order: z.number().optional(),
   required: z.boolean().optional(),
   options: z.array(QuestionOptionSchema).optional(),
@@ -60,6 +60,14 @@ export const SurveyBasicInfoSchema = z.object({
     .max(300, 'La descripción no puede exceder 300 caracteres'),
 });
 
+// Esquema para información básica cuando se usa una plantilla (solo título)
+export const SurveyTemplateBasicInfoSchema = z.object({
+  title: z.string()
+    .min(1, 'El título es obligatorio')
+    .min(3, 'El título debe tener al menos 3 caracteres')
+    .max(120, 'El título no puede exceder 120 caracteres'),
+});
+
 // Esquema para validar todas las preguntas
 export const SurveyQuestionsSchema = z.object({
   questions: z.array(QuestionSchema)
@@ -100,27 +108,40 @@ export function formatZodErrors(error: z.ZodError): Record<string, string> {
 }
 
 // Función helper para validar paso por paso
-export function validateStep(step: number, data: any): { isValid: boolean; errors: Record<string, string> } {
+export function validateStep(step: number, data: any, isUsingTemplate: boolean = false): { isValid: boolean; errors: Record<string, string> } {
   try {
     switch (step) {
       case 0: // Información básica y preguntas
-        const basicInfoResult = SurveyBasicInfoSchema.safeParse({
-          title: data.title,
-          description: data.description,
-        });
-        
-        const questionsResult = SurveyQuestionsSchema.safeParse({
-          questions: data.questions || [],
-        });
-        
         const errors: Record<string, string> = {};
         
-        if (!basicInfoResult.success) {
-          Object.assign(errors, formatZodErrors(basicInfoResult.error));
-        }
-        
-        if (!questionsResult.success) {
-          Object.assign(errors, formatZodErrors(questionsResult.error));
+        if (isUsingTemplate) {
+          // Cuando se usa una plantilla, solo validar el título
+          const basicInfoResult = SurveyTemplateBasicInfoSchema.safeParse({
+            title: data.title,
+          });
+          
+          if (!basicInfoResult.success) {
+            Object.assign(errors, formatZodErrors(basicInfoResult.error));
+          }
+        } else {
+          // Cuando no se usa plantilla, validar título y descripción
+          const basicInfoResult = SurveyBasicInfoSchema.safeParse({
+            title: data.title,
+            description: data.description,
+          });
+          
+          if (!basicInfoResult.success) {
+            Object.assign(errors, formatZodErrors(basicInfoResult.error));
+          }
+          
+          // Validar preguntas solo si no se está usando una plantilla
+          const questionsResult = SurveyQuestionsSchema.safeParse({
+            questions: data.questions || [],
+          });
+          
+          if (!questionsResult.success) {
+            Object.assign(errors, formatZodErrors(questionsResult.error));
+          }
         }
         
         return {

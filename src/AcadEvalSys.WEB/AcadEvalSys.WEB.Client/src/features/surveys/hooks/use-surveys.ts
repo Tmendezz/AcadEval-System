@@ -1,6 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { surveyService } from '../services/survey-service';
 import { SurveyForm, SurveyFilters } from '../models/survey-types';
+import { api } from '@/infrastructure/query/axios';
+export interface TechnicalCareer {
+  id: string;
+  name: string;
+}
 
 // Query keys
 export const surveyKeys = {
@@ -112,6 +117,19 @@ export function useArchiveSurvey() {
       queryClient.invalidateQueries({ queryKey: surveyKeys.lists() });
       queryClient.invalidateQueries({ queryKey: surveyKeys.detail(id) });
     },
+  });
+}
+
+// Hook para obtener tecnicaturas
+export function useTechnicalCareers() {
+  return useQuery({
+    queryKey: ['technical-careers'],
+    queryFn: async (): Promise<TechnicalCareer[]> => {
+      const response = await api.get('/technical-careers');
+      return response.data;
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutos
+    gcTime: 30 * 60 * 1000, // 30 minutos
   });
 }
 

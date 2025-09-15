@@ -1,4 +1,5 @@
 using AcadEvalSys.Domain.Entities;
+using AcadEvalSys.Domain.Enums;
 
 namespace AcadEvalSys.Domain.Repositories;
 
@@ -21,4 +22,10 @@ public interface ISubjectRepository
 
     // Verificaciones
     Task<bool> UserTeachesInCareerAsync(string userId, Guid technicalCareerId);
+    
+    // Método optimizado para obtener asignaturas por tecnicaturas y años
+    Task<IEnumerable<Subject>> GetByCareerAndYearsAsync(
+        IEnumerable<Guid> careerIds, 
+        IEnumerable<CareerYear> years, 
+        CancellationToken cancellationToken = default);
 }

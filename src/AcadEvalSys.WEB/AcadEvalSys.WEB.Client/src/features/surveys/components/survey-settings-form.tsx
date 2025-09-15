@@ -2,30 +2,34 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { Label } from '@/shared/components/ui/label';
 import { Switch } from '@/shared/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
-import { SurveyAudienceSelector, AudienceCombination, TechnicalCareer } from './survey-audience-selector';
+import { SurveyAudienceSelectorExpandable } from './survey-audience-selector-expandable';
+
+import { TechnicalCareer } from '../hooks/use-surveys';
+import { CareerYear } from '../models/survey-types';
 
 export type SurveyAudience = 'students' | 'professors' | 'all';
 
 export interface SurveySettingsFormProps {
   audience: SurveyAudience;
   isAnonymous: boolean;
-  selectedAudiences: AudienceCombination[];
+  selectedCareerIds: string[];
+  selectedYears: CareerYear[];
   onChange: (updates: { 
     audience?: SurveyAudience; 
     isAnonymous?: boolean;
-    selectedAudiences?: AudienceCombination[];
+    selectedCareerIds?: string[];
+    selectedYears?: CareerYear[];
   }) => void;
   careers: TechnicalCareer[];
-  years: number[];
 }
 
 export function SurveySettingsForm({ 
   audience, 
   isAnonymous, 
-  selectedAudiences,
+  selectedCareerIds,
+  selectedYears,
   onChange, 
-  careers, 
-  years 
+  careers
 }: SurveySettingsFormProps) {
   return (
     <div className="space-y-6">
@@ -60,11 +64,12 @@ export function SurveySettingsForm({
         </CardContent>
       </Card>
 
-      <SurveyAudienceSelector
-        selectedAudiences={selectedAudiences}
-        onAudiencesChange={(audiences) => onChange({ selectedAudiences: audiences })}
+      <SurveyAudienceSelectorExpandable
         careers={careers}
-        years={years}
+        selectedCareerIds={selectedCareerIds}
+        selectedYears={selectedYears}
+        onCareerChange={(careerIds) => onChange({ selectedCareerIds: careerIds })}
+        onYearChange={(years) => onChange({ selectedYears: years })}
       />
     </div>
   );

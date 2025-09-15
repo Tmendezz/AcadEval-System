@@ -1,9 +1,5 @@
-﻿using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using AcadEvalSys.Domain.Enums;
+using FluentValidation;
 
 namespace AcadEvalSys.Application.AcademicSurveys.Commands.CreateAcademicSurvey
 {
@@ -17,6 +13,14 @@ namespace AcadEvalSys.Application.AcademicSurveys.Commands.CreateAcademicSurvey
 
             RuleFor(x => x.TemplateId)
                 .NotEmpty().WithMessage("TemplateId es requerido.");
+
+            RuleFor(x => x.SelectedCareerIds)
+                .NotEmpty().WithMessage("Debe seleccionar al menos una tecnicatura.");
+
+            RuleFor(x => x.SelectedYears)
+                .NotEmpty().WithMessage("Debe seleccionar al menos un año de cursado.")
+                .Must(years => years.All(year => year >= CareerYear.First && year <= CareerYear.Third))
+                .WithMessage("Los años de cursado deben estar entre 1 y 3.");
 
             RuleFor(x => x)
                 .Must(x => !(x.PublishAt.HasValue && x.CloseAt.HasValue) || x.PublishAt <= x.CloseAt)

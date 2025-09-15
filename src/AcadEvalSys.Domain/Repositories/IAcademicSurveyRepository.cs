@@ -1,4 +1,4 @@
-﻿using AcadEvalSys.Domain.Entities;
+using AcadEvalSys.Domain.Entities;
 using AcadEvalSys.Domain.Enums;
 
 namespace AcadEvalSys.Domain.Repositories;
@@ -12,6 +12,7 @@ public interface IAcademicSurveyRepository
     Task CloseAsync(Guid surveyId, DateTime? closeAt = null, CancellationToken ct = default);
 
     Task<AcademicSurvey?> GetByIdAsync(Guid id, bool includeChildren = true, CancellationToken ct = default);
+    Task UpdateAsync(AcademicSurvey survey, CancellationToken ct = default);
     Task<IReadOnlyList<AcademicSurvey>> ListAsync(
         SurveyStatus? status = null,
         Guid? technicalCareerId = null,

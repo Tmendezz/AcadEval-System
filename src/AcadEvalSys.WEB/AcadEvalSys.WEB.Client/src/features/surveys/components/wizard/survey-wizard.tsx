@@ -7,7 +7,8 @@ import { SurveyTemplateForm, SurveyTemplateQuestion } from '../../models/survey-
 import { SurveyBasicInfoForm } from '../survey-basic-info-form';
 import { SurveyQuestionsEditor } from '../survey-questions-editor';
 import { SurveySettingsForm, SurveyAudience } from '../survey-settings-form';
-import { AudienceCombination, TechnicalCareer } from '../survey-audience-selector';
+import { TechnicalCareer } from '../../hooks/use-surveys';
+import { CareerYear } from '../../models/survey-types';
 import { validateStep } from '../../schemas/survey-validation-schemas';
 
 interface SurveyWizardProps {
@@ -16,7 +17,8 @@ interface SurveyWizardProps {
     settings: { 
       audience: SurveyAudience; 
       isAnonymous: boolean;
-      selectedAudiences: AudienceCombination[];
+      selectedCareerIds: string[];
+      selectedYears: CareerYear[];
     } 
   }) => Promise<void> | void;
   onCancel: () => void;
@@ -28,10 +30,9 @@ interface SurveyWizardProps {
   };
   fixedQuestions?: SurveyTemplateQuestion[]; // si se provee, el editor se bloquea y usa estas preguntas
   careers: TechnicalCareer[];
-  years: number[];
 }
 
-export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = false, initialTemplate, fixedQuestions, careers, years }: SurveyWizardProps) {
+export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = false, initialTemplate, fixedQuestions, careers }: SurveyWizardProps) {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const normalizeType = (t: any): 'SingleChoice' | 'MultipleChoice' | 'OpenText' => {
     if (typeof t === 'string' && ['SingleChoice', 'MultipleChoice', 'OpenText'].includes(t)) {
@@ -67,11 +68,13 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
   const [settings, setSettings] = useState<{ 
     audience: SurveyAudience; 
     isAnonymous: boolean;
-    selectedAudiences: AudienceCombination[];
+    selectedCareerIds: string[];
+    selectedYears: CareerYear[];
   }>({ 
     audience: 'students', 
     isAnonymous: true,
-    selectedAudiences: []
+    selectedCareerIds: [], // Inicialmente vacío significa que todas están incluidas
+    selectedYears: []
   });
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
@@ -109,15 +112,15 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
 
   // Validar el paso actual
   const validateCurrentStep = useCallback((): boolean => {
-    const validationResult = validateStep(currentStep, form);
+    const validationResult = validateStep(currentStep, form, !!fixedQuestions);
     setValidationErrors(validationResult.errors);
     return validationResult.isValid;
-  }, [currentStep, form]);
+  }, [currentStep, form, fixedQuestions]);
 
   const canProceed = useMemo((): boolean => {
-    const validationResult = validateStep(currentStep, form);
+    const validationResult = validateStep(currentStep, form, !!fixedQuestions);
     return validationResult.isValid;
-  }, [currentStep, form]);
+  }, [currentStep, form, fixedQuestions]);
 
   const handleSubmit = async () => {
     // Validar todo antes de enviar
@@ -163,10 +166,10 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
             <SurveySettingsForm
               audience={settings.audience}
               isAnonymous={settings.isAnonymous}
-              selectedAudiences={settings.selectedAudiences}
+              selectedCareerIds={settings.selectedCareerIds}
+              selectedYears={settings.selectedYears}
               onChange={(u) => setSettings((prev) => ({ ...prev, ...u }))}
               careers={careers}
-              years={years}
             />
           </div>
         )}
@@ -180,16 +183,18 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
               <div className="mb-2"><strong>Preguntas:</strong> {form.questions.length}</div>
               <div className="mb-2"><strong>Tipo de audiencia:</strong> {settings.audience}</div>
               <div className="mb-2"><strong>Respuestas anónimas:</strong> {settings.isAnonymous ? 'Sí' : 'No'}</div>
-              <div className="mb-2"><strong>Audiencia específica:</strong></div>
-              {settings.selectedAudiences.length > 0 ? (
-                <div className="ml-4 text-sm">
-                  {settings.selectedAudiences.map((audience, index) => (
-                    <div key={index}>• {audience.careerName} - {audience.year}° Año</div>
-                  ))}
-                </div>
-              ) : (
-                <div className="ml-4 text-sm text-muted-foreground">Ninguna seleccionada</div>
-              )}
+              <div className="mb-2"><strong>Tecnicaturas incluidas:</strong> {
+                careers
+                  .filter(career => !settings.selectedCareerIds.includes(career.id))
+                  .map(career => career.name)
+                  .join(', ') || 'Ninguna'
+              }</div>
+              <div className="mb-2"><strong>Cohortes incluidas:</strong> {
+                [1, 2, 3]
+                  .filter(year => !settings.selectedYears.includes(year as any))
+                  .map(year => `${year}° Año`)
+                  .join(', ') || 'Ninguna'
+              }</div>
             </div>
           </div>
         )}

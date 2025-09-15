@@ -1,4 +1,4 @@
-﻿using AcadEvalSys.Domain.Enums;
+using AcadEvalSys.Domain.Enums;
 
 namespace AcadEvalSys.Domain.Entities
 {

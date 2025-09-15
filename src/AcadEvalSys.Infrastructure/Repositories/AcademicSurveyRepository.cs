@@ -1,4 +1,4 @@
-﻿using AcadEvalSys.Domain.Entities;
+using AcadEvalSys.Domain.Entities;
 using AcadEvalSys.Domain.Enums;
 using AcadEvalSys.Domain.Repositories;
 using AcadEvalSys.Infrastructure.Persistence;
@@ -215,6 +215,12 @@ public class AcademicSurveyRepository(ApplicationDbContext db) : IAcademicSurvey
         existing.SubmittedAt = response.SubmittedAt;
         existing.UpdatedAt = DateTime.UtcNow;
 
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task UpdateAsync(AcademicSurvey survey, CancellationToken ct = default)
+    {
+        // La entidad ya está siendo tracked por EF, solo necesitamos guardar los cambios
         await db.SaveChangesAsync(ct);
     }
 }

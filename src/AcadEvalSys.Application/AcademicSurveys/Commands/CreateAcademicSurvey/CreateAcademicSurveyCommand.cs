@@ -1,9 +1,5 @@
-﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using AcadEvalSys.Domain.Enums;
+using MediatR;
 
 namespace AcadEvalSys.Application.AcademicSurveys.Commands.CreateAcademicSurvey
 {
@@ -13,5 +9,9 @@ namespace AcadEvalSys.Application.AcademicSurveys.Commands.CreateAcademicSurvey
         public Guid TemplateId { get; set; }
         public DateTime? PublishAt { get; set; }
         public DateTime? CloseAt { get; set; }
+        
+        // Configuración de audiencia
+        public List<Guid> SelectedCareerIds { get; set; } = new();
+        public List<CareerYear> SelectedYears { get; set; } = new();
     }
 }

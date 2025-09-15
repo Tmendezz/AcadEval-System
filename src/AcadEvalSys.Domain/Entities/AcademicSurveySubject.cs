@@ -9,11 +9,7 @@ namespace AcadEvalSys.Domain.Entities
     public class AcademicSurveySubject : BaseEntity
     {
         public Guid AcademicSurveyId { get; set; }
-
-        public Guid? TechnicalCareerId { get; set; }
-        public CareerYear? Year { get; set; }                 
         public Guid? SubjectId { get; set; }           // Materia específica
-        public string? ProfessorUserId { get; set; }   // Profesor específico
 
         // Navegación
         public virtual AcademicSurvey? AcademicSurvey { get; set; }

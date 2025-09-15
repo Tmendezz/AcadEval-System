@@ -36,21 +36,7 @@ export interface CreateAcademicSurveyRequest {
   templateId: string;
   publishAt?: string;
   closeAt?: string;
-  audiences: SurveyAudienceDto[];
+  selectedCareerIds: string[];
+  selectedYears: CareerYear[];
 }
 
-export interface SetSurveyAudienceRequest {
-  surveyId: string;
-  audiences: SurveyAudienceDto[];
-}
-
-// Helper types
-export interface CareerOption {
-  id: string;
-  name: string;
-}
-
-export interface YearOption {
-  value: CareerYear;
-  label: string;
-}

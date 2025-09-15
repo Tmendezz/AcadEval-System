@@ -1,4 +1,4 @@
-﻿using AcadEvalSys.Application.AcademicSurveys.Commands.CloseAcademicSurvey;
+using AcadEvalSys.Application.AcademicSurveys.Commands.CloseAcademicSurvey;
 using AcadEvalSys.Application.AcademicSurveys.Commands.CreateAcademicSurvey;
 using AcadEvalSys.Application.AcademicSurveys.Commands.PublishAcademicSurvey;
 using AcadEvalSys.Application.AcademicSurveys.Commands.SetSurveySubjects;
@@ -9,6 +9,7 @@ using AcadEvalSys.Domain.Constants.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace AcadEvalSys.WEB.Server.Controllers;
 
@@ -23,8 +24,20 @@ public class AcademicSurveyController(IMediator mediator) : ControllerBase
     [Produces("application/json")]
     public async Task<IActionResult> Create([FromBody] CreateAcademicSurveyCommand command)
     {
-        var id = await mediator.Send(command);
-        return CreatedAtAction(nameof(GetById), new { id }, new { id });
+        try
+        {
+            Log.Information("Recibida solicitud para crear encuesta: {Title}", command.Title);
+            
+            var id = await mediator.Send(command);
+            
+            Log.Information("Encuesta creada exitosamente con ID: {Id}", id);
+            return CreatedAtAction(nameof(GetById), new { id }, new { id });
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Error al crear encuesta: {Title}", command.Title);
+            throw;
+        }
     }
 
     [HttpPut("{id}/subjects")]

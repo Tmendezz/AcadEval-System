@@ -1,5 +1,6 @@
 import { api } from '@/infrastructure/query/axios';
 import { Survey, SurveyListItem, SurveyForm, SurveyFilters } from '../models/survey-types';
+import { TechnicalCareer } from '../models/survey-audience-types';
 
 const baseUrl = '/surveys';
 
@@ -71,6 +72,12 @@ export const surveyService = {
   // Archivar encuesta
   async archiveSurvey(id: string): Promise<Survey> {
     const response = await api.post(`${baseUrl}/${id}/archive`);
+    return response.data;
+  },
+
+  // Obtener tecnicaturas
+  async getTechnicalCareers(): Promise<TechnicalCareer[]> {
+    const response = await api.get('/technical-careers');
     return response.data;
   },
 };
