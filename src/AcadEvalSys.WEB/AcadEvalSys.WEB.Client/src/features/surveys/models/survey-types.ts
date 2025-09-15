@@ -1,8 +1,10 @@
 // Enums
 export enum SurveyStatus {
   Draft = 0,
-  Published = 1,
-  Closed = 2,
+  Scheduled = 1,
+  Published = 2,
+  Closed = 3,
+  Archived = 4,
 }
 
 export enum CareerYear {

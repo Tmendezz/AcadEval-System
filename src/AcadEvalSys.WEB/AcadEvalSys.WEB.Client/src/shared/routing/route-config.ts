@@ -70,35 +70,79 @@ export const routes: RouteConfig[] = [
     title: "Editar Plantilla",
   },
 
-  // Student surveys
+  // Student surveys - Improved version
+  {
+    path: "/encuestas/mis-encuestas",
+    component: React.lazy(
+      () => import("@/features/surveys/pages/my-surveys-page")
+    ),
+    title: "Mis Encuestas",
+  },
+  {
+    path: "/encuestas/responder/:id",
+    component: React.lazy(
+      () => import("@/features/surveys/pages/respond-survey-page")
+    ),
+    title: "Responder Encuesta",
+  },
+  {
+    path: "/encuestas/ver-respuesta/:id",
+    component: React.lazy(
+      () => import("@/features/surveys/pages/view-response-page")
+    ),
+    title: "Ver Respuesta",
+  },
+  
+  // Legacy student surveys (keep for backward compatibility)
   {
     path: "/encuestas/alumno",
     component: React.lazy(
       () => import("@/features/surveys/pages/student-surveys-list-page")
     ),
-    title: "Mis Encuestas",
+    title: "Mis Encuestas (Legacy)",
   },
   {
     path: "/encuestas/alumno/responder/:id",
     component: React.lazy(
       () => import("@/features/surveys/pages/student-survey-page")
     ),
-    title: "Responder Encuesta",
+    title: "Responder Encuesta (Legacy)",
   },
-  // Teacher surveys
+  
+  // Teacher surveys - Improved version
+  {
+    path: "/encuestas/docente/mis-encuestas",
+    component: React.lazy(
+      () => import("@/features/surveys/pages/my-surveys-page")
+    ),
+    requiredRoles: [UserRole.Professor],
+    title: "Mis Encuestas (Profesor)",
+  },
+  {
+    path: "/encuestas/docente/responder/:id",
+    component: React.lazy(
+      () => import("@/features/surveys/pages/respond-survey-page")
+    ),
+    requiredRoles: [UserRole.Professor],
+    title: "Responder Encuesta (Profesor)",
+  },
+  {
+    path: "/encuestas/docente/ver-respuesta/:id",
+    component: React.lazy(
+      () => import("@/features/surveys/pages/view-response-page")
+    ),
+    requiredRoles: [UserRole.Professor],
+    title: "Ver Respuesta (Profesor)",
+  },
+  
+  // Legacy teacher surveys (keep for backward compatibility)
   {
     path: "/encuestas/docente",
     component: React.lazy(
       () => import("@/features/surveys/pages/teacher-surveys-list-page")
     ),
-    title: "Mis Encuestas",
-  },
-  {
-    path: "/encuestas/docente/responder/:id",
-    component: React.lazy(
-      () => import("@/features/surveys/pages/teacher-survey-page")
-    ),
-    title: "Responder Encuesta (Docente)",
+    requiredRoles: [UserRole.Professor],
+    title: "Mis Encuestas (Legacy)",
   },
 
   // Evaluations

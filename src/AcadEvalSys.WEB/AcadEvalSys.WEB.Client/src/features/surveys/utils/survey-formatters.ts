@@ -6,10 +6,14 @@ export function getSurveyStatusLabel(status: SurveyStatus): string {
   switch (status) {
     case SurveyStatus.Draft:
       return 'Borrador';
+    case SurveyStatus.Scheduled:
+      return 'Programada';
     case SurveyStatus.Published:
       return 'Publicada';
     case SurveyStatus.Closed:
       return 'Cerrada';
+    case SurveyStatus.Archived:
+      return 'Archivada';
     default:
       return 'Desconocido';
   }

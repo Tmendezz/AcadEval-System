@@ -17,10 +17,12 @@ function getStatusVariant(status: number) {
     case 0:
       return 'secondary'; // Draft
     case 1:
-      return 'default'; // Published
+      return 'outline'; // Scheduled
     case 2:
-      return 'destructive'; // Closed
+      return 'default'; // Published
     case 3:
+      return 'destructive'; // Closed
+    case 4:
       return 'outline'; // Archived
     default:
       return 'secondary';

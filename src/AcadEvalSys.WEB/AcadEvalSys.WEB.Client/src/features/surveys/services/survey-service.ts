@@ -80,5 +80,36 @@ export const surveyService = {
     const response = await api.get('/technical-careers');
     return response.data;
   },
+
+  // Obtener encuestas del usuario actual
+  async getUserSurveys(filters?: { status?: 'pending' | 'completed' | 'all' }): Promise<any[]> {
+    const params = new URLSearchParams();
+    if (filters?.status) {
+      params.append('status', filters.status);
+    }
+    
+    const queryString = params.toString();
+    const url = queryString ? `${baseUrl}/my-surveys?${queryString}` : `${baseUrl}/my-surveys`;
+    
+    const response = await api.get(url);
+    return response.data;
+  },
+
+  // Obtener una encuesta específica para responder
+  async getSurveyForResponse(surveyId: string): Promise<any> {
+    const response = await api.get(`${baseUrl}/${surveyId}/for-response`);
+    return response.data;
+  },
+
+  // Enviar respuesta de encuesta
+  async submitSurveyResponse(surveyId: string, responses: any[]): Promise<void> {
+    await api.post(`${baseUrl}/${surveyId}/responses`, { responses });
+  },
+
+  // Obtener respuesta del usuario para una encuesta
+  async getUserSurveyResponse(surveyId: string): Promise<any> {
+    const response = await api.get(`${baseUrl}/${surveyId}/my-response`);
+    return response.data;
+  },
 };
 
