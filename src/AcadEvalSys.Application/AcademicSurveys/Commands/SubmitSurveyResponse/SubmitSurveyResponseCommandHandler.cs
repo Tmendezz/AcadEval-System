@@ -1,93 +1,135 @@
-﻿using AcadEvalSys.Domain.Entities;
+﻿using AcadEvalSys.Domain.Repositories;
+using AcadEvalSys.Domain.Entities;
 using AcadEvalSys.Domain.Enums;
-using AcadEvalSys.Domain.Repositories;
+using AcadEvalSys.Application.Users;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using AcadEvalSys.Domain.Constants.Constants; // Para UserRoles
 
 namespace AcadEvalSys.Application.AcademicSurveys.Commands.SubmitSurveyResponse
 {
-    public class SubmitSurveyResponseCommandHandler(ILogger<SubmitSurveyResponseCommandHandler> logger, IAcademicSurveyRepository surveyRepo) : IRequestHandler<SubmitSurveyResponseCommand, Guid>
+    public class SubmitSurveyResponseCommandHandler(
+        IAcademicSurveyRepository surveyRepository,
+        IUserContext userContext,
+        ILogger<SubmitSurveyResponseCommandHandler> logger
+    ) : IRequestHandler<SubmitSurveyResponseCommand, Guid>
     {
-        public async Task<Guid> Handle(SubmitSurveyResponseCommand request, CancellationToken ct)
+        public async Task<Guid> Handle(SubmitSurveyResponseCommand request, CancellationToken cancellationToken)
         {
-            logger.LogInformation("Registrando respuesta: SubjectId {SubjectId}, UserId {UserId}", request.AcademicSurveySubjectId, request.UserId);
-            var subject = await surveyRepo.GetSubjectGraphAsync(request.AcademicSurveySubjectId, ct)
-                 ?? throw new KeyNotFoundException("AcademicSurveySubject no encontrado o inactivo.");
+            var currentUser = userContext.GetCurrentUser()
+                ?? throw new UnauthorizedAccessException("Usuario no autenticado.");
 
-            var survey = subject.AcademicSurvey!;
+            request.UserId = currentUser.Id!;
+
+            // IMPORTANTE: GetSubjectGraphAsync debe incluir .ThenInclude(sv => sv.Template) para que survey.Template no sea null.
+            var subject = await surveyRepository.GetSubjectGraphAsync(request.AcademicSurveySubjectId, cancellationToken)
+                ?? throw new KeyNotFoundException("SurveySubject no encontrado o inactivo.");
+
+            var survey = subject.AcademicSurvey
+                ?? throw new InvalidOperationException("Inconsistencia: el Subject no tiene AcademicSurvey.");
+
+            // Estado y ventana temporal
+            if (survey.Status != SurveyStatus.Published)
+                throw new InvalidOperationException("La encuesta no está publicada.");
+
             var now = DateTime.UtcNow;
-            if (survey.Status != SurveyStatus.Published ||
-                (survey.PublishAt.HasValue && survey.PublishAt > now) ||
-                (survey.CloseAt.HasValue && survey.CloseAt < now))
-            {
-                throw new InvalidOperationException("La encuesta no está disponible para responder.");
-            }
+            if (survey.PublishAt.HasValue && now < survey.PublishAt.Value)
+                throw new InvalidOperationException("La encuesta aún no está disponible.");
+            if (survey.CloseAt.HasValue && now > survey.CloseAt.Value)
+                throw new InvalidOperationException("La encuesta está cerrada.");
 
-            var questionsById = survey.Questions.ToDictionary(q => q.Id);
-            foreach (var ans in request.Answers)
+            // Validación de tipo (Student / Professor) según la plantilla
+            var expectedType = survey.Template?.SurveyType;
+            if (expectedType is not null)
             {
-                if (!questionsById.TryGetValue(ans.QuestionId, out var q))
-                    throw new InvalidOperationException($"La pregunta {ans.QuestionId} no pertenece a esta encuesta.");
-
-                switch (q.Type)
+                switch (expectedType)
                 {
-                    case QuestionType.OpenText:
-                        if (string.IsNullOrWhiteSpace(ans.Text))
-                            throw new InvalidOperationException($"La pregunta '{q.Text}' requiere texto abierto.");
-                        ans.SelectedValue = null;
-                        break;
-                    case QuestionType.SingleChoice:
-                    case QuestionType.MultipleChoice:
-                        if (!ans.SelectedValue.HasValue)
-                            throw new InvalidOperationException($"La pregunta '{q.Text}' requiere un valor seleccionado.");
-                        if (!q.Options.Any(o => o.Value == ans.SelectedValue.Value))
-                            throw new InvalidOperationException($"La opción seleccionada no es válida para la pregunta '{q.Text}'.");
-                        break;
-                    default:
-                        throw new InvalidOperationException($"Tipo de pregunta no soportado: {q.Type}");
+                    case SurveyTemplateType.Student when !currentUser.IsInRole(UserRoles.Student):
+                        throw new InvalidOperationException("Solo estudiantes pueden responder esta encuesta.");
+                    case SurveyTemplateType.Professor when !currentUser.IsInRole(UserRoles.Professor):
+                        throw new InvalidOperationException("Solo profesores pueden responder esta encuesta.");
                 }
             }
 
-            var existing = await surveyRepo.GetResponseAsync(request.AcademicSurveySubjectId, request.UserId, ct);
+            var questionLookup = survey.Questions.ToDictionary(q => q.Id);
+            var requiredIds = survey.Questions.Where(q => q.IsRequired).Select(q => q.Id).ToHashSet();
 
-            if (existing is not null)
+            var answeredIds = request.Answers.Select(a => a.QuestionId).ToHashSet();
+            var missingRequired = requiredIds.Except(answeredIds).ToList();
+            if (missingRequired.Any())
+                throw new InvalidOperationException($"Faltan respuestas obligatorias para: {string.Join(", ", missingRequired)}");
+
+            // Validar cada respuesta
+            foreach (var answer in request.Answers)
             {
-                existing.QuestionResponses = MapAnswers(request);
-                existing.SubmittedAt = DateTime.UtcNow;
-                existing.UpdatedAt = DateTime.UtcNow;
-                await surveyRepo.UpdateResponseAsync(existing, ct);
-                return existing.Id;
+                if (!questionLookup.TryGetValue(answer.QuestionId, out var question))
+                    throw new InvalidOperationException($"La pregunta {answer.QuestionId} no pertenece a la encuesta.");
+
+                switch (question.Type)
+                {
+                    case QuestionType.SingleChoice:
+                        if (!answer.SelectedValue.HasValue)
+                            throw new InvalidOperationException($"Pregunta {answer.QuestionId} requiere SelectedValue.");
+                        if (!question.Options.Any(o => o.Value == answer.SelectedValue.Value))
+                            throw new InvalidOperationException($"Valor {answer.SelectedValue} inválido para la pregunta {answer.QuestionId}.");
+                        break;
+
+                    case QuestionType.MultipleChoice:
+                        // TODO: soporte real multivalor (lista). Por ahora aceptamos un valor.
+                        if (!answer.SelectedValue.HasValue)
+                            throw new InvalidOperationException($"Pregunta {answer.QuestionId} (MultipleChoice) requiere al menos un SelectedValue.");
+                        if (!question.Options.Any(o => o.Value == answer.SelectedValue.Value))
+                            throw new InvalidOperationException($"Valor {answer.SelectedValue} inválido para la pregunta {answer.QuestionId}.");
+                        break;
+
+                    case QuestionType.OpenText:
+                        if (string.IsNullOrWhiteSpace(answer.Text))
+                            throw new InvalidOperationException($"Pregunta {answer.QuestionId} requiere texto.");
+                        break;
+
+                    default:
+                        throw new InvalidOperationException($"Tipo de pregunta no soportado: {question.Type}");
+                }
             }
-            else
+
+            var existingResponse = await surveyRepository
+                .GetResponseAsync(request.AcademicSurveySubjectId, request.UserId, cancellationToken);
+
+            if (existingResponse is null)
             {
                 var response = new AcademicSurveyResponse
                 {
                     AcademicSurveySubjectId = request.AcademicSurveySubjectId,
                     UserId = request.UserId,
                     SubmittedAt = DateTime.UtcNow,
-                    CreatedAt = DateTime.UtcNow,
-                    IsActive = true,
-                    QuestionResponses = MapAnswers(request)
+                    QuestionResponses = request.Answers.Select(a => new SurveyQuestionResponse
+                    {
+                        AcademicSurveySubjectId = request.AcademicSurveySubjectId,
+                        SurveyQuestionId = a.QuestionId,
+                        SelectedValue = a.SelectedValue,
+                        Text = a.Text
+                    }).ToList()
                 };
 
-                return await surveyRepo.CreateResponseAsync(response, ct);
+                var id = await surveyRepository.CreateResponseAsync(response, cancellationToken);
+                logger.LogInformation("Nueva respuesta creada para SurveySubject {SubjectId} por usuario {UserId}", request.AcademicSurveySubjectId, request.UserId);
+                return id;
+            }
+            else
+            {
+                existingResponse.SubmittedAt = DateTime.UtcNow;
+                existingResponse.QuestionResponses = request.Answers.Select(a => new SurveyQuestionResponse
+                {
+                    AcademicSurveySubjectId = request.AcademicSurveySubjectId,
+                    SurveyQuestionId = a.QuestionId,
+                    SelectedValue = a.SelectedValue,
+                    Text = a.Text
+                }).ToList();
+
+                await surveyRepository.UpdateResponseAsync(existingResponse, cancellationToken);
+                logger.LogInformation("Respuesta actualizada para SurveySubject {SubjectId} por usuario {UserId}", request.AcademicSurveySubjectId, request.UserId);
+                return existingResponse.Id;
             }
         }
-
-        private static List<SurveyQuestionResponse> MapAnswers(SubmitSurveyResponseCommand request)
-            => request.Answers.Select(a => new SurveyQuestionResponse
-            {
-                AcademicSurveySubjectId = request.AcademicSurveySubjectId,
-                SurveyQuestionId = a.QuestionId,
-                SelectedValue = a.SelectedValue,
-                Text = a.Text,
-                CreatedAt = DateTime.UtcNow,
-                IsActive = true
-            }).ToList();
     }
 }

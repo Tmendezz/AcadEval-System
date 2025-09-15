@@ -180,6 +180,8 @@ public class AcademicSurveyRepository(ApplicationDbContext db) : IAcademicSurvey
     {
         return await db.AcademicSurveySubjects
             .Include(s => s.AcademicSurvey!)
+                .ThenInclude(sv => sv.Template)               // AÑADIR
+            .Include(s => s.AcademicSurvey!)
                 .ThenInclude(sv => sv.Questions)
                     .ThenInclude(q => q.Options)
             .FirstOrDefaultAsync(s => s.Id == surveySubjectId && s.IsActive, ct);
@@ -216,5 +218,46 @@ public class AcademicSurveyRepository(ApplicationDbContext db) : IAcademicSurvey
         existing.UpdatedAt = DateTime.UtcNow;
 
         await db.SaveChangesAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<AcademicSurveyResponse>> GetResponsesBySurveyIdAsync(
+    Guid surveyId,
+    bool includeDetails = true,
+    CancellationToken ct = default)
+    {
+        var query = db.AcademicSurveyResponses
+            .Where(r => r.AcademicSurveySubjectId != null &&
+                        db.AcademicSurveySubjects.Any(s => s.Id == r.AcademicSurveySubjectId && s.AcademicSurveyId == surveyId));
+
+        if (includeDetails)
+        {
+            query = query
+                .Include(r => r.QuestionResponses)
+                .ThenInclude(qr => qr.SurveyQuestion);
+        }
+
+        return await query
+            .OrderByDescending(r => r.SubmittedAt)
+            .ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<AcademicSurveyResponse>> GetResponsesBySurveySubjectIdAsync(
+    Guid surveySubjectId,
+    bool includeDetails = true,
+    CancellationToken ct = default)
+    {
+        var query = db.AcademicSurveyResponses
+            .Where(r => r.AcademicSurveySubjectId == surveySubjectId);
+
+        if (includeDetails)
+        {
+            query = query
+                .Include(r => r.QuestionResponses)
+                .ThenInclude(qr => qr.SurveyQuestion);
+        }
+
+        return await query
+            .OrderByDescending(r => r.SubmittedAt)
+            .ToListAsync(ct);
     }
 }

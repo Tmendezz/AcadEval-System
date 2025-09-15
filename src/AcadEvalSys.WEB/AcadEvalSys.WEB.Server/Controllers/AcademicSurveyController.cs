@@ -4,6 +4,8 @@ using AcadEvalSys.Application.AcademicSurveys.Commands.PublishAcademicSurvey;
 using AcadEvalSys.Application.AcademicSurveys.Commands.SetSurveySubjects;
 using AcadEvalSys.Application.AcademicSurveys.Commands.SubmitSurveyResponse;
 using AcadEvalSys.Application.AcademicSurveys.Queries.GetAcademicSurvey;
+using AcadEvalSys.Application.AcademicSurveys.Queries.GetSurveyResponses;
+using AcadEvalSys.Application.AcademicSurveys.Queries.GetSurveySubjectResponses;
 using AcadEvalSys.Application.AcademicSurveys.Queries.ListAcademicSurveys;
 using AcadEvalSys.Domain.Constants.Constants;
 using MediatR;
@@ -88,5 +90,25 @@ public class AcademicSurveyController(IMediator mediator) : ControllerBase
         command.AcademicSurveySubjectId = surveySubjectId;
         var id = await mediator.Send(command);
         return Ok(new { id }); 
+    }
+
+    // GET /surveys/{id}/responses  (solo Admin)
+    [HttpGet("{id}/responses")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetSurveyResponses([FromRoute] Guid id)
+    {
+        var result = await mediator.Send(new GetSurveyResponsesQuery(id));
+        return Ok(result);
+    }
+
+    // GET /surveys/subjects/{surveySubjectId}/responses (solo Admin)
+    [HttpGet("subjects/{surveySubjectId}/responses")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetSurveySubjectResponses(Guid surveySubjectId)
+    {
+        var result = await mediator.Send(new GetSurveySubjectResponsesQuery(surveySubjectId));
+        return Ok(result);
     }
 }
