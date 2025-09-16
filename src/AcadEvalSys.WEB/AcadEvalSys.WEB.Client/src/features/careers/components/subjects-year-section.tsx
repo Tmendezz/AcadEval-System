@@ -75,18 +75,6 @@ export function SubjectsYearSection({
         {yearSubjects.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             No hay asignaturas para {yearLabel.toLowerCase()}
-            {onSubjectAdd && (
-              <div className="mt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onSubjectAdd(year)}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Agregar primera asignatura
-                </Button>
-              </div>
-            )}
           </div>
         ) : (
           yearSubjects.map((subject) => (
