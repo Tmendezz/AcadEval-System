@@ -25,6 +25,16 @@ public interface IAcademicSurveyRepository
     // NUEVOS métodos para registrar respuestas
     Task<AcademicSurveySubject?> GetSubjectGraphAsync(Guid surveySubjectId, CancellationToken ct = default);
     Task<AcademicSurveyResponse?> GetResponseAsync(Guid surveySubjectId, string userId, CancellationToken ct = default);
+    Task<IReadOnlyList<AcademicSurveyResponse>> GetResponsesBySurveyIdAsync(
+            Guid surveyId,
+            bool includeDetails = true,
+            CancellationToken ct = default);
+
+    Task<IReadOnlyList<AcademicSurveyResponse>> GetResponsesBySurveySubjectIdAsync(
+        Guid surveySubjectId,
+        bool includeDetails = true,
+        CancellationToken ct = default);
     Task<Guid> CreateResponseAsync(AcademicSurveyResponse response, CancellationToken ct = default);
     Task UpdateResponseAsync(AcademicSurveyResponse response, CancellationToken ct = default);
+
 }

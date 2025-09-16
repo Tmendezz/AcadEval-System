@@ -1,4 +1,4 @@
-using AcadEvalSys.Domain.Entities;
+﻿using AcadEvalSys.Domain.Entities;
 using AcadEvalSys.Domain.Enums;
 using AcadEvalSys.Domain.Repositories;
 using AcadEvalSys.Infrastructure.Persistence;
@@ -145,6 +145,11 @@ public class AcademicSurveyRepository(ApplicationDbContext db) : IAcademicSurvey
         return await query.AsNoTracking().SingleOrDefaultAsync(s => s.Id == id && s.IsActive, ct);
     }
 
+    public Task UpdateAsync(AcademicSurvey survey, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<IReadOnlyList<AcademicSurvey>> ListAsync(SurveyStatus? status = null, Guid? technicalCareerId = null, Guid? subjectId = null, string? search = null, CancellationToken ct = default)
     {
         var query = db.AcademicSurveys
@@ -179,6 +184,8 @@ public class AcademicSurveyRepository(ApplicationDbContext db) : IAcademicSurvey
     public async Task<AcademicSurveySubject?> GetSubjectGraphAsync(Guid surveySubjectId, CancellationToken ct = default)
     {
         return await db.AcademicSurveySubjects
+            .Include(s => s.AcademicSurvey!)
+                .ThenInclude(sv => sv.Template)               // AÑADIR
             .Include(s => s.AcademicSurvey!)
                 .ThenInclude(sv => sv.Questions)
                     .ThenInclude(q => q.Options)
@@ -218,9 +225,44 @@ public class AcademicSurveyRepository(ApplicationDbContext db) : IAcademicSurvey
         await db.SaveChangesAsync(ct);
     }
 
-    public async Task UpdateAsync(AcademicSurvey survey, CancellationToken ct = default)
+    public async Task<IReadOnlyList<AcademicSurveyResponse>> GetResponsesBySurveyIdAsync(
+    Guid surveyId,
+    bool includeDetails = true,
+    CancellationToken ct = default)
     {
-        // La entidad ya está siendo tracked por EF, solo necesitamos guardar los cambios
-        await db.SaveChangesAsync(ct);
+        var query = db.AcademicSurveyResponses
+            .Where(r => r.AcademicSurveySubjectId != null &&
+                        db.AcademicSurveySubjects.Any(s => s.Id == r.AcademicSurveySubjectId && s.AcademicSurveyId == surveyId));
+
+        if (includeDetails)
+        {
+            query = query
+                .Include(r => r.QuestionResponses)
+                .ThenInclude(qr => qr.SurveyQuestion);
+        }
+
+        return await query
+            .OrderByDescending(r => r.SubmittedAt)
+            .ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<AcademicSurveyResponse>> GetResponsesBySurveySubjectIdAsync(
+    Guid surveySubjectId,
+    bool includeDetails = true,
+    CancellationToken ct = default)
+    {
+        var query = db.AcademicSurveyResponses
+            .Where(r => r.AcademicSurveySubjectId == surveySubjectId);
+
+        if (includeDetails)
+        {
+            query = query
+                .Include(r => r.QuestionResponses)
+                .ThenInclude(qr => qr.SurveyQuestion);
+        }
+
+        return await query
+            .OrderByDescending(r => r.SubmittedAt)
+            .ToListAsync(ct);
     }
 }

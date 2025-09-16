@@ -196,26 +196,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         {
             entity.Property(ass => ass.AcademicSurveyId).IsRequired();
 
-            // Enum nullable
-            entity.Property(ass => ass.Year).HasConversion<int?>();
-
-            // Relación opcional con TechnicalCareer
-            entity.HasOne<TechnicalCareer>()
-                .WithMany()
-                .HasForeignKey(ass => ass.TechnicalCareerId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            // Relación opcional con Subject
+            
             entity.HasOne(ass => ass.Subject)
                 .WithMany()
                 .HasForeignKey(ass => ass.SubjectId)
                 .OnDelete(DeleteBehavior.SetNull);
-
-            // Relación opcional con Professor (clave = UserId)
-            entity.HasOne<Professor>()
-                .WithMany()
-                .HasForeignKey(ass => ass.ProfessorUserId)
-                .OnDelete(DeleteBehavior.SetNull);
+            
 
             entity.HasMany(ass => ass.Responses)
                 .WithOne()
@@ -246,6 +232,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .WithMany(r => r.QuestionResponses)
                 .HasForeignKey(qr => qr.AcademicSurveyResponseId)
                 .OnDelete(DeleteBehavior.Cascade);
+
 
             entity.HasOne(qr => qr.SurveyQuestion)
                 .WithMany()

@@ -83,16 +83,12 @@ namespace AcadEvalSys.Application.AcademicSurveys.Commands.CreateAcademicSurvey
                 var surveySubject = new AcademicSurveySubject
                 {
                     AcademicSurveyId = survey.Id,
-                    TechnicalCareerId = subject.TechnicalCareerId,
-                    Year = subject.Year,
                     SubjectId = subject.Id,
-                    ProfessorUserId = subject.ProfessorId
                 };  
 
                 survey.Subjects.Add(surveySubject);
             }
-
-            // No necesitamos UpdateAsync aquí porque los cambios se persistirán con unitOfWork.SaveChangesAsync()
+            
             logger.LogInformation("Audiencia configurada: {SubjectCount} asignaturas agregadas a la encuesta {SurveyId}", 
                 survey.Subjects.Count, surveyId);
         }
