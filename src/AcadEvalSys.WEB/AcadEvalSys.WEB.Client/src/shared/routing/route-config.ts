@@ -79,14 +79,14 @@ export const routes: RouteConfig[] = [
     title: "Mis Encuestas",
   },
   {
-    path: "/encuestas/responder/:id",
+    path: "/encuestas/responder/:surveySubjectId",
     component: React.lazy(
       () => import("@/features/surveys/pages/respond-survey-page")
     ),
     title: "Responder Encuesta",
   },
   {
-    path: "/encuestas/ver-respuesta/:id",
+    path: "/encuestas/ver-respuesta/:surveySubjectId",
     component: React.lazy(
       () => import("@/features/surveys/pages/view-response-page")
     ),
@@ -119,7 +119,7 @@ export const routes: RouteConfig[] = [
     title: "Mis Encuestas (Profesor)",
   },
   {
-    path: "/encuestas/docente/responder/:id",
+    path: "/encuestas/docente/responder/:surveySubjectId",
     component: React.lazy(
       () => import("@/features/surveys/pages/respond-survey-page")
     ),
@@ -127,7 +127,7 @@ export const routes: RouteConfig[] = [
     title: "Responder Encuesta (Profesor)",
   },
   {
-    path: "/encuestas/docente/ver-respuesta/:id",
+    path: "/encuestas/docente/ver-respuesta/:surveySubjectId",
     component: React.lazy(
       () => import("@/features/surveys/pages/view-response-page")
     ),

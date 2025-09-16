@@ -224,6 +224,19 @@ export function useSubmitSurveyResponse() {
   });
 }
 
+/**
+ * Hook para obtener todos los survey subjects de una encuesta específica para el usuario actual
+ */
+export function useSurveySubjectsForUser(surveyId: string) {
+  return useQuery({
+    queryKey: [...userSurveysKeys.all, 'survey-subjects', surveyId],
+    queryFn: () => userSurveysService.getSurveySubjectsForUser(surveyId),
+    enabled: !!surveyId,
+    staleTime: 2 * 60 * 1000, // 2 minutos
+    gcTime: 10 * 60 * 1000, // 10 minutos
+  });
+}
+
 // Re-exportar tipos necesarios
-export type { UserSurveyDto, UserSurveyFilters };
+export type { UserSurveyDto, UserSurveyFilters, SurveySubjectForUserDto } from '../services/user-surveys-service';
 

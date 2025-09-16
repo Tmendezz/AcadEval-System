@@ -1,146 +1,99 @@
-import { useState } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useLocation, useRoute } from 'wouter';
 import { PageContent, PageHeader, PageLayout } from '@/shared/components/layout/page-layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
-import { Badge } from '@/shared/components/ui/badge';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
-import { ArrowLeft, Clock, CheckCircle } from 'lucide-react';
-import { useSurveyForResponse, useSubmitSurveyResponse } from '../hooks/use-surveys';
-
-// Tipos para las preguntas de la encuesta
-interface SurveyQuestion {
-  id: string;
-  text: string;
-  type: 'single' | 'multi' | 'text';
-  options?: string[];
-  required: boolean;
-}
-
-interface SurveyResponse {
-  questionId: string;
-  answer: string | string[];
-}
-
+import { Button } from '@/shared/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+import { useSurveySubjectsForUser, useSurveyForResponse } from '../hooks/use-surveys';
+import { StudentSurveyRunner } from '../components/runner/StudentSurveyRunner';
+import { useSurveyResponseStore } from '../store/use-survey-response-store';
+import type { StudentSurveyTarget, FixedQuestion } from '../models/survey-runner-types';
 
 export default function RespondSurveyPage() {
   const [, setLocation] = useLocation();
-  const [, params] = useRoute('/encuestas/responder/:id');
-  const surveyId = params?.id;
+  const [, params] = useRoute('/encuestas/responder/:surveySubjectId');
+  const surveySubjectId = params?.surveySubjectId;
 
-  const [responses, setResponses] = useState<SurveyResponse[]>([]);
+  // Store para manejar respuestas en memoria
+  const {
+    initializeSurvey,
+    setCurrentSubject,
+    clearSurvey,
+    surveyId: storedSurveyId,
+    currentSubjectId,
+  } = useSurveyResponseStore();
 
-  // Obtener datos de la encuesta
-  const { data: survey, isLoading, error } = useSurveyForResponse(surveyId || '');
-  const submitResponseMutation = useSubmitSurveyResponse();
+  // Obtener la encuesta actual para extraer el surveyId
+  const { data: currentSurvey, isLoading: isLoadingCurrentSurvey, error: currentSurveyError } = useSurveyForResponse(surveySubjectId || '');
+  
+  // Una vez que tenemos la encuesta actual, obtener todos los survey subjects de esa encuesta
+  const surveyId = currentSurvey?.id;
+  const { data: allSurveySubjects = [], isLoading: isLoadingSurveySubjects } = useSurveySubjectsForUser(surveyId || '');
 
-  // Función para manejar cambios en las respuestas
-  const handleResponseChange = (questionId: string, answer: string | string[]) => {
-    setResponses(prev => {
-      const existingIndex = prev.findIndex(r => r.questionId === questionId);
-      if (existingIndex >= 0) {
-        const updated = [...prev];
-        updated[existingIndex] = { questionId, answer };
-        return updated;
+  // Inicializar el store cuando tenemos todos los datos
+  useEffect(() => {
+    if (currentSurvey && allSurveySubjects.length > 0) {
+      // Si es una nueva encuesta o cambió la encuesta, reinicializar
+      if (storedSurveyId !== currentSurvey.id) {
+        initializeSurvey(
+          currentSurvey.id,
+          currentSurvey.title,
+          allSurveySubjects.map(subject => ({
+            surveySubjectId: subject.surveySubjectId,
+            subjectName: subject.subjectName,
+            professorName: subject.professorName,
+          }))
+        );
       }
-      return [...prev, { questionId, answer }];
-    });
-  };
-
-  // Función para verificar si todas las preguntas requeridas están respondidas
-  const isFormValid = () => {
-    if (!survey?.questions) return false;
-    const requiredQuestions = survey.questions.filter(q => q.required);
-    return requiredQuestions.every(q => 
-      responses.some(r => r.questionId === q.id && r.answer)
-    );
-  };
-
-  // Función para enviar la encuesta
-  const handleSubmit = async () => {
-    if (!isFormValid() || !surveyId) {
-      return;
     }
+  }, [currentSurvey?.id, allSurveySubjects.length, storedSurveyId, initializeSurvey]); // Solo cambios de encuesta
+  
+  // Actualizar materia actual basada en la URL (efecto separado)
+  useEffect(() => {
+    if (surveySubjectId && currentSubjectId !== surveySubjectId) {
+      setCurrentSubject(surveySubjectId);
+    }
+  }, [surveySubjectId, currentSubjectId, setCurrentSubject]); // Solo cambios de URL
 
+  // Convertir survey subjects a formato StudentSurveyTarget
+  const surveyTargets: StudentSurveyTarget[] = useMemo(() => {
+    return allSurveySubjects.map(subject => ({
+      subjectId: subject.surveySubjectId,
+      subjectName: subject.subjectName,
+      teacherId: 'teacher-' + subject.surveySubjectId, // ID único por asignatura
+      teacherName: subject.professorName,
+      // Propiedades adicionales que necesita el runner
+      academicSurveySubjectId: subject.surveySubjectId,
+      id: subject.surveySubjectId
+    } as any));
+  }, [allSurveySubjects]);
+
+  // Convertir preguntas de la encuesta actual a formato FixedQuestion
+  const fixedQuestions: FixedQuestion[] = useMemo(() => {
+    if (!currentSurvey?.questions) return [];
+    
+    return currentSurvey.questions.map(q => ({
+      id: q.id,
+      text: q.text,
+      type: q.type === 0 ? 'single' : q.type === 1 ? 'multi' : 'text',
+      options: q.options?.map(opt => opt.text)
+    } as FixedQuestion));
+  }, [currentSurvey?.questions]);
+
+  // Handler para cuando se completan todas las encuestas
+  const handleSubmitAll = async () => {
     try {
-      await submitResponseMutation.mutateAsync({
-        surveyId,
-        responses: responses.map(r => ({
-          questionId: r.questionId,
-          answer: r.answer
-        }))
-      });
-      
+      // Limpiar el store después de completar todas las encuestas
+      clearSurvey();
+      // Redirigir a la lista de encuestas
       setLocation('/encuestas/mis-encuestas?completed=true');
     } catch (error) {
-      console.error('Error al enviar la encuesta:', error);
+      console.error('Error al enviar todas las encuestas:', error);
     }
   };
 
-  // Función para renderizar una pregunta
-  const renderQuestion = (question: SurveyQuestion) => {
-    const currentResponse = responses.find(r => r.questionId === question.id);
-
-    switch (question.type) {
-      case 'single':
-        return (
-          <div className="space-y-2">
-            {question.options?.map((option, index) => (
-              <label key={index} className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name={`question-${question.id}`}
-                  value={option}
-                  checked={currentResponse?.answer === option}
-                  onChange={(e) => handleResponseChange(question.id, e.target.value)}
-                  className="w-4 h-4"
-                />
-                <span>{option}</span>
-              </label>
-            ))}
-          </div>
-        );
-
-      case 'multi':
-        return (
-          <div className="space-y-2">
-            {question.options?.map((option, index) => (
-              <label key={index} className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={Array.isArray(currentResponse?.answer) && currentResponse.answer.includes(option)}
-                  onChange={(e) => {
-                    const currentAnswers = Array.isArray(currentResponse?.answer) ? currentResponse.answer : [];
-                    const newAnswers = e.target.checked
-                      ? [...currentAnswers, option]
-                      : currentAnswers.filter(a => a !== option);
-                    handleResponseChange(question.id, newAnswers);
-                  }}
-                  className="w-4 h-4"
-                />
-                <span>{option}</span>
-              </label>
-            ))}
-          </div>
-        );
-
-      case 'text':
-        return (
-          <textarea
-            value={currentResponse?.answer as string || ''}
-            onChange={(e) => handleResponseChange(question.id, e.target.value)}
-            placeholder="Escribe tu respuesta aquí..."
-            className="w-full min-h-[100px] p-3 border border-input rounded-md resize-none"
-          />
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  // Mostrar loading
-  if (isLoading) {
+  // Mostrar loading mientras cargamos datos
+  if (isLoadingCurrentSurvey || isLoadingSurveySubjects) {
     return (
       <PageLayout>
         <PageContent>
@@ -155,11 +108,11 @@ export default function RespondSurveyPage() {
     );
   }
 
-  // Mostrar error
-  if (error || !survey) {
+  // Mostrar error si no se puede cargar la encuesta
+  if (currentSurveyError || !currentSurvey || allSurveySubjects.length === 0) {
     return (
       <PageLayout>
-        <PageHeader>
+        <PageHeader title="Error" description="No se pudo cargar la encuesta">
           <div className="flex items-center gap-4">
             <Button 
               variant="ghost" 
@@ -169,16 +122,12 @@ export default function RespondSurveyPage() {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Volver
             </Button>
-            <div>
-              <h1 className="text-2xl font-bold">Error</h1>
-              <p className="text-muted-foreground">No se pudo cargar la encuesta</p>
-            </div>
           </div>
         </PageHeader>
         <PageContent>
           <Alert variant="destructive">
             <AlertDescription>
-              No se pudo cargar la encuesta. Por favor, intenta nuevamente.
+              No se pudo cargar la encuesta o no hay materias asignadas. Por favor, intenta nuevamente.
             </AlertDescription>
           </Alert>
         </PageContent>
@@ -186,9 +135,19 @@ export default function RespondSurveyPage() {
     );
   }
 
+  // Encontrar el índice actual basado en el surveySubjectId de la URL
+  const currentIndex = surveyTargets.findIndex(target => target.subjectId === surveySubjectId);
+  const initialIndex = currentIndex >= 0 ? currentIndex : 0;
+  
+  // Contador simple de progreso
+  const simpleProgress = `${initialIndex + 1}/${allSurveySubjects.length}`;
+
   return (
     <PageLayout>
-      <PageHeader>
+      <PageHeader 
+        title={currentSurvey.title} 
+        description={simpleProgress}
+      >
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
@@ -198,94 +157,17 @@ export default function RespondSurveyPage() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Volver
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold">{survey.title}</h1>
-            <p className="text-muted-foreground">{survey.description}</p>
-          </div>
         </div>
       </PageHeader>
 
       <PageContent>
-        <div className="max-w-4xl mx-auto space-y-6">
-          {/* Información de la encuesta */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Información de la Encuesta</span>
-                <Badge variant="default">Publicada</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Clock className="w-4 h-4" />
-                <span>Publicada: {new Date(survey.publishedAt).toLocaleDateString('es-ES')}</span>
-              </div>
-              {survey.closedAt && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock className="w-4 h-4" />
-                  <span>Cierra: {new Date(survey.closedAt).toLocaleDateString('es-ES')}</span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Formulario de la encuesta */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Preguntas de la Encuesta</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-8">
-              {survey.questions.map((question, index) => (
-                <div key={question.id} className="space-y-4">
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-medium">
-                      {index + 1}. {question.text}
-                      {question.required && <span className="text-red-500 ml-1">*</span>}
-                    </h3>
-                    {question.type === 'text' && (
-                      <p className="text-sm text-muted-foreground">
-                        Esta pregunta es opcional
-                      </p>
-                    )}
-                  </div>
-                  
-                  {renderQuestion(question)}
-                  
-                  {/* Indicador de respuesta */}
-                  {responses.find(r => r.questionId === question.id) && (
-                    <div className="flex items-center gap-2 text-sm text-green-600">
-                      <CheckCircle className="w-4 h-4" />
-                      <span>Respondida</span>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Validación y envío */}
-          {!isFormValid() && (
-            <Alert>
-              <AlertDescription>
-                Por favor, responde todas las preguntas obligatorias antes de enviar la encuesta.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          <div className="flex justify-end gap-4">
-            <Button 
-              variant="outline" 
-              onClick={() => setLocation('/encuestas/mis-encuestas')}
-            >
-              Cancelar
-            </Button>
-            <Button 
-              onClick={handleSubmit}
-              disabled={!isFormValid() || submitResponseMutation.isPending}
-            >
-              {submitResponseMutation.isPending ? 'Enviando...' : 'Enviar Encuesta'}
-            </Button>
-          </div>
+        <div className="max-w-4xl mx-auto">
+          <StudentSurveyRunner
+            assignments={surveyTargets}
+            fixedQuestions={fixedQuestions}
+            onSubmitAll={handleSubmitAll}
+            initialIndex={initialIndex}
+          />
         </div>
       </PageContent>
     </PageLayout>

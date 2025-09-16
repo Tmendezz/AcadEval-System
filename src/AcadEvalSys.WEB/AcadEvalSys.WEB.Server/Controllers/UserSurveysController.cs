@@ -1,6 +1,7 @@
 using AcadEvalSys.Application.AcademicSurveys.Commands.SubmitSurveyResponse;
 using AcadEvalSys.Application.AcademicSurveys.Queries.GetSurveyWithResponse;
 using AcadEvalSys.Application.AcademicSurveys.Queries.GetUserSurveys;
+using AcadEvalSys.Application.AcademicSurveys.Queries.GetSurveySubjectsForUser;
 using AcadEvalSys.Domain.Constants.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -42,6 +43,36 @@ public class UserSurveysController(IMediator mediator) : ControllerBase
         catch (Exception ex)
         {
             Log.Error(ex, "Error al obtener encuestas del usuario con filtro: {Status}", status ?? "all");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Obtiene todos los surveySubjects de una encuesta específica para el usuario autenticado.
+    /// </summary>
+    /// <param name="surveyId">ID de la encuesta</param>
+    /// <returns>Lista de surveySubjects con información de la materia y progreso</returns>
+    [HttpGet("{surveyId}/subjects")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Produces("application/json")]
+    public async Task<IActionResult> GetSurveySubjectsForUser([FromRoute] Guid surveyId)
+    {
+        try
+        {
+            Log.Information("Obteniendo survey subjects de la encuesta {SurveyId} para el usuario", surveyId);
+            
+            var query = new GetSurveySubjectsForUserQuery { SurveyId = surveyId };
+            var result = await mediator.Send(query);
+            
+            Log.Information("Se encontraron {Count} survey subjects para la encuesta {SurveyId}", 
+                result?.Count() ?? 0, surveyId);
+            
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Error al obtener survey subjects de la encuesta {SurveyId}", surveyId);
             throw;
         }
     }

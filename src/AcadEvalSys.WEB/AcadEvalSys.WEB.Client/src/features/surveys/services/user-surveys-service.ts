@@ -16,6 +16,7 @@ export interface UserSurveyDto {
   surveySubjectId: string;
 }
 
+// Mantenemos solo los tipos que realmente usamos
 export interface SurveyWithResponseDto {
   id: string;
   title: string;
@@ -60,6 +61,15 @@ export interface UserSurveyFilters {
   status?: 'pending' | 'completed' | 'all';
 }
 
+export interface SurveySubjectForUserDto {
+  surveySubjectId: string;
+  subjectName: string;
+  professorName: string;
+  hasResponded: boolean;
+  respondedAt?: string;
+  questionsCount: number;
+}
+
 export const userSurveysService = {
   async getMySurveys(filters?: UserSurveyFilters): Promise<UserSurveyDto[]> {
     const params = new URLSearchParams();
@@ -91,5 +101,10 @@ export const userSurveysService = {
 
   async submitSurveyResponse(surveySubjectId: string, request: SubmitSurveyResponseRequest): Promise<void> {
     await api.post(`${baseUrl}/subjects/${surveySubjectId}/responses`, request);
+  },
+
+  async getSurveySubjectsForUser(surveyId: string): Promise<SurveySubjectForUserDto[]> {
+    const response = await api.get(`${baseUrl}/${surveyId}/subjects`);
+    return response.data;
   },
 };

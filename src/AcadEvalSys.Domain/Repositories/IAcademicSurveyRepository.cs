@@ -25,6 +25,9 @@ public interface IAcademicSurveyRepository
 
     // Método para obtener encuestas del usuario con información de respuesta
     Task<IEnumerable<(AcademicSurvey Survey, AcademicSurveySubject SurveySubject, bool HasResponded, DateTime? RespondedAt)>> GetUserSurveysWithResponseInfoAsync(Guid userId, CancellationToken ct = default);
+    
+    // Método para obtener todos los survey subjects de una encuesta específica para un usuario
+    Task<IEnumerable<(AcademicSurveySubject SurveySubject, bool HasResponded, DateTime? RespondedAt)>> GetSurveySubjectsForUserAsync(Guid surveyId, string userId, CancellationToken ct = default);
 
     // NUEVOS métodos para registrar respuestas
     Task<AcademicSurveySubject?> GetSubjectGraphAsync(Guid surveySubjectId, CancellationToken ct = default);

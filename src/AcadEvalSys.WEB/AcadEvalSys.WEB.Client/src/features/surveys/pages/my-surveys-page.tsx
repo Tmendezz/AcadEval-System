@@ -43,7 +43,7 @@ function getResponseStatusBadge(responded: boolean) {
 }
 
 // Columnas para la tabla de encuestas
-const createSurveyColumns = (onRespond: (id: string) => void, onView: (id: string) => void): ColumnDef<UserSurveyDto>[] => [
+const createSurveyColumns = (onRespond: (surveySubjectId: string) => void, onView: (surveySubjectId: string) => void): ColumnDef<UserSurveyDto>[] => [
   {
     accessorKey: 'title',
     header: 'Título',
@@ -104,12 +104,12 @@ const createSurveyColumns = (onRespond: (id: string) => void, onView: (id: strin
     id: 'actions',
     header: 'Acciones',
     cell: ({ row }) => {
-      const { id, status, responded } = row.original;
+      const { surveySubjectId, status, responded } = row.original;
       
       // Encuesta pendiente y publicada
       if (status === SurveyStatus.Published && !responded) {
         return (
-          <Button size="sm" onClick={() => onRespond(id)}>
+          <Button size="sm" onClick={() => onRespond(surveySubjectId)}>
             Responder
           </Button>
         );
@@ -118,7 +118,7 @@ const createSurveyColumns = (onRespond: (id: string) => void, onView: (id: strin
       // Encuesta completada
       if (responded) {
         return (
-          <Button variant="outline" size="sm" onClick={() => onView(id)}>
+          <Button variant="outline" size="sm" onClick={() => onView(surveySubjectId)}>
             <Eye className="w-4 h-4 mr-1" />
             Ver Respuesta
           </Button>
@@ -150,12 +150,12 @@ export default function MySurveysPage() {
   const sortedPendingSurveys = [...pendingSurveys].sort(sortByPublishedDate);
   const sortedCompletedSurveys = [...completedSurveys].sort(sortByPublishedDate);
 
-  const handleRespond = (surveyId: string) => {
-    setLocation(`/encuestas/responder/${surveyId}`);
+  const handleRespond = (surveySubjectId: string) => {
+    setLocation(`/encuestas/responder/${surveySubjectId}`);
   };
 
-  const handleView = (surveyId: string) => {
-    setLocation(`/encuestas/ver-respuesta/${surveyId}`);
+  const handleView = (surveySubjectId: string) => {
+    setLocation(`/encuestas/ver-respuesta/${surveySubjectId}`);
   };
 
   const columns = createSurveyColumns(handleRespond, handleView);

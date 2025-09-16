@@ -25,6 +25,8 @@ namespace AcadEvalSys.Application.AcademicSurveys.Dtos
 
             CreateMap<AcademicSurveySubject, SurveySubjectDto>()
                 .ForMember(d => d.SubjectName, o => o.MapFrom(s => s.Subject != null ? s.Subject.Name : null));
+
+            // No podemos mapear directamente tuplas con AutoMapper, se maneja en el handler
         }
     }
 }

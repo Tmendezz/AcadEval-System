@@ -208,6 +208,8 @@ public class AcademicSurveyRepository(ApplicationDbContext db) : IAcademicSurvey
             .Include(s => s.AcademicSurvey!)
             .ThenInclude(sv => sv.Questions)
             .ThenInclude(q => q.Options)
+            .Include(s => s.Subject!)
+            .ThenInclude(subj => subj.StudentSubjects)
             .FirstOrDefaultAsync(s => s.Id == surveySubjectId && s.IsActive, ct);
     }
     
@@ -335,5 +337,40 @@ public class AcademicSurveyRepository(ApplicationDbContext db) : IAcademicSurvey
         }
 
         return userSurveysWithResponse;
+    }
+
+    public async Task<IEnumerable<(AcademicSurveySubject SurveySubject, bool HasResponded, DateTime? RespondedAt)>> GetSurveySubjectsForUserAsync(Guid surveyId, string userId, CancellationToken ct = default)
+    {
+ // Primero obtenemos los SurveySubjects con sus relaciones
+        var surveySubjects = await db.AcademicSurveySubjects
+            .Where(subject => subject.AcademicSurveyId == surveyId && 
+                             subject.Subject != null &&
+                             subject.Subject.StudentSubjects != null &&
+                             subject.Subject.StudentSubjects.Any(ss => ss.StudentId == userId))
+            .Include(x => x.Subject)
+            .Include(x => x.Subject.Professor)
+            .ThenInclude(p => p.User)
+            .Include(x => x.AcademicSurvey)
+            .ThenInclude(s => s.Questions)
+            .ToListAsync(ct);
+
+        // Después obtenemos las respuestas del usuario para estos survey subjects
+        var surveySubjectIds = surveySubjects.Select(s => s.Id).ToList();
+        var userResponses = await db.AcademicSurveyResponses
+            .Where(r => r.UserId == userId && r.AcademicSurveySubjectId.HasValue && surveySubjectIds.Contains(r.AcademicSurveySubjectId.Value))
+            .ToListAsync(ct);
+
+        // Combinamos los datos en memoria
+        var results = surveySubjects.Select(subject =>
+        {
+            var response = userResponses.FirstOrDefault(r => r.AcademicSurveySubjectId.HasValue && r.AcademicSurveySubjectId.Value == subject.Id);
+            return (
+                SurveySubject: subject,
+                HasResponded: response != null,
+                RespondedAt: response?.SubmittedAt
+            );
+        });
+
+        return results;
     }
 }
