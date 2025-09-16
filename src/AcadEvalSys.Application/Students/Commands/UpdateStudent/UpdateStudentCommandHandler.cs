@@ -31,6 +31,20 @@ public class UpdateStudentCommandHandler(
             throw new NotFoundException(nameof(Student), request.UserId);
         }
 
+        // Check if email has changed to avoid duplicate validation on same user
+        var emailChanged = !string.Equals(user.Email, request.Email, StringComparison.OrdinalIgnoreCase);
+        
+        if (emailChanged)
+        {
+            // Check if new email is already taken by another user
+            var existingUserWithEmail = await userManager.FindByEmailAsync(request.Email);
+            if (existingUserWithEmail != null && existingUserWithEmail.Id != user.Id)
+            {
+                logger.LogWarning("Email {Email} is already taken by another user", request.Email);
+                throw new InvalidOperationException($"El email '{request.Email}' ya está siendo utilizado por otro usuario");
+            }
+        }
+
         // Update user information
         user.UserName = request.Email;
         user.Email = request.Email;

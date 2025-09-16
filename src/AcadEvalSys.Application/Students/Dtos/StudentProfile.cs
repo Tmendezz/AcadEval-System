@@ -1,4 +1,5 @@
 using AcadEvalSys.Application.Students.Commands.AddStudent;
+using AcadEvalSys.Application.Students.Commands.UpdateStudent;
 using AcadEvalSys.Application.Subjects.Dtos;
 using AcadEvalSys.Domain.Entities;
 using AutoMapper;
@@ -18,6 +19,12 @@ public class StudentProfile : Profile
             ;
 
         CreateMap<AddStudentCommand, Student>()
+            .ForMember(dest => dest.CurrentYear, opt => opt.MapFrom(src => src.CurrentYear));
+
+        // Mapeo para actualización de estudiante
+        CreateMap<UpdateStudentCommand, Student>()
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
+            .ForMember(dest => dest.TechnicalCareerId, opt => opt.MapFrom(src => src.TechnicalCareerId))
             .ForMember(dest => dest.CurrentYear, opt => opt.MapFrom(src => src.CurrentYear));
 
         // Mapeo de entidad Student a StudentDto
