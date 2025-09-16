@@ -108,7 +108,7 @@ export function useEditCareer(careerId: string | undefined) {
           if (r.name.trim()) {
             const subjectId = await subjectService.createSubject(careerId, {
               name: r.name,
-              description: r.description || "",
+              description: r.description || `Descripción de ${r.name}`,
               year: r.year,
               professorId: r.professorId || undefined,
             });
@@ -200,7 +200,7 @@ export function useEditCareer(careerId: string | undefined) {
     const newSubject: SubjectRow = {
       id: `temp-${Date.now()}`, // ID temporal hasta que se guarde
       name: "",
-      description: "",
+      description: "Nueva asignatura", // Descripción por defecto para evitar validación
       year,
       professorId: "",
       professorName: "",
