@@ -156,7 +156,6 @@ export function SubjectsYearSection({
                 />
               </div>
             </div>
-            </div>
           ))
         )}
       </div>
