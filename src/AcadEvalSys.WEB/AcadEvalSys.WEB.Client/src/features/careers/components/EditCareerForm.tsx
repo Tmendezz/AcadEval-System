@@ -35,6 +35,7 @@ export function EditCareerForm() {
     // Helper functions
     updateSubjectName,
     updateSubjectProfessor,
+    addSubject,
     handleDeleteSubject,
   } = useEditCareer(careerId);
 
@@ -65,6 +66,7 @@ export function EditCareerForm() {
             onSearchChange={setSearch}
             onSubjectNameChange={updateSubjectName}
             onSubjectProfessorChange={updateSubjectProfessor}
+            onSubjectAdd={addSubject}
             onSubjectDelete={handleDeleteSubject}
           />
         ))}

@@ -14,8 +14,8 @@ import { useDeleteSubject } from "./use-delete-subject";
 import type { Professor } from "@infrastructure/api/types/professor";
 import type { Subject } from "@infrastructure/api/types/subject";
 
-// Local row model matches Subject
-type SubjectRow = Subject;
+// Local row model matches Subject, with optional id for new subjects
+type SubjectRow = Subject & { isNew?: boolean };
 
 export function useEditCareer(careerId: string | undefined) {
   const queryClient = useQueryClient();
@@ -98,25 +98,49 @@ export function useEditCareer(careerId: string | undefined) {
         });
       }
 
-      // Actualizar asignaturas modificadas
+      // Procesar asignaturas (crear nuevas y actualizar existentes)
       for (let i = 0; i < rows.length; i++) {
         const r = rows[i];
-        const originalSubject = subjects.find((s) => s.id === r.id);
 
-        if (originalSubject) {
-          const nameChanged = r.name !== originalSubject.name;
-          const professorChanged =
-            r.professorId !== originalSubject.professorId;
-
-          if (nameChanged || professorChanged) {
-            const updateData = {
+        // Si es una asignatura nueva, crearla
+        if (r.isNew) {
+          // Solo crear si tiene nombre
+          if (r.name.trim()) {
+            const subjectId = await subjectService.createSubject(careerId, {
               name: r.name,
-              description: r.description || originalSubject.description,
+              description: r.description || "",
               year: r.year,
-              professorId: r.professorId,
-            };
+              professorId: r.professorId || undefined,
+            });
+            
+            // Si tiene profesor asignado, asignarlo
+            if (r.professorId) {
+              await subjectService.assignProfessor(
+                careerId,
+                subjectId,
+                r.professorId
+              );
+            }
+          }
+        } else {
+          // Es una asignatura existente, verificar si necesita actualización
+          const originalSubject = subjects.find((s) => s.id === r.id);
 
-            await subjectService.updateSubject(careerId, r.id, updateData);
+          if (originalSubject) {
+            const nameChanged = r.name !== originalSubject.name;
+            const professorChanged =
+              r.professorId !== originalSubject.professorId;
+
+            if (nameChanged || professorChanged) {
+              const updateData = {
+                name: r.name,
+                description: r.description || originalSubject.description,
+                year: r.year,
+                professorId: r.professorId,
+              };
+
+              await subjectService.updateSubject(careerId, r.id, updateData);
+            }
           }
         }
       }
@@ -172,9 +196,30 @@ export function useEditCareer(careerId: string | undefined) {
     );
   };
 
+  const addSubject = (year: "First" | "Second" | "Third") => {
+    const newSubject: SubjectRow = {
+      id: `temp-${Date.now()}`, // ID temporal hasta que se guarde
+      name: "",
+      description: "",
+      year,
+      professorId: "",
+      professorName: "",
+      isNew: true,
+    };
+    setRows((prev) => [...prev, newSubject]);
+  };
+
   const handleDeleteSubject = async (subjectId: string) => {
     if (!careerId) return;
 
+    // Si es una asignatura nueva (solo local), simplemente la removemos
+    const subject = rows.find((row) => row.id === subjectId);
+    if (subject?.isNew) {
+      setRows((prev) => prev.filter((row) => row.id !== subjectId));
+      return;
+    }
+
+    // Si es una asignatura existente, la eliminamos del servidor
     await deleteSubjectMutation.mutateAsync({
       careerId,
       subjectId,
@@ -208,6 +253,7 @@ export function useEditCareer(careerId: string | undefined) {
     // Helper functions
     updateSubjectName,
     updateSubjectProfessor,
+    addSubject,
     handleDeleteSubject,
   };
 }
