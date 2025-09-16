@@ -6,7 +6,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 import { ArrowLeft, Clock, CheckCircle } from 'lucide-react';
-import { useSurveyForResponse, useSubmitSurveyResponse } from '../hooks/use-user-surveys';
+import { useSurveyForResponse, useSubmitSurveyResponse } from '../hooks/use-surveys';
 
 // Tipos para las preguntas de la encuesta
 interface SurveyQuestion {

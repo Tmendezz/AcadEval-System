@@ -7,6 +7,7 @@ public interface IAcademicSurveyRepository
 {
     Task<Guid> CreateFromTemplateAsync(string title, Guid templateId, DateTime? publishAt, DateTime? closeAt, string? userId = null, CancellationToken ct = default);
     Task SetSubjectsAsync(Guid surveyId, IEnumerable<Guid> subjectIds, string? userId = null, CancellationToken ct = default);
+    Task AddSurveySubjectAsync(AcademicSurveySubject surveySubject, CancellationToken ct = default);
 
     Task PublishAsync(Guid surveyId, DateTime? publishAt = null, CancellationToken ct = default);
     Task CloseAsync(Guid surveyId, DateTime? closeAt = null, CancellationToken ct = default);
@@ -21,6 +22,9 @@ public interface IAcademicSurveyRepository
         CancellationToken ct = default);
 
     Task<bool> ExistsTitleAsync(string title, Guid? excludingId = null, CancellationToken ct = default);
+
+    // Método para obtener encuestas del usuario con información de respuesta
+    Task<IEnumerable<(AcademicSurvey Survey, AcademicSurveySubject SurveySubject, bool HasResponded, DateTime? RespondedAt)>> GetUserSurveysWithResponseInfoAsync(Guid userId, CancellationToken ct = default);
 
     // NUEVOS métodos para registrar respuestas
     Task<AcademicSurveySubject?> GetSubjectGraphAsync(Guid surveySubjectId, CancellationToken ct = default);

@@ -38,7 +38,45 @@ export interface CreateAcademicSurveyRequest {
   templateId: string;
   publishAt?: string;
   closeAt?: string;
-  selectedCareerIds: string[];
-  selectedYears: CareerYear[];
+  audience: SurveyAudienceRequest[];
 }
 
+export interface SurveyAudienceRequest {
+  technicalCareerId: string;
+  selectedYears: string[]; // ['First', 'Second', 'Third']
+}
+
+// Tipos para la gestión de encuestas
+export interface Survey {
+  id: string;
+  title: string;
+  description?: string;
+  status: SurveyStatus;
+  publishAt?: string;
+  closeAt?: string;
+  createdAt: string;
+  updatedAt?: string;
+  templateId: string;
+  audiences: SurveyAudienceDto[];
+}
+
+export interface SurveyListItem {
+  id: string;
+  title: string;
+  description?: string;
+  status: SurveyStatus;
+  publishAt?: string;
+  closeAt?: string;
+  createdAt: string;
+  updatedAt?: string;
+  questionCount: number;
+  responseCount: number;
+}
+
+export interface SurveyFilters {
+  status?: SurveyStatus;
+  search?: string;
+  createdBy?: string;
+}
+
+   

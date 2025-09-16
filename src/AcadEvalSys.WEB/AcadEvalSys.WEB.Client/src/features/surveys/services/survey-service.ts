@@ -1,5 +1,5 @@
 import { api } from '@/infrastructure/query/axios';
-import { Survey, SurveyListItem, SurveyForm, SurveyFilters } from '../models/survey-types';
+import { Survey, SurveyListItem, CreateAcademicSurveyRequest, SurveyFilters } from '../models/survey-types';
 import { TechnicalCareer } from '../models/survey-audience-types';
 
 const baseUrl = '/surveys';
@@ -33,13 +33,13 @@ export const surveyService = {
   },
 
   // Crear nueva encuesta
-  async createSurvey(survey: SurveyForm): Promise<Survey> {
+  async createSurvey(survey: CreateAcademicSurveyRequest): Promise<Survey> {
     const response = await api.post(baseUrl, survey);
     return response.data;
   },
 
   // Actualizar encuesta existente
-  async updateSurvey(id: string, survey: SurveyForm): Promise<Survey> {
+  async updateSurvey(id: string, survey: CreateAcademicSurveyRequest): Promise<Survey> {
     const response = await api.put(`${baseUrl}/${id}`, survey);
     return response.data;
   },

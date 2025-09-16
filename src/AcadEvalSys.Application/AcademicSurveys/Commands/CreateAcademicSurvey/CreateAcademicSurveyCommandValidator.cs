@@ -14,13 +14,19 @@ namespace AcadEvalSys.Application.AcademicSurveys.Commands.CreateAcademicSurvey
             RuleFor(x => x.TemplateId)
                 .NotEmpty().WithMessage("TemplateId es requerido.");
 
-            RuleFor(x => x.SelectedCareerIds)
-                .NotEmpty().WithMessage("Debe seleccionar al menos una tecnicatura.");
+            /*RuleFor(x => x.Audience)
+                .NotEmpty().WithMessage("Debe configurar al menos una audiencia.");
 
-            RuleFor(x => x.SelectedYears)
-                .NotEmpty().WithMessage("Debe seleccionar al menos un año de cursado.")
-                .Must(years => years.All(year => year >= CareerYear.First && year <= CareerYear.Third))
-                .WithMessage("Los años de cursado deben estar entre 1 y 3.");
+            RuleForEach(x => x.Audience).ChildRules(audience =>
+            {
+                audience.RuleFor(a => a.TechnicalCareerId)
+                    .NotEmpty().WithMessage("El ID de la tecnicatura es requerido.");
+
+                audience.RuleFor(a => a.SelectedYears)
+                    .NotEmpty().WithMessage("Debe seleccionar al menos un año para cada tecnicatura.")
+                    .Must(years => years.All(year => year >= CareerYear.First && year <= CareerYear.Third))
+                    .WithMessage("Los años de cursado deben estar entre First y Third.");
+            });*/
 
             RuleFor(x => x)
                 .Must(x => !(x.PublishAt.HasValue && x.CloseAt.HasValue) || x.PublishAt <= x.CloseAt)

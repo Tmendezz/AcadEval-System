@@ -1,5 +1,4 @@
 using AcadEvalSys.Domain.Entities;
-using AcadEvalSys.Domain.Enums;
 using AcadEvalSys.Domain.Interfaces;
 using AcadEvalSys.Domain.Repositories;
 using MediatR;
@@ -20,77 +19,74 @@ namespace AcadEvalSys.Application.AcademicSurveys.Commands.CreateAcademicSurvey
             logger.LogInformation("Iniciando creación de encuesta académica: {Title} con template {TemplateId}", 
                 request.Title, request.TemplateId);
 
-            // Usar transacción para asegurar consistencia
-            await using var transaction = await unitOfWork.BeginTransactionAsync(cancellationToken);
-            
-            try
-            {
-                // Crear la encuesta desde el template
-                var surveyId = await surveyRepository.CreateFromTemplateAsync(
-                    request.Title, 
-                    request.TemplateId, 
-                    request.PublishAt, 
-                    request.CloseAt, 
-                    null, 
-                    cancellationToken);
+            // Crear la encuesta desde el template
+            var surveyId = await surveyRepository.CreateFromTemplateAsync(
+                request.Title, 
+                request.TemplateId, 
+                request.PublishAt, 
+                request.CloseAt, 
+                null, 
+                cancellationToken);
 
-                logger.LogInformation("Encuesta creada con ID: {SurveyId}", surveyId);
+            logger.LogInformation("Encuesta creada con ID: {SurveyId}", surveyId);
 
-                // Configurar la audiencia
-                await ConfigureSurveyAudienceAsync(surveyId, request.SelectedCareerIds, request.SelectedYears, cancellationToken);
+            // Configurar la audiencia
+            await ConfigureSurveyAudienceAsync(surveyId, request.Audience, cancellationToken);
 
-                await unitOfWork.SaveChangesAsync(cancellationToken);
-                await transaction.CommitAsync(cancellationToken);
+            logger.LogInformation("Intentando guardar cambios para encuesta {SurveyId}", surveyId);
+            var changesSaved = await unitOfWork.SaveChangesAsync(cancellationToken);
+            logger.LogInformation("Cambios guardados: {ChangesSaved} entidades afectadas", changesSaved);
 
-                logger.LogInformation("Encuesta académica creada exitosamente: {SurveyId}", surveyId);
-                return surveyId;
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error al crear encuesta académica: {Title}", request.Title);
-                await transaction.RollbackAsync(cancellationToken);
-                throw;
-            }
+            logger.LogInformation("Encuesta académica creada exitosamente: {SurveyId}", surveyId);
+            return surveyId;
         }
 
         private async Task ConfigureSurveyAudienceAsync(
             Guid surveyId, 
-            List<Guid> selectedCareerIds, 
-            List<CareerYear> selectedYears, 
+            List<SurveyAudienceDto> audience, 
             CancellationToken cancellationToken)
         {
-            logger.LogInformation("Configurando audiencia para encuesta {SurveyId}: {CareerCount} tecnicaturas, {YearCount} años", 
-                surveyId, selectedCareerIds.Count, selectedYears.Count);
+            logger.LogInformation("Configurando audiencia para encuesta {SurveyId}: {AudienceCount} configuraciones de audiencia", 
+                surveyId, audience.Count);
 
-            var survey = await surveyRepository.GetByIdAsync(surveyId, true, cancellationToken);
-            if (survey == null)
+            var totalSubjectsAdded = 0;
+
+            // Procesar cada configuración de audiencia (tecnicatura + años)
+            foreach (var audienceConfig in audience)
             {
-                logger.LogError("Survey con ID {SurveyId} no encontrada", surveyId);
-                throw new InvalidOperationException($"Survey with ID {surveyId} not found.");
-            }
+                logger.LogInformation("Procesando audiencia: Tecnicatura {CareerId} con años {Years}", 
+                    audienceConfig.TechnicalCareerId, 
+                    string.Join(", ", audienceConfig.SelectedYears));
 
-            // Obtener solo las asignaturas relevantes 
-            var relevantSubjects = await subjectRepository.GetByCareerAndYearsAsync(
-                selectedCareerIds, 
-                selectedYears, 
-                cancellationToken);
+                // Obtener asignaturas de esta tecnicatura y estos años específicos
+                var subjects = await subjectRepository.GetByCareerAndYearsAsync(
+                    new[] { audienceConfig.TechnicalCareerId }, 
+                    audienceConfig.SelectedYears, 
+                    cancellationToken);
 
-            logger.LogInformation("Encontradas {SubjectCount} asignaturas relevantes para la audiencia", relevantSubjects.Count());
+                logger.LogInformation("Encontradas {SubjectCount} asignaturas para tecnicatura {CareerId} y años {Years}", 
+                    subjects.Count(), audienceConfig.TechnicalCareerId, string.Join(", ", audienceConfig.SelectedYears));
 
-            // Crear AcademicSurveySubject para cada asignatura relevante
-            foreach (var subject in relevantSubjects)
-            {
-                var surveySubject = new AcademicSurveySubject
+                // Crear AcademicSurveySubject para cada asignatura
+                foreach (var subject in subjects)
                 {
-                    AcademicSurveyId = survey.Id,
-                    SubjectId = subject.Id,
-                };  
+                    var surveySubject = new AcademicSurveySubject
+                    {
+                        AcademicSurveyId = surveyId, // Usar el ID directamente
+                        SubjectId = subject.Id,
+                    };
 
-                survey.Subjects.Add(surveySubject);
+                    // Agregar directamente al contexto en lugar de a la colección
+                    await surveyRepository.AddSurveySubjectAsync(surveySubject, cancellationToken);
+                    totalSubjectsAdded++;
+
+                    logger.LogInformation("SurveySubject creado: Survey {SurveyId} -> Subject {SubjectId} ({SubjectName}, Año {Year})", 
+                        surveyId, subject.Id, subject.Name, subject.Year);
+                }
             }
             
-            logger.LogInformation("Audiencia configurada: {SubjectCount} asignaturas agregadas a la encuesta {SurveyId}", 
-                survey.Subjects.Count, surveyId);
+            logger.LogInformation("Audiencia configurada: {TotalSubjects} asignaturas agregadas a la encuesta {SurveyId}", 
+                totalSubjectsAdded, surveyId);
         }
     }
 }

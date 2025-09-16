@@ -2,7 +2,6 @@ using AcadEvalSys.Application.AcademicSurveys.Commands.CloseAcademicSurvey;
 using AcadEvalSys.Application.AcademicSurveys.Commands.CreateAcademicSurvey;
 using AcadEvalSys.Application.AcademicSurveys.Commands.PublishAcademicSurvey;
 using AcadEvalSys.Application.AcademicSurveys.Commands.SetSurveySubjects;
-using AcadEvalSys.Application.AcademicSurveys.Commands.SubmitSurveyResponse;
 using AcadEvalSys.Application.AcademicSurveys.Queries.GetAcademicSurvey;
 using AcadEvalSys.Application.AcademicSurveys.Queries.GetSurveyResponses;
 using AcadEvalSys.Application.AcademicSurveys.Queries.GetSurveySubjectResponses;
@@ -15,12 +14,17 @@ using Serilog;
 
 namespace AcadEvalSys.WEB.Server.Controllers;
 
+/// <summary>
+/// Controlador para la gestión administrativa de encuestas académicas.
+/// Solo accesible por administradores y operaciones de consulta general.
+/// </summary>
 [ApiController]
 [Route("surveys")]
-[Authorize(Roles = UserRoles.Admin)]
+[Authorize] // Base authorization - specific roles defined per endpoint
 public class AcademicSurveyController(IMediator mediator) : ControllerBase
 {
     [HttpPost]
+    [Authorize(Roles = UserRoles.Admin)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Produces("application/json")]
@@ -43,6 +47,7 @@ public class AcademicSurveyController(IMediator mediator) : ControllerBase
     }
 
     [HttpPut("{id}/subjects")]
+    [Authorize(Roles = UserRoles.Admin)] // Only admin can set subjects
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Produces("application/json")]
@@ -54,6 +59,7 @@ public class AcademicSurveyController(IMediator mediator) : ControllerBase
     }
 
     [HttpPut("{id}/publish")]
+    [Authorize(Roles = UserRoles.Admin)] // Only admin can publish surveys
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Produces("application/json")]
@@ -65,6 +71,7 @@ public class AcademicSurveyController(IMediator mediator) : ControllerBase
     }
 
     [HttpPut("{id}/close")]
+    [Authorize(Roles = UserRoles.Admin)] // Only admin can close surveys
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Produces("application/json")]
@@ -76,6 +83,7 @@ public class AcademicSurveyController(IMediator mediator) : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = $"{UserRoles.Admin},{UserRoles.Professor},{UserRoles.Student}")] // All authenticated users can list surveys
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Produces("application/json")]
     public async Task<IActionResult> List([FromQuery] ListAcademicSurveysQuery query)
@@ -84,7 +92,9 @@ public class AcademicSurveyController(IMediator mediator) : ControllerBase
         return Ok(result);
     }
 
+
     [HttpGet("{id}")]
+    [Authorize(Roles = $"{UserRoles.Admin},{UserRoles.Professor},{UserRoles.Student}")] // All authenticated users can view individual surveys
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Produces("application/json")]
@@ -94,19 +104,10 @@ public class AcademicSurveyController(IMediator mediator) : ControllerBase
         return result is null ? NotFound() : Ok(result);
     }
 
-    [HttpPost("subjects/{surveySubjectId}/responses")]
-    [Authorize(Roles = $"{UserRoles.Student},{UserRoles.Professor}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> SubmitResponse(Guid surveySubjectId, [FromBody] SubmitSurveyResponseCommand command)
-    { 
-        command.AcademicSurveySubjectId = surveySubjectId;
-        var id = await mediator.Send(command);
-        return Ok(new { id }); 
-    }
 
     // GET /surveys/{id}/responses  (solo Admin)
     [HttpGet("{id}/responses")]
+    [Authorize(Roles = UserRoles.Admin)] // Only admin can view responses
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetSurveyResponses([FromRoute] Guid id)
@@ -117,6 +118,7 @@ public class AcademicSurveyController(IMediator mediator) : ControllerBase
 
     // GET /surveys/subjects/{surveySubjectId}/responses (solo Admin)
     [HttpGet("subjects/{surveySubjectId}/responses")]
+    [Authorize(Roles = UserRoles.Admin)] // Only admin can view subject responses
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetSurveySubjectResponses(Guid surveySubjectId)

@@ -7,9 +7,11 @@ import { SurveyTemplateForm, SurveyTemplateQuestion } from '../../models/survey-
 import { SurveyBasicInfoForm } from '../survey-basic-info-form';
 import { SurveyQuestionsEditor } from '../survey-questions-editor';
 import { SurveySettingsForm, SurveyAudience } from '../survey-settings-form';
+import { SurveySchedulingForm } from '../survey-scheduling-form';
 import { TechnicalCareer } from '../../hooks/use-surveys';
 import { CareerYear } from '../../models/survey-types';
 import { validateStep } from '../../schemas/survey-validation-schemas';
+import { formatDateForDisplay } from '@/shared/utils/date-utils';
 
 interface SurveyWizardProps {
   onSubmit: (payload: { 
@@ -19,7 +21,11 @@ interface SurveyWizardProps {
       isAnonymous: boolean;
       selectedCareerIds: string[];
       selectedYears: CareerYear[];
-    } 
+    };
+    scheduling: {
+      publishAt?: string;
+      closeAt?: string;
+    }
   }) => Promise<void> | void;
   onCancel: () => void;
   isSubmitting?: boolean;
@@ -76,6 +82,14 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
     selectedCareerIds: [], // Inicialmente vacío significa que todas están incluidas
     selectedYears: []
   });
+  
+  const [scheduling, setScheduling] = useState<{
+    publishAt?: string;
+    closeAt?: string;
+  }>({
+    publishAt: '',
+    closeAt: ''
+  });
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   // Actualizar el formulario cuando lleguen los datos de la plantilla
@@ -103,7 +117,7 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
 
   const steps = [
     { id: 0, title: 'Diseñar formulario', description: 'Define el título, la descripción y agrega preguntas' },
-    { id: 1, title: 'Configuración', description: 'Audiencia y privacidad del formulario' },
+    { id: 1, title: 'Configuración', description: 'Audiencia, fechas y privacidad del formulario' },
     { id: 2, title: 'Revisión', description: 'Verifica la información antes de crear la encuesta' },
   ];
 
@@ -127,7 +141,7 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
     if (!validateCurrentStep()) {
       return;
     }
-    await onSubmit({ form, settings });
+    await onSubmit({ form, settings, scheduling });
   };
 
   return (
@@ -163,6 +177,12 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
         {currentStep === 1 && (
           <div className="space-y-6">
             <WizardStepTitle currentStep={currentStep} steps={steps} />
+            <SurveySchedulingForm
+              publishAt={scheduling.publishAt}
+              closeAt={scheduling.closeAt}
+              onChange={setScheduling}
+              errors={validationErrors}
+            />
             <SurveySettingsForm
               audience={settings.audience}
               isAnonymous={settings.isAnonymous}
@@ -181,6 +201,16 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
               <div className="mb-2"><strong>Título:</strong> {form.title || '—'}</div>
               <div className="mb-2"><strong>Descripción:</strong> {form.description || '—'}</div>
               <div className="mb-2"><strong>Preguntas:</strong> {form.questions.length}</div>
+              <div className="mb-2"><strong>Fecha de publicación:</strong> {
+                scheduling.publishAt 
+                  ? formatDateForDisplay(new Date(scheduling.publishAt))
+                  : 'No configurada'
+              }</div>
+              <div className="mb-2"><strong>Fecha de cierre:</strong> {
+                scheduling.closeAt
+                  ? formatDateForDisplay(new Date(scheduling.closeAt))
+                  : 'No configurada'
+              }</div>
               <div className="mb-2"><strong>Tipo de audiencia:</strong> {settings.audience}</div>
               <div className="mb-2"><strong>Respuestas anónimas:</strong> {settings.isAnonymous ? 'Sí' : 'No'}</div>
               <div className="mb-2"><strong>Tecnicaturas incluidas:</strong> {

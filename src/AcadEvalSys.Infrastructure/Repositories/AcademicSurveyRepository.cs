@@ -1,4 +1,4 @@
-﻿using AcadEvalSys.Domain.Entities;
+using AcadEvalSys.Domain.Entities;
 using AcadEvalSys.Domain.Enums;
 using AcadEvalSys.Domain.Repositories;
 using AcadEvalSys.Infrastructure.Persistence;
@@ -20,6 +20,22 @@ public class AcademicSurveyRepository(ApplicationDbContext db) : IAcademicSurvey
         if (template is null)
             throw new KeyNotFoundException("Template no encontrada o inactiva");
 
+        // Determinar estado inicial basado en fechas de publicación y cierre
+        var now = DateTime.UtcNow;
+        var initialStatus = SurveyStatus.Draft;
+        
+        if (publishAt.HasValue && publishAt.Value <= now)
+        {
+            // Si la fecha de publicación ya pasó o es ahora, publicar automáticamente
+            initialStatus = SurveyStatus.Published;
+            
+            // Si también ya pasó la fecha de cierre, cerrar automáticamente
+            if (closeAt.HasValue && closeAt.Value <= now)
+            {
+                initialStatus = SurveyStatus.Closed;
+            }
+        }
+
         // Crear encuesta
         var survey = new AcademicSurvey
         {
@@ -27,7 +43,7 @@ public class AcademicSurveyRepository(ApplicationDbContext db) : IAcademicSurvey
             TemplateId = template.Id,
             PublishAt = publishAt,
             CloseAt = closeAt,
-            Status = SurveyStatus.Draft,
+            Status = initialStatus,
             CreatedByUserId = userId
         };
 
@@ -60,6 +76,11 @@ public class AcademicSurveyRepository(ApplicationDbContext db) : IAcademicSurvey
         await db.SaveChangesAsync(ct);
 
         return survey.Id;
+    }
+
+    public async Task AddSurveySubjectAsync(AcademicSurveySubject surveySubject, CancellationToken ct = default)
+    {
+        db.AcademicSurveySubjects.Add(surveySubject);
     }
 
     public async Task SetSubjectsAsync(Guid surveyId, IEnumerable<Guid> subjectIds, string? userId = null, CancellationToken ct = default)
@@ -262,5 +283,57 @@ public class AcademicSurveyRepository(ApplicationDbContext db) : IAcademicSurvey
         return await query
             .OrderByDescending(r => r.SubmittedAt)
             .ToListAsync(ct);
+    }
+
+    public async Task<IEnumerable<(AcademicSurvey Survey, AcademicSurveySubject SurveySubject, bool HasResponded, DateTime? RespondedAt)>> GetUserSurveysWithResponseInfoAsync(Guid userId, CancellationToken ct = default)
+    {
+        var userIdString = userId.ToString();
+        
+        // Obtener las relaciones survey-subject que aplican al usuario
+        var surveySubjectIds = await (from surveySubject in db.AcademicSurveySubjects
+                                      join subject in db.Subjects on surveySubject.SubjectId equals subject.Id
+                                      join survey in db.AcademicSurveys on surveySubject.AcademicSurveyId equals survey.Id
+                                      where survey.IsActive && surveySubject.IsActive && subject.IsActive
+                                      && (survey.Status == SurveyStatus.Published || survey.Status == SurveyStatus.Closed)
+                                      && (
+                                          // Usuario es estudiante matriculado en la asignatura
+                                          subject.StudentSubjects!.Any(ss => ss.StudentId == userIdString) ||
+                                          // Usuario es profesor de la asignatura
+                                          subject.ProfessorId == userIdString
+                                      )
+                                      select surveySubject.Id).ToListAsync(ct);
+
+        if (!surveySubjectIds.Any())
+        {
+            return new List<(AcademicSurvey Survey, AcademicSurveySubject SurveySubject, bool HasResponded, DateTime? RespondedAt)>();
+        }
+
+        // Cargar las entidades completas con includes
+        var surveySubjects = await db.AcademicSurveySubjects
+            .Where(ss => surveySubjectIds.Contains(ss.Id))
+            .Include(ss => ss.AcademicSurvey!)
+                .ThenInclude(s => s.Questions)
+            .Include(ss => ss.AcademicSurvey!)
+                .ThenInclude(s => s.Template)
+            .ToListAsync(ct);
+
+        var userSurveysWithResponse = new List<(AcademicSurvey Survey, AcademicSurveySubject SurveySubject, bool HasResponded, DateTime? RespondedAt)>();
+
+        foreach (var surveySubject in surveySubjects)
+        {
+            // Verificar si el usuario ya respondió esta encuesta en esta asignatura
+            var response = await db.AcademicSurveyResponses
+                .Where(r => r.AcademicSurveySubjectId == surveySubject.Id && r.UserId == userIdString)
+                .FirstOrDefaultAsync(ct);
+
+            userSurveysWithResponse.Add((
+                Survey: surveySubject.AcademicSurvey!,
+                SurveySubject: surveySubject,
+                HasResponded: response != null,
+                RespondedAt: response?.SubmittedAt
+            ));
+        }
+
+        return userSurveysWithResponse;
     }
 }

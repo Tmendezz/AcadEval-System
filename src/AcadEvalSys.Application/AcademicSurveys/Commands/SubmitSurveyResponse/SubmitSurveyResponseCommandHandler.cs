@@ -25,23 +25,39 @@ namespace AcadEvalSys.Application.AcademicSurveys.Commands.SubmitSurveyResponse
             }
 
             var questionsById = survey.Questions.ToDictionary(q => q.Id);
+            var answersByQuestionId = request.Answers.ToDictionary(a => a.QuestionId);
+
+            // Validar que todas las preguntas obligatorias tengan respuesta
+            var requiredQuestions = survey.Questions.Where(q => q.IsRequired).ToList();
+            foreach (var requiredQuestion in requiredQuestions)
+            {
+                if (!answersByQuestionId.ContainsKey(requiredQuestion.Id))
+                {
+                    throw new InvalidOperationException($"La pregunta obligatoria '{requiredQuestion.Text}' debe ser respondida.");
+                }
+            }
+
+            // Validar cada respuesta
             foreach (var ans in request.Answers)
             {
                 if (!questionsById.TryGetValue(ans.QuestionId, out var q))
                     throw new InvalidOperationException($"La pregunta {ans.QuestionId} no pertenece a esta encuesta.");
 
+                // Validar contenido según tipo de pregunta
                 switch (q.Type)
                 {
                     case QuestionType.OpenText:
-                        if (string.IsNullOrWhiteSpace(ans.Text))
-                            throw new InvalidOperationException($"La pregunta '{q.Text}' requiere texto abierto.");
+                        // Para preguntas obligatorias de texto abierto, verificar que no esté vacío
+                        if (q.IsRequired && string.IsNullOrWhiteSpace(ans.Text))
+                            throw new InvalidOperationException($"La pregunta obligatoria '{q.Text}' requiere una respuesta de texto.");
                         ans.SelectedValue = null;
                         break;
                     case QuestionType.SingleChoice:
                     case QuestionType.MultipleChoice:
-                        if (!ans.SelectedValue.HasValue)
-                            throw new InvalidOperationException($"La pregunta '{q.Text}' requiere un valor seleccionado.");
-                        if (!q.Options.Any(o => o.Value == ans.SelectedValue.Value))
+                        // Para preguntas obligatorias de selección, verificar que tenga valor
+                        if (q.IsRequired && !ans.SelectedValue.HasValue)
+                            throw new InvalidOperationException($"La pregunta obligatoria '{q.Text}' requiere seleccionar una opción.");
+                        if (ans.SelectedValue.HasValue && !q.Options.Any(o => o.Value == ans.SelectedValue.Value))
                             throw new InvalidOperationException($"La opción seleccionada no es válida para la pregunta '{q.Text}'.");
                         break;
                     default:
@@ -53,26 +69,22 @@ namespace AcadEvalSys.Application.AcademicSurveys.Commands.SubmitSurveyResponse
 
             if (existing is not null)
             {
-                existing.QuestionResponses = MapAnswers(request);
-                existing.SubmittedAt = DateTime.UtcNow;
-                existing.UpdatedAt = DateTime.UtcNow;
-                await surveyRepo.UpdateResponseAsync(existing, ct);
-                return existing.Id;
+                // Una vez enviada, la encuesta no puede ser modificada según User Story 2
+                throw new InvalidOperationException("Esta encuesta ya ha sido respondida y no puede modificarse.");
             }
-            else
-            {
-                var response = new AcademicSurveyResponse
-                {
-                    AcademicSurveySubjectId = request.AcademicSurveySubjectId,
-                    UserId = currentUserId,
-                    SubmittedAt = DateTime.UtcNow,
-                    CreatedAt = DateTime.UtcNow,
-                    IsActive = true,
-                    QuestionResponses = MapAnswers(request)
-                };
 
-                return await surveyRepo.CreateResponseAsync(response, ct);
-            }
+            // Crear nueva respuesta
+            var response = new AcademicSurveyResponse
+            {
+                AcademicSurveySubjectId = request.AcademicSurveySubjectId,
+                UserId = currentUserId,
+                SubmittedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
+                IsActive = true,
+                QuestionResponses = MapAnswers(request)
+            };
+
+            return await surveyRepo.CreateResponseAsync(response, ct);
         }
 
         private static List<SurveyQuestionResponse> MapAnswers(SubmitSurveyResponseCommand request)

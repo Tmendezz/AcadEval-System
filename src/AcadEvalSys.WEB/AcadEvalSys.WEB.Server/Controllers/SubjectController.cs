@@ -22,7 +22,7 @@ namespace AcadEvalSys.WEB.Server.Controllers;
 /// </summary>
 [ApiController]
 [Route("technical-careers/{careerId}/subjects")]
-[Authorize(Roles = UserRoles.Admin)]
+[Authorize] // Base authorization - specific roles defined per endpoint
 public class SubjectController(IMediator mediator) : ControllerBase
 {
     /// <summary>
@@ -32,6 +32,7 @@ public class SubjectController(IMediator mediator) : ControllerBase
     /// <param name="command">Datos de la asignatura a crear.</param>
     /// <returns>ID de la asignatura creada.</returns>
     [HttpPost]
+    [Authorize(Roles = UserRoles.Admin)] // Only admin can create subjects
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Produces("application/json")]
@@ -50,6 +51,7 @@ public class SubjectController(IMediator mediator) : ControllerBase
     /// <param name="includeEnrolledStudents">Incluir estudiantes inscritos en la respuesta.</param>
     /// <returns>Lista de asignaturas de la carrera.</returns>
     [HttpGet]
+    [Authorize(Roles = $"{UserRoles.Admin},{UserRoles.Professor},{UserRoles.Student}")] // All authenticated users can view subjects
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Produces("application/json")]
     public async Task<IActionResult> GetAllSubjects(Guid careerId, [FromQuery] CareerYear? year = null, [FromQuery] bool includeEnrolledStudents = false)
@@ -67,6 +69,7 @@ public class SubjectController(IMediator mediator) : ControllerBase
     /// <param name="includeEnrolledStudents">Incluir estudiantes inscritos en la respuesta.</param>
     /// <returns>Asignatura solicitada.</returns>
     [HttpGet("{subjectId}")]
+    [Authorize(Roles = $"{UserRoles.Admin},{UserRoles.Professor},{UserRoles.Student}")] // All authenticated users can view individual subjects
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Produces("application/json")]
@@ -85,6 +88,7 @@ public class SubjectController(IMediator mediator) : ControllerBase
     /// <param name="command">Datos actualizados de la asignatura.</param>
     /// <returns>NoContent si se actualiza correctamente.</returns>
     [HttpPut("{subjectId}")]
+    [Authorize(Roles = UserRoles.Admin)] // Only admin can update subjects
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -103,6 +107,7 @@ public class SubjectController(IMediator mediator) : ControllerBase
     /// <param name="subjectId">ID de la asignatura a eliminar.</param>
     /// <returns>NoContent si se elimina correctamente.</returns>
     [HttpDelete("{subjectId}")]
+    [Authorize(Roles = UserRoles.Admin)] // Only admin can delete subjects
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteSubject(Guid careerId, Guid subjectId)
@@ -122,6 +127,7 @@ public class SubjectController(IMediator mediator) : ControllerBase
     /// <param name="command">Datos del estudiante a inscribir.</param>
     /// <returns>Ok si se inscribe correctamente, BadRequest si falla.</returns>
     [HttpPost("{subjectId}/enroll-student")]
+    [Authorize(Roles = UserRoles.Admin)] // Only admin can enroll students
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> EnrollStudent(Guid careerId, Guid subjectId, [FromBody] EnrollStudentInSubjectCommand command)
@@ -140,6 +146,7 @@ public class SubjectController(IMediator mediator) : ControllerBase
     /// <param name="command">Datos del profesor a asignar.</param>
     /// <returns>Ok si se asigna correctamente, BadRequest si falla.</returns>
     [HttpPut("{subjectId}/assign-professor")]
+    [Authorize(Roles = UserRoles.Admin)] // Only admin can assign professors
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AssignProfessor(Guid careerId, Guid subjectId, [FromBody] AssignProfessorToSubjectCommand command)
@@ -166,6 +173,7 @@ public class SubjectController(IMediator mediator) : ControllerBase
     /// <param name="year">Año del estudiante (opcional).</param>
     /// <returns>Lista de estudiantes disponibles para inscribir.</returns>
     [HttpGet("{subjectId}/available-students")]
+    [Authorize(Roles = UserRoles.Admin)] // Only admin can view available students
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Produces("application/json")]
     public async Task<ActionResult<IEnumerable<StudentDto>>> GetAvailableStudents(
@@ -191,6 +199,7 @@ public class SubjectController(IMediator mediator) : ControllerBase
     /// <param name="studentId">ID del estudiante a desenrolar.</param>
     /// <returns>True si se desenroló exitosamente.</returns>
     [HttpDelete("{subjectId}/students/{studentId}")]
+    [Authorize(Roles = UserRoles.Admin)] // Only admin can unenroll students
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UnenrollStudent(
@@ -215,6 +224,7 @@ public class SubjectController(IMediator mediator) : ControllerBase
     /// <param name="request">Lista de IDs de estudiantes a desenrolar.</param>
     /// <returns>Resultado de la operación masiva.</returns>
     [HttpPost("{subjectId}/students/bulk-unenroll")]
+    [Authorize(Roles = UserRoles.Admin)] // Only admin can bulk unenroll students
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Produces("application/json")]

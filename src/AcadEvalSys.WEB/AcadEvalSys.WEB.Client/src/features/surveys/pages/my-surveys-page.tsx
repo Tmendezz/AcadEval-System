@@ -8,7 +8,7 @@ import { DataTable } from '@/shared/components/data-table/data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import { Eye, CheckCircle, Clock, Calendar } from 'lucide-react';
 import { SurveyStatus } from '../models/survey-types';
-import { usePendingSurveys, useCompletedSurveys, UserSurvey } from '../hooks/use-user-surveys';
+import { usePendingSurveys, useCompletedSurveys, UserSurveyDto } from '../hooks/use-surveys';
 
 // Función para obtener el estado de la encuesta
 function getSurveyStatusBadge(status: SurveyStatus) {
@@ -25,7 +25,7 @@ function getSurveyStatusBadge(status: SurveyStatus) {
 }
 
 // Función para obtener el estado de respuesta
-function getResponseStatusBadge(responded: boolean, respondedAt?: string) {
+function getResponseStatusBadge(responded: boolean) {
   if (responded) {
     return (
       <Badge variant="default" className="flex items-center gap-1">
@@ -43,7 +43,7 @@ function getResponseStatusBadge(responded: boolean, respondedAt?: string) {
 }
 
 // Columnas para la tabla de encuestas
-const createSurveyColumns = (onRespond: (id: string) => void, onView: (id: string) => void): ColumnDef<UserSurvey>[] => [
+const createSurveyColumns = (onRespond: (id: string) => void, onView: (id: string) => void): ColumnDef<UserSurveyDto>[] => [
   {
     accessorKey: 'title',
     header: 'Título',
@@ -64,7 +64,7 @@ const createSurveyColumns = (onRespond: (id: string) => void, onView: (id: strin
   {
     accessorKey: 'responded',
     header: 'Mi Estado',
-    cell: ({ row }) => getResponseStatusBadge(row.original.responded, row.original.respondedAt),
+    cell: ({ row }) => getResponseStatusBadge(row.original.responded),
   },
   {
     accessorKey: 'questionsCount',
@@ -144,7 +144,7 @@ export default function MySurveysPage() {
   const { data: completedSurveys = [], isLoading: isLoadingCompleted } = useCompletedSurveys();
 
   // Ordenar por fecha de publicación (más recientes primero)
-  const sortByPublishedDate = (a: UserSurvey, b: UserSurvey) => 
+  const sortByPublishedDate = (a: UserSurveyDto, b: UserSurveyDto) => 
     new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
 
   const sortedPendingSurveys = [...pendingSurveys].sort(sortByPublishedDate);
@@ -209,7 +209,6 @@ export default function MySurveysPage() {
                 <DataTable 
                   columns={columns} 
                   data={sortedPendingSurveys}
-                  emptyMessage="No tienes encuestas pendientes"
                 />
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
@@ -242,11 +241,10 @@ export default function MySurveysPage() {
                   <p>Cargando encuestas completadas...</p>
                 </div>
               ) : sortedCompletedSurveys.length > 0 ? (
-                <DataTable 
-                  columns={columns} 
-                  data={sortedCompletedSurveys}
-                  emptyMessage="No tienes encuestas completadas"
-                />
+                  <DataTable 
+                    columns={columns} 
+                    data={sortedCompletedSurveys}
+                  />  
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <CheckCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />

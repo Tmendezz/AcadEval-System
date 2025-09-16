@@ -13,8 +13,8 @@ namespace AcadEvalSys.Domain.Entities
 
         // Navegación
         public virtual AcademicSurvey? AcademicSurvey { get; set; }
+        public virtual Subject? Subject { get; set; }
 
         public virtual ICollection<AcademicSurveyResponse> Responses { get; set; } = new List<AcademicSurveyResponse>();
-        public virtual Subject? Subject { get; set; }
     }
 }
