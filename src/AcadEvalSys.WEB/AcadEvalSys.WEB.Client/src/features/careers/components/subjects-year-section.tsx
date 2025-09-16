@@ -16,6 +16,7 @@ interface SubjectsYearSectionProps {
   isSearching: boolean;
   onSearchChange: (search: string) => void;
   onSubjectNameChange: (subjectId: string, name: string) => void;
+  onSubjectDescriptionChange?: (subjectId: string, description: string) => void;
   onSubjectProfessorChange: (subjectId: string, professorId: string) => void;
   onSubjectAdd?: (year: "First" | "Second" | "Third") => void;
   onSubjectDelete?: (subjectId: string) => void;
@@ -29,6 +30,7 @@ export function SubjectsYearSection({
   isSearching,
   onSearchChange,
   onSubjectNameChange,
+  onSubjectDescriptionChange,
   onSubjectProfessorChange,
   onSubjectAdd,
   onSubjectDelete,
@@ -80,56 +82,79 @@ export function SubjectsYearSection({
           yearSubjects.map((subject) => (
             <div
               key={subject.id}
-              className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end"
+              className="space-y-4 p-4 border border-gray-200 rounded-lg"
             >
-            <div className="md:col-span-4">
-              <label className="block text-sm font-medium text-muted-foreground mb-2">
-                Asignatura:
-                {subject.isNew && (
-                  <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                    Nueva
-                  </span>
+              {/* Header con nombre y badge */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <h4 className="font-medium text-sm">
+                    {subject.name || "Nueva asignatura"}
+                  </h4>
+                  {subject.isNew && (
+                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                      Nueva
+                    </span>
+                  )}
+                </div>
+                {onSubjectDelete && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => onSubjectDelete(subject.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                 )}
-              </label>
-              <Input
-                value={subject.name}
-                onChange={(e) =>
-                  onSubjectNameChange(subject.id, e.target.value)
-                }
-                placeholder="Nombre de la asignatura"
-              />
-            </div>
+              </div>
 
-            <div className="md:col-span-7">
-              <label className="block text-sm font-medium text-muted-foreground mb-2">
-                Profesor:
-              </label>
-              <ProfessorCombobox
-                value={subject.professorId}
-                onChange={(v) => {
-                  if (!v) return;
-                  onSubjectProfessorChange(subject.id, v);
-                }}
-                options={getProfessorOptions(subject)}
-                onSearch={onSearchChange}
-                isLoading={isSearching}
-                searchTerm={search}
-                placeholder="Seleccionar profesor"
-                className="w-full"
-              />
-            </div>
+              {/* Campos de entrada */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-2">
+                    Nombre:
+                  </label>
+                  <Input
+                    value={subject.name}
+                    onChange={(e) =>
+                      onSubjectNameChange(subject.id, e.target.value)
+                    }
+                    placeholder="Nombre de la asignatura"
+                  />
+                </div>
 
-            <div className="md:col-span-1">
-              {onSubjectDelete && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => onSubjectDelete(subject.id)}
-                  className="w-full"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              )}
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-2">
+                    Profesor:
+                  </label>
+                  <ProfessorCombobox
+                    value={subject.professorId}
+                    onChange={(v) => {
+                      if (!v) return;
+                      onSubjectProfessorChange(subject.id, v);
+                    }}
+                    options={getProfessorOptions(subject)}
+                    onSearch={onSearchChange}
+                    isLoading={isSearching}
+                    searchTerm={search}
+                    placeholder="Seleccionar profesor"
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
+              {/* Descripción */}
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
+                  Descripción:
+                </label>
+                <Input
+                  value={subject.description}
+                  onChange={(e) =>
+                    onSubjectDescriptionChange?.(subject.id, e.target.value)
+                  }
+                  placeholder="Descripción de la asignatura"
+                />
+              </div>
             </div>
             </div>
           ))

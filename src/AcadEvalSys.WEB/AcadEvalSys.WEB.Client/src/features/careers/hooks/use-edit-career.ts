@@ -108,7 +108,7 @@ export function useEditCareer(careerId: string | undefined) {
           if (r.name.trim()) {
             const subjectId = await subjectService.createSubject(careerId, {
               name: r.name,
-              description: r.description || `Descripción de ${r.name}`,
+              description: r.description.trim() || `Descripción de ${r.name}`,
               year: r.year,
               professorId: r.professorId || undefined,
             });
@@ -178,6 +178,14 @@ export function useEditCareer(careerId: string | undefined) {
     setRows((prev) =>
       prev.map((row) =>
         row.id === subjectId ? ({ ...row, name: newName } as SubjectRow) : row
+      )
+    );
+  };
+
+  const updateSubjectDescription = (subjectId: string, newDescription: string) => {
+    setRows((prev) =>
+      prev.map((row) =>
+        row.id === subjectId ? ({ ...row, description: newDescription } as SubjectRow) : row
       )
     );
   };
@@ -252,6 +260,7 @@ export function useEditCareer(careerId: string | undefined) {
 
     // Helper functions
     updateSubjectName,
+    updateSubjectDescription,
     updateSubjectProfessor,
     addSubject,
     handleDeleteSubject,
