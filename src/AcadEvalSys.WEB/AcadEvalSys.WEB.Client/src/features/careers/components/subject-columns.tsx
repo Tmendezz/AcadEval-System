@@ -57,7 +57,7 @@ export const createSubjectColumns = (
         const handleView = (e: React.MouseEvent) => {
           e.stopPropagation();
           if (careerId) {
-            navigate(`/tecnicaturas/${careerId}/asignaturas/${subject.id}`);
+            navigate(`/carreras/${careerId}/asignaturas/${subject.id}`);
           }
         };
 

@@ -63,7 +63,7 @@ export function SubjectDetail() {
     });
 
     // Navegar de vuelta a la página de la carrera
-    navigate(`/tecnicaturas/${careerId}/asignaturas`);
+    navigate(`/carreras/${careerId}`);
   };
 
   if (isLoadingSubject) {
@@ -85,7 +85,7 @@ export function SubjectDetail() {
             La asignatura que buscas no existe o no tienes permisos para verla.
           </p>
           <Button
-            onClick={() => navigate(`/administration/tecnicaturas/${careerId}`)}
+            onClick={() => navigate(`/admin`)}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Volver a Carreras

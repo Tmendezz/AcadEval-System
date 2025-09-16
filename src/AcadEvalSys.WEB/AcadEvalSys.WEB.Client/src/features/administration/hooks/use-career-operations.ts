@@ -53,11 +53,11 @@ export function useCareerOperations() {
 
   // Handlers para operaciones de carreras
   const handleEditCareer = (career: TechnicalCareer) => {
-    navigate(`/tecnicaturas/${career.id}/editar`);
+    navigate(`/carreras/${career.id}/editar`);
   };
 
   const handleViewCareer = (career: TechnicalCareer) => {
-    navigate(`/tecnicaturas/${career.id}/asignaturas`);
+    navigate(`/carreras/${career.id}`);
   };
 
   const handleDeleteCareer = (career: TechnicalCareer) => {

@@ -76,7 +76,7 @@ export default function PersonalPage() {
               emptyIcon={<Building2 className="w-8 h-8" />}
               className="mb-6"
               headerActions={
-                <Button onClick={() => navigate("/tecnicaturas/nueva")}>
+                <Button onClick={() => navigate("/carreras/nueva")}>
                   <Plus className="w-4 h-4 mr-2" />
                   Nueva carrera
                 </Button>
