@@ -22,36 +22,6 @@ interface SurveyResponse {
   answer: string | string[];
 }
 
-// Datos de ejemplo (TODO: reemplazar con API real)
-const mockSurvey = {
-  id: '1',
-  title: 'Evaluación de Docentes - Primer Cuatrimestre',
-  description: 'Encuesta para evaluar el desempeño de los docentes del primer cuatrimestre',
-  publishedAt: '2024-01-15T10:00:00Z',
-  closedAt: '2024-02-15T23:59:59Z',
-  questions: [
-    {
-      id: '1',
-      text: '¿Cómo calificarías la claridad en las explicaciones del docente?',
-      type: 'single' as const,
-      options: ['Excelente', 'Muy bueno', 'Bueno', 'Regular', 'Malo'],
-      required: true
-    },
-    {
-      id: '2',
-      text: '¿Qué aspectos del curso te gustaron más? (Puedes seleccionar varios)',
-      type: 'multi' as const,
-      options: ['Metodología de enseñanza', 'Material didáctico', 'Evaluaciones', 'Interacción en clase', 'Horarios'],
-      required: true
-    },
-    {
-      id: '3',
-      text: '¿Tienes alguna sugerencia para mejorar el curso?',
-      type: 'text' as const,
-      required: false
-    }
-  ]
-};
 
 export default function RespondSurveyPage() {
   const [, setLocation] = useLocation();

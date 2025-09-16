@@ -8,7 +8,6 @@ import { PageContent, PageLayout } from '@/shared/components/layout/page-layout'
 import { useSurveyTemplate } from '../hooks/use-survey-templates';
 import { useSurveysStore } from '../store/use-surveys-store';
 import { SurveyForm, SurveyQuestion } from '..';
-import { TechnicalCareer } from '../hooks/use-surveys';
 import { CareerYear } from '../models/survey-types';
 // Reemplazado por wizard
 

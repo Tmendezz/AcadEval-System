@@ -185,13 +185,11 @@ public class AcademicSurveyRepository(ApplicationDbContext db) : IAcademicSurvey
     {
         return await db.AcademicSurveySubjects
             .Include(s => s.AcademicSurvey!)
-                .ThenInclude(sv => sv.Template)               // AÑADIR
-            .Include(s => s.AcademicSurvey!)
-                .ThenInclude(sv => sv.Questions)
-                    .ThenInclude(q => q.Options)
+            .ThenInclude(sv => sv.Questions)
+            .ThenInclude(q => q.Options)
             .FirstOrDefaultAsync(s => s.Id == surveySubjectId && s.IsActive, ct);
     }
-
+    
     public async  Task<AcademicSurveyResponse?> GetResponseAsync(Guid surveySubjectId, string userId, CancellationToken ct = default)
     {
         return await db.AcademicSurveyResponses

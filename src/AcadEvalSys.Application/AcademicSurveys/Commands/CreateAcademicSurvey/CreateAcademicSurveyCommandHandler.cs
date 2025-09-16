@@ -69,7 +69,7 @@ namespace AcadEvalSys.Application.AcademicSurveys.Commands.CreateAcademicSurvey
                 throw new InvalidOperationException($"Survey with ID {surveyId} not found.");
             }
 
-            // Obtener solo las asignaturas relevantes (mejor performance)
+            // Obtener solo las asignaturas relevantes 
             var relevantSubjects = await subjectRepository.GetByCareerAndYearsAsync(
                 selectedCareerIds, 
                 selectedYears, 

@@ -8,10 +8,8 @@ namespace AcadEvalSys.Application.AcademicSurveys.Commands.SubmitSurveyResponse
     {
         [JsonIgnore]
         public Guid AcademicSurveySubjectId { get; set; }
-
         [JsonIgnore]
         public string UserId { get; set; } = string.Empty;
-
         public IList<SubmitSurveyAnswerDto> Answers { get; set; } = new List<SubmitSurveyAnswerDto>();
     }
 }
