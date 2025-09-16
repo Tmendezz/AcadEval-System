@@ -29,10 +29,21 @@ export function useStudentOperations() {
       toast.success("Estudiante creado exitosamente");
     },
     onError: (error) => {
-      const axiosError = error as AxiosError<{ Message?: string }>;
-      const errorMessage = axiosError.response?.data?.Message || "Error al crear el estudiante";
-      toast.error(errorMessage);
       console.error("Error creating student:", error);
+      const axiosError = error as AxiosError<{ Message?: string; message?: string }>;
+      
+      // Intentar diferentes formas de obtener el mensaje de error
+      let errorMessage = "Error al crear el estudiante";
+      
+      if (axiosError.response?.data?.Message) {
+        errorMessage = axiosError.response.data.Message;
+      } else if (axiosError.response?.data?.message) {
+        errorMessage = axiosError.response.data.message;
+      } else if (axiosError.message) {
+        errorMessage = axiosError.message;
+      }
+      
+      toast.error(errorMessage);
     },
   });
 
@@ -47,10 +58,19 @@ export function useStudentOperations() {
       toast.success("Estudiante actualizado exitosamente");
     },
     onError: (error) => {
-      const axiosError = error as AxiosError<{ Message?: string }>;
-      const errorMessage = axiosError.response?.data?.Message || "Error al actualizar el estudiante";
-      toast.error(errorMessage);
       console.error("Error updating student:", error);
+      const axiosError = error as AxiosError<{ Message?: string; message?: string }>;
+      
+      let errorMessage = "Error al actualizar el estudiante";
+      if (axiosError.response?.data?.Message) {
+        errorMessage = axiosError.response.data.Message;
+      } else if (axiosError.response?.data?.message) {
+        errorMessage = axiosError.response.data.message;
+      } else if (axiosError.message) {
+        errorMessage = axiosError.message;
+      }
+      
+      toast.error(errorMessage);
     },
   });
 
@@ -64,10 +84,19 @@ export function useStudentOperations() {
       toast.success("Estudiante eliminado exitosamente");
     },
     onError: (error) => {
-      const axiosError = error as AxiosError<{ Message?: string }>;
-      const errorMessage = axiosError.response?.data?.Message || "Error al eliminar el estudiante";
-      toast.error(errorMessage);
       console.error("Error deleting student:", error);
+      const axiosError = error as AxiosError<{ Message?: string; message?: string }>;
+      
+      let errorMessage = "Error al eliminar el estudiante";
+      if (axiosError.response?.data?.Message) {
+        errorMessage = axiosError.response.data.Message;
+      } else if (axiosError.response?.data?.message) {
+        errorMessage = axiosError.response.data.message;
+      } else if (axiosError.message) {
+        errorMessage = axiosError.message;
+      }
+      
+      toast.error(errorMessage);
     },
   });
 

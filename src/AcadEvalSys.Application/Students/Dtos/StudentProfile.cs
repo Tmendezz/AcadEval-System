@@ -18,7 +18,7 @@ public class StudentProfile : Profile
             ;
 
         CreateMap<AddStudentCommand, Student>()
-            .ForMember(dest => dest.TechnicalCareerId, opt => opt.MapFrom(src => src.CarreraId));
+            .ForMember(dest => dest.CurrentYear, opt => opt.MapFrom(src => src.CurrentYear));
 
         // Mapeo de entidad Student a StudentDto
         CreateMap<Student, StudentDto>()
