@@ -2,94 +2,114 @@ import { useLocation, useRoute } from 'wouter';
 import { PageContent, PageHeader, PageLayout } from '@/shared/components/layout/page-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
-import { Badge } from '@/shared/components/ui/badge';
-import { ArrowLeft, Clock, CheckCircle, Eye } from 'lucide-react';
-
-// Tipos para las respuestas
-interface SurveyResponse {
-  questionId: string;
-  questionText: string;
-  answer: string | string[];
-  questionType: 'single' | 'multi' | 'text';
-}
-
-// Datos de ejemplo (TODO: reemplazar con API real)
-const mockSurveyResponse = {
-  id: '1',
-  title: 'Evaluación de Docentes - Primer Cuatrimestre',
-  description: 'Encuesta para evaluar el desempeño de los docentes del primer cuatrimestre',
-  publishedAt: '2024-01-15T10:00:00Z',
-  respondedAt: '2024-01-22T14:30:00Z',
-  responses: [
-    {
-      questionId: '1',
-      questionText: '¿Cómo calificarías la claridad en las explicaciones del docente?',
-      answer: 'Muy bueno',
-      questionType: 'single' as const
-    },
-    {
-      questionId: '2',
-      questionText: '¿Qué aspectos del curso te gustaron más? (Puedes seleccionar varios)',
-      answer: ['Metodología de enseñanza', 'Material didáctico', 'Interacción en clase'],
-      questionType: 'multi' as const
-    },
-    {
-      questionId: '3',
-      questionText: '¿Tienes alguna sugerencia para mejorar el curso?',
-      answer: 'Me gustaría que hubiera más ejercicios prácticos y menos teoría.',
-      questionType: 'text' as const
-    }
-  ]
-};
+import { ArrowLeft, Calendar, Eye } from 'lucide-react';
+import { useSurveyForResponse } from '../hooks/use-surveys';
+import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 
 export default function ViewResponsePage() {
   const [, setLocation] = useLocation();
-  const [, params] = useRoute('/encuestas/ver-respuesta/:id');
-  const responseId = params?.id;
+  const [, params] = useRoute('/encuestas/ver-respuesta/:surveySubjectId');
+  const surveySubjectId = params?.surveySubjectId;
 
-  // Función para renderizar una respuesta
-  const renderResponse = (response: SurveyResponse) => {
-    switch (response.questionType) {
-      case 'single':
-        return (
-          <div className="p-3 bg-muted/50 rounded-md">
-            <span className="font-medium">{response.answer}</span>
-          </div>
-        );
+  // Obtener la encuesta con las respuestas en modo solo lectura
+  const { data: survey, isLoading, error } = useSurveyForResponse(surveySubjectId || '', true);
 
-      case 'multi':
-        return (
-          <div className="space-y-2">
-            {Array.isArray(response.answer) ? (
-              response.answer.map((option, index) => (
-                <div key={index} className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>{option}</span>
-                </div>
-              ))
-            ) : (
-              <div className="p-3 bg-muted/50 rounded-md">
-                <span className="font-medium">{response.answer}</span>
-              </div>
-            )}
-          </div>
-        );
-
-      case 'text':
-        return (
-          <div className="p-3 bg-muted/50 rounded-md min-h-[80px]">
-            <p className="whitespace-pre-wrap">{response.answer}</p>
-          </div>
-        );
-
-      default:
-        return null;
+  // Función para renderizar una respuesta según su tipo
+  const renderResponse = (question: any) => {
+    if (!question.response) {
+      return (
+        <div className="p-3 bg-muted/50 rounded-md">
+          <span className="text-muted-foreground">Sin respuesta</span>
+        </div>
+      );
     }
+
+    const response = question.response;
+
+    // Respuesta de texto
+    if (response.text) {
+      return (
+        <div className="p-3 bg-muted/50 rounded-md min-h-[80px]">
+          <p className="whitespace-pre-wrap">{response.text}</p>
+        </div>
+      );
+    }
+
+    // Respuesta múltiple (array de valores)
+    if (response.values && Array.isArray(response.values)) {
+      return (
+        <div className="space-y-2">
+          {response.values.map((value: any, index: number) => (
+            <div key={index} className="p-2 bg-muted/50 rounded-md">
+              <span>{value}</span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // Respuesta simple (valor único)
+    if (response.value !== undefined) {
+      // Buscar el texto de la opción seleccionada
+      const selectedOption = question.options?.find((opt: any) => opt.value === response.value);
+      const displayText = selectedOption ? selectedOption.text : response.value.toString();
+      
+      return (
+        <div className="p-3 bg-muted/50 rounded-md">
+          <span className="font-medium">{displayText}</span>
+        </div>
+      );
+    }
+
+    return (
+      <div className="p-3 bg-muted/50 rounded-md">
+        <span className="text-muted-foreground">Respuesta no válida</span>
+      </div>
+    );
   };
+
+  if (isLoading) {
+    return (
+      <PageLayout>
+        <PageContent>
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Cargando respuestas...</p>
+            </div>
+          </div>
+        </PageContent>
+      </PageLayout>
+    );
+  }
+
+  if (error || !survey) {
+    return (
+      <PageLayout>
+        <PageHeader title="Error" description="No se pudieron cargar las respuestas">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setLocation('/encuestas/mis-encuestas')}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Volver
+          </Button>
+        </PageHeader>
+        <PageContent>
+          <Alert variant="destructive">
+            <AlertDescription>
+              No se pudieron cargar las respuestas de la encuesta. Por favor, intenta nuevamente.
+            </AlertDescription>
+          </Alert>
+        </PageContent>
+      </PageLayout>
+    );
+  }
 
   return (
     <PageLayout>
-      <PageHeader>
+      <PageHeader title={survey.title} description="Vista de solo lectura de tus respuestas">
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
@@ -99,10 +119,6 @@ export default function ViewResponsePage() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Volver
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold">{mockSurveyResponse.title}</h1>
-            <p className="text-muted-foreground">{mockSurveyResponse.description}</p>
-          </div>
         </div>
       </PageHeader>
 
@@ -111,23 +127,24 @@ export default function ViewResponsePage() {
           {/* Información de la encuesta */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Información de la Encuesta</span>
-                <Badge variant="default" className="flex items-center gap-1">
-                  <Eye className="w-3 h-3" />
-                  Solo Lectura
-                </Badge>
-              </CardTitle>
+              <CardTitle>Información de la Encuesta</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Clock className="w-4 h-4" />
-                <span>Publicada: {new Date(mockSurveyResponse.publishedAt).toLocaleDateString('es-ES')}</span>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Publicada:</span>
+                  <span>{survey.publishedAt ? new Date(survey.publishedAt).toLocaleDateString() : 'No disponible'}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Eye className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Respondida:</span>
+                  <span>{survey.respondedAt ? new Date(survey.respondedAt).toLocaleDateString() : 'No respondida'}</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-sm text-green-600">
-                <CheckCircle className="w-4 h-4" />
-                <span>Respondida: {new Date(mockSurveyResponse.respondedAt).toLocaleDateString('es-ES')}</span>
-              </div>
+              {survey.description && (
+                <p className="text-sm text-muted-foreground">{survey.description}</p>
+              )}
             </CardContent>
           </Card>
 
@@ -137,21 +154,23 @@ export default function ViewResponsePage() {
               <CardTitle>Tus Respuestas</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {mockSurveyResponse.responses.map((response, index) => (
-                <div key={response.questionId} className="space-y-3">
+              {survey.questions?.map((question: any, index: number) => (
+                <div key={question.id} className="space-y-3">
                   <div className="space-y-1">
                     <h3 className="text-lg font-medium">
-                      {index + 1}. {response.questionText}
+                      {index + 1}. {question.text}
                     </h3>
-                    <div className="flex items-center gap-2 text-sm text-green-600">
-                      <CheckCircle className="w-4 h-4" />
-                      <span>Respondida</span>
-                    </div>
                   </div>
                   
-                  {renderResponse(response)}
+                  {renderResponse(question)}
                 </div>
               ))}
+              
+              {(!survey.questions || survey.questions.length === 0) && (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">No hay preguntas disponibles en esta encuesta.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 

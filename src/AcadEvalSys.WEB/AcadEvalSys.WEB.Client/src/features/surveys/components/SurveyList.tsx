@@ -7,10 +7,8 @@ interface SurveyListProps {
   isLoading: boolean;
   error?: Error | null;
   onEdit?: (survey: SurveyListItem) => void;
-  onDuplicate?: (survey: SurveyListItem) => void;
-  onView?: (survey: SurveyListItem) => void;
-  onArchive?: (survey: SurveyListItem) => void;
   onDelete?: (survey: SurveyListItem) => void;
+  onViewProgress?: (survey: SurveyListItem) => void;
 }
 
 export function SurveyList({ 
@@ -18,12 +16,14 @@ export function SurveyList({
   isLoading, 
   error: _error,
   onEdit,
-  onDuplicate,
-  onView,
-  onArchive,
-  onDelete
+  onDelete,
+  onViewProgress
 }: SurveyListProps) {
-  const columns = createSurveyColumns({ onView, onEdit, onDuplicate, onArchive, onDelete });
+  const columns = createSurveyColumns({ 
+    onEdit, 
+    onDelete, 
+    onViewProgress 
+  });
 
   return (
     <DataSection

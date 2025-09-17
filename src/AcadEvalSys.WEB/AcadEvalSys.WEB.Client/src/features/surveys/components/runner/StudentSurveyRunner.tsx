@@ -104,7 +104,6 @@ export function StudentSurveyRunner({ assignments, fixedQuestions, onSubmitAll, 
     
     // Guardar en el store
     const subjectId = current.subjectId;
-    console.log(`Guardando respuesta: ${subjectId}, ${questionId}, ${value}`);
     saveResponse(subjectId, questionId, value);
   };
 
@@ -122,19 +121,15 @@ export function StudentSurveyRunner({ assignments, fixedQuestions, onSubmitAll, 
       return;
     }
 
-    // Las secciones completadas se manejan en el store
-    
     // Marcar como completada en el store
     markSubjectComplete(current.subjectId);
-    
-    toast.success(`Respuestas de ${current.subjectName} guardadas en memoria`);
 
     if (currentIdx < assignments.length - 1) {
       const nextIndex = currentIdx + 1;
       const nextSurveySubjectId = assignments[nextIndex].subjectId;
       setLocation(`/encuestas/responder/${nextSurveySubjectId}`);
     } else {
-      toast.success("¡Todas las materias completadas! Enviando respuestas...");
+      // Cuando se completa la última materia, activar el modal de confirmación
       void onSubmitAll();
     }
   };

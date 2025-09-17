@@ -53,7 +53,6 @@ export function TeacherSurveyRunner({ assignments, fixedQuestions, onSubmitAll, 
         return { questionId: q.id, text: val || "" };
       });
       await submitSurveySubjectResponse(surveySubjectId, payload);
-      toast.success("Respuestas guardadas");
     } catch (e: any) {
       toast.error("No se pudieron enviar las respuestas", { description: e?.message });
       return;

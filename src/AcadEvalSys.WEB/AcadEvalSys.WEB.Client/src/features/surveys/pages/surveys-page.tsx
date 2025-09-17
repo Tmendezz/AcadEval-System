@@ -39,9 +39,24 @@ function AdminSurveysView() {
 
   const [, setLocation] = useLocation();
   const { data: surveys = [], isLoading, error } = useSurveys(filters);
+  
+  // Debug: verificar estructura de datos
+  console.log('Surveys data:', surveys);
 
   const handleEditSurvey = (survey: any) => {
     setLocation(`/encuestas/editar/${survey.id}`);
+  };
+
+  const handleViewProgress = (survey: any) => {
+    setLocation(`/encuestas/progreso/${survey.id}`);
+  };
+
+  const handleDeleteSurvey = (survey: any) => {
+    // TODO: Implementar confirmación y lógica de eliminación
+    if (confirm(`¿Estás seguro de que deseas eliminar la encuesta "${survey.title}"?`)) {
+      console.log('Eliminar encuesta:', survey.id);
+      // Aquí iría la llamada a la API para eliminar
+    }
   };
 
   const handleCreateSurvey = () => {
@@ -65,6 +80,8 @@ function AdminSurveysView() {
           isLoading={isLoading}
           error={error}
           onEdit={handleEditSurvey}
+          onViewProgress={handleViewProgress}
+          onDelete={handleDeleteSurvey}
         />
       </PageContent>
     </PageLayout>

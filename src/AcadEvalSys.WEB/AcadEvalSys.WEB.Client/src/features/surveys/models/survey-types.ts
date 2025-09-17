@@ -65,11 +65,11 @@ export interface SurveyListItem {
   title: string;
   description?: string;
   status: SurveyStatus;
-  publishAt?: string;
-  closeAt?: string;
+  publishedAt?: string;
+  closedAt?: string;
   createdAt: string;
   updatedAt?: string;
-  questionCount: number;
+  questionsCount: number;
   responseCount: number;
 }
 

@@ -1,9 +1,10 @@
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { useLocation, useRoute } from 'wouter';
 import { PageContent, PageHeader, PageLayout } from '@/shared/components/layout/page-layout';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 import { Button } from '@/shared/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
+import { ArrowLeft, CheckCircle } from 'lucide-react';
 import { useSurveySubjectsForUser, useSurveyForResponse } from '../hooks/use-surveys';
 import { StudentSurveyRunner } from '../components/runner/StudentSurveyRunner';
 import { useSurveyResponseStore } from '../store/use-survey-response-store';
@@ -13,11 +14,14 @@ export default function RespondSurveyPage() {
   const [, setLocation] = useLocation();
   const [, params] = useRoute('/encuestas/responder/:surveySubjectId');
   const surveySubjectId = params?.surveySubjectId;
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Store para manejar respuestas en memoria
   const {
     initializeSurvey,
     setCurrentSubject,
+    getOverallProgress,
     clearSurvey,
     exportResponses,
     surveyId: storedSurveyId,
@@ -84,21 +88,20 @@ export default function RespondSurveyPage() {
     } as FixedQuestion));
   }, [currentSurvey?.questions]);
 
-  // Handler para cuando se completan todas las encuestas
+  // Handler para mostrar confirmación cuando se completan todas las encuestas
   const handleSubmitAll = async () => {
+    setShowConfirmDialog(true);
+  };
+
+  // Handler para enviar realmente las respuestas
+  const handleConfirmSubmit = async () => {
+    setIsSubmitting(true);
     try {
       // Obtener todas las respuestas del store
       const allResponses = exportResponses();
-      console.log('Respuestas exportadas del store:', allResponses);
       
       // Enviar cada materia al servidor
       const submissions = Object.entries(allResponses).map(async ([subjectId, data]) => {
-        // Log del contenido antes de procesar
-        console.log(`Procesando materia ${data.subjectName}:`, {
-          subjectId,
-          responsesCount: data.responses?.length || 0,
-          responses: data.responses
-        });
         
         // Convertir formato del store al formato esperado por la API
         const payload = data.responses.map((response: any) => {
@@ -125,15 +128,7 @@ export default function RespondSurveyPage() {
           }
         });
 
-        // Log del payload antes de enviar
         const requestBody = { Answers: payload };
-        console.log(`Enviando respuestas para ${data.subjectName}:`, {
-          subjectId,
-          payloadLength: payload.length,
-          payload: payload,
-          requestBody: requestBody,
-          requestBodyJSON: JSON.stringify(requestBody, null, 2)
-        });
 
         // Enviar usando el endpoint correcto
         const response = await fetch(`/api/my-surveys/subjects/${subjectId}/responses`, {
@@ -145,15 +140,7 @@ export default function RespondSurveyPage() {
         });
 
         if (!response.ok) {
-          // Intentar obtener el cuerpo del error
-          let errorBody = '';
-          try {
-            errorBody = await response.text();
-            console.error(`Error ${response.status} al enviar ${data.subjectName}:`, errorBody);
-          } catch (e) {
-            console.error('No se pudo leer el cuerpo del error');
-          }
-          throw new Error(`Error al enviar respuestas de ${data.subjectName}: ${response.status} ${response.statusText}. Body: ${errorBody}`);
+          throw new Error(`Error al enviar respuestas de ${data.subjectName}: ${response.status} ${response.statusText}`);
         }
 
         return { subjectId, subjectName: data.subjectName };
@@ -167,6 +154,9 @@ export default function RespondSurveyPage() {
       // Limpiar el store después de enviar exitosamente
       clearSurvey();
       
+      // Cerrar el modal
+      setShowConfirmDialog(false);
+      
       // Redirigir a la lista de encuestas
       setLocation('/encuestas/mis-encuestas?completed=true');
       
@@ -174,6 +164,8 @@ export default function RespondSurveyPage() {
       console.error('Error al enviar todas las encuestas:', error);
       // No limpiar el store para que el usuario pueda intentar de nuevo
       alert('Error al enviar las respuestas. Por favor, intenta nuevamente.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -255,6 +247,46 @@ export default function RespondSurveyPage() {
           />
         </div>
       </PageContent>
+
+      {/* Modal de confirmación para enviar todas las respuestas */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              ¿Enviar todas las respuestas?
+            </DialogTitle>
+            <DialogDescription>
+              Has completado {getOverallProgress().completed} de {getOverallProgress().total} evaluaciones. 
+              <br />
+              <strong>¿Deseas enviar todas las respuestas ahora?</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowConfirmDialog(false)}
+              disabled={isSubmitting}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleConfirmSubmit}
+              disabled={isSubmitting}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  Enviando...
+                </>
+              ) : (
+                'Enviar Respuestas'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageLayout>
   );
 }

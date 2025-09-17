@@ -42,6 +42,13 @@ export const routes: RouteConfig[] = [
     title: "Editar Encuesta",
   },
   {
+    path: "/encuestas/progreso/:surveyId",
+    component: React.lazy(
+      () => import("@/features/surveys/pages/survey-progress-page")
+    ),
+    title: "Progreso de Encuesta",
+  },
+  {
     path: "/encuestas/plantillas",
     component: React.lazy(
       () => import("@/features/surveys/pages/templates-page")

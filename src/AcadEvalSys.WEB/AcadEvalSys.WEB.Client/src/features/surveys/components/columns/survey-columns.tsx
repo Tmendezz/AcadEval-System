@@ -1,14 +1,7 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/shared/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/shared/components/ui/dropdown-menu';
 import { Badge } from '@/shared/components/ui/badge';
-import { MoreHorizontal, Edit, Copy, Eye, Archive, Trash2 } from 'lucide-react';
+import { Edit, Trash2, BarChart } from 'lucide-react';
 import { SurveyListItem } from '../../models/survey-types';
 import { getSurveyStatusLabel } from '../../utils/survey-formatters';
 
@@ -38,32 +31,21 @@ function formatDate(date: Date | string) {
 }
 
 export interface SurveyColumnsDeps {
-  onView?: (survey: SurveyListItem) => void;
   onEdit?: (survey: SurveyListItem) => void;
-  onDuplicate?: (survey: SurveyListItem) => void;
-  onArchive?: (survey: SurveyListItem) => void;
   onDelete?: (survey: SurveyListItem) => void;
+  onViewProgress?: (survey: SurveyListItem) => void;
 }
 
 export function createSurveyColumns({
-  onView,
   onEdit,
-  onDuplicate,
-  onArchive,
   onDelete,
+  onViewProgress,
 }: SurveyColumnsDeps): ColumnDef<SurveyListItem>[] {
   return [
     {
       accessorKey: 'title',
       header: 'Título',
       cell: ({ row }) => <span className="font-medium line-clamp-2">{row.original.title}</span>,
-    },
-    {
-      accessorKey: 'description',
-      header: 'Descripción',
-      cell: ({ row }) => (
-        <span className="text-muted-foreground line-clamp-2">{row.original.description}</span>
-      ),
     },
     {
       accessorKey: 'status',
@@ -75,68 +57,69 @@ export function createSurveyColumns({
       ),
     },
     {
-      accessorKey: 'questionsCount',
-      header: 'Preguntas',
-    },
-    {
-      accessorKey: 'createdBy',
-      header: 'Autor',
-    },
-    {
-      accessorKey: 'createdAt',
-      header: 'Creada',
-      cell: ({ row }) => <span>{formatDate(row.original.createdAt)}</span>,
-    },
-    {
       accessorKey: 'publishedAt',
       header: 'Publicada',
       cell: ({ row }) => (row.original.publishedAt ? formatDate(row.original.publishedAt) : '—'),
     },
     {
       id: 'actions',
-      header: '',
-      cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {onView && (
-              <DropdownMenuItem onClick={() => onView(row.original)}>
-                <Eye className="h-4 w-4 mr-2" />
-                Ver
-              </DropdownMenuItem>
-            )}
+      header: 'Acciones',
+      cell: ({ row }) => {
+        const survey = row.original;
+        console.log('Survey data in actions column:', survey);
+        const isPublished = survey.status === 2;
+        const isClosed = survey.status === 3;
+        const isDraft = survey.status === 0;
+        const isScheduled = survey.status === 1;
+        
+        // Se puede eliminar solo si NO está activa (borrador o programada)
+        const canDelete = isDraft || isScheduled;
+        // Se puede ver progreso solo si está publicada o cerrada
+        const canViewProgress = isPublished || isClosed;
+        
+        return (
+          <div className="flex items-center gap-2">
+            {/* Botón Editar - siempre disponible */}
             {onEdit && (
-              <DropdownMenuItem onClick={() => onEdit(row.original)}>
-                <Edit className="h-4 w-4 mr-2" />
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => onEdit(survey)}
+                className="h-8 px-2 text-xs"
+              >
+                <Edit className="w-3 h-3 mr-1" />
                 Editar
-              </DropdownMenuItem>
+              </Button>
             )}
-            {onDuplicate && (
-              <DropdownMenuItem onClick={() => onDuplicate(row.original)}>
-                <Copy className="h-4 w-4 mr-2" />
-                Duplicar
-              </DropdownMenuItem>
+            
+            {/* Botón Ver Progreso/Resultados - solo si está activa */}
+            {canViewProgress && onViewProgress && (
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => onViewProgress(survey)}
+                className="h-8 px-2 text-xs"
+              >
+                <BarChart className="w-3 h-3 mr-1" />
+                {isClosed ? 'Resultados' : 'Progreso'}
+              </Button>
             )}
-            {(onArchive || onDelete) && <DropdownMenuSeparator />}
-            {onArchive && (
-              <DropdownMenuItem onClick={() => onArchive(row.original)}>
-                <Archive className="h-4 w-4 mr-2" />
-                Archivar
-              </DropdownMenuItem>
-            )}
-            {onDelete && (
-              <DropdownMenuItem onClick={() => onDelete(row.original)} className="text-destructive">
-                <Trash2 className="h-4 w-4 mr-2" />
+            
+            {/* Botón Eliminar - solo si NO está activa */}
+            {canDelete && onDelete && (
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => onDelete(survey)}
+                className="h-8 px-2 text-xs text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+              >
+                <Trash2 className="w-3 h-3 mr-1" />
                 Eliminar
-              </DropdownMenuItem>
+              </Button>
             )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
+          </div>
+        );
+      },
     },
   ];
 }
