@@ -64,13 +64,13 @@ export interface SurveyListItem {
   id: string;
   title: string;
   description?: string;
-  status: SurveyStatus;
-  publishedAt?: string;
-  closedAt?: string;
+  status: SurveyStatus | string; // Permitir tanto enum como string desde el backend
+  publishAt?: string; // El backend devuelve publishAt, no publishedAt
+  closeAt?: string;
   createdAt: string;
   updatedAt?: string;
-  questionsCount: number;
-  responseCount: number;
+  questionsCount?: number; // Opcional ya que no viene en todas las respuestas
+  responseCount?: number;
 }
 
 export interface SurveyFilters {

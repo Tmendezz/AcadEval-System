@@ -9,6 +9,7 @@ interface SurveyListProps {
   onEdit?: (survey: SurveyListItem) => void;
   onDelete?: (survey: SurveyListItem) => void;
   onViewProgress?: (survey: SurveyListItem) => void;
+  onViewResults?: (survey: SurveyListItem) => void;
 }
 
 export function SurveyList({ 
@@ -17,12 +18,14 @@ export function SurveyList({
   error: _error,
   onEdit,
   onDelete,
-  onViewProgress
+  onViewProgress,
+  onViewResults
 }: SurveyListProps) {
   const columns = createSurveyColumns({ 
     onEdit, 
     onDelete, 
-    onViewProgress 
+    onViewProgress,
+    onViewResults
   });
 
   return (

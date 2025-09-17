@@ -2,17 +2,71 @@ import { useRoute, useLocation } from 'wouter';
 import { PageContent, PageHeader, PageLayout } from '@/shared/components/layout/page-layout';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Badge } from '@/shared/components/ui/badge';
-import { Progress } from '@/shared/components/ui/progress';
-import { ArrowLeft, Users, CheckCircle, Clock, BarChart, FileText } from 'lucide-react';
-import { useSurveyById } from '../hooks/use-surveys';
+import { ArrowLeft, BookOpen, GraduationCap } from 'lucide-react';
+import { useSurvey, useTechnicalCareers, useAudienceResponses } from '../hooks/use-surveys';
+import { useEffect, useMemo, useState } from 'react';
+import { surveyService } from '../services/survey-service';
+// import { SurveyStatus } from '../models/survey-types';
 
 export default function SurveyProgressPage() {
   const [, setLocation] = useLocation();
   const [, params] = useRoute('/encuestas/progreso/:surveyId');
   const surveyId = params?.surveyId;
 
-  const { data: survey, isLoading, error } = useSurveyById(surveyId || '');
+  const { data: survey, isLoading, error } = useSurvey(surveyId || '');
+  const { data: careers = [] } = useTechnicalCareers();
+
+  const [availableYearsByCareer, setAvailableYearsByCareer] = useState<Record<string, number[]>>({});
+  const candidateYears = useMemo(() => [1, 2, 3], []);
+
+  // Mapa de opciones: questionId -> (value -> text)
+  const optionTextByQuestion = useMemo(() => {
+    const map: Record<string, Record<number, string>> = {};
+    const questions: Array<{ id: string; options?: Array<{ value: number; text: string }> }> =
+      (survey as any)?.questions ?? [];
+    for (const q of questions) {
+      if (!q?.options) continue;
+      map[q.id] = {} as Record<number, string>;
+      for (const opt of q.options) {
+        map[q.id][opt.value] = opt.text;
+      }
+    }
+    return map;
+  }, [survey]);
+
+  const [selectedCareerId, setSelectedCareerId] = useState<string | null>(null);
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+
+  const { data: audience, isLoading: loadingAudience } = useAudienceResponses(
+    surveyId || '',
+    selectedCareerId || '',
+    selectedYear || 0
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadAvailability() {
+      if (!surveyId || careers.length === 0) return;
+      const entries: Array<[string, number[]]> = [];
+      for (const career of careers) {
+        const okYears: number[] = [];
+        await Promise.all(candidateYears.map(async (year) => {
+          try {
+            const res = await surveyService.getAudienceResponses({ surveyId, careerId: career.id, year });
+            if (res?.subjects && res.subjects.length > 0) {
+              okYears.push(year);
+            }
+          } catch { /* ignorar errores para combinaciones inexistentes */ }
+        }));
+        if (!cancelled) entries.push([career.name, okYears]);
+      }
+      if (!cancelled) {
+        setAvailableYearsByCareer(Object.fromEntries(entries));
+      }
+    }
+    loadAvailability();
+    return () => { cancelled = true; };
+  }, [surveyId, careers, candidateYears]);
 
   if (isLoading) {
     return (
@@ -21,7 +75,7 @@ export default function SurveyProgressPage() {
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Cargando progreso de la encuesta...</p>
+              <p className="text-muted-foreground">Cargando audiencias...</p>
             </div>
           </div>
         </PageContent>
@@ -32,234 +86,133 @@ export default function SurveyProgressPage() {
   if (error || !survey) {
     return (
       <PageLayout>
-        <PageHeader title="Error" description="No se pudo cargar el progreso de la encuesta">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setLocation('/encuestas')}
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Volver
-          </Button>
-        </PageHeader>
         <PageContent>
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">No se pudo cargar la información de la encuesta.</p>
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-bold text-destructive">Error al cargar la encuesta</h2>
+            <p className="text-muted-foreground mt-2">No se pudo encontrar la encuesta o hubo un error.</p>
+            <Button onClick={() => setLocation('/encuestas')} className="mt-4">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Volver a Encuestas
+            </Button>
           </div>
         </PageContent>
       </PageLayout>
     );
   }
 
-  // Datos simulados para el progreso (TODO: conectar con API real)
-  const progressData = {
-    totalParticipants: 150,
-    completedResponses: 89,
-    partialResponses: 23,
-    pendingResponses: 38,
-    completionRate: 59.3,
-    averageTimeToComplete: '12 min',
-    responsesBySubject: [
-      { subjectName: 'Matemática', professorName: 'Prof. García', responses: 45, total: 50 },
-      { subjectName: 'Física', professorName: 'Prof. López', responses: 38, total: 45 },
-      { subjectName: 'Química', professorName: 'Prof. Martínez', responses: 42, total: 55 },
-    ]
-  };
-
-  const getStatusBadge = (status: number) => {
-    switch (status) {
-      case 0: return <Badge variant="secondary">Borrador</Badge>;
-      case 1: return <Badge variant="outline">Programada</Badge>;
-      case 2: return <Badge variant="default">Publicada</Badge>;
-      case 3: return <Badge variant="destructive">Cerrada</Badge>;
-      default: return <Badge variant="secondary">Desconocido</Badge>;
-    }
-  };
-
-  const isCompleted = survey.status === 3; // Closed = completed
+  // const isPublished = survey.status === SurveyStatus.Published;
+  // const isClosed = survey.status === SurveyStatus.Closed;
 
   return (
     <PageLayout>
-      <PageHeader 
-        title={survey.title} 
-        description={isCompleted ? "Resultados de la encuesta" : "Progreso de la encuesta en tiempo real"}
+      <PageHeader
+        title={`Encuesta ${survey.title} - tecnicatura`}
+        description={survey.description}
       >
         <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setLocation('/encuestas')}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Volver
+            Volver a Encuestas
           </Button>
-          
-          {isCompleted && (
-            <Button size="sm" className="gap-2">
-              <FileText className="w-4 h-4" />
-              Exportar Resultados
-            </Button>
-          )}
         </div>
       </PageHeader>
 
       <PageContent>
-        <div className="space-y-6">
-          {/* Información general de la encuesta */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Información General</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Estado</p>
-                  {getStatusBadge(survey.status)}
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Preguntas</p>
-                  <p className="font-medium">{survey.questionsCount || 0}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Publicada</p>
-                  <p className="font-medium">
-                    {survey.publishedAt ? new Date(survey.publishedAt).toLocaleDateString('es-ES') : '—'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Tiempo promedio</p>
-                  <p className="font-medium">{progressData.averageTimeToComplete}</p>
-                </div>
-              </div>
-              
-              {survey.description && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Descripción</p>
-                  <p className="text-sm">{survey.description}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Estadísticas de progreso */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-2">
-                  <Users className="w-4 h-4 text-blue-600" />
-                  <div>
-                    <p className="text-2xl font-bold">{progressData.totalParticipants}</p>
-                    <p className="text-sm text-muted-foreground">Total Participantes</p>
+        <div className="space-y-4">
+          {/* Mostrar tecnicaturas y solo años con datos (vía endpoint aggregated) */}
+          {careers.map(career => {
+            const years = (availableYearsByCareer[career.name] || []).sort((a, b) => a - b);
+            if (years.length === 0) return null;
+            return (
+              <Card key={career.id}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <GraduationCap className="w-5 h-5" />
+                    {career.name}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {years.map((year) => (
+                      <Button
+                        key={year}
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedCareerId(career.id);
+                          setSelectedYear(year);
+                        }}
+                      >
+                        {year === 1 ? '1er Año' : year === 2 ? '2do Año' : '3er Año'}
+                      </Button>
+                    ))}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            );
+          })}
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <div>
-                    <p className="text-2xl font-bold">{progressData.completedResponses}</p>
-                    <p className="text-sm text-muted-foreground">Completadas</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-2">
-                  <Clock className="w-4 h-4 text-amber-600" />
-                  <div>
-                    <p className="text-2xl font-bold">{progressData.partialResponses}</p>
-                    <p className="text-sm text-muted-foreground">En Progreso</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-2">
-                  <BarChart className="w-4 h-4 text-purple-600" />
-                  <div>
-                    <p className="text-2xl font-bold">{progressData.completionRate}%</p>
-                    <p className="text-sm text-muted-foreground">Tasa de Finalización</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Progreso general */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Progreso General</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Progreso de respuestas</span>
-                  <span className="text-sm text-muted-foreground">
-                    {progressData.completedResponses} de {progressData.totalParticipants} participantes
-                  </span>
-                </div>
-                <Progress value={progressData.completionRate} className="h-2" />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Progreso por materia */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Progreso por Materia</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {progressData.responsesBySubject.map((subject, index) => {
-                  const completionRate = (subject.responses / subject.total) * 100;
-                  return (
-                    <div key={index} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">{subject.subjectName}</p>
-                          <p className="text-sm text-muted-foreground">{subject.professorName}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-medium">{subject.responses}/{subject.total}</p>
-                          <p className="text-sm text-muted-foreground">{completionRate.toFixed(1)}%</p>
-                        </div>
-                      </div>
-                      <Progress value={completionRate} className="h-1" />
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Acciones adicionales */}
-          {isCompleted && (
+          {/* Detalle de audiencia en la misma página */}
+          {selectedCareerId && selectedYear && (
             <Card>
               <CardHeader>
-                <CardTitle>Resultados y Reportes</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="w-5 h-5" />
+                  Resultados — {selectedYear}° Año
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Button variant="outline" className="justify-start gap-2">
-                    <BarChart className="w-4 h-4" />
-                    Ver Análisis Detallado
-                  </Button>
-                  <Button variant="outline" className="justify-start gap-2">
-                    <FileText className="w-4 h-4" />
-                    Exportar a Excel
-                  </Button>
-                  <Button variant="outline" className="justify-start gap-2">
-                    <FileText className="w-4 h-4" />
-                    Generar Reporte PDF
-                  </Button>
-                </div>
+              <CardContent>
+                {loadingAudience && (
+                  <div className="py-8 text-center text-muted-foreground">Cargando resultados...</div>
+                )}
+                {!loadingAudience && (!audience || (audience.subjects ?? []).length === 0) && (
+                  <div className="py-8 text-center text-muted-foreground">No hay respuestas aún para esta audiencia.</div>
+                )}
+                {!loadingAudience && audience && (
+                  <div className="space-y-4">
+                    {audience.subjects.map(s => (
+                      <Card key={s.surveySubjectId}>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2">
+                            <BookOpen className="w-5 h-5" />
+                            {(s.subjectName ?? 'Asignatura')} — {(s.professorName ?? '—')}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-3">
+                            {s.questions.map(q => (
+                              <div key={q.questionId}>
+                                <div className="text-sm font-medium">{q.text}</div>
+                                <div className="text-xs text-muted-foreground mb-1">Respuestas: {q.totalResponses}</div>
+                                {(() => {
+                                  const allOptions = optionTextByQuestion[q.questionId] ?? {};
+                                  const allValues = Object.keys(allOptions).map(Number).sort((a, b) => a - b);
+                                  return allValues.map(value => {
+                                    const label = allOptions[value] ?? value.toString();
+                                    const pct = q.percentage[value] ?? 0;
+                                    return (
+                                      <div key={value} className="flex items-center gap-2 text-xs">
+                                        <div className="min-w-[2rem]">{label}</div>
+                                        <div className="flex-1 h-1.5 bg-muted rounded">
+                                          <div className="h-1.5 bg-primary rounded" style={{ width: `${pct}%` }} />
+                                        </div>
+                                        <div className="w-10 text-right">{pct.toFixed(0)}%</div>
+                                      </div>
+                                    );
+                                  });
+                                })()}
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}

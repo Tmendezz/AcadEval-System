@@ -287,6 +287,63 @@ public class AcademicSurveyRepository(ApplicationDbContext db) : IAcademicSurvey
             .ToListAsync(ct);
     }
 
+    public async Task<IEnumerable<AcademicSurveySubject>> GetSurveySubjectsByAudienceAsync(
+        Guid surveyId,
+        string technicalCareerName,
+        int year,
+        CancellationToken ct = default)
+    {
+        var query = db.AcademicSurveySubjects
+            .Where(ss => ss.IsActive && ss.AcademicSurveyId == surveyId);
+
+        if (!string.IsNullOrWhiteSpace(technicalCareerName))
+        {
+            query = query.Where(ss => ss.Subject != null && ss.Subject.TechnicalCareer != null && ss.Subject.TechnicalCareer.Name == technicalCareerName);
+        }
+
+        query = query.Where(ss => ss.Subject != null && ss.Subject.Year == (CareerYear)year);
+
+        return await query
+            .Include(ss => ss.Subject)!
+                .ThenInclude(s => s!.TechnicalCareer)
+            .Include(ss => ss.Subject)!
+                .ThenInclude(s => s!.Professor)!
+                    .ThenInclude(p => p!.User)
+            .AsNoTracking()
+            .ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<AcademicSurveyResponse>> GetResponsesBySurveyAndAudienceAsync(
+        Guid surveyId,
+        Guid careerId,
+        int year,
+        string role,
+        CancellationToken ct = default)
+    {
+        var responsesQuery = db.AcademicSurveyResponses
+            .Where(r => r.AcademicSurveySubjectId != null)
+            .Where(r => db.AcademicSurveySubjects.Any(ss => ss.Id == r.AcademicSurveySubjectId && ss.AcademicSurveyId == surveyId))
+            .Where(r => db.AcademicSurveySubjects.Any(ss => ss.Id == r.AcademicSurveySubjectId && ss.Subject != null && ss.Subject.TechnicalCareerId == careerId && ss.Subject.Year == (CareerYear)year));
+
+        if (!string.IsNullOrWhiteSpace(role))
+        {
+            if (role.Equals("Student", StringComparison.OrdinalIgnoreCase))
+            {
+                responsesQuery = responsesQuery.Where(r => db.Students.Any(s => s.UserId == r.UserId));
+            }
+            else if (role.Equals("Professor", StringComparison.OrdinalIgnoreCase))
+            {
+                responsesQuery = responsesQuery.Where(r => db.Professors.Any(p => p.UserId == r.UserId));
+            }
+        }
+
+        return await responsesQuery
+            .Include(r => r.QuestionResponses)
+                .ThenInclude(qr => qr.SurveyQuestion)
+            .AsNoTracking()
+            .ToListAsync(ct);
+    }
+
     public async Task<IEnumerable<(AcademicSurvey Survey, AcademicSurveySubject SurveySubject, bool HasResponded, DateTime? RespondedAt)>> GetUserSurveysWithResponseInfoAsync(Guid userId, CancellationToken ct = default)
     {
         var userIdString = userId.ToString();

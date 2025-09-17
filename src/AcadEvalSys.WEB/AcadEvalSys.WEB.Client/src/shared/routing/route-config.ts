@@ -49,6 +49,20 @@ export const routes: RouteConfig[] = [
     title: "Progreso de Encuesta",
   },
   {
+    path: "/encuestas/progreso/:surveyId/audiencia/:career/:year",
+    component: React.lazy(
+      () => import("@/features/surveys/pages/survey-audience-detail-page")
+    ),
+    title: "Detalle de Audiencia",
+  },
+  {
+    path: "/encuestas/resultados/:surveyId",
+    component: React.lazy(
+      () => import("@/features/surveys/pages/survey-results-page")
+    ),
+    title: "Resultados de Encuesta",
+  },
+  {
     path: "/encuestas/plantillas",
     component: React.lazy(
       () => import("@/features/surveys/pages/templates-page")

@@ -2,8 +2,23 @@ import { SurveyStatus } from "../models/survey-types";
 // Definir QuestionType localmente
 type QuestionType = 'SingleChoice' | 'MultipleChoice' | 'OpenText';
 
-export function getSurveyStatusLabel(status: SurveyStatus): string {
-  switch (status) {
+export function getSurveyStatusLabel(status: SurveyStatus | string | number): string {
+  // Convertir string a enum número si es necesario
+  let statusNum: number;
+  if (typeof status === 'string') {
+    switch (status) {
+      case 'Draft': statusNum = 0; break;
+      case 'Scheduled': statusNum = 1; break;
+      case 'Published': statusNum = 2; break;
+      case 'Closed': statusNum = 3; break;
+      case 'Archived': statusNum = 4; break;
+      default: return 'Desconocido';
+    }
+  } else {
+    statusNum = Number(status);
+  }
+
+  switch (statusNum) {
     case SurveyStatus.Draft:
       return 'Borrador';
     case SurveyStatus.Scheduled:

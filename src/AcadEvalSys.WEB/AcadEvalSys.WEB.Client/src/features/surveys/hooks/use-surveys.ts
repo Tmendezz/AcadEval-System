@@ -142,6 +142,45 @@ export function useTechnicalCareers() {
   });
 }
 
+// Hook para obtener respuestas de encuesta (admin)
+export function useSurveyResponses(surveyId: string) {
+  return useQuery({
+    queryKey: ['survey-responses', surveyId],
+    queryFn: () => surveyService.getSurveyResponses(surveyId),
+    enabled: !!surveyId,
+    staleTime: 2 * 60 * 1000, // 2 minutos
+    gcTime: 10 * 60 * 1000, // 10 minutos
+  });
+}
+
+export function useSurveySubjectsByAudience(
+  surveyId: string,
+  career: string,
+  year: number
+) {
+  return useQuery({
+    queryKey: ['survey-subjects-audience', surveyId, career, year],
+    queryFn: () => surveyService.getSurveySubjectsByAudience({ surveyId, career, year }),
+    enabled: !!surveyId && !!career && !!year,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+}
+
+export function useAudienceResponses(
+  surveyId: string,
+  careerId: string,
+  year: number
+) {
+  return useQuery({
+    queryKey: ['audience-responses', surveyId, careerId, year],
+    queryFn: () => surveyService.getAudienceResponses({ surveyId, careerId, year }),
+    enabled: !!surveyId && !!careerId && !!year,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+}
+
 // ===========================================
 // HOOKS PARA ENCUESTAS DEL USUARIO
 // ===========================================

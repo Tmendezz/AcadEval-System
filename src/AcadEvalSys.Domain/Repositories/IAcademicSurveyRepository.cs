@@ -44,4 +44,18 @@ public interface IAcademicSurveyRepository
     Task<Guid> CreateResponseAsync(AcademicSurveyResponse response, CancellationToken ct = default);
     Task UpdateResponseAsync(AcademicSurveyResponse response, CancellationToken ct = default);
 
+    // Audience-based subjects for admin analytics
+    Task<IEnumerable<AcademicSurveySubject>> GetSurveySubjectsByAudienceAsync(
+        Guid surveyId,
+        string technicalCareerName,
+        int year,
+        CancellationToken ct = default);
+
+    Task<IReadOnlyList<AcademicSurveyResponse>> GetResponsesBySurveyAndAudienceAsync(
+        Guid surveyId,
+        Guid careerId,
+        int year,
+        string role,
+        CancellationToken ct = default);
+
 }

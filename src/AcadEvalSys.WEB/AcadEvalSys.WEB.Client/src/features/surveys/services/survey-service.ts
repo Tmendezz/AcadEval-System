@@ -2,6 +2,62 @@ import { api } from '@/infrastructure/query/axios';
 import { Survey, SurveyListItem, CreateAcademicSurveyRequest, SurveyFilters } from '../models/survey-types';
 import { TechnicalCareer } from '../models/survey-audience-types';
 
+// DTOs para análisis de resultados
+export interface SurveySubjectDto {
+  id: string;
+  subjectId?: string;
+  subjectName?: string;
+  academicSurveyId: string;
+}
+export interface SurveyResponsesOverviewDto {
+  surveyId: string;
+  title: string;
+  subjectsCount: number;
+  totalResponses: number;
+  responses: SurveyUserResponseDto[];
+}
+
+export interface SurveyUserResponseDto {
+  responseId: string;
+  surveySubjectId: string;
+  userId: string;
+  submittedAt: string;
+  answers: SurveyAnswerDto[];
+}
+
+export interface SurveyAnswerDto {
+  questionId: string;
+  selectedValue?: number;
+  text?: string;
+}
+
+// DTOs para respuestas agregadas por audiencia
+export interface AudienceResponsesDto {
+  surveyId: string;
+  careerId: string;
+  year: number;
+  subjects: SubjectAudienceResultDto[];
+}
+
+export interface SubjectAudienceResultDto {
+  surveySubjectId: string;
+  subjectId?: string;
+  subjectName?: string;
+  professorId?: string;
+  professorName?: string;
+  questions: QuestionAggregateDto[];
+}
+
+export interface QuestionAggregateDto {
+  questionId: string;
+  text: string;
+  totalResponses: number;
+  scaleCount: Record<number, number>;
+  percentage: Record<number, number>;
+  averageSelectedValue?: number;
+  openTexts: string[];
+}
+
 const baseUrl = '/surveys';
 
 export const surveyService = {
@@ -98,6 +154,28 @@ export const surveyService = {
   // Obtener una encuesta específica para responder
   async getSurveyForResponse(surveyId: string): Promise<any> {
     const response = await api.get(`${baseUrl}/${surveyId}/for-response`);
+    return response.data;
+  },
+
+  // Obtener respuestas de una encuesta (solo admin)
+  async getSurveyResponses(surveyId: string): Promise<SurveyResponsesOverviewDto> {
+    const response = await api.get(`${baseUrl}/${surveyId}/responses`);
+    return response.data;
+  },
+
+  // Obtener survey subjects por audiencia (solo admin)
+  async getSurveySubjectsByAudience(params: { surveyId: string; career: string; year: number; }): Promise<SurveySubjectDto[]> {
+    const { surveyId, career, year } = params;
+    const query = new URLSearchParams({ career, year: String(year) }).toString();
+    const response = await api.get(`${baseUrl}/${surveyId}/subjects-by-audience?${query}`);
+    return response.data;
+  },
+
+  // Obtener respuestas agregadas por audiencia (solo admin)
+  async getAudienceResponses(params: { surveyId: string; careerId: string; year: number; }): Promise<AudienceResponsesDto> {
+    const { surveyId, careerId, year } = params;
+    const query = new URLSearchParams({ careerId, year: String(year) }).toString();
+    const response = await api.get(`${baseUrl}/${surveyId}/audience-responses?${query}`);
     return response.data;
   },
 

@@ -3,8 +3,10 @@ using AcadEvalSys.Application.AcademicSurveys.Commands.CreateAcademicSurvey;
 using AcadEvalSys.Application.AcademicSurveys.Commands.PublishAcademicSurvey;
 using AcadEvalSys.Application.AcademicSurveys.Commands.SetSurveySubjects;
 using AcadEvalSys.Application.AcademicSurveys.Queries.GetAcademicSurvey;
+using AcadEvalSys.Application.AcademicSurveys.Queries.GetAudienceResponses;
 using AcadEvalSys.Application.AcademicSurveys.Queries.GetSurveyResponses;
 using AcadEvalSys.Application.AcademicSurveys.Queries.GetSurveySubjectResponses;
+using AcadEvalSys.Application.AcademicSurveys.Queries.GetSurveySubjectsByAudience;
 using AcadEvalSys.Application.AcademicSurveys.Queries.ListAcademicSurveys;
 using AcadEvalSys.Domain.Constants.Constants;
 using MediatR;
@@ -124,6 +126,36 @@ public class AcademicSurveyController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> GetSurveySubjectResponses(Guid surveySubjectId)
     {
         var result = await mediator.Send(new GetSurveySubjectResponsesQuery(surveySubjectId));
+        return Ok(result);
+    }
+
+    // GET /surveys/{id}/subjects-by-audience?career=Nombre&year=1 (Admin)
+    [HttpGet("{id}/subjects-by-audience")]
+    [Authorize(Roles = UserRoles.Admin)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetSubjectsByAudience([FromRoute] Guid id, [FromQuery] string career, [FromQuery] int year)
+    {
+        var result = await mediator.Send(new GetSurveySubjectsByAudienceQuery
+        {
+            SurveyId = id,
+            TechnicalCareerName = career,
+            Year = year
+        });
+        return Ok(result);
+    }
+
+    // GET /surveys/{id}/audience-responses?careerId={guid}&year={n}&role=Student
+    [HttpGet("{id}/audience-responses")]
+    [Authorize(Roles = UserRoles.Admin)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAudienceResponses([FromRoute] Guid id, [FromQuery] Guid careerId, [FromQuery] int year)
+    {
+        var result = await mediator.Send(new GetAudienceResponsesQuery
+        {
+            SurveyId = id,
+            CareerId = careerId,
+            Year = year
+        });
         return Ok(result);
     }
 }

@@ -39,9 +39,6 @@ function AdminSurveysView() {
 
   const [, setLocation] = useLocation();
   const { data: surveys = [], isLoading, error } = useSurveys(filters);
-  
-  // Debug: verificar estructura de datos
-  console.log('Surveys data:', surveys);
 
   const handleEditSurvey = (survey: any) => {
     setLocation(`/encuestas/editar/${survey.id}`);
@@ -49,6 +46,10 @@ function AdminSurveysView() {
 
   const handleViewProgress = (survey: any) => {
     setLocation(`/encuestas/progreso/${survey.id}`);
+  };
+
+  const handleViewResults = (survey: any) => {
+    setLocation(`/encuestas/resultados/${survey.id}`);
   };
 
   const handleDeleteSurvey = (survey: any) => {
@@ -75,14 +76,15 @@ function AdminSurveysView() {
         </Button>
       </PageHeader>
       <PageContent>
-        <SurveyList
-          surveys={surveys}
-          isLoading={isLoading}
-          error={error}
-          onEdit={handleEditSurvey}
-          onViewProgress={handleViewProgress}
-          onDelete={handleDeleteSurvey}
-        />
+          <SurveyList
+            surveys={surveys}
+            isLoading={isLoading}
+            error={error}
+            onEdit={handleEditSurvey}
+            onViewProgress={handleViewProgress}
+            onViewResults={handleViewResults}
+            onDelete={handleDeleteSurvey}
+          />
       </PageContent>
     </PageLayout>
   );
