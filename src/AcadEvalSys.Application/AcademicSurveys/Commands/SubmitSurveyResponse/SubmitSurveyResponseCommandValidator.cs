@@ -6,9 +6,7 @@ public class SubmitSurveyResponseCommandValidator : AbstractValidator<SubmitSurv
 {
     public SubmitSurveyResponseCommandValidator()
     {
-        RuleFor(x => x.AcademicSurveySubjectId)
-            .NotEmpty()
-            .WithMessage("El ID de la encuesta-asignatura es requerido");
+        // AcademicSurveySubjectId se asigna desde la ruta en el controlador, no necesita validación aquí
 
         RuleFor(x => x.Answers)
             .NotNull()

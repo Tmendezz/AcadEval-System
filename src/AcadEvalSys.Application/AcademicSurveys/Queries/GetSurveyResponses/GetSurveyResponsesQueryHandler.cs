@@ -36,8 +36,7 @@ namespace AcadEvalSys.Application.AcademicSurveys.Queries.GetSurveyResponses
                         .Select(a => new SubmitSurveyAnswerDto
                         {
                             QuestionId = a.SurveyQuestionId,
-                            Order = a.SurveyQuestion!.Order ?? 0, // Usar 0 como valor predeterminado si es null
-                            QuestionType = a.SurveyQuestion.Type.ToString(),
+                            
                             SelectedValue = a.SelectedValue,
                             Text = a.Text ?? string.Empty
                         }).ToList()

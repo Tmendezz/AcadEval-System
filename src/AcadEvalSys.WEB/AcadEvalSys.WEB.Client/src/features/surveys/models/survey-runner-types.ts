@@ -1,10 +1,15 @@
 export type RunnerQuestionType = "single" | "multi" | "text";
 
+export interface SurveyOption {
+  value: number;
+  text: string;
+}
+
 export interface FixedQuestion {
   id: string;
   text: string;
   type: RunnerQuestionType;
-  options?: string[];
+  options?: SurveyOption[];
 }
 
 // Vista de alumno: un bloque por docente/asignatura

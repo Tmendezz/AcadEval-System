@@ -19,6 +19,7 @@ export default function RespondSurveyPage() {
     initializeSurvey,
     setCurrentSubject,
     clearSurvey,
+    exportResponses,
     surveyId: storedSurveyId,
     currentSubjectId,
   } = useSurveyResponseStore();
@@ -76,19 +77,103 @@ export default function RespondSurveyPage() {
       id: q.id,
       text: q.text,
       type: q.type === 0 ? 'single' : q.type === 1 ? 'multi' : 'text',
-      options: q.options?.map(opt => opt.text)
+      options: q.options?.map(opt => ({
+        value: opt.value,
+        text: opt.text
+      }))
     } as FixedQuestion));
   }, [currentSurvey?.questions]);
 
   // Handler para cuando se completan todas las encuestas
   const handleSubmitAll = async () => {
     try {
-      // Limpiar el store después de completar todas las encuestas
+      // Obtener todas las respuestas del store
+      const allResponses = exportResponses();
+      console.log('Respuestas exportadas del store:', allResponses);
+      
+      // Enviar cada materia al servidor
+      const submissions = Object.entries(allResponses).map(async ([subjectId, data]) => {
+        // Log del contenido antes de procesar
+        console.log(`Procesando materia ${data.subjectName}:`, {
+          subjectId,
+          responsesCount: data.responses?.length || 0,
+          responses: data.responses
+        });
+        
+        // Convertir formato del store al formato esperado por la API
+        const payload = data.responses.map((response: any) => {
+          const answer = response.answer;
+          
+          if (Array.isArray(answer)) {
+            // Respuesta múltiple - enviar como texto separado por comas
+            return {
+              QuestionId: response.questionId,
+              Text: answer.join(', ')
+            };
+          } else if (typeof answer === 'string' && isNaN(Number(answer))) {
+            // Respuesta de texto (no numérica)
+            return {
+              QuestionId: response.questionId,
+              Text: answer
+            };
+          } else {
+            // Respuesta simple con valor numérico
+            return {
+              QuestionId: response.questionId,
+              SelectedValue: parseInt(answer)
+            };
+          }
+        });
+
+        // Log del payload antes de enviar
+        const requestBody = { Answers: payload };
+        console.log(`Enviando respuestas para ${data.subjectName}:`, {
+          subjectId,
+          payloadLength: payload.length,
+          payload: payload,
+          requestBody: requestBody,
+          requestBodyJSON: JSON.stringify(requestBody, null, 2)
+        });
+
+        // Enviar usando el endpoint correcto
+        const response = await fetch(`/api/my-surveys/subjects/${subjectId}/responses`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        });
+
+        if (!response.ok) {
+          // Intentar obtener el cuerpo del error
+          let errorBody = '';
+          try {
+            errorBody = await response.text();
+            console.error(`Error ${response.status} al enviar ${data.subjectName}:`, errorBody);
+          } catch (e) {
+            console.error('No se pudo leer el cuerpo del error');
+          }
+          throw new Error(`Error al enviar respuestas de ${data.subjectName}: ${response.status} ${response.statusText}. Body: ${errorBody}`);
+        }
+
+        return { subjectId, subjectName: data.subjectName };
+      });
+
+      // Esperar a que se envíen todas las respuestas
+      const results = await Promise.all(submissions);
+      
+      console.log('Todas las respuestas enviadas exitosamente:', results);
+      
+      // Limpiar el store después de enviar exitosamente
       clearSurvey();
+      
       // Redirigir a la lista de encuestas
       setLocation('/encuestas/mis-encuestas?completed=true');
+      
     } catch (error) {
       console.error('Error al enviar todas las encuestas:', error);
+      // No limpiar el store para que el usuario pueda intentar de nuevo
+      alert('Error al enviar las respuestas. Por favor, intenta nuevamente.');
     }
   };
 

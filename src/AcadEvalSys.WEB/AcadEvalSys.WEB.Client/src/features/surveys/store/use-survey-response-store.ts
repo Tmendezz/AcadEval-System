@@ -304,7 +304,7 @@ export const useSurveyResponseStore = create<SurveyResponseState>()(
               responses: subject.responses.map(r => ({
                 questionId: r.questionId,
                 answer: r.answer,
-                answeredAt: r.answeredAt.toISOString(),
+                answeredAt: r.answeredAt instanceof Date ? r.answeredAt.toISOString() : new Date(r.answeredAt).toISOString(),
               }))
             };
           }
@@ -331,10 +331,36 @@ export const useSurveyResponseStore = create<SurveyResponseState>()(
         startedAt: state.startedAt,
         lastSavedAt: state.lastSavedAt,
       }),
-      // Reconstruir Set al cargar del localStorage
+      // Reconstruir Set y fechas al cargar del localStorage
       onRehydrateStorage: () => (state) => {
-        if (state && Array.isArray((state as any).completedSubjects)) {
-          state.completedSubjects = new Set((state as any).completedSubjects);
+        if (state) {
+          // Reconstruir Set
+          if (Array.isArray((state as any).completedSubjects)) {
+            state.completedSubjects = new Set((state as any).completedSubjects);
+          }
+          
+          // Convertir strings de fecha de vuelta a objetos Date
+          if (state.startedAt && typeof state.startedAt === 'string') {
+            state.startedAt = new Date(state.startedAt);
+          }
+          if (state.lastSavedAt && typeof state.lastSavedAt === 'string') {
+            state.lastSavedAt = new Date(state.lastSavedAt);
+          }
+          
+          // Convertir fechas en las respuestas
+          Object.values(state.subjectResponses).forEach(subject => {
+            if (subject.lastModified && typeof subject.lastModified === 'string') {
+              subject.lastModified = new Date(subject.lastModified);
+            }
+            if (subject.completedAt && typeof subject.completedAt === 'string') {
+              subject.completedAt = new Date(subject.completedAt);
+            }
+            subject.responses.forEach(response => {
+              if (response.answeredAt && typeof response.answeredAt === 'string') {
+                response.answeredAt = new Date(response.answeredAt);
+              }
+            });
+          });
         }
       },
     }

@@ -13,7 +13,6 @@ import { toast } from "sonner";
 import { useSurveyResponseStore } from "../../store/use-survey-response-store";
 
 import type { FixedQuestion, StudentSurveyTarget } from "../../models/survey-runner-types";
-import { submitSurveySubjectResponse } from "@/infrastructure/api/clients/academic-surveys";
 
 interface StudentSurveyRunnerProps {
   assignments: StudentSurveyTarget[]; // docentes x asignatura del año del alumno
@@ -25,8 +24,6 @@ interface StudentSurveyRunnerProps {
 
 export function StudentSurveyRunner({ assignments, fixedQuestions, onSubmitAll, isSubmitting = false, initialIndex = 0 }: StudentSurveyRunnerProps) {
   const [, setLocation] = useLocation();
-  const [currentIdx] = useState(initialIndex); // Solo lectura, la navegación se hace por URL
-  const [completedSections, setCompletedSections] = useState<Set<number>>(new Set());
   
   // Store de respuestas
   const {
@@ -35,7 +32,15 @@ export function StudentSurveyRunner({ assignments, fixedQuestions, onSubmitAll, 
     markSubjectComplete,
     isSubjectComplete,
     setCurrentSubject,
+    currentSubjectId,
   } = useSurveyResponseStore();
+
+  // Calcular el índice actual basado en el currentSubjectId del store
+  const currentIdx = useMemo(() => {
+    if (!currentSubjectId || assignments.length === 0) return initialIndex;
+    const foundIndex = assignments.findIndex(a => a.subjectId === currentSubjectId);
+    return foundIndex >= 0 ? foundIndex : initialIndex;
+  }, [currentSubjectId, assignments, initialIndex]);
 
   // Key de bloque = `${subjectId}:${teacherId}`
   const blockKey = useMemo(() => (unit: StudentSurveyTarget) => `${unit.subjectId}:${unit.teacherId}`, []);
@@ -67,16 +72,7 @@ export function StudentSurveyRunner({ assignments, fixedQuestions, onSubmitAll, 
         [key]: currentAnswers
       }));
       
-      // Marcar como completado si ya está completado en el store
-      setCompletedSections(prev => {
-        const newSet = new Set(prev);
-        if (isSubjectComplete(subjectId)) {
-          newSet.add(currentIdx);
-        } else {
-          newSet.delete(currentIdx);
-        }
-        return newSet;
-      });
+      // Las materias completadas se manejan directamente desde el store
       
       // Notificar al store sobre la materia actual
       setCurrentSubject(subjectId);
@@ -84,6 +80,16 @@ export function StudentSurveyRunner({ assignments, fixedQuestions, onSubmitAll, 
   }, [currentIdx]); // Solo cuando cambie el índice
 
   const current = assignments[currentIdx];
+  
+  // Verificar que current es válido
+  if (!current) {
+    return (
+      <div className="text-center p-8">
+        <p className="text-muted-foreground">No se encontró la evaluación actual</p>
+      </div>
+    );
+  }
+  
   const currentAnswers = answers[blockKey(current)] || {};
 
   const setAnswer = (questionId: string, value: any) => {
@@ -98,41 +104,37 @@ export function StudentSurveyRunner({ assignments, fixedQuestions, onSubmitAll, 
     
     // Guardar en el store
     const subjectId = current.subjectId;
+    console.log(`Guardando respuesta: ${subjectId}, ${questionId}, ${value}`);
     saveResponse(subjectId, questionId, value);
   };
 
   const canProceed = true; // se puede reforzar validación requerida
 
   const handleNext = async () => {
-    try {
-      // Esperamos que cada target traiga un id para enviar respuestas
-      const surveySubjectId = (current as any).academicSurveySubjectId || (current as any).id;
-      const payload = fixedQuestions.map((q) => {
-        const val = currentAnswers[q.id];
-        if (q.type === "single") return { questionId: q.id, value: val };
-        if (q.type === "multi") return { questionId: q.id, values: val || [] };
-        return { questionId: q.id, text: val || "" };
-      });
-      await submitSurveySubjectResponse(surveySubjectId, payload);
-      
-      // Marcar sección como completada localmente
-      setCompletedSections(prev => new Set([...prev, currentIdx]));
-      
-      // Marcar como completada en el store
-      markSubjectComplete(current.subjectId);
-      
-      toast.success(`Respuestas de ${current.subjectName} guardadas`);
-    } catch (e: any) {
-      toast.error("No se pudieron enviar las respuestas", { description: e?.message });
+    // Validar que todas las preguntas requeridas estén respondidas
+    const hasRequiredAnswers = fixedQuestions.every(q => {
+      const answer = currentAnswers[q.id];
+      return answer !== undefined && answer !== null && answer !== '';
+    });
+
+    if (!hasRequiredAnswers) {
+      toast.error("Por favor completa todas las preguntas antes de continuar");
       return;
     }
+
+    // Las secciones completadas se manejan en el store
+    
+    // Marcar como completada en el store
+    markSubjectComplete(current.subjectId);
+    
+    toast.success(`Respuestas de ${current.subjectName} guardadas en memoria`);
 
     if (currentIdx < assignments.length - 1) {
       const nextIndex = currentIdx + 1;
       const nextSurveySubjectId = assignments[nextIndex].subjectId;
       setLocation(`/encuestas/responder/${nextSurveySubjectId}`);
     } else {
-      toast.success("¡Todas las encuestas completadas!");
+      toast.success("¡Todas las materias completadas! Enviando respuestas...");
       void onSubmitAll();
     }
   };
@@ -155,7 +157,7 @@ export function StudentSurveyRunner({ assignments, fixedQuestions, onSubmitAll, 
               <BookOpen className="w-5 h-5" />
               <span className="font-medium text-lg">{current.subjectName}</span>
             </div>
-            {completedSections.has(currentIdx) && (
+            {isSubjectComplete(current.subjectId) && (
               <Badge variant="default" className="flex items-center gap-1 bg-green-100 text-green-800">
                 <CheckCircle className="w-3 h-3" />
                 Completada
@@ -175,14 +177,14 @@ export function StudentSurveyRunner({ assignments, fixedQuestions, onSubmitAll, 
                 {q.type === "single" && (
                   <div role="radiogroup" className="space-y-2">
                     {q.options?.map((opt) => (
-                      <label key={opt} className="flex items-center gap-2">
+                      <label key={opt.value} className="flex items-center gap-2">
                         <input
                           type="radio"
                           name={q.id}
-                          checked={(currentAnswers[q.id] ?? "") === opt}
-                          onChange={() => setAnswer(q.id, opt)}
+                          checked={(currentAnswers[q.id] ?? "") === opt.value.toString()}
+                          onChange={() => setAnswer(q.id, opt.value.toString())}
                         />
-                        <span>{opt}</span>
+                        <span>{opt.text}</span>
                       </label>
                     ))}
                   </div>
@@ -191,19 +193,19 @@ export function StudentSurveyRunner({ assignments, fixedQuestions, onSubmitAll, 
                   <div className="space-y-2">
                     {q.options?.map((opt) => {
                       const selected: string[] = currentAnswers[q.id] || [];
-                      const checked = selected.includes(opt);
+                      const checked = selected.includes(opt.value.toString());
                       return (
-                        <div key={opt} className="flex items-center space-x-2">
+                        <div key={opt.value} className="flex items-center space-x-2">
                           <Checkbox
-                            id={`${q.id}-${opt}`}
+                            id={`${q.id}-${opt.value}`}
                             checked={checked}
                             onCheckedChange={(c: boolean) => {
                               const next = new Set(selected);
-                              if (c) next.add(opt); else next.delete(opt);
+                              if (c) next.add(opt.value.toString()); else next.delete(opt.value.toString());
                               setAnswer(q.id, Array.from(next));
                             }}
                           />
-                          <Label htmlFor={`${q.id}-${opt}`}>{opt}</Label>
+                          <Label htmlFor={`${q.id}-${opt.value}`}>{opt.text}</Label>
                         </div>
                       );
                     })}
@@ -234,7 +236,7 @@ export function StudentSurveyRunner({ assignments, fixedQuestions, onSubmitAll, 
             onPrevious={handlePrev}
             onNext={handleNext}
             isSubmitting={isSubmitting}
-            finishLabel={`Finalizar encuesta${completedSections.has(currentIdx) ? ' (Actualizar respuestas)' : ''}`}
+            finishLabel={currentIdx === assignments.length - 1 ? `Finalizar encuesta${isSubjectComplete(current.subjectId) ? ' (Actualizar respuestas)' : ''}` : "Siguiente Materia"}
           />
         </CardContent>
       </Card>
