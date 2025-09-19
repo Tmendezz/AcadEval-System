@@ -84,8 +84,9 @@ export default function RespondSurveyPage() {
       options: q.options?.map(opt => ({
         value: opt.value,
         text: opt.text
-      }))
-    } as FixedQuestion));
+      })),
+      allowComment: (q as any).allowComment,
+    } as FixedQuestion & { allowComment?: boolean }));
   }, [currentSurvey?.questions]);
 
   // Handler para mostrar confirmación cuando se completan todas las encuestas
@@ -102,31 +103,40 @@ export default function RespondSurveyPage() {
       
       // Enviar cada materia al servidor
       const submissions = Object.entries(allResponses).map(async ([subjectId, data]) => {
-        
-        // Convertir formato del store al formato esperado por la API
-        const payload = data.responses.map((response: any) => {
-          const answer = response.answer;
-          
-          if (Array.isArray(answer)) {
-            // Respuesta múltiple - enviar como texto separado por comas
-            return {
-              QuestionId: response.questionId,
-              Text: answer.join(', ')
-            };
-          } else if (typeof answer === 'string' && isNaN(Number(answer))) {
-            // Respuesta de texto (no numérica)
-            return {
-              QuestionId: response.questionId,
-              Text: answer
-            };
-          } else {
-            // Respuesta simple con valor numérico
-            return {
-              QuestionId: response.questionId,
-              SelectedValue: parseInt(answer)
-            };
+        // Construir mapa de respuestas por pregunta, fusionando comentario opcional
+        const byQuestion: Record<string, { SelectedValue?: number; Text?: string }> = {};
+        for (const resp of data.responses as Array<{ questionId: string; answer: any }>) {
+          const qid = resp.questionId;
+          const isComment = qid.endsWith('__comment');
+          const baseId = isComment ? qid.replace(/__comment$/, '') : qid;
+          if (!byQuestion[baseId]) byQuestion[baseId] = {};
+
+          if (isComment) {
+            const text = String(resp.answer || '').trim();
+            if (text) byQuestion[baseId].Text = text;
+            continue;
           }
-        });
+
+          const answer = resp.answer;
+          if (Array.isArray(answer)) {
+            // Múltiple -> concatenar como texto (comportamiento actual)
+            const text = answer.map(String).filter(Boolean).join(', ');
+            if (text) byQuestion[baseId].Text = text;
+          } else if (typeof answer === 'string' && isNaN(Number(answer))) {
+            // Abierta
+            const text = String(answer || '').trim();
+            if (text) byQuestion[baseId].Text = text;
+          } else if (answer !== undefined && answer !== null && String(answer) !== '') {
+            // Cerrada (valor numérico)
+            byQuestion[baseId].SelectedValue = parseInt(String(answer), 10);
+          }
+        }
+
+        const payload = Object.entries(byQuestion).map(([questionId, v]) => ({
+          QuestionId: questionId,
+          ...(v.SelectedValue !== undefined ? { SelectedValue: v.SelectedValue } : {}),
+          ...(v.Text ? { Text: v.Text } : {}),
+        }));
 
         const requestBody = { Answers: payload };
 
@@ -241,7 +251,7 @@ export default function RespondSurveyPage() {
         <div className="max-w-4xl mx-auto">
           <StudentSurveyRunner
             assignments={surveyTargets}
-            fixedQuestions={fixedQuestions}
+            fixedQuestions={fixedQuestions as any}
             onSubmitAll={handleSubmitAll}
             initialIndex={initialIndex}
           />

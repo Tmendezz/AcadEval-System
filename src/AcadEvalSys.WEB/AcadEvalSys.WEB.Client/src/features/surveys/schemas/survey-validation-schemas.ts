@@ -115,11 +115,10 @@ export function validateStep(step: number, data: any, isUsingTemplate: boolean =
         const errors: Record<string, string> = {};
         
         if (isUsingTemplate) {
-          // Cuando se usa una plantilla, solo validar el título
+          // Cuando se usa una plantilla, validar solo el título
           const basicInfoResult = SurveyTemplateBasicInfoSchema.safeParse({
             title: data.title,
           });
-          
           if (!basicInfoResult.success) {
             Object.assign(errors, formatZodErrors(basicInfoResult.error));
           }
@@ -129,19 +128,17 @@ export function validateStep(step: number, data: any, isUsingTemplate: boolean =
             title: data.title,
             description: data.description,
           });
-          
           if (!basicInfoResult.success) {
             Object.assign(errors, formatZodErrors(basicInfoResult.error));
           }
-          
-          // Validar preguntas solo si no se está usando una plantilla
-          const questionsResult = SurveyQuestionsSchema.safeParse({
-            questions: data.questions || [],
-          });
-          
-          if (!questionsResult.success) {
-            Object.assign(errors, formatZodErrors(questionsResult.error));
-          }
+        }
+        
+        // Siempre validar preguntas, independientemente de si se usa plantilla o no
+        const questionsResult = SurveyQuestionsSchema.safeParse({
+          questions: data.questions || [],
+        });
+        if (!questionsResult.success) {
+          Object.assign(errors, formatZodErrors(questionsResult.error));
         }
         
         return {

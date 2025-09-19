@@ -3,11 +3,14 @@ import { useLocation } from 'wouter';
 import { useCreateSurvey, useTechnicalCareers } from '../hooks/use-surveys';
 // Settings son internas del wizard
 import { SurveyWizard } from '../components/wizard/survey-wizard';
-import { PageContent, PageLayout } from '@/shared/components/layout/page-layout';
+import { PageContent, PageHeader, PageLayout } from '@/shared/components/layout/page-layout';
 import { useSurveyTemplate } from '../hooks/use-survey-templates';
 import { useSurveysStore } from '../store/use-surveys-store';
 import { CareerYear, CreateAcademicSurveyRequest } from '../models/survey-types';
 import { convertDateTimeLocalToISO } from '@/shared/utils/date-utils';
+import { Button } from '@/shared/components/ui/button';
+import { Alert, AlertDescription } from '@/shared/components/ui/alert';
+import { ArrowLeft, FileText } from 'lucide-react';
 
 export default function CreateSurveyPage() {
   const [, setLocation] = useLocation();
@@ -31,6 +34,46 @@ export default function CreateSurveyPage() {
   }, [createSurveyMutation.isSuccess, setSelectedTemplateId]);
 
   // Manejo de cambios ahora es interno del Wizard
+
+  // Mostrar aviso si no hay plantilla seleccionada
+  if (!selectedTemplateId) {
+    return (
+      <PageLayout>
+        <PageHeader 
+          title="Crear Nueva Encuesta" 
+          description="Selecciona una plantilla para crear la encuesta"
+        >
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setLocation('/encuestas')}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Volver a Encuestas
+          </Button>
+        </PageHeader>
+        <PageContent>
+          <Alert className="border-amber-200 bg-amber-50">
+            <FileText className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-amber-800">
+              <strong>Se requiere una plantilla para crear la encuesta.</strong>
+              <br />
+              Las plantillas definen las preguntas que se aplicarán a todos los docentes del año de cursado correspondiente.
+            </AlertDescription>
+          </Alert>
+          <div className="mt-6 text-center">
+            <Button 
+              onClick={() => setLocation('/encuestas/plantillas')}
+              className="gap-2"
+            >
+              <FileText className="w-4 h-4" />
+              Seleccionar Plantilla
+            </Button>
+          </div>
+        </PageContent>
+      </PageLayout>
+    );
+  }
 
   // Mostrar loading mientras se carga la plantilla o las tecnicaturas
   if ((selectedTemplateId && isFetchingTemplate) || isLoadingCareers) {
@@ -92,12 +135,29 @@ export default function CreateSurveyPage() {
               
               const surveyToCreate: CreateAcademicSurveyRequest = {
                 title: form.title,
-                templateId: selectedTemplateId,
+                description: form.description,
                 audience: audience,
                 publishAt: convertDateTimeLocalToISO(scheduling.publishAt || ''),
                 closeAt: convertDateTimeLocalToISO(scheduling.closeAt || ''),
+                questions: form.questions.map(q => ({
+                  id: q.id || '',
+                  text: q.text,
+                  type: q.type === 'SingleChoice' ? 0 : q.type === 'MultipleChoice' ? 1 : 2,
+                  order: q.order || 0,
+                  isRequired: q.required,
+                  allowComment: q.allowComment || false,
+                  options: q.options.map(o => ({
+                    id: o.id || '',
+                    text: o.text,
+                    value: parseInt(o.value) || 0,
+                    order: o.order || 0,
+                    allowOpenText: o.allowOpenText || false
+                  }))
+                }))
               };
 
+            console.log('🔍 Debug CreateSurvey - Form data:', form);
+            console.log('🔍 Debug CreateSurvey - Survey to create:', surveyToCreate);
             await createSurveyMutation.mutateAsync(surveyToCreate);
             setSelectedTemplateId(null);
             setLocation('/encuestas');

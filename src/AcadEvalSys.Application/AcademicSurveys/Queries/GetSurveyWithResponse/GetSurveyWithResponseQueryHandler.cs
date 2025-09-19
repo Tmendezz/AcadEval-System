@@ -39,14 +39,30 @@ public class GetSurveyWithResponseQueryHandler(
         // (profesor de la asignatura o estudiante matriculado)
         if (surveySubject.Subject != null)
         {
-            var hasAccess = surveySubject.Subject.ProfessorId == currentUser.Id ||
-                           surveySubject.Subject.StudentSubjects?.Any(ss => ss.StudentId == currentUser.Id) == true;
+            var isProfessor = surveySubject.Subject.ProfessorId == currentUser.Id;
+            var isEnrolledStudent = surveySubject.Subject.StudentSubjects?.Any(ss => ss.StudentId == currentUser.Id && ss.IsActive) == true;
             
-            if (!hasAccess)
+            if (!isProfessor && !isEnrolledStudent)
             {
-                logger.LogWarning("User {UserId} does not have access to survey subject {SurveySubjectId}", 
+                logger.LogWarning("User {UserId} does not have access to survey subject {SurveySubjectId}. User is not the professor and is not enrolled in the subject", 
                     currentUser.Id, request.SurveySubjectId);
                 return null;
+            }
+
+            // Validación adicional de seguridad para estudiantes:
+            // Asegurar que el estudiante está realmente matriculado en la asignatura
+            if (!isProfessor && isEnrolledStudent)
+            {
+                var currentYear = DateTime.Now.Year;
+                var activeEnrollment = surveySubject.Subject.StudentSubjects?
+                    .FirstOrDefault(ss => ss.StudentId == currentUser.Id && ss.IsActive && ss.AcademicYear == currentYear);
+                
+                if (activeEnrollment == null)
+                {
+                    logger.LogWarning("User {UserId} enrollment in subject {SubjectId} is not active for current academic year {Year}", 
+                        currentUser.Id, surveySubject.Subject.Id, currentYear);
+                    return null;
+                }
             }
         }
 
@@ -64,7 +80,7 @@ public class GetSurveyWithResponseQueryHandler(
         {
             Id = survey.Id,
             Title = survey.Title,
-            Description = survey.Template?.Description ?? string.Empty,
+            Description = survey.Description,
             Status = (int)survey.Status,
             PublishedAt = survey.PublishAt,
             ClosedAt = survey.CloseAt,
@@ -81,6 +97,7 @@ public class GetSurveyWithResponseQueryHandler(
                     Text = q.Text,
                     Type = (int)q.Type,
                     IsRequired = q.IsRequired,
+                        AllowComment = q.AllowComment,
                     Order = q.Order,
                     Options = q.Options
                         .OrderBy(o => o.Order)

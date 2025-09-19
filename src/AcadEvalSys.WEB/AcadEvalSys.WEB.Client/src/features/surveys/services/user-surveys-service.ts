@@ -35,6 +35,7 @@ export interface SurveyQuestionDto {
   text: string;
   type: number; // QuestionType enum
   isRequired: boolean;
+  allowComment?: boolean;
   options: SurveyQuestionOptionDto[];
   response?: SurveyQuestionResponseDto;
 }

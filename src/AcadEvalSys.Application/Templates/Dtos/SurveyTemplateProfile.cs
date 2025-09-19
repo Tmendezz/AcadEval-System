@@ -23,6 +23,7 @@ namespace AcadEvalSys.Application.Templates.Dtos
             CreateMap<SurveyTemplateQuestion, SurveyTemplateQuestionDto>()
                 .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type))
                 .ForMember(dest => dest.Required, opt => opt.MapFrom(src => src.isRequired))
+                .ForMember(dest => dest.AllowComment, opt => opt.MapFrom(src => src.AllowComment))
                 .ForMember(dest => dest.Options, opt => opt.MapFrom(src => src.Options.OrderBy(o => o.Order)));
 
             // Mapping para opciones de preguntas
@@ -63,6 +64,7 @@ namespace AcadEvalSys.Application.Templates.Dtos
                 .ForMember(dest => dest.CreatedByUserId, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedByUserId, opt => opt.Ignore())
                 .ForMember(dest => dest.isRequired, opt => opt.MapFrom(src => src.Required))
+                .ForMember(dest => dest.AllowComment, opt => opt.MapFrom(src => src.AllowComment))
                 .ForMember(dest => dest.TemplateId, opt => opt.Ignore())
                 .ForMember(dest => dest.SurveyTemplate, opt => opt.Ignore())
                 .ForMember(dest => dest.Options, opt => opt.MapFrom(src => src.Options));
@@ -76,6 +78,7 @@ namespace AcadEvalSys.Application.Templates.Dtos
                 .ForMember(dest => dest.UpdatedByUserId, opt => opt.Ignore())
                 .ForMember(dest => dest.Type, opt => opt.MapFrom(src => Enum.Parse<QuestionType>(src.Type)))
                 .ForMember(dest => dest.isRequired, opt => opt.MapFrom(src => src.IsRequired))
+                .ForMember(dest => dest.AllowComment, opt => opt.MapFrom(src => src.AllowComment))
                 .ForMember(dest => dest.TemplateId, opt => opt.Ignore())
                 .ForMember(dest => dest.SurveyTemplate, opt => opt.Ignore())
                 .ForMember(dest => dest.Options, opt => opt.MapFrom(src => src.Options));

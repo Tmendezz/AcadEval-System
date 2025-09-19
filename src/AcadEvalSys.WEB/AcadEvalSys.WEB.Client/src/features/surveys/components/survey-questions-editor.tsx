@@ -173,6 +173,16 @@ function SortableQuestionItem({
             </div>
           </div>
 
+          <div className="flex items-center space-x-2">
+            <Switch
+              id={`allow_comment_${questionIndex}`}
+              checked={!!question.allowComment}
+              onCheckedChange={(checked: boolean) => onUpdate(questionIndex, { allowComment: checked })}
+              disabled={isReadOnly}
+            />
+            <Label htmlFor={`allow_comment_${questionIndex}`} className={isReadOnly ? 'cursor-not-allowed' : ''}>Permitir comentario/justificación</Label>
+          </div>
+
           {/* Opciones para preguntas de opción múltiple */}
           {(question.type === 'SingleChoice' || question.type === 'MultipleChoice') && (
             <div>
@@ -245,6 +255,7 @@ export function SurveyQuestionsEditor({
       type: 'SingleChoice',
       order: questions.length + 1,
       required: true,
+      allowComment: false,
       options: [],
     };
 

@@ -1,136 +1,109 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useLocation, useRoute } from 'wouter';
-import { SurveyForm } from '../models/survey-types';
-import type { SurveyQuestion } from '../models/survey-types';
-import { useSurvey, useUpdateSurvey } from '../hooks/use-surveys';
-import { useSurveyFormValidationBasic } from '../hooks/use-survey-form-validation-basic';
-import { SurveyBasicInfoForm } from '../components/survey-basic-info-form';
-import { SurveyQuestionsEditor } from '../components/survey-questions-editor';
-import { SurveyFormActionsBasic } from '../components/survey-form-actions-basic';
+import { CareerYear, CreateAcademicSurveyRequest } from '../models/survey-types';
+import { useSurvey, useTechnicalCareers, useUpdateSurvey } from '../hooks/use-surveys';
+import { SurveyWizard } from '../components/wizard/survey-wizard';
+import { PageContent, PageHeader, PageLayout } from '@/shared/components/layout/page-layout';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
-import { Loader2 } from 'lucide-react';
+import { convertDateTimeLocalToISO } from '@/shared/utils/date-utils';
 
 export default function EditSurveyPage() {
   const [, setLocation] = useLocation();
   const [, params] = useRoute('/encuestas/editar/:id');
-  const surveyId = params?.id;
+  const surveyId = params?.id || '';
 
-  const { data: survey, isLoading: isLoadingSurvey, error: surveyError } = useSurvey(surveyId || '');
+  const { data: survey, isLoading: isLoadingSurvey, error: surveyError } = useSurvey(surveyId);
+  const { data: careers = [], isLoading: isLoadingCareers } = useTechnicalCareers();
   const updateSurveyMutation = useUpdateSurvey();
 
-  const [formData, setFormData] = useState<SurveyForm>({
-    title: '',
-    description: '',
-    questions: [],
-  });
-
-  const { errors, validateForm, clearErrors } = useSurveyFormValidationBasic();
-
-  // Cargar datos de la encuesta cuando esté disponible
+  // Redirigir al listado después de actualizar
   useEffect(() => {
-    if (survey) {
-      setFormData({
-        title: survey.title,
-        description: survey.description,
-        questions: survey.questions,
-      });
-    }
-  }, [survey]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!surveyId) return;
-    
-    if (!validateForm(formData)) {
-      return;
-    }
-
-    try {
-      await updateSurveyMutation.mutateAsync({ id: surveyId, survey: formData });
+    if (updateSurveyMutation.isSuccess) {
       setLocation('/encuestas');
-    } catch (error) {
     }
-  };
+  }, [updateSurveyMutation.isSuccess, setLocation]);
 
-  const handleCancel = () => {
-    setLocation('/encuestas');
-  };
-
-  const handleBasicInfoChange = (updates: Partial<SurveyForm>) => {
-    setFormData(prev => ({ ...prev, ...updates }));
-    clearErrors();
-  };
-
-  const handleQuestionsChange = (questions: SurveyQuestion[]) => {
-    setFormData(prev => ({ ...prev, questions }));
-    clearErrors();
-  };
-
-  if (isLoadingSurvey) {
+  if (isLoadingSurvey || isLoadingCareers) {
     return (
-      <div className="container mx-auto py-6">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin" />
-          <span className="ml-2">Cargando encuesta...</span>
-        </div>
-      </div>
+      <PageLayout>
+        <PageContent>
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Cargando encuesta...</p>
+            </div>
+          </div>
+        </PageContent>
+      </PageLayout>
     );
   }
 
   if (surveyError || !survey) {
     return (
-      <div className="container mx-auto py-6">
-        <Alert variant="destructive">
-          <AlertDescription>
-            Error al cargar la encuesta. Por favor, intenta nuevamente.
-          </AlertDescription>
-        </Alert>
-      </div>
+      <PageLayout>
+        <PageContent>
+          <Alert variant="destructive">
+            <AlertDescription>
+              Error al cargar la encuesta. Por favor, intenta nuevamente.
+            </AlertDescription>
+          </Alert>
+        </PageContent>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Editar Encuesta</h1>
-          <p className="text-muted-foreground">
-            Modifica los detalles y preguntas de tu encuesta
-          </p>
-        </div>
-      </div>
+    <PageLayout>
+      <PageHeader title="Editar Encuesta" description="Modifica título, descripción, preguntas, audiencia y fechas" />
+      <PageContent>
+        <SurveyWizard
+          onSubmit={async ({ form, settings, scheduling }) => {
+            // Convertir exclusiones a inclusiones (misma lógica que en creación)
+            const includedCareerIds = careers
+              .filter(career => !settings.selectedCareerIds.includes(career.id))
+              .map(career => career.id);
 
-      {updateSurveyMutation.isError && (
-        <Alert variant="destructive">
-          <AlertDescription>
-            Error al actualizar la encuesta. Por favor, intenta nuevamente.
-          </AlertDescription>
-        </Alert>
-      )}
+            const allYears: CareerYear[] = [1, 2, 3] as CareerYear[];
+            const includedYears = allYears.filter(year => !settings.selectedYears.includes(year));
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <SurveyBasicInfoForm
-          title={formData.title}
-          description={formData.description}
-          onChange={handleBasicInfoChange}
-          errors={errors}
+            const finalCareerIds = includedCareerIds.length > 0 ? includedCareerIds : careers.map(c => c.id);
+            const finalYears = includedYears.length > 0 ? includedYears : allYears;
+
+            const audience = finalCareerIds.map(careerId => ({
+              technicalCareerId: careerId,
+              selectedYears: finalYears.map(year => {
+                switch (year) {
+                  case 1: return 'First';
+                  case 2: return 'Second';
+                  case 3: return 'Third';
+                  default: return 'First';
+                }
+              })
+            }));
+
+            const payload: CreateAcademicSurveyRequest = {
+              title: form.title,
+              templateId: survey.templateId,
+              publishAt: convertDateTimeLocalToISO(scheduling.publishAt || ''),
+              closeAt: convertDateTimeLocalToISO(scheduling.closeAt || ''),
+              audience,
+            };
+
+            await updateSurveyMutation.mutateAsync({ id: surveyId, survey: payload });
+          }}
+          onCancel={() => setLocation('/encuestas')}
+          isSubmitting={updateSurveyMutation.isPending}
+          initialTemplate={{
+            title: survey.title,
+            description: survey.description || '',
+            questions: (survey as any).questions || [],
+          }}
+          // Permitimos editar preguntas en esta pantalla (no fijamos preguntas)
+          careers={careers}
+          initialScheduling={{ publishAt: survey.publishAt || '', closeAt: survey.closeAt || '' }}
         />
-
-        <SurveyQuestionsEditor
-          questions={formData.questions}
-          onChange={handleQuestionsChange}
-          errors={errors}
-          title="Preguntas de la Encuesta"
-        />
-
-        <SurveyFormActionsBasic
-          onCancel={handleCancel}
-          submitLabel="Actualizar Encuesta"
-          isLoading={updateSurveyMutation.isPending}
-        />
-      </form>
-    </div>
+      </PageContent>
+    </PageLayout>
   );
 }
 

@@ -19,7 +19,8 @@ namespace AcadEvalSys.Application.AcademicSurveys.Dtos
                 .ForMember(d => d.Subjects, o => o.MapFrom(s => s.Subjects));
 
             CreateMap<SurveyQuestion, SurveyQuestionDto>()
-                .ForMember(d => d.Options, o => o.MapFrom(s => s.Options.OrderBy(x => x.Order)));
+                .ForMember(d => d.Options, o => o.MapFrom(s => s.Options.OrderBy(x => x.Order)))
+                .ForMember(d => d.AllowComment, o => o.MapFrom(s => s.AllowComment));
 
             CreateMap<SurveyQuestionOption, SurveyQuestionOptionDto>();
 

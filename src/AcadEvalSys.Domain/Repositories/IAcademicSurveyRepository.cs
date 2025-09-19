@@ -5,7 +5,8 @@ namespace AcadEvalSys.Domain.Repositories;
 
 public interface IAcademicSurveyRepository
 {
-    Task<Guid> CreateFromTemplateAsync(string title, Guid templateId, DateTime? publishAt, DateTime? closeAt, string? userId = null, CancellationToken ct = default);
+    Task<Guid> CreateFromTemplateAsync(string title, string description, Guid templateId, DateTime? publishAt, DateTime? closeAt, string? userId = null, CancellationToken ct = default);
+    Task<Guid> CreateWithQuestionsAsync(string title, string description, List<object> questions, DateTime? publishAt, DateTime? closeAt, string? userId = null, CancellationToken ct = default);
     Task SetSubjectsAsync(Guid surveyId, IEnumerable<Guid> subjectIds, string? userId = null, CancellationToken ct = default);
     Task AddSurveySubjectAsync(AcademicSurveySubject surveySubject, CancellationToken ct = default);
 

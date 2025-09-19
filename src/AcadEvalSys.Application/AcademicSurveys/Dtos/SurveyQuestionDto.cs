@@ -14,6 +14,7 @@ namespace AcadEvalSys.Application.AcademicSurveys.Dtos
         public QuestionType Type { get; set; }
         public int? Order { get; set; }
         public bool IsRequired { get; set; }
+        public bool AllowComment { get; set; }
         public List<SurveyQuestionOptionDto> Options { get; set; } = new();
     }
 }

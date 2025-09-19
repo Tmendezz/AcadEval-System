@@ -11,9 +11,6 @@ namespace AcadEvalSys.Application.AcademicSurveys.Commands.CreateAcademicSurvey
                 .NotEmpty().WithMessage("El título es requerido.")
                 .MaximumLength(200);
 
-            RuleFor(x => x.TemplateId)
-                .NotEmpty().WithMessage("TemplateId es requerido.");
-
             /*RuleFor(x => x.Audience)
                 .NotEmpty().WithMessage("Debe configurar al menos una audiencia.");
 

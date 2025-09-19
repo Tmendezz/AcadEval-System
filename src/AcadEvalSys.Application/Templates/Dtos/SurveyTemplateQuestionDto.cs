@@ -9,6 +9,7 @@ namespace AcadEvalSys.Application.Templates.Dtos
         public QuestionType Type { get; set; }
         public int Order { get; set; }
         public bool Required { get; set; }
+        public bool AllowComment { get; set; }
         public List<SurveyTemplateOptionDto> Options { get; set; } = new();
     }
 }

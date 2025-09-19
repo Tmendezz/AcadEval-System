@@ -10,6 +10,7 @@ export interface FixedQuestion {
   text: string;
   type: RunnerQuestionType;
   options?: SurveyOption[];
+  allowComment?: boolean;
 }
 
 // Vista de alumno: un bloque por docente/asignatura

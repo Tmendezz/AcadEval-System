@@ -220,6 +220,18 @@ export function StudentSurveyRunner({ assignments, fixedQuestions, onSubmitAll, 
                     </div>
                   </div>
                 )}
+                {q.type !== "text" && (q as any).allowComment && (
+                  <div className="mt-2">
+                    <Label className="mb-1 block text-sm text-muted-foreground">Comentario/justificación (opcional)</Label>
+                    <Textarea
+                      rows={3}
+                      value={currentAnswers[`${q.id}__comment`] ?? ""}
+                      onChange={(e) => setAnswer(`${q.id}__comment`, e.target.value)}
+                      placeholder="Escribe un comentario opcional"
+                      maxLength={TEXT_RESPONSE_MAX_LENGTH}
+                    />
+                  </div>
+                )}
               </div>
             ))}
           </div>

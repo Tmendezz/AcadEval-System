@@ -41,6 +41,7 @@ export interface SurveyTemplateQuestion {
   type: QuestionType;
   order: number;
   required: boolean;
+  allowComment?: boolean;
   options: SurveyTemplateOption[];
 }
 

@@ -9,6 +9,7 @@ namespace AcadEvalSys.Domain.Entities
         public QuestionType Type { get; set; }
         public int? Order { get; set; }
         public bool IsRequired { get; set; }
+        public bool AllowComment { get; set; } = false;
 
         public virtual AcademicSurvey? AcademicSurvey { get; set; }
         public virtual ICollection<SurveyQuestionOption> Options { get; set; } = new List<SurveyQuestionOption>();

@@ -68,6 +68,7 @@ export function TemplateWizard({ onSubmit, isSubmitting = false, initialData }: 
           type: convertQuestionTypeToNumber(question.type), // Convertir a número
           order: question.order || (index + 1),
           required: question.required,
+          allowComment: question.allowComment || false,
         };
 
         // Solo agregar opciones si no es texto abierto

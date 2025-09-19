@@ -95,9 +95,8 @@ export const surveyService = {
   },
 
   // Actualizar encuesta existente
-  async updateSurvey(id: string, survey: CreateAcademicSurveyRequest): Promise<Survey> {
-    const response = await api.put(`${baseUrl}/${id}`, survey);
-    return response.data;
+  async updateSurvey(id: string, survey: CreateAcademicSurveyRequest): Promise<void> {
+    await api.put(`${baseUrl}/${id}`, survey);
   },
 
   // Eliminar encuesta

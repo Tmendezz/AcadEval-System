@@ -1,4 +1,6 @@
-﻿namespace AcadEvalSys.Application.Templates.Dtos
+﻿using AcadEvalSys.Domain.Enums;
+
+namespace AcadEvalSys.Application.Templates.Dtos
 {
     public class UpdateSurveyTemplateQuestionDto
     {
@@ -7,6 +9,7 @@
         public string Type { get; set; } = string.Empty; // text, single_choice, multiple_choice, etc.
         public int Order { get; set; }
         public bool IsRequired { get; set; } = true;
+        public bool AllowComment { get; set; } = false;
         public List<UpdateSurveyTemplateQuestionOptionDto> Options { get; set; } = new();
     }
 }

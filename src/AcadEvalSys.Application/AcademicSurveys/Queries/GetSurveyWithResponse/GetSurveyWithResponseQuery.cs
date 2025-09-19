@@ -30,6 +30,7 @@ public class SurveyQuestionWithResponseDto
     public string Text { get; set; } = string.Empty;
     public int Type { get; set; }
     public bool IsRequired { get; set; }
+    public bool AllowComment { get; set; }
     public int? Order { get; set; }
     public List<SurveyQuestionOptionDto> Options { get; set; } = new();
     public SurveyQuestionResponseDto? Response { get; set; }

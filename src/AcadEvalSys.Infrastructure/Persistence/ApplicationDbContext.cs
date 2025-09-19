@@ -130,10 +130,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.Property(a => a.Title).IsRequired().HasMaxLength(200);
             entity.Property(a => a.Status).HasConversion<int>();
 
-            entity.HasOne(a => a.Template)
-                .WithMany()
-                .HasForeignKey(a => a.TemplateId)
-                .OnDelete(DeleteBehavior.Restrict);
+            // Relación con Template eliminada - las encuestas son independientes
 
             entity.HasMany(a => a.Subjects)
                 .WithOne(ass => ass.AcademicSurvey!)
@@ -160,6 +157,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         {
             entity.Property(q => q.Text).IsRequired().HasMaxLength(1000);
             entity.Property(q => q.Type).HasConversion<int>();
+            entity.Property(q => q.AllowComment).HasDefaultValue(false);
 
             entity.HasMany(q => q.Options)
                 .WithOne()
@@ -179,6 +177,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         {
             entity.Property(fq => fq.Text).HasMaxLength(1000);
             entity.Property(fq => fq.Type).HasConversion<int>();
+            entity.Property(fq => fq.AllowComment).HasDefaultValue(false);
 
             entity.HasMany<SurveyQuestionResponse>()
                 .WithOne(sqr => sqr.SurveyQuestion)

@@ -1,6 +1,7 @@
 using AcadEvalSys.Domain.Entities;
 using AcadEvalSys.Domain.Enums;
 using AcadEvalSys.Domain.Repositories;
+using AcadEvalSys.Application.AcademicSurveys.Dtos;
 using AcadEvalSys.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,7 +9,7 @@ namespace AcadEvalSys.Infrastructure.Repositories;
 
 public class AcademicSurveyRepository(ApplicationDbContext db) : IAcademicSurveyRepository
 {
-    public async Task<Guid> CreateFromTemplateAsync(string title, Guid templateId, DateTime? publishAt, DateTime? closeAt, string? userId = null, CancellationToken ct = default)
+    public async Task<Guid> CreateFromTemplateAsync(string title, string description, Guid templateId, DateTime? publishAt, DateTime? closeAt, string? userId = null, CancellationToken ct = default)
     {
         // Cargar plantilla con hijos
         var template = await db.SurveyTemplates
@@ -40,7 +41,7 @@ public class AcademicSurveyRepository(ApplicationDbContext db) : IAcademicSurvey
         var survey = new AcademicSurvey
         {
             Title = title,
-            TemplateId = template.Id,
+            Description = description,
             PublishAt = publishAt,
             CloseAt = closeAt,
             Status = initialStatus,
@@ -50,13 +51,16 @@ public class AcademicSurveyRepository(ApplicationDbContext db) : IAcademicSurvey
         // Snapshot de preguntas/opciones
         foreach (var q in template.Questions)
         {
+            Console.WriteLine($"🔍 Debug Repository - Template question: Text={q.Text}, AllowComment={q.AllowComment}");
             var sq = new SurveyQuestion
             {
                 Text = q.Text,
                 Type = q.Type,
                 Order = q.Order,
-                IsRequired = q.isRequired
+                IsRequired = q.isRequired,
+                AllowComment = q.AllowComment
             };
+            Console.WriteLine($"🔍 Debug Repository - Created SurveyQuestion: Text={sq.Text}, AllowComment={sq.AllowComment}");
 
             foreach (var o in q.Options)
             {
@@ -168,7 +172,8 @@ public class AcademicSurveyRepository(ApplicationDbContext db) : IAcademicSurvey
 
     public Task UpdateAsync(AcademicSurvey survey, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        db.AcademicSurveys.Update(survey);
+        return db.SaveChangesAsync(ct);
     }
 
     public async Task<IReadOnlyList<AcademicSurvey>> ListAsync(SurveyStatus? status = null, Guid? technicalCareerId = null, Guid? subjectId = null, string? search = null, CancellationToken ct = default)
@@ -373,7 +378,6 @@ public class AcademicSurveyRepository(ApplicationDbContext db) : IAcademicSurvey
             .Include(ss => ss.AcademicSurvey!)
                 .ThenInclude(s => s.Questions)
             .Include(ss => ss.AcademicSurvey!)
-                .ThenInclude(s => s.Template)
             .ToListAsync(ct);
 
         var userSurveysWithResponse = new List<(AcademicSurvey Survey, AcademicSurveySubject SurveySubject, bool HasResponded, DateTime? RespondedAt)>();
@@ -429,5 +433,69 @@ public class AcademicSurveyRepository(ApplicationDbContext db) : IAcademicSurvey
         });
 
         return results;
+    }
+
+    public async Task<Guid> CreateWithQuestionsAsync(string title, string description, List<object> questions, DateTime? publishAt, DateTime? closeAt, string? userId = null, CancellationToken ct = default)
+    {
+        // Determinar estado inicial basado en fechas
+        var now = DateTime.UtcNow;
+        var initialStatus = SurveyStatus.Draft;
+        if (publishAt.HasValue && publishAt.Value <= now)
+        {
+            initialStatus = SurveyStatus.Published;
+            if (closeAt.HasValue && closeAt.Value <= now)
+            {
+                initialStatus = SurveyStatus.Closed;
+            }
+        }
+
+        // Crear encuesta (completamente independiente)
+        var survey = new AcademicSurvey
+        {
+            Title = title,
+            Description = description,
+            PublishAt = publishAt,
+            CloseAt = closeAt,
+            Status = initialStatus,
+            CreatedByUserId = userId
+        };
+
+        // Crear preguntas desde el DTO (ya procesadas por el frontend)
+        foreach (var qObj in questions)
+        {
+            var q = (SurveyQuestionDto)qObj;
+            Console.WriteLine($"🔍 Debug Repository - Processing question from DTO: Text={q.Text}, AllowComment={q.AllowComment}");
+            var sq = new SurveyQuestion
+            {
+                Text = q.Text,
+                Type = (QuestionType)q.Type,
+                Order = q.Order,
+                IsRequired = q.IsRequired,
+                AllowComment = q.AllowComment,
+                AcademicSurveyId = survey.Id,
+                CreatedByUserId = userId,
+                CreatedAt = now,
+            };
+
+            foreach (var o in q.Options.OrderBy(o => o.Order))
+            {
+                sq.Options.Add(new SurveyQuestionOption
+                {
+                    Text = o.Text,
+                    Value = o.Value,
+                    Order = o.Order,
+                    AllowOpenText = o.AllowOpenText,
+                    SurveyQuestionId = sq.Id,
+                    CreatedByUserId = userId,
+                    CreatedAt = now,
+                });
+            }
+            survey.Questions.Add(sq);
+        }
+
+        db.AcademicSurveys.Add(survey);
+        await db.SaveChangesAsync(ct);
+
+        return survey.Id;
     }
 }

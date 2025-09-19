@@ -36,9 +36,10 @@ interface SurveyWizardProps {
   };
   fixedQuestions?: SurveyTemplateQuestion[]; // si se provee, el editor se bloquea y usa estas preguntas
   careers: TechnicalCareer[];
+  initialScheduling?: { publishAt?: string; closeAt?: string };
 }
 
-export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = false, initialTemplate, fixedQuestions, careers }: SurveyWizardProps) {
+export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = false, initialTemplate, fixedQuestions, careers, initialScheduling }: SurveyWizardProps) {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const normalizeType = (t: any): 'SingleChoice' | 'MultipleChoice' | 'OpenText' => {
     if (typeof t === 'string' && ['SingleChoice', 'MultipleChoice', 'OpenText'].includes(t)) {
@@ -55,22 +56,35 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
     return 'SingleChoice';
   };
 
-  const [form, setForm] = useState<SurveyTemplateForm>(() => ({
-    title: initialTemplate?.title || '',
-    description: initialTemplate?.description || '',
-    questions: (fixedQuestions || initialTemplate?.questions || []).map((q, qi) => ({
-      ...q,
-      type: normalizeType((q as any).type),
-      order: q.order ?? qi + 1,
-      options: (q.options || []).map((o, oi) => ({
-        ...o,
-        order: o.order ?? oi + 1,
-        value: typeof o.value === 'string' ? o.value : String(o.value ?? (o.order ?? oi + 1)),
-      })),
-    })),
-    surveyType: 'Student', // Default to Student
-    isDraft: true,
-  }));
+  const [form, setForm] = useState<SurveyTemplateForm>(() => {
+    const questions = fixedQuestions || initialTemplate?.questions || [];
+    console.log('🔍 Debug SurveyWizard - Questions from template:', questions);
+    console.log('🔍 Debug SurveyWizard - fixedQuestions:', fixedQuestions);
+    console.log('🔍 Debug SurveyWizard - initialTemplate?.questions:', initialTemplate?.questions);
+    
+    return {
+      title: initialTemplate?.title || '',
+      description: initialTemplate?.description || '',
+      questions: questions.map((q, qi) => {
+        console.log('🔍 Debug SurveyWizard - Processing question:', q);
+        const processedQuestion = {
+          ...q,
+          type: normalizeType((q as any).type),
+          order: q.order ?? qi + 1,
+          allowComment: (q as any).allowComment || (q as any).AllowComment || false,
+          options: (q.options || []).map((o, oi) => ({
+            ...o,
+            order: o.order ?? oi + 1,
+            value: typeof o.value === 'string' ? o.value : String(o.value ?? (o.order ?? oi + 1)),
+          })),
+        };
+        console.log('🔍 Debug SurveyWizard - Processed question:', processedQuestion);
+        return processedQuestion;
+      }),
+      surveyType: 'Student', // Default to Student
+      isDraft: true,
+    };
+  });
   const [settings, setSettings] = useState<{ 
     audience: SurveyAudience; 
     isAnonymous: boolean;
@@ -87,8 +101,8 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
     publishAt?: string;
     closeAt?: string;
   }>({
-    publishAt: '',
-    closeAt: ''
+    publishAt: initialScheduling?.publishAt || '',
+    closeAt: initialScheduling?.closeAt || ''
   });
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
@@ -124,17 +138,20 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
   const goNext = () => setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
   const goPrev = () => setCurrentStep((s) => Math.max(s - 1, 0));
 
+  // En este wizard mostramos descripción para encuestas, así que validamos normalmente (no como plantilla)
+  const usingTemplateBasicInfo = false;
+
   // Validar el paso actual
   const validateCurrentStep = useCallback((): boolean => {
-    const validationResult = validateStep(currentStep, form, !!fixedQuestions);
+    const validationResult = validateStep(currentStep, form, usingTemplateBasicInfo);
     setValidationErrors(validationResult.errors);
     return validationResult.isValid;
-  }, [currentStep, form, fixedQuestions]);
+  }, [currentStep, form]);
 
   const canProceed = useMemo((): boolean => {
-    const validationResult = validateStep(currentStep, form, !!fixedQuestions);
+    const validationResult = validateStep(currentStep, form, usingTemplateBasicInfo);
     return validationResult.isValid;
-  }, [currentStep, form, fixedQuestions]);
+  }, [currentStep, form]);
 
   const handleSubmit = async () => {
     // Validar todo antes de enviar
@@ -161,8 +178,8 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
               description={form.description}
               onChange={(u) => setForm((prev) => ({ ...prev, ...u }))}
               errors={validationErrors}
-              isDescriptionDisabled={true}
-              showDescription={false}
+              isTemplate={false}
+              showDescription={true}
             />
             <SurveyQuestionsEditor
               questions={form.questions}
@@ -180,7 +197,7 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
             <SurveySchedulingForm
               publishAt={scheduling.publishAt}
               closeAt={scheduling.closeAt}
-              onChange={setScheduling}
+              onChange={(u) => setScheduling(prev => ({ ...prev, ...u }))}
               errors={validationErrors}
             />
             <SurveySettingsForm
@@ -210,20 +227,6 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
                 scheduling.closeAt
                   ? formatDateForDisplay(new Date(scheduling.closeAt))
                   : 'No configurada'
-              }</div>
-              <div className="mb-2"><strong>Tipo de audiencia:</strong> {settings.audience}</div>
-              <div className="mb-2"><strong>Respuestas anónimas:</strong> {settings.isAnonymous ? 'Sí' : 'No'}</div>
-              <div className="mb-2"><strong>Tecnicaturas incluidas:</strong> {
-                careers
-                  .filter(career => !settings.selectedCareerIds.includes(career.id))
-                  .map(career => career.name)
-                  .join(', ') || 'Ninguna'
-              }</div>
-              <div className="mb-2"><strong>Cohortes incluidas:</strong> {
-                [1, 2, 3]
-                  .filter(year => !settings.selectedYears.includes(year as any))
-                  .map(year => `${year}° Año`)
-                  .join(', ') || 'Ninguna'
               }</div>
             </div>
           </div>

@@ -52,7 +52,7 @@ public class GetUserSurveysQueryHandler(
                 {
                     Id = firstItem.Survey.Id,
                     Title = firstItem.Survey.Title,
-                    Description = firstItem.Survey.Template?.Description ?? string.Empty,
+                    Description = firstItem.Survey.Description,
                     Status = (int)firstItem.Survey.Status,
                     PublishedAt = firstItem.Survey.PublishAt ?? DateTime.MinValue,
                     ClosedAt = firstItem.Survey.CloseAt,

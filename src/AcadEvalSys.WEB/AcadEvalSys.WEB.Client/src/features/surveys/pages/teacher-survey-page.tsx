@@ -19,6 +19,12 @@ export default function TeacherSurveyPage() {
     enabled: !!surveyId,
   });
 
+  // Transformar las preguntas para convertir PascalCase a camelCase
+  const transformedQuestions = data?.questions?.map((q: any) => ({
+    ...q,
+    allowComment: q.AllowComment || false
+  })) || [];
+
   return (
     <PageLayout>
       <PageContent>
@@ -27,7 +33,7 @@ export default function TeacherSurveyPage() {
         ) : (
           <TeacherSurveyRunner
             assignments={data.subjects}
-            fixedQuestions={data.questions}
+            fixedQuestions={transformedQuestions}
             onSubmitAll={async () => setLocation('/encuestas')}
           />
         )}

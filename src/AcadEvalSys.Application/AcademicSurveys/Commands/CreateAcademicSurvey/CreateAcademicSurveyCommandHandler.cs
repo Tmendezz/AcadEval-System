@@ -16,13 +16,15 @@ namespace AcadEvalSys.Application.AcademicSurveys.Commands.CreateAcademicSurvey
     {
         public async Task<Guid> Handle(CreateAcademicSurveyCommand request, CancellationToken cancellationToken)
         {
-            logger.LogInformation("Iniciando creación de encuesta académica: {Title} con template {TemplateId}", 
-                request.Title, request.TemplateId);
+            logger.LogInformation("Iniciando creación de encuesta académica: {Title}", request.Title);
+            logger.LogInformation("🔍 Debug Backend - Request data: Title={Title}, Description={Description}, QuestionsCount={QuestionsCount}", 
+                request.Title, request.Description, request.Questions.Count);
 
-            // Crear la encuesta desde el template
-            var surveyId = await surveyRepository.CreateFromTemplateAsync(
+            // Crear la encuesta directamente con las preguntas proporcionadas
+            var surveyId = await surveyRepository.CreateWithQuestionsAsync(
                 request.Title, 
-                request.TemplateId, 
+                request.Description,
+                request.Questions.Cast<object>().ToList(),
                 request.PublishAt, 
                 request.CloseAt, 
                 null, 

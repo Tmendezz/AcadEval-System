@@ -35,10 +35,11 @@ export interface AcademicSurveyDto {
 
 export interface CreateAcademicSurveyRequest {
   title: string;
-  templateId: string;
+  description: string;
   publishAt?: string;
   closeAt?: string;
   audience: SurveyAudienceRequest[];
+  questions: SurveyQuestionDto[];
 }
 
 export interface SurveyAudienceRequest {

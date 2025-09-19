@@ -2,6 +2,7 @@ using AcadEvalSys.Application.AcademicSurveys.Commands.CloseAcademicSurvey;
 using AcadEvalSys.Application.AcademicSurveys.Commands.CreateAcademicSurvey;
 using AcadEvalSys.Application.AcademicSurveys.Commands.PublishAcademicSurvey;
 using AcadEvalSys.Application.AcademicSurveys.Commands.SetSurveySubjects;
+using AcadEvalSys.Application.AcademicSurveys.Commands.UpdateAcademicSurvey;
 using AcadEvalSys.Application.AcademicSurveys.Queries.GetAcademicSurvey;
 using AcadEvalSys.Application.AcademicSurveys.Queries.GetAudienceResponses;
 using AcadEvalSys.Application.AcademicSurveys.Queries.GetSurveyResponses;
@@ -46,6 +47,18 @@ public class AcademicSurveyController(IMediator mediator) : ControllerBase
             Log.Error(ex, "Error al crear encuesta: {Title}", command.Title);
             throw;
         }
+    }
+
+    [HttpPut("{id}")]
+    [Authorize(Roles = UserRoles.Admin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Produces("application/json")]
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateAcademicSurveyCommand command)
+    {
+        command.Id = id;
+        await mediator.Send(command);
+        return NoContent();
     }
 
     [HttpPut("{id}/subjects")]
