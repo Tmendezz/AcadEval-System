@@ -1,7 +1,7 @@
 ﻿using AcadEvalSys.Application.AcademicSurveys.Dtos;
+using AcadEvalSys.Application.AcademicSurveysResponses.Dtos;
 using MediatR;
 using System.Text.Json.Serialization;
-using AcadEvalSys.Application.AcademicSurveysResponses.Dtos;
 
 namespace AcadEvalSys.Application.AcademicSurveysResponses.Commands.SubmitSurveyResponse
 {
