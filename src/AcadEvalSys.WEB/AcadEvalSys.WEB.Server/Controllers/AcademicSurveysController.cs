@@ -11,6 +11,7 @@ using AcadEvalSys.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using AcadEvalSys.Application.AcademicSurveys.Commands.PublishAcademicSurvey;
 
 
 namespace AcadEvalSys.WEB.Server.Controllers;
@@ -26,6 +27,15 @@ public class AcademicSurveysController(IMediator mediator) : ControllerBase
     {
         var id = await mediator.Send(command);
         return CreatedAtAction(nameof(GetSurveyById), new { id }, new { id });
+    }
+
+    [HttpPut("{id}/publish")]
+    [Authorize(Roles = UserRoles.Admin)]
+    public async Task<IActionResult> PublishSurvey([FromRoute] Guid id, [FromBody] PublishAcademicSurveyCommand command)
+    {
+        command.SurveyId = id;
+        await mediator.Send(command);
+        return NoContent();
     }
 
     [HttpPut("{id}")]
@@ -70,7 +80,6 @@ public class AcademicSurveysController(IMediator mediator) : ControllerBase
         return Ok(result);
     }
 
-    // Analytics endpoints
     [HttpGet("{id}/analytics/summary")]
     [Authorize(Roles = UserRoles.Admin)]
     public async Task<IActionResult> GetSurveyAnalyticsSummary([FromRoute] Guid id)
