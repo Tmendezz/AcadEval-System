@@ -5,15 +5,15 @@ import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 import { Button } from '@/shared/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
-import { useSurveySubjectsForUser, useSurveyForResponse } from '../hooks/use-surveys';
+import { useSurveyForResponse, useSubmitSurveyResponse, useSurveySubjectsForUser } from '../hooks/use-surveys';
 import { StudentSurveyRunner } from '../components/runner/StudentSurveyRunner';
 import { useSurveyResponseStore } from '../store/use-survey-response-store';
 import type { StudentSurveyTarget, FixedQuestion } from '../models/survey-runner-types';
 
 export default function RespondSurveyPage() {
   const [, setLocation] = useLocation();
-  const [, params] = useRoute('/encuestas/responder/:surveySubjectId');
-  const surveySubjectId = params?.surveySubjectId;
+  const [, params] = useRoute('/encuestas/responder/:surveyId');
+  const routeSurveyId = params?.surveyId;
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -28,48 +28,42 @@ export default function RespondSurveyPage() {
     currentSubjectId,
   } = useSurveyResponseStore();
 
-  // Obtener la encuesta actual para extraer el surveyId
-  const { data: currentSurvey, isLoading: isLoadingCurrentSurvey, error: currentSurveyError } = useSurveyForResponse(surveySubjectId || '');
-  
-  // Una vez que tenemos la encuesta actual, obtener todos los survey subjects de esa encuesta
-  const surveyId = currentSurvey?.id;
-  const { data: allSurveySubjects = [], isLoading: isLoadingSurveySubjects } = useSurveySubjectsForUser(surveyId || '');
+  // Obtener la encuesta actual usando el surveyId de la ruta
+  const { data: currentSurvey, isLoading: isLoadingCurrentSurvey, error: currentSurveyError } = useSurveyForResponse(routeSurveyId || '');
+  const surveyId = currentSurvey?.id || routeSurveyId || '';
+  const { data: allSurveySubjects = [], isLoading: isLoadingSurveySubjects } = useSurveySubjectsForUser(surveyId);
 
-  // Inicializar el store cuando tenemos todos los datos
+  // Inicializar el store cuando tenemos encuesta y subjects
   useEffect(() => {
-    if (currentSurvey && allSurveySubjects.length > 0) {
-      // Si es una nueva encuesta o cambió la encuesta, reinicializar
-      if (storedSurveyId !== currentSurvey.id) {
-        initializeSurvey(
-          currentSurvey.id,
-          currentSurvey.title,
-          allSurveySubjects.map(subject => ({
-            surveySubjectId: subject.surveySubjectId,
-            subjectName: subject.subjectName,
-            professorName: subject.professorName,
-          }))
-        );
-      }
+    if (currentSurvey && allSurveySubjects.length > 0 && storedSurveyId !== currentSurvey.id) {
+      initializeSurvey(
+        currentSurvey.id,
+        currentSurvey.title,
+        allSurveySubjects.map(s => ({
+          surveySubjectId: s.surveySubjectId,
+          subjectName: s.subjectName,
+          professorName: s.professorName,
+        }))
+      );
     }
-  }, [currentSurvey?.id, allSurveySubjects.length, storedSurveyId, initializeSurvey]); // Solo cambios de encuesta
+  }, [currentSurvey?.id, currentSurvey?.title, allSurveySubjects.length, storedSurveyId, initializeSurvey]);
   
-  // Actualizar materia actual basada en la URL (efecto separado)
+  // Seleccionar primer subject si no hay uno activo
   useEffect(() => {
-    if (surveySubjectId && currentSubjectId !== surveySubjectId) {
-      setCurrentSubject(surveySubjectId);
+    if (!currentSubjectId && allSurveySubjects.length > 0) {
+      setCurrentSubject(allSurveySubjects[0].surveySubjectId);
     }
-  }, [surveySubjectId, currentSubjectId, setCurrentSubject]); // Solo cambios de URL
+  }, [allSurveySubjects, currentSubjectId, setCurrentSubject]);
 
   // Convertir survey subjects a formato StudentSurveyTarget
   const surveyTargets: StudentSurveyTarget[] = useMemo(() => {
-    return allSurveySubjects.map(subject => ({
-      subjectId: subject.surveySubjectId,
-      subjectName: subject.subjectName,
-      teacherId: 'teacher-' + subject.surveySubjectId, // ID único por asignatura
-      teacherName: subject.professorName,
-      // Propiedades adicionales que necesita el runner
-      academicSurveySubjectId: subject.surveySubjectId,
-      id: subject.surveySubjectId
+    return allSurveySubjects.map(s => ({
+      subjectId: s.surveySubjectId,
+      subjectName: s.subjectName,
+      teacherId: (s.professorId ? `prof-${s.professorId}` : `prof-${s.surveySubjectId}`),
+      teacherName: s.professorName,
+      academicSurveySubjectId: s.surveySubjectId,
+      id: s.surveySubjectId,
     } as any));
   }, [allSurveySubjects]);
 
@@ -77,16 +71,29 @@ export default function RespondSurveyPage() {
   const fixedQuestions: FixedQuestion[] = useMemo(() => {
     if (!currentSurvey?.questions) return [];
     
-    return currentSurvey.questions.map(q => ({
-      id: q.id,
-      text: q.text,
-      type: q.type === 0 ? 'single' : q.type === 1 ? 'multi' : 'text',
-      options: q.options?.map(opt => ({
-        value: opt.value,
-        text: opt.text
-      })),
-      allowComment: (q as any).allowComment,
-    } as FixedQuestion & { allowComment?: boolean }));
+    return currentSurvey.questions.map((q: any) => {
+      const rawType = q.type;
+      const type: 'single' | 'multi' | 'text' =
+        typeof rawType === 'number'
+          ? rawType === 0
+            ? 'single'
+            : rawType === 1
+            ? 'multi'
+            : 'text'
+          : rawType === 'SingleChoice'
+          ? 'single'
+          : rawType === 'MultipleChoice'
+          ? 'multi'
+          : 'text';
+
+      return {
+        id: q.id,
+        text: q.text,
+        type,
+        options: q.options?.map((opt: any) => ({ value: opt.value, text: opt.text })),
+        allowComment: (q as any).allowComment,
+      } as FixedQuestion & { allowComment?: boolean };
+    });
   }, [currentSurvey?.questions]);
 
   // Handler para mostrar confirmación cuando se completan todas las encuestas
@@ -94,72 +101,59 @@ export default function RespondSurveyPage() {
     setShowConfirmDialog(true);
   };
 
-  // Handler para enviar realmente las respuestas
+  // Mutación para enviar respuestas
+  const submitSurveyResponse = useSubmitSurveyResponse();
+
+  // Handler para enviar realmente las respuestas (una sola petición por encuesta)
   const handleConfirmSubmit = async () => {
     setIsSubmitting(true);
     try {
       // Obtener todas las respuestas del store
       const allResponses = exportResponses();
-      
-      // Enviar cada materia al servidor
-      const submissions = Object.entries(allResponses).map(async ([subjectId, data]) => {
-        // Construir mapa de respuestas por pregunta, fusionando comentario opcional
-        const byQuestion: Record<string, { SelectedValue?: number; Text?: string }> = {};
+
+      if (!surveyId) throw new Error('surveyId no disponible');
+
+      // Enviar por cada subject
+      for (const subject of allSurveySubjects) {
+        const subjectId = subject.surveySubjectId;
+        const data = (allResponses as any)[subjectId];
+        if (!data) continue;
+
+        const byQuestion: Record<string, { selectedValue?: number; text?: string }> = {};
         for (const resp of data.responses as Array<{ questionId: string; answer: any }>) {
           const qid = resp.questionId;
           const isComment = qid.endsWith('__comment');
           const baseId = isComment ? qid.replace(/__comment$/, '') : qid;
           if (!byQuestion[baseId]) byQuestion[baseId] = {};
-
           if (isComment) {
             const text = String(resp.answer || '').trim();
-            if (text) byQuestion[baseId].Text = text;
+            if (text) byQuestion[baseId].text = text;
             continue;
           }
-
           const answer = resp.answer;
+
+          
           if (Array.isArray(answer)) {
-            // Múltiple -> concatenar como texto (comportamiento actual)
             const text = answer.map(String).filter(Boolean).join(', ');
-            if (text) byQuestion[baseId].Text = text;
+            if (text) byQuestion[baseId].text = text;
           } else if (typeof answer === 'string' && isNaN(Number(answer))) {
-            // Abierta
             const text = String(answer || '').trim();
-            if (text) byQuestion[baseId].Text = text;
+            if (text) byQuestion[baseId].text = text;
           } else if (answer !== undefined && answer !== null && String(answer) !== '') {
-            // Cerrada (valor numérico)
-            byQuestion[baseId].SelectedValue = parseInt(String(answer), 10);
+            byQuestion[baseId].selectedValue = parseInt(String(answer), 10);
           }
         }
 
-        const payload = Object.entries(byQuestion).map(([questionId, v]) => ({
-          QuestionId: questionId,
-          ...(v.SelectedValue !== undefined ? { SelectedValue: v.SelectedValue } : {}),
-          ...(v.Text ? { Text: v.Text } : {}),
+        const subjectAnswers = Object.entries(byQuestion).map(([questionId, v]) => ({
+          questionId,
+          ...(v.selectedValue !== undefined ? { selectedValue: v.selectedValue } : {}),
+          ...(v.text ? { text: v.text } : {}),
         }));
 
-        const requestBody = { Answers: payload };
+        await submitSurveyResponse.mutateAsync({ surveyId, surveySubjectId: subjectId, subjectAnswers });
+      }
 
-        // Enviar usando el endpoint correcto
-        const response = await fetch(`/api/my-surveys/subjects/${subjectId}/responses`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Error al enviar respuestas de ${data.subjectName}: ${response.status} ${response.statusText}`);
-        }
-
-        return { subjectId, subjectName: data.subjectName };
-      });
-
-      // Esperar a que se envíen todas las respuestas
-      const results = await Promise.all(submissions);
-      
-      console.log('Todas las respuestas enviadas exitosamente:', results);
+      console.log('Respuestas enviadas exitosamente');
       
       // Limpiar el store después de enviar exitosamente
       clearSurvey();
@@ -196,7 +190,7 @@ export default function RespondSurveyPage() {
   }
 
   // Mostrar error si no se puede cargar la encuesta
-  if (currentSurveyError || !currentSurvey || allSurveySubjects.length === 0) {
+  if (currentSurveyError || !currentSurvey || (!isLoadingSurveySubjects && allSurveySubjects.length === 0)) {
     return (
       <PageLayout>
         <PageHeader title="Error" description="No se pudo cargar la encuesta">
@@ -223,11 +217,10 @@ export default function RespondSurveyPage() {
   }
 
   // Encontrar el índice actual basado en el surveySubjectId de la URL
-  const currentIndex = surveyTargets.findIndex(target => target.subjectId === surveySubjectId);
-  const initialIndex = currentIndex >= 0 ? currentIndex : 0;
+  const initialIndex = Math.max(0, surveyTargets.findIndex(t => t.subjectId === currentSubjectId));
   
   // Contador simple de progreso
-  const simpleProgress = `${initialIndex + 1}/${allSurveySubjects.length}`;
+  const simpleProgress = `${initialIndex + 1}/${surveyTargets.length || 1}`;
 
   return (
     <PageLayout>

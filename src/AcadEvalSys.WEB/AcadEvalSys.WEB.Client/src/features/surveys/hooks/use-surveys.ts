@@ -224,11 +224,11 @@ export function useCompletedSurveys() {
 /**
  * Hook para obtener una encuesta específica para responder
  */
-export function useSurveyForResponse(surveySubjectId: string, readOnly: boolean = false) {
+export function useSurveyForResponse(surveyId: string, readOnly: boolean = false) {
   return useQuery({
-    queryKey: [...userSurveysKeys.all, 'survey-for-response', surveySubjectId, readOnly],
-    queryFn: () => userSurveysService.getSurveyForResponse(surveySubjectId, readOnly),
-    enabled: !!surveySubjectId,
+    queryKey: [...userSurveysKeys.all, 'survey-for-response', surveyId, readOnly],
+    queryFn: () => userSurveysService.getSurveyForResponse(surveyId, readOnly),
+    enabled: !!surveyId,
     staleTime: readOnly ? 10 * 60 * 1000 : 30 * 1000,
     gcTime: readOnly ? 30 * 60 * 1000 : 5 * 60 * 1000,
   });
@@ -242,19 +242,21 @@ export function useSubmitSurveyResponse() {
 
   return useMutation({
     mutationFn: ({ 
-      surveySubjectId, 
-      answers 
+      surveyId,
+      surveySubjectId,
+      subjectAnswers
     }: { 
-      surveySubjectId: string; 
-      answers: Array<{ questionId: string; selectedValue?: number; text?: string; }>; 
+      surveyId: string;
+      surveySubjectId: string;
+      subjectAnswers: Array<{ questionId: string; selectedValue?: number; text?: string; }>; 
     }) => {
-      return userSurveysService.submitSurveyResponse(surveySubjectId, { answers });
+      return userSurveysService.submitSurveyResponse(surveyId, { surveySubjectId, subjectAnswers });
     },
-    onSuccess: (_, { surveySubjectId }) => {
+    onSuccess: (_, { surveyId }) => {
       // Invalidar queries relacionadas
       queryClient.invalidateQueries({ queryKey: userSurveysKeys.all });
       queryClient.invalidateQueries({ 
-        queryKey: [...userSurveysKeys.all, 'survey-for-response', surveySubjectId] 
+        queryKey: [...userSurveysKeys.all, 'survey-for-response', surveyId] 
       });
     },
     onError: (error) => {
@@ -271,11 +273,11 @@ export function useSurveySubjectsForUser(surveyId: string) {
     queryKey: [...userSurveysKeys.all, 'survey-subjects', surveyId],
     queryFn: () => userSurveysService.getSurveySubjectsForUser(surveyId),
     enabled: !!surveyId,
-    staleTime: 2 * 60 * 1000, // 2 minutos
-    gcTime: 10 * 60 * 1000, // 10 minutos
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 }
 
 // Re-exportar tipos necesarios
-export type { UserSurveyDto, UserSurveyFilters, SurveySubjectForUserDto } from '../services/user-surveys-service';
+export type { UserSurveyDto, UserSurveyFilters } from '../services/user-surveys-service';
 

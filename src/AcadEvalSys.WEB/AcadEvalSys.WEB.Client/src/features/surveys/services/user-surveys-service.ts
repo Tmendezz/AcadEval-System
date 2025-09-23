@@ -1,32 +1,25 @@
 import { api } from '@/infrastructure/query/axios';
 
-const baseUrl = '/my-surveys';
+const baseUrl = '/survey-responses';
 
-// Tipos para las encuestas del usuario
+// Tipos para las encuestas del usuario (alineados al backend)
 export interface UserSurveyDto {
-  id: string;
+  surveyId: string;
   title: string;
-  description: string;
+  description?: string;
+  publishAt?: string;
+  closeAt?: string;
+  isCompleted: boolean;
+  submittedAt?: string;
   status: number; // SurveyStatus enum value
-  publishedAt: string;
-  closedAt?: string;
-  responded: boolean;
-  respondedAt?: string;
-  questionsCount: number;
-  surveySubjectId: string;
 }
 
-// Mantenemos solo los tipos que realmente usamos
+// Detalle de encuesta para responder/revisar
 export interface SurveyWithResponseDto {
-  id: string;
+  id: string; // surveyId
   title: string;
-  description: string;
-  subjectName: string;
+  description?: string;
   status: number;
-  publishedAt: string;
-  closedAt?: string;
-  respondedAt?: string;
-  isReadOnly: boolean;
   questions: SurveyQuestionDto[];
 }
 
@@ -37,21 +30,18 @@ export interface SurveyQuestionDto {
   isRequired: boolean;
   allowComment?: boolean;
   options: SurveyQuestionOptionDto[];
-  response?: SurveyQuestionResponseDto;
 }
 
 export interface SurveyQuestionOptionDto {
+  id?: string; // opcional si el backend lo provee
   value: number;
   text: string;
-}
-
-export interface SurveyQuestionResponseDto {
-  selectedValue?: number;
-  text?: string;
+  allowOpenText?: boolean;
 }
 
 export interface SubmitSurveyResponseRequest {
-  answers: Array<{
+  surveySubjectId: string;
+  subjectAnswers: Array<{
     questionId: string;
     selectedValue?: number;
     text?: string;
@@ -59,22 +49,13 @@ export interface SubmitSurveyResponseRequest {
 }
 
 export interface UserSurveyFilters {
-  status?: 'pending' | 'completed' | 'all';
-}
-
-export interface SurveySubjectForUserDto {
-  surveySubjectId: string;
-  subjectName: string;
-  professorName: string;
-  hasResponded: boolean;
-  respondedAt?: string;
-  questionsCount: number;
+  status?: string;
 }
 
 export const userSurveysService = {
   async getMySurveys(filters?: UserSurveyFilters): Promise<UserSurveyDto[]> {
     const params = new URLSearchParams();
-    if (filters?.status) params.append('status', filters.status);
+    if (filters?.status) params.append('status', String(filters.status));
     const queryString = params.toString();
     const url = queryString ? `${baseUrl}?${queryString}` : baseUrl;
     const response = await api.get(url);
@@ -82,29 +63,42 @@ export const userSurveysService = {
   },
 
   async getPendingSurveys(): Promise<UserSurveyDto[]> {
-    const response = await api.get(`${baseUrl}?status=pending`);
-    return response.data;
+    const response = await api.get(`${baseUrl}?status=Published`);
+    const items: UserSurveyDto[] = response.data;
+    const now = Date.now();
+    return items.filter(x => !x.isCompleted && (!x.closeAt || new Date(x.closeAt).getTime() >= now));
   },
 
   async getCompletedSurveys(): Promise<UserSurveyDto[]> {
-    const response = await api.get(`${baseUrl}?status=completed`);
-    return response.data;
+    const response = await api.get(`${baseUrl}?status=Published`);
+    const items: UserSurveyDto[] = response.data;
+    const now = Date.now();
+    return items.filter(x => x.isCompleted || (!!x.closeAt && new Date(x.closeAt).getTime() < now));
   },
 
-  async getSurveyForResponse(surveySubjectId: string, readOnly: boolean = false): Promise<SurveyWithResponseDto> {
+  async getSurveyForResponse(surveyId: string, readOnly: boolean = false): Promise<SurveyWithResponseDto> {
     const params = new URLSearchParams();
     if (readOnly) params.append('readOnly', 'true');
     const queryString = params.toString();
-    const url = queryString ? `${baseUrl}/subjects/${surveySubjectId}?${queryString}` : `${baseUrl}/subjects/${surveySubjectId}`;
+    const url = queryString ? `${baseUrl}/${surveyId}?${queryString}` : `${baseUrl}/${surveyId}`;
     const response = await api.get(url);
     return response.data;
   },
 
-  async submitSurveyResponse(surveySubjectId: string, request: SubmitSurveyResponseRequest): Promise<void> {
-    await api.post(`${baseUrl}/subjects/${surveySubjectId}/responses`, request);
+  async submitSurveyResponse(surveyId: string, request: SubmitSurveyResponseRequest): Promise<void> {
+    await api.post(`${baseUrl}/${surveyId}`, request);
   },
 
-  async getSurveySubjectsForUser(surveyId: string): Promise<SurveySubjectForUserDto[]> {
+  async getSurveySubjectsForUser(surveyId: string): Promise<Array<{
+    surveySubjectId: string;
+    careerYear: string;
+    subjectId: string;
+    subjectName: string;
+    professorId: string | null;
+    professorName: string;
+    questionsCount: number;
+    hasResponded: boolean;
+  }>> {
     const response = await api.get(`${baseUrl}/${surveyId}/subjects`);
     return response.data;
   },

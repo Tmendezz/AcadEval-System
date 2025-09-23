@@ -5,6 +5,7 @@ using AcadEvalSys.Domain.Constants.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using AcadEvalSys.Application.AcademicSurveysResponses.Queries.GetSurveySubjectsForUser;
 
 namespace AcadEvalSys.WEB.Server.Controllers;
 
@@ -15,9 +16,9 @@ public class SurveyResponsesController(IMediator mediator) : ControllerBase
 {
     // Listado de encuestas asignadas
     [HttpGet]
-    public async Task<IActionResult> GetAssignedSurveys([FromQuery] string? status = null)
+    public async Task<IActionResult> GetAssignedSurveys([FromQuery] string? status = null, [FromQuery] bool? completed = null)
     {
-        var query = new GetAssignedSurveysQuery(status);
+        var query = new GetAssignedSurveysQuery(status) { Completed = completed };
         var result = await mediator.Send(query);
         return Ok(result);
     }
@@ -27,6 +28,15 @@ public class SurveyResponsesController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> GetSurveyDetail(Guid surveyId, [FromQuery] bool readOnly = false)
     {
         var query = new GetSurveyDetailQuery(surveyId, readOnly);
+        var result = await mediator.Send(query);
+        return Ok(result);
+    }
+
+    // Obtener subjects (asignaturas/profesores) de una encuesta para el usuario actual
+    [HttpGet("{surveyId}/subjects")]
+    public async Task<IActionResult> GetSurveySubjectsForUser(Guid surveyId)
+    {
+        var query = new GetSurveySubjectsForUserQuery(surveyId);
         var result = await mediator.Send(query);
         return Ok(result);
     }

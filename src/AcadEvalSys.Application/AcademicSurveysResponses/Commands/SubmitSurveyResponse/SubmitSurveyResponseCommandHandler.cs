@@ -45,32 +45,35 @@ namespace AcadEvalSys.Application.AcademicSurveysResponses.Commands.SubmitSurvey
                 throw new InvalidOperationException("La encuesta no está disponible para responder");
             }
 
-            // Verificar que el usuario no haya respondido ya
-            var hasResponded = await responseRepository.HasUserRespondedToSurveyAsync(request.SurveyId, user.Id, ct);
-            if (hasResponded)
+            // Verificar que el usuario no haya respondido ya (a nivel de subject)
+            var hasResponded = await responseRepository.GetResponsesBySurveySubjectsAsync(new [] { request.SurveySubjectId }, ct);
+            if (hasResponded.Any(r => r.UserId == user.Id))
             {
-                throw new InvalidOperationException("Esta encuesta ya ha sido respondida y no puede modificarse");
+                throw new InvalidOperationException("Esta asignatura ya ha sido respondida y no puede modificarse");
+            }
+
+            // Validar que el subject pertenezca a la encuesta
+            var surveySubject = survey.Subjects.FirstOrDefault(s => s.Id == request.SurveySubjectId);
+            if (surveySubject == null)
+            {
+                throw new InvalidOperationException("El surveySubject no pertenece a la encuesta");
             }
 
             // Validar respuestas
-            ValidateResponses(survey, request.Answers);
-
-            // Obtener el AcademicSurveySubjectId correspondiente
-            var surveySubject = survey.Subjects.FirstOrDefault();
-            if (surveySubject == null)
-            {
-                throw new InvalidOperationException("No se encontró información de materia para esta encuesta");
-            }
+            ValidateResponses(survey, request.SubjectAnswers ?? new List<SubmitSurveyAnswerDto>());
 
             // Crear la respuesta
+            var mappedResponses = mapper.Map<List<SurveyQuestionResponse>>(request.SubjectAnswers);
+
+      
             var response = new AcademicSurveyResponse
             {
-                AcademicSurveySubjectId = surveySubject.Id,
+                AcademicSurveySubjectId = request.SurveySubjectId,
                 UserId = user.Id,
                 SubmittedAt = DateTime.UtcNow,
                 CreatedAt = DateTime.UtcNow,
                 IsActive = true,
-                QuestionResponses = mapper.Map<List<SurveyQuestionResponse>>(request.Answers)
+                QuestionResponses = mappedResponses
             };
 
             return await responseRepository.CreateResponseAsync(response, ct);
@@ -109,6 +112,7 @@ namespace AcadEvalSys.Application.AcademicSurveysResponses.Commands.SubmitSurvey
                         }
                         break;
                     case QuestionType.MultipleChoice:
+                    case QuestionType.SingleChoice:
                         if (question.IsRequired && !answer.SelectedValue.HasValue)
                         {
                             throw new InvalidOperationException($"La pregunta obligatoria '{question.Text}' requiere seleccionar una opción");
@@ -116,6 +120,28 @@ namespace AcadEvalSys.Application.AcademicSurveysResponses.Commands.SubmitSurvey
                         if (answer.SelectedValue.HasValue && !question.Options.Any(o => o.Value == answer.SelectedValue.Value))
                         {
                             throw new InvalidOperationException($"La opción seleccionada no es válida para la pregunta '{question.Text}'");
+                        }
+
+                        // Validar comentario/texto adicional solo si está permitido en la pregunta
+                        if (!string.IsNullOrWhiteSpace(answer.Text))
+                        {
+                            var allowsComment = question.IsRequired == false || question.IsRequired == true; // dummy, will be overwritten
+                            // Permitido si la pregunta lo permite explícitamente
+                            allowsComment = question.AllowComment;
+                            // O si la opción seleccionada permite texto abierto
+                            if (!allowsComment && answer.SelectedValue.HasValue)
+                            {
+                                var opt = question.Options.FirstOrDefault(o => o.Value == answer.SelectedValue.Value);
+                                if (opt != null)
+                                {
+                                    allowsComment = opt.AllowOpenText;
+                                }
+                            }
+
+                            if (!allowsComment)
+                            {
+                                throw new InvalidOperationException($"No se permite texto adicional para la pregunta '{question.Text}'");
+                            }
                         }
                         break;
                     default:

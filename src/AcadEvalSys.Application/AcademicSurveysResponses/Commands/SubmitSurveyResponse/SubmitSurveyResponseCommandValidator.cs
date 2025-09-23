@@ -8,22 +8,23 @@ public class SubmitSurveyResponseCommandValidator : AbstractValidator<SubmitSurv
 {
     public SubmitSurveyResponseCommandValidator()
     {
+        RuleFor(x => x.SurveySubjectId)
+            .NotEmpty()
+            .WithMessage("El surveySubjectId es requerido");
 
-        RuleFor(x => x.Answers)
+        RuleFor(x => x.SubjectAnswers)
             .NotNull()
             .WithMessage("Las respuestas son requeridas")
-            .Must(answers => answers.Count > 0)
+            .Must(answers => answers!.Count > 0)
             .WithMessage("Debe proporcionar al menos una respuesta");
 
         // No permitir preguntas duplicadas en las respuestas
-        RuleFor(x => x.Answers)
-            .Must(answers => answers.Select(a => a.QuestionId).Distinct().Count() == answers.Count)
+        RuleFor(x => x.SubjectAnswers)
+            .Must(answers => answers!.Select(a => a.QuestionId).Distinct().Count() == answers!.Count)
             .WithMessage("No se permiten preguntas duplicadas en las respuestas");
 
-        RuleForEach(x => x.Answers)
+        RuleForEach(x => x.SubjectAnswers!)
             .SetValidator(new SubmitSurveyAnswerValidator());
-        
-        
     }
 }
 

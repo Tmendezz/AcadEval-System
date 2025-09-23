@@ -139,4 +139,74 @@ public class AcademicSurveyResponseRepository(ApplicationDbContext db) : IAcadem
                 .ThenInclude(qr => qr.SurveyQuestion)
             .ToListAsync(ct);
     }
+
+    public async Task<IReadOnlyList<(Guid SurveySubjectId, Guid? SubjectId, string SubjectName, string? ProfessorId, string ProfessorName, int QuestionsCount, bool HasResponded, string CareerYear)>> GetSurveySubjectsForUserAsync(Guid surveyId, string userId, CancellationToken ct = default)
+    {
+        // Cargar encuesta con subjects y preguntas
+        var survey = await db.AcademicSurveys
+            .Include(s => s.Subjects)
+            .Include(s => s.Questions)
+            .FirstOrDefaultAsync(s => s.Id == surveyId, ct);
+
+        if (survey == null || survey.Subjects == null)
+            return new List<(Guid, Guid?, string, string?, string, int, bool, string)>();
+
+        // Determinar materias a las que el usuario tiene acceso según su rol/asignaciones
+        var student = await db.Students
+            .Include(s => s.StudentSubjects)
+            .FirstOrDefaultAsync(s => s.UserId == userId, ct);
+
+        var professor = await db.Professors
+            .Include(p => p.Subjects)
+            .FirstOrDefaultAsync(p => p.UserId == userId, ct);
+
+        var allowedSubjectIds = new HashSet<Guid>();
+        if (student?.StudentSubjects != null)
+        {
+            foreach (var ss in student.StudentSubjects)
+            {
+                if (ss.SubjectId.HasValue) allowedSubjectIds.Add(ss.SubjectId.Value);
+            }
+        }
+        if (professor?.Subjects != null)
+        {
+            foreach (var ps in professor.Subjects)
+            {
+                allowedSubjectIds.Add(ps.Id);
+            }
+        }
+
+        // Filtrar los survey-subjects sólo a los que el usuario tiene acceso
+        var filteredSurveySubjects = survey.Subjects
+            .Where(x => x.SubjectId.HasValue && allowedSubjectIds.Contains(x.SubjectId.Value))
+            .ToList();
+
+        var subjectIds = filteredSurveySubjects.Where(x => x.SubjectId.HasValue).Select(x => x.SubjectId!.Value).ToList();
+        var subjects = await db.Subjects
+            .Where(s => subjectIds.Contains(s.Id))
+            .Include(s => s.Professor)
+                .ThenInclude(p => p!.User)
+            .ToListAsync(ct);
+
+        // Determinar si el usuario ya respondió por subject
+        var subjectEntryIds = filteredSurveySubjects.Select(s => s.Id).ToList();
+        var responses = await db.AcademicSurveyResponses
+            .Where(r => r.UserId == userId && r.AcademicSurveySubjectId != null && subjectEntryIds.Contains(r.AcademicSurveySubjectId!.Value))
+            .ToListAsync(ct);
+
+        var results = new List<(Guid, Guid?, string, string?, string, int, bool, string)>();
+        foreach (var ass in filteredSurveySubjects)
+        {
+            var subj = ass.SubjectId.HasValue ? subjects.FirstOrDefault(s => s.Id == ass.SubjectId.Value) : null;
+            var hasResponded = responses.Any(r => r.AcademicSurveySubjectId == ass.Id);
+            var subjectName = subj?.Name ?? "";
+            var professorId = subj?.ProfessorId;
+            var professorName = subj?.Professor?.User?.Name ?? string.Empty;
+            var questionsCount = survey.Questions?.Count ?? 0;
+            var careerYear = subj != null ? ((int)subj.Year).ToString() : string.Empty;
+            results.Add((ass.Id, ass.SubjectId, subjectName, professorId, professorName, questionsCount, hasResponded, careerYear));
+        }
+
+        return results;
+    }
 }

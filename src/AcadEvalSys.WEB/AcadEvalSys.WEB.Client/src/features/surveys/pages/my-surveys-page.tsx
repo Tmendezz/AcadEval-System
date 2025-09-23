@@ -18,13 +18,13 @@ export default function MySurveysPage() {
 
   // Ordenar por fecha de publicación (más recientes primero)
   const sortByPublishedDate = (a: UserSurveyDto, b: UserSurveyDto) => 
-    new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+    new Date(b.publishAt || '').getTime() - new Date(a.publishAt || '').getTime();
 
   const sortedPendingSurveys = [...pendingSurveys].sort(sortByPublishedDate);
   const sortedCompletedSurveys = [...completedSurveys].sort(sortByPublishedDate);
 
-  const handleRespond = (surveySubjectId: string) => {
-    setLocation(`/encuestas/responder/${surveySubjectId}`);
+  const handleRespond = (surveyId: string) => {
+    setLocation(`/encuestas/responder/${surveyId}`);
   };
 
   const pendingColumns = createPendingSurveyColumns(handleRespond);

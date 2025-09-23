@@ -20,8 +20,8 @@ function getSurveyStatusBadge(status: SurveyStatus) {
 }
 
 // Función para obtener el estado de respuesta
-function getResponseStatusBadge(responded: boolean) {
-  if (responded) {
+function getResponseStatusBadge(isCompleted: boolean) {
+  if (isCompleted) {
     return (
       <Badge variant="default" className="flex items-center gap-1">
         <CheckCircle className="w-3 h-3" />
@@ -54,45 +54,22 @@ export const createPendingSurveyColumns = (
     ),
   },
   {
-    accessorKey: 'status',
+    accessorKey: 'isCompleted',
     header: 'Estado',
-    cell: ({ row }) => getSurveyStatusBadge(row.original.status),
+    cell: ({ row }) => getResponseStatusBadge(row.original.isCompleted),
   },
   {
-    accessorKey: 'responded',
-    header: 'Mi Estado',
-    cell: ({ row }) => getResponseStatusBadge(row.original.responded),
-  },
-  {
-    accessorKey: 'questionsCount',
-    header: 'Preguntas',
-    cell: ({ row }) => (
-      <span className="text-sm text-muted-foreground">
-        {row.original.questionsCount} preguntas
-      </span>
-    ),
-  },
-  {
-    accessorKey: 'publishedAt',
-    header: 'Publicada',
-    cell: ({ row }) => (
-      <div className="flex items-center gap-1 text-sm">
-        <Calendar className="w-3 h-3" />
-        {new Date(row.original.publishedAt).toLocaleDateString('es-ES')}
-      </div>
-    ),
-  },
-  {
-    accessorKey: 'respondedAt',
-    header: 'Respondida',
+    accessorKey: 'closeAt',
+    header: 'Cierre',
     cell: ({ row }) => {
-      if (!row.original.responded || !row.original.respondedAt) {
-        return <span className="text-muted-foreground">—</span>;
-      }
+      const closeAt = row.original.closeAt;
+      if (!closeAt) return <span className="text-muted-foreground">—</span>;
+      const d = new Date(closeAt);
+      if (isNaN(d.getTime())) return <span className="text-muted-foreground">—</span>;
       return (
         <div className="flex items-center gap-1 text-sm">
           <Calendar className="w-3 h-3" />
-          {new Date(row.original.respondedAt).toLocaleDateString('es-ES')}
+          {d.toLocaleDateString('es-ES')}
         </div>
       );
     },
@@ -101,23 +78,16 @@ export const createPendingSurveyColumns = (
     id: 'actions',
     header: 'Acciones',
     cell: ({ row }) => {
-      const { surveySubjectId, status, responded } = row.original;
-      
-      // Encuesta pendiente y publicada
-      if (status === SurveyStatus.Published && !responded) {
+      const { surveyId, isCompleted, closeAt } = row.original as any;
+      const isExpired = closeAt ? new Date(closeAt).getTime() < Date.now() : false;
+      if (!isCompleted && !isExpired) {
         return (
-          <Button size="sm" onClick={() => onRespond(surveySubjectId)}>
+          <Button size="sm" onClick={() => onRespond(surveyId)}>
             Responder
           </Button>
         );
       }
-      
-      // Encuesta cerrada o no disponible
-      return (
-        <span className="text-muted-foreground text-sm">
-          {status === SurveyStatus.Closed ? 'Cerrada' : 'No disponible'}
-        </span>
-      );
+      return <span className="text-muted-foreground text-sm">No disponible</span>;
     },
   },
 ];
@@ -137,26 +107,31 @@ export const createCompletedSurveyColumns = (): ColumnDef<UserSurveyDto>[] => [
     ),
   },
   {
-    accessorKey: 'publishedAt',
-    header: 'Publicada',
-    cell: ({ row }) => (
-      <div className="flex items-center gap-1 text-sm">
-        <Calendar className="w-3 h-3" />
-        {new Date(row.original.publishedAt).toLocaleDateString('es-ES')}
-      </div>
-    ),
-  },
-  {
-    accessorKey: 'respondedAt',
+    accessorKey: 'submittedAt',
     header: 'Respondida',
     cell: ({ row }) => {
-      if (!row.original.responded || !row.original.respondedAt) {
+      if (!row.original.isCompleted || !row.original.submittedAt) {
         return <span className="text-muted-foreground">—</span>;
       }
       return (
         <div className="flex items-center gap-1 text-sm">
+          {new Date(row.original.submittedAt).toLocaleDateString('es-ES')}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: 'closeAt',
+    header: 'Cierre',
+    cell: ({ row }) => {
+      const closeAt = row.original.closeAt;
+      if (!closeAt) return <span className="text-muted-foreground">—</span>;
+      const d = new Date(closeAt);
+      if (isNaN(d.getTime())) return <span className="text-muted-foreground">—</span>;
+      return (
+        <div className="flex items-center gap-1 text-sm">
           <Calendar className="w-3 h-3" />
-          {new Date(row.original.respondedAt).toLocaleDateString('es-ES')}
+          {d.toLocaleDateString('es-ES')}
         </div>
       );
     },

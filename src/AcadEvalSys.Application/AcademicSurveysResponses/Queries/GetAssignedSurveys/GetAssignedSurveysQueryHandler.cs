@@ -51,6 +51,13 @@ public class GetAssignedSurveysQueryHandler(
 
         var result = mapper.Map<IEnumerable<UserSurveyDto>>(surveys).ToList();
 
+        if (request.Completed.HasValue)
+        {
+            result = result
+                .Where(s => s.IsCompleted == request.Completed.Value)
+                .ToList();
+        }
+
         logger.LogInformation("Se encontraron {Count} encuestas asignadas para el usuario", result.Count);
         
         return result;

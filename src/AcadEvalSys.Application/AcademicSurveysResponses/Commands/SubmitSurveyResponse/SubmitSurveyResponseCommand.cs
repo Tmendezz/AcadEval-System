@@ -9,6 +9,12 @@ namespace AcadEvalSys.Application.AcademicSurveysResponses.Commands.SubmitSurvey
     {
         [JsonIgnore]
         public Guid SurveyId { get; set; }
-        public IList<SubmitSurveyAnswerDto> Answers { get; set; } = new List<SubmitSurveyAnswerDto>();
+
+        // Asignatura (survey-subject) objetivo de este envío
+        public Guid SurveySubjectId { get; set; }
+
+        // Respuestas para esa asignatura
+        public IList<SubmitSurveyAnswerDto>? SubjectAnswers { get; set; }
+
     }
 }

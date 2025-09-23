@@ -37,4 +37,7 @@ public interface IAcademicSurveyResponseRepository
         Task<IReadOnlyList<AcademicSurveyResponse>> GetResponsesBySurveySubjectsAsync(
             IEnumerable<Guid> surveySubjectIds,
             CancellationToken ct = default);
+
+        Task<IReadOnlyList<(Guid SurveySubjectId, Guid? SubjectId, string SubjectName, string? ProfessorId, string ProfessorName, int QuestionsCount, bool HasResponded, string CareerYear)>>
+            GetSurveySubjectsForUserAsync(Guid surveyId, string userId, CancellationToken ct = default);
 }

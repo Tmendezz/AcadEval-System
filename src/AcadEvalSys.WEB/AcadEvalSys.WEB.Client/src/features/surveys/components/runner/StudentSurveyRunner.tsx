@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect } from "react";
-import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 // WizardStepTitle ya no se usa
 import { WizardNavigation } from "@/shared/components/wizard/WizardNavigation";
@@ -23,7 +22,6 @@ interface StudentSurveyRunnerProps {
 }
 
 export function StudentSurveyRunner({ assignments, fixedQuestions, onSubmitAll, isSubmitting = false, initialIndex = 0 }: StudentSurveyRunnerProps) {
-  const [, setLocation] = useLocation();
   
   // Store de respuestas
   const {
@@ -126,8 +124,7 @@ export function StudentSurveyRunner({ assignments, fixedQuestions, onSubmitAll, 
 
     if (currentIdx < assignments.length - 1) {
       const nextIndex = currentIdx + 1;
-      const nextSurveySubjectId = assignments[nextIndex].subjectId;
-      setLocation(`/encuestas/responder/${nextSurveySubjectId}`);
+      setCurrentSubject(assignments[nextIndex].subjectId);
     } else {
       // Cuando se completa la última materia, activar el modal de confirmación
       void onSubmitAll();
@@ -137,8 +134,7 @@ export function StudentSurveyRunner({ assignments, fixedQuestions, onSubmitAll, 
   const handlePrev = () => {
     if (currentIdx > 0) {
       const prevIndex = currentIdx - 1;
-      const prevSurveySubjectId = assignments[prevIndex].subjectId;
-      setLocation(`/encuestas/responder/${prevSurveySubjectId}`);
+      setCurrentSubject(assignments[prevIndex].subjectId);
     }
   };
 
