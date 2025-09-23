@@ -59,7 +59,6 @@ public class ErrorHandlingMiddleware(
         
         catch (Exception ex)
         {
-            // En desarrollo
             var baseException = ex.GetBaseException();
 
             var response = env.IsDevelopment()

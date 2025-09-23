@@ -1,4 +1,6 @@
 // Enums
+import {SurveyQuestion} from "@features/surveys/types/surveys.ts";
+
 export enum SurveyStatus {
   Draft = 0,
   Scheduled = 1,
@@ -14,7 +16,7 @@ export enum CareerYear {
 }
 
 // DTOs
-export interface SurveyAudienceDto {
+export interface SurveyAudience {
   TechnicalCareerId: string;
   TechnicalCareerName: string;
   Year: CareerYear;
@@ -30,7 +32,7 @@ export interface AcademicSurveyDto {
   closeAt?: string;
   createdAt: string;
   updatedAt?: string;
-  audiences: SurveyAudienceDto[];
+  audiences: SurveyAudience[];
 }
 
 export interface CreateAcademicSurveyRequest {
@@ -39,7 +41,7 @@ export interface CreateAcademicSurveyRequest {
   publishAt?: string;
   closeAt?: string;
   audience: SurveyAudienceRequest[];
-  questions: SurveyQuestionDto[];
+  questions: SurveyQuestion[];
 }
 
 export interface SurveyAudienceRequest {
@@ -58,21 +60,10 @@ export interface Survey {
   createdAt: string;
   updatedAt?: string;
   templateId: string;
-  audiences: SurveyAudienceDto[];
+  audiences: SurveyAudience[];
+  questions: SurveyQuestion[];
 }
 
-export interface SurveyListItem {
-  id: string;
-  title: string;
-  description?: string;
-  status: SurveyStatus | string; // Permitir tanto enum como string desde el backend
-  publishAt?: string; // El backend devuelve publishAt, no publishedAt
-  closeAt?: string;
-  createdAt: string;
-  updatedAt?: string;
-  questionsCount?: number; // Opcional ya que no viene en todas las respuestas
-  responseCount?: number;
-}
 
 export interface SurveyFilters {
   status?: SurveyStatus;

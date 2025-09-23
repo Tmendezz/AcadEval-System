@@ -77,11 +77,18 @@ public class GetSurveyDetailQueryHandler(
             throw new ForbidException("No tienes acceso a esta encuesta");
         }
 
-        // Si ya respondió la encuesta, no puede verla (solo para responder)
-        if (assignedSurvey.HasResponse && !request.ReadOnly)
+        // Permitir responder mientras NO se hayan respondido todos los survey-subjects del usuario
+        if (!request.ReadOnly)
         {
-            logger.LogWarning("El usuario {UserId} ya respondió la encuesta {SurveyId}", user.Id, request.SurveyId);
-            throw new ForbidException("Ya respondiste esta encuesta");
+            var userSubjects = await responseRepository.GetSurveySubjectsForUserAsync(request.SurveyId, user.Id, cancellationToken);
+            var totalSubjects = userSubjects.Count;
+            var answeredSubjects = userSubjects.Count(s => s.HasResponded);
+
+            if (totalSubjects > 0 && answeredSubjects >= totalSubjects)
+            {
+                logger.LogWarning("El usuario {UserId} ya respondió todos los subjects de la encuesta {SurveyId}", user.Id, request.SurveyId);
+                throw new ForbidException("Ya respondiste esta encuesta");
+            }
         }
 
         // Mapear usando AutoMapper

@@ -1,6 +1,21 @@
 import { api } from '@/infrastructure/query/axios';
-import { Survey, SurveyListItem, CreateAcademicSurveyRequest, SurveyFilters } from '../models/survey-types';
-import { TechnicalCareer } from '../models/survey-audience-types';
+import { Survey, CreateAcademicSurveyRequest, SurveyFilters } from '../models/survey-types';
+
+export interface TechnicalCareer {
+  id: string;
+  name: string;
+}
+
+export interface SurveyListItem {
+  id: string;
+  title: string;
+  description?: string;
+  status: string;
+  publishAt?: string;
+  closeAt?: string;
+  createdAt: string;
+  createdByUserName: string;
+}
 
 // DTOs para análisis de resultados
 export interface SurveySubjectDto {
@@ -113,15 +128,13 @@ export const surveyService = {
   },
 
   // Publicar encuesta
-  async publishSurvey(id: string): Promise<Survey> {
-    const response = await api.post(`${baseUrl}/${id}/publish`);
-    return response.data;
+  async publishSurvey(id: string, command?: { closeAt?: string; reopen?: boolean }): Promise<void> {
+    await api.put(`${baseUrl}/${id}/publish`, command || {});
   },
 
   // Cerrar encuesta
-  async closeSurvey(id: string): Promise<Survey> {
-    const response = await api.post(`${baseUrl}/${id}/close`);
-    return response.data;
+  async closeSurvey(id: string, force: boolean = false): Promise<void> {
+    await api.put(`${baseUrl}/${id}/close?force=${force}`, {});
   },
 
   // Archivar encuesta
@@ -174,7 +187,7 @@ export const surveyService = {
   async getAudienceResponses(params: { surveyId: string; careerId: string; year: number; }): Promise<AudienceResponsesDto> {
     const { surveyId, careerId, year } = params;
     const query = new URLSearchParams({ careerId, year: String(year) }).toString();
-    const response = await api.get(`${baseUrl}/${surveyId}/audience-responses?${query}`);
+    const response = await api.get(`${baseUrl}/${surveyId}/analytics/audience?${query}`);
     return response.data;
   },
 

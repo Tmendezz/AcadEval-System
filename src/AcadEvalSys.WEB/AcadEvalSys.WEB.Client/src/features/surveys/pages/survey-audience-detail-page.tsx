@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { Badge } from '@/shared/components/ui/badge';
 import { Progress } from '@/shared/components/ui/progress';
 import { ArrowLeft, BookOpen } from 'lucide-react';
-import { useSurvey, useAudienceResponses } from '../hooks/use-surveys';
+import { useSurvey, useAudienceResponses, useTechnicalCareers } from '../hooks/use-surveys';
+import { useMemo } from 'react';
 
 export default function SurveyAudienceDetailPage() {
   const [, setLocation] = useLocation();
@@ -15,7 +16,27 @@ export default function SurveyAudienceDetailPage() {
   const year = params?.year ? Number(params.year) : undefined;
 
   const { data: survey, isLoading: loadingSurvey } = useSurvey(surveyId);
-  const { data: audience, isLoading: loadingAudience, error } = useAudienceResponses(surveyId, career, year ?? 0);
+  
+  // Necesitamos obtener el careerId desde el nombre de la carrera
+  const { data: careers = [] } = useTechnicalCareers();
+  const careerId = careers.find(c => c.name === career)?.id || '';
+  
+  const { data: audience, isLoading: loadingAudience, error } = useAudienceResponses(surveyId, careerId, year ?? 0);
+
+  // Mapa de opciones: questionId -> (value -> text)
+  const optionTextByQuestion = useMemo(() => {
+    const map: Record<string, Record<number, string>> = {};
+    const questions: Array<{ id: string; options?: Array<{ value: number; text: string }> }> =
+      (survey as any)?.questions ?? [];
+    for (const q of questions) {
+      if (!q?.options) continue;
+      map[q.id] = {} as Record<number, string>;
+      for (const opt of q.options) {
+        map[q.id][opt.value] = opt.text;
+      }
+    }
+    return map;
+  }, [survey]);
 
   const isLoading = loadingSurvey || loadingAudience;
 
@@ -88,15 +109,23 @@ export default function SurveyAudienceDetailPage() {
                     <div key={q.questionId}>
                       <div className="text-sm font-medium">{q.text}</div>
                       <div className="text-xs text-muted-foreground mb-1">Respuestas: {q.totalResponses}</div>
-                      {Object.entries(q.percentage).map(([val, pct]) => (
-                        <div key={val} className="flex items-center gap-2 text-xs">
-                          <div className="w-6">{val}</div>
-                          <div className="flex-1 h-1.5 bg-muted rounded">
-                            <div className="h-1.5 bg-primary rounded" style={{ width: `${pct}%` }} />
-                          </div>
-                          <div className="w-10 text-right">{pct.toFixed(0)}%</div>
-                        </div>
-                      ))}
+                      {(() => {
+                        const allOptions = optionTextByQuestion[q.questionId] ?? {};
+                        const allValues = Object.keys(allOptions).map(Number).sort((a, b) => a - b);
+                        return allValues.map(value => {
+                          const label = allOptions[value] ?? value.toString();
+                          const pct = q.percentage[value] ?? 0;
+                          return (
+                            <div key={value} className="flex items-center gap-2 text-xs">
+                              <div className="min-w-[2rem]">{label}</div>
+                              <div className="flex-1 h-1.5 bg-muted rounded">
+                                <div className="h-1.5 bg-primary rounded" style={{ width: `${pct}%` }} />
+                              </div>
+                              <div className="w-10 text-right">{pct.toFixed(0)}%</div>
+                            </div>
+                          );
+                        });
+                      })()}
                     </div>
                   ))}
                 </div>

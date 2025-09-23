@@ -97,8 +97,9 @@ export function usePublishSurvey() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => surveyService.publishSurvey(id),
-    onSuccess: (_data, id) => {
+    mutationFn: ({ id, command }: { id: string; command?: { closeAt?: string; reopen?: boolean } }) => 
+      surveyService.publishSurvey(id, command),
+    onSuccess: (_data, { id }) => {
       queryClient.invalidateQueries({ queryKey: surveyKeys.lists() });
       queryClient.invalidateQueries({ queryKey: surveyKeys.detail(id) });
     },
@@ -109,8 +110,9 @@ export function useCloseSurvey() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => surveyService.closeSurvey(id),
-    onSuccess: (_data, id) => {
+    mutationFn: ({ id, force }: { id: string; force?: boolean }) => 
+      surveyService.closeSurvey(id, force),
+    onSuccess: (_data, { id }) => {
       queryClient.invalidateQueries({ queryKey: surveyKeys.lists() });
       queryClient.invalidateQueries({ queryKey: surveyKeys.detail(id) });
     },

@@ -16,9 +16,6 @@ export default function SurveyProgressPage() {
   const { data: survey, isLoading, error } = useSurvey(surveyId || '');
   const { data: careers = [] } = useTechnicalCareers();
 
-  const [availableYearsByCareer, setAvailableYearsByCareer] = useState<Record<string, number[]>>({});
-  const candidateYears = useMemo(() => [1, 2, 3], []);
-
   // Mapa de opciones: questionId -> (value -> text)
   const optionTextByQuestion = useMemo(() => {
     const map: Record<string, Record<number, string>> = {};
@@ -34,6 +31,33 @@ export default function SurveyProgressPage() {
     return map;
   }, [survey]);
 
+  // Mapear años de CareerYear enum a números
+  const yearMapping: Record<string, number> = {
+    'First': 1,
+    'Second': 2,
+    'Third': 3
+  };
+
+  // Obtener años disponibles por carrera desde la audiencia de la encuesta
+  const availableYearsByCareer = useMemo(() => {
+    if (!survey || !careers.length) return {};
+    
+    const result: Record<string, number[]> = {};
+    const surveyAudience = (survey as any)?.audience || [];
+    
+    for (const audienceItem of surveyAudience) {
+      const career = careers.find(c => c.id === audienceItem.technicalCareerId);
+      if (!career) continue;
+      
+      const years = audienceItem.selectedYears?.map((year: string) => yearMapping[year]).filter(Boolean) || [];
+      if (years.length > 0) {
+        result[career.name] = years.sort((a: number, b: number) => a - b);
+      }
+    }
+    
+    return result;
+  }, [survey, careers]);
+
   const [selectedCareerId, setSelectedCareerId] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
@@ -42,31 +66,6 @@ export default function SurveyProgressPage() {
     selectedCareerId || '',
     selectedYear || 0
   );
-
-  useEffect(() => {
-    let cancelled = false;
-    async function loadAvailability() {
-      if (!surveyId || careers.length === 0) return;
-      const entries: Array<[string, number[]]> = [];
-      for (const career of careers) {
-        const okYears: number[] = [];
-        await Promise.all(candidateYears.map(async (year) => {
-          try {
-            const res = await surveyService.getAudienceResponses({ surveyId, careerId: career.id, year });
-            if (res?.subjects && res.subjects.length > 0) {
-              okYears.push(year);
-            }
-          } catch { /* ignorar errores para combinaciones inexistentes */ }
-        }));
-        if (!cancelled) entries.push([career.name, okYears]);
-      }
-      if (!cancelled) {
-        setAvailableYearsByCareer(Object.fromEntries(entries));
-      }
-    }
-    loadAvailability();
-    return () => { cancelled = true; };
-  }, [surveyId, careers, candidateYears]);
 
   if (isLoading) {
     return (
@@ -163,6 +162,17 @@ export default function SurveyProgressPage() {
                 <CardTitle className="flex items-center gap-2">
                   <BookOpen className="w-5 h-5" />
                   Resultados — {selectedYear}° Año
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedCareerId(null);
+                      setSelectedYear(null);
+                    }}
+                    className="ml-auto"
+                  >
+                    ✕ Cerrar
+                  </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -213,6 +223,16 @@ export default function SurveyProgressPage() {
                     ))}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Instrucciones cuando no hay selección */}
+          {!selectedCareerId && !selectedYear && (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                <BookOpen className="w-8 h-8 mx-auto mb-4" />
+                <p>Haz clic en un año para ver los resultados detallados por profesor y curso.</p>
               </CardContent>
             </Card>
           )}

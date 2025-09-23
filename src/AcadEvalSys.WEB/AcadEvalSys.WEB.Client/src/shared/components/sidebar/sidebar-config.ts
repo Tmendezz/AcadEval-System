@@ -48,24 +48,41 @@ export function useSidebarConfig() {
     },
   };
 
-  // Encuestas - Diferentes vistas según el rol
+  // Encuestas - Configuración base para todos los roles
   sidebarConfig.surveys = {
     title: "Encuestas Académicas",
-    items: [
+    items: [],
+  };
+
+  // Admin y coordinadores ven todas las encuestas + plantillas
+  if (hasAnyRole([UserRole.Admin, UserRole.Coordinator])) {
+    sidebarConfig.surveys.items.push(
       {
         href: "/encuestas",
         icon: BarChart3,
-        label: "Mis Encuestas",
+        label: "Encuestas",
       },
-    ],
-  };
-
-  // Solo admin y coordinadores ven plantillas
-  if (hasAnyRole([UserRole.Admin, UserRole.Coordinator])) {
+      {
+        href: "/encuestas/plantillas",
+        icon: Copy,
+        label: "Plantillas",
+      }
+    );
+  }
+  // Profesores ven sus encuestas específicas
+  else if (hasRole(UserRole.Professor)) {
     sidebarConfig.surveys.items.push({
-      href: "/encuestas/plantillas",
-      icon: Copy,
-      label: "Plantillas",
+      href: "/encuestas/docente",
+      icon: BarChart3,
+      label: "Mis Encuestas",
+    });
+  }
+  // Estudiantes ven sus encuestas específicas
+  else if (hasRole(UserRole.Student)) {
+    sidebarConfig.surveys.items.push({
+      href: "/encuestas/alumno",
+      icon: BarChart3,
+      label: "Mis Encuestas",
     });
   }
 
@@ -101,17 +118,6 @@ export function useSidebarConfig() {
       ],
     };
 
-    // Encuestas del docente
-    sidebarConfig.professorSurveys = {
-      title: "Encuestas Académicas",
-      items: [
-        {
-          href: "/encuestas/docente",
-          icon: BarChart3,
-          label: "Mis Encuestas",
-        },
-      ],
-    };
   }
 
   // Dashboard del estudiante - Solo para estudiantes
@@ -127,17 +133,6 @@ export function useSidebarConfig() {
       ],
     };
 
-    // Encuestas del alumno
-    sidebarConfig.studentSurveys = {
-      title: "Encuestas Académicas",
-      items: [
-        {
-          href: "/encuestas/alumno",
-          icon: BarChart3,
-          label: "Mis Encuestas",
-        },
-      ],
-    };
   }
 
   // Carreras Técnicas - Solo admin y coordinadores
