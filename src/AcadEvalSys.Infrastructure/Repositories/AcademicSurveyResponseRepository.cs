@@ -26,10 +26,9 @@ public class AcademicSurveyResponseRepository(ApplicationDbContext db) : IAcadem
 
         var query = db.AcademicSurveys
             .Include(s => s.Subjects)
-            .Where(s => s.Status == SurveyStatus.Published && 
-                       s.PublishAt <= DateTime.UtcNow &&
-                       (s.CloseAt == null || s.CloseAt > DateTime.UtcNow) &&
-                       s.Subjects.Any(ass => studentSubjectIds.Contains(ass.SubjectId!.Value)));
+            .Where(s => 
+                s.Status == SurveyStatus.Published && 
+                s.Subjects.Any(ass => studentSubjectIds.Contains(ass.SubjectId!.Value)));
 
         // Filtrar por estado si se proporciona
         if (!string.IsNullOrEmpty(status))
@@ -70,10 +69,9 @@ public class AcademicSurveyResponseRepository(ApplicationDbContext db) : IAcadem
 
         var query = db.AcademicSurveys
             .Include(s => s.Subjects)
-            .Where(s => s.Status == SurveyStatus.Published && 
-                       s.PublishAt <= DateTime.UtcNow &&
-                       (s.CloseAt == null || s.CloseAt > DateTime.UtcNow) &&
-                       s.Subjects.Any(ass => professorSubjectIds.Contains(ass.SubjectId!.Value)));
+            .Where(s => 
+                s.Status == SurveyStatus.Published && 
+                s.Subjects.Any(ass => professorSubjectIds.Contains(ass.SubjectId!.Value)));
 
         // Filtrar por estado si se proporciona
         if (!string.IsNullOrEmpty(status))
