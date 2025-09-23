@@ -93,9 +93,6 @@ public class AcademicSurveyRepository(ApplicationDbContext db, ISubjectRepositor
     public Task UpdateAsync(AcademicSurvey survey, CancellationToken ct = default)
     {
         survey.IsActive = true;
-        survey.Status = survey.PublishAt.HasValue && survey.PublishAt.Value <= DateTime.Now
-            ? SurveyStatus.Published
-            : SurveyStatus.Draft;
         
         // Verificar si la entidad ya está siendo rastreada
         var entry = db.Entry(survey);

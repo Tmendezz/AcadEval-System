@@ -1,5 +1,6 @@
 using AcadEvalSys.Application.Users;
 using AcadEvalSys.Domain.Entities;
+using AcadEvalSys.Domain.Enums;
 using AcadEvalSys.Domain.Exceptions;
 using AcadEvalSys.Domain.Repositories;
 using AcadEvalSys.Domain.Interfaces;
@@ -33,7 +34,12 @@ public class UpdateAcademicSurveyCommandHandler(
         existing.CloseAt = request.CloseAt;
         existing.UpdatedAt = DateTime.UtcNow;
         existing.UpdatedByUserId = user.Id;
-
+        
+        var now = DateTime.UtcNow;
+        var isWindowOpen = (existing.PublishAt.HasValue && existing.PublishAt <= now)
+                        && (!existing.CloseAt.HasValue || existing.CloseAt > now);
+        existing.Status = isWindowOpen ? SurveyStatus.Published : SurveyStatus.Draft;
+        
         // Actualizar la información básica de la encuesta
         await repository.UpdateAsync(existing, cancellationToken);
 

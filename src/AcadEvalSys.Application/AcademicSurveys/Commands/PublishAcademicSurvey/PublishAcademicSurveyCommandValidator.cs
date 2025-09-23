@@ -6,7 +6,6 @@ namespace AcadEvalSys.Application.AcademicSurveys.Commands.PublishAcademicSurvey
     {
         public PublishAcademicSurveyCommandValidator()
         {
-            RuleFor(x => x.SurveyId).NotEmpty();
             RuleFor(x => x.CloseAt)
                 .Must(date => !date.HasValue || date.Value > DateTime.UtcNow)
                 .WithMessage("La fecha de cierre debe ser futura");
