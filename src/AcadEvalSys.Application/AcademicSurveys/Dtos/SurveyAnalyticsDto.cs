@@ -24,7 +24,7 @@ public class CareerAnalyticsDto
 {
     public Guid TechnicalCareerId { get; set; }
     public string CareerName { get; set; } = string.Empty;
-    public List<YearAnalyticsDto> YearBreakdown { get; set; } = new();
+    public List<YearAnalyticsDto> CareerYear { get; set; } = new();
 }
 
 public class YearAnalyticsDto

@@ -90,14 +90,9 @@ public class AcademicSurveysController(IMediator mediator) : ControllerBase
 
     [HttpGet("{id}/analytics/audience")]
     [Authorize(Roles = UserRoles.Admin)]
-    public async Task<IActionResult> GetSurveyAudienceAnalytics([FromRoute] Guid id, [FromQuery] Guid careerId, [FromQuery] string year)
+    public async Task<IActionResult> GetSurveyAudienceAnalytics([FromRoute] Guid id, [FromQuery] Guid careerId, [FromQuery] CareerYear year)
     {
-        if (!Enum.TryParse<Domain.Enums.CareerYear>(year, true, out var careerYear))
-        {
-            return BadRequest(new { message = "Parámetro 'year' inválido. Valores válidos: First, Second, Third" });
-        }
-
-        var result = await mediator.Send(new GetSurveyAudienceResponsesQuery(id, careerId, careerYear));
+        var result = await mediator.Send(new GetSurveyAudienceResponsesQuery(id, careerId, year));
         return Ok(result);
     }
 }

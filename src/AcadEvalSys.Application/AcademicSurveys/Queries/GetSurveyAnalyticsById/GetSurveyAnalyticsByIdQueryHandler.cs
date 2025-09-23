@@ -5,6 +5,7 @@ using AcadEvalSys.Domain.Exceptions;
 using AcadEvalSys.Domain.Repositories;
 using AcadEvalSys.Domain.Interfaces;
 using MediatR;
+using AutoMapper;
 using Microsoft.Extensions.Logging;
 
 namespace AcadEvalSys.Application.AcademicSurveys.Queries.GetSurveyAnalyticsById;
@@ -12,7 +13,8 @@ namespace AcadEvalSys.Application.AcademicSurveys.Queries.GetSurveyAnalyticsById
 public class GetSurveyAnalyticsByIdQueryHandler(
     ILogger<GetSurveyAnalyticsByIdQueryHandler> logger,
     IAcademicSurveyRepository surveyRepository,
-    IAcademicSurveyResponseRepository responseRepository
+    IAcademicSurveyResponseRepository responseRepository,
+    IMapper mapper
 ) : IRequestHandler<GetSurveyAnalyticsByIdQuery, SurveyAnalyticsDto>
 {
     public async Task<SurveyAnalyticsDto> Handle(GetSurveyAnalyticsByIdQuery request, CancellationToken cancellationToken)
@@ -25,68 +27,51 @@ public class GetSurveyAnalyticsByIdQueryHandler(
             throw new NotFoundException(nameof(AcademicSurvey), request.SurveyId.ToString());
         }
 
-        var dto = new SurveyAnalyticsDto
+        var dto = mapper.Map<SurveyAnalyticsDto>(survey);
+
+        // Completar respuestas y tasas usando los IDs ya agrupados por el perfil
+        foreach (var career in dto.CareerAnalytics)
         {
-            Id = survey.Id,
-            Title = survey.Title,
-            Description = survey.Description,
-            Status = survey.Status,
-            PublishAt = survey.PublishAt,
-            CloseAt = survey.CloseAt,
-            CreatedAt = survey.CreatedAt,
-            SurveyType = survey.SurveyType,
-        };
+            // Obtener los grupos originales desde la entidad para extraer ids por carrera y año
+            var careerGroup = survey.Subjects
+                .Where(ss => ss.SubjectId != null && ss.Subject != null && ss.Subject!.TechnicalCareerId == career.TechnicalCareerId)
+                .GroupBy(ss => ss.Subject!.Year)
+                .ToDictionary(g => g.Key, g => g.Select(ss => ss).ToList());
 
-        dto.TotalQuestions = survey.Questions.Count;
-
-        var byCareer = survey.Subjects
-            .Where(ss => ss.SubjectId != null && ss.Subject != null)
-            .GroupBy(ss => ss.Subject!.TechnicalCareerId);
-
-        foreach (var careerGroup in byCareer)
-        {
-            var careerId = careerGroup.Key ?? Guid.Empty;
-            var careerName = careerGroup.First().Subject!.TechnicalCareer?.Name ?? string.Empty;
-
-            var careerDto = new CareerAnalyticsDto
+            foreach (var yearDto in career.CareerYear)
             {
-                TechnicalCareerId = careerId,
-                CareerName = careerName,
-            };
+                if (!careerGroup.TryGetValue(yearDto.Year, out var yearGroup))
+                    continue;
 
-            var byYear = careerGroup.GroupBy(ss => ss.Subject!.Year);
-            foreach (var yearGroup in byYear)
-            {
                 var surveySubjectIds = yearGroup.Select(ss => ss.Id).ToList();
-
-                var subjectsCount = yearGroup.Count();
-                var studentsCount = yearGroup.Sum(ss => (ss.Subject!.StudentSubjects?.Count ?? 0));
-                var professorsCount = yearGroup.Count(ss => !string.IsNullOrEmpty(ss.Subject!.ProfessorId));
-
                 var responsesCount = await responseRepository.CountResponsesBySurveySubjectsAsync(surveySubjectIds, cancellationToken);
 
-                var yearDto = new YearAnalyticsDto
-                {
-                    Year = yearGroup.Key,
-                    YearName = yearGroup.Key.ToString(),
-                    SubjectsCount = subjectsCount,
-                    StudentsCount = studentsCount,
-                    ProfessorsCount = professorsCount,
-                    ResponsesCount = responsesCount,
-                    ResponseRate = studentsCount > 0 ? Math.Round((double)responsesCount / studentsCount * 100, 2) : 0
-                };
+                yearDto.ResponsesCount = responsesCount;
+
+                var audienceForYear = survey.SurveyType == SurveyType.Student ? yearDto.StudentsCount : yearDto.ProfessorsCount;
+                yearDto.ResponseRate = audienceForYear > 0 ? Math.Round((double)responsesCount / audienceForYear * 100, 2) : 0;
 
                 dto.TotalResponses += responsesCount;
-
-                careerDto.YearBreakdown.Add(yearDto);
             }
-
-            dto.CareerAnalytics.Add(careerDto);
         }
 
-        dto.TotalAudiences = survey.Subjects.Count;
-        var totalStudents = survey.Subjects.Sum(ss => ss.Subject!.StudentSubjects?.Count ?? 0);
-        dto.ResponseRate = totalStudents > 0 ? Math.Round((double)dto.TotalResponses / totalStudents * 100, 2) : 0;
+        // Audience: expected respondents
+        if (survey.SurveyType == SurveyType.Student)
+        {
+            var totalStudents = survey.Subjects.Sum(ss => ss.Subject!.StudentSubjects?.Count ?? 0);
+            dto.TotalAudiences = totalStudents;
+            dto.ResponseRate = totalStudents > 0 ? Math.Round((double)dto.TotalResponses / totalStudents * 100, 2) : 0;
+        }
+        else // SurveyType.Professor
+        {
+            var totalDistinctProfessors = survey.Subjects
+                .Where(ss => !string.IsNullOrEmpty(ss.Subject!.ProfessorId))
+                .Select(ss => ss.Subject!.ProfessorId)
+                .Distinct()
+                .Count();
+            dto.TotalAudiences = totalDistinctProfessors;
+            dto.ResponseRate = totalDistinctProfessors > 0 ? Math.Round((double)dto.TotalResponses / totalDistinctProfessors * 100, 2) : 0;
+        }
 
         return dto;
     }

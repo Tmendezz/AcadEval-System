@@ -76,7 +76,10 @@ public class AcademicSurveyRepository(ApplicationDbContext db, ISubjectRepositor
     public async Task CloseAsync(Guid surveyId,  CancellationToken ct = default)
     {
         var survey = await db.AcademicSurveys.SingleOrDefaultAsync(s => s.Id == surveyId && s.IsActive, ct);
-        survey.Status = SurveyStatus.Closed;
+        if (survey != null)
+        {
+            survey.Status = SurveyStatus.Closed;
+        }
     }
 
     public async Task<AcademicSurvey?> GetByIdAsync(Guid id, CancellationToken ct = default)

@@ -55,6 +55,38 @@ namespace AcadEvalSys.Application.AcademicSurveys.Dtos
                     })
                     .OrderBy(a => a.CareerName)
                     .ToList()));
+
+            // Analytics mapping (base fields + grouped structure; responses/rates filled in handler)
+            CreateMap<AcademicSurvey, SurveyAnalyticsDto>()
+                .ForMember(d => d.CreatedByUserName, o => o.MapFrom(s => s.CreatedByUser != null ? s.CreatedByUser.UserName : string.Empty))
+                .ForMember(d => d.TotalQuestions, o => o.MapFrom(s => s.Questions.Count))
+                .ForMember(d => d.TotalAudiences, o => o.Ignore())
+                .ForMember(d => d.TotalResponses, o => o.Ignore())
+                .ForMember(d => d.ResponseRate, o => o.Ignore())
+                .ForMember(d => d.CareerAnalytics, o => o.MapFrom(s => s.Subjects
+                    .Where(ss => ss.SubjectId != null && ss.Subject != null && ss.Subject.TechnicalCareer != null && ss.Subject.TechnicalCareerId.HasValue)
+                    .GroupBy(ss => ss.Subject!.TechnicalCareerId!.Value)
+                    .Select(cg => new CareerAnalyticsDto
+                    {
+                        TechnicalCareerId = cg.Key,
+                        CareerName = cg.First().Subject!.TechnicalCareer!.Name,
+                        CareerYear = cg.GroupBy(yg => yg.Subject!.Year)
+                            .Select(yg => new YearAnalyticsDto
+                            {
+                                Year = yg.Key,
+                                YearName = yg.Key.ToString(),
+                                SubjectsCount = yg.Count(),
+                                StudentsCount = yg.Sum(ss => ss.Subject != null && ss.Subject.StudentSubjects != null ? ss.Subject.StudentSubjects.Count : 0),
+                                ProfessorsCount = yg.Count(ss => ss.Subject != null && !string.IsNullOrEmpty(ss.Subject.ProfessorId)),
+                                ResponsesCount = 0,
+                                ResponseRate = 0
+                            })
+                            .OrderBy(y => y.Year)
+                            .ToList()
+                    })
+                    .OrderBy(c => c.CareerName)
+                    .ToList()
+                ));
         }
     }
 }

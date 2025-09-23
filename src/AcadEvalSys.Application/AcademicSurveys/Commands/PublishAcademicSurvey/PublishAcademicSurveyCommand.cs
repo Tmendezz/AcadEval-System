@@ -3,7 +3,7 @@ using MediatR;
 
 namespace AcadEvalSys.Application.AcademicSurveys.Commands.PublishAcademicSurvey
 {
-    public class PublishAcademicSurveyCommand() : IRequest
+    public class PublishAcademicSurveyCommand : IRequest
     {
         [JsonIgnore]
         public Guid SurveyId { get; set; }
