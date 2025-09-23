@@ -6,7 +6,7 @@ namespace AcadEvalSys.Application.Templates.Queries.GetTemplates
 {
     public class GetSurveyTemplatesQuery : IRequest<IEnumerable<SurveyTemplateListItemDto>>
     {
-        public SurveyTemplateType? SurveyType { get; set; }
+        public SurveyType? SurveyType { get; set; }
         public bool? IsDraft { get; set; }
         public string? SearchTerm { get; set; }
     }

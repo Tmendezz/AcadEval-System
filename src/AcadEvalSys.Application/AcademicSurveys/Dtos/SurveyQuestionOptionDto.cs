@@ -8,10 +8,8 @@ namespace AcadEvalSys.Application.AcademicSurveys.Dtos
 {
     public class SurveyQuestionOptionDto
     {
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
         public int Value { get; set; }
         public string Text { get; set; } = string.Empty;
-        public int? Order { get; set; }
-        public bool AllowOpenText { get; set; }
     }
 }

@@ -2,9 +2,9 @@
 
 namespace AcadEvalSys.Application.AcademicSurveys.Commands.CloseAcademicSurvey
 {
-    public class CloseAcademicSurveyCommand : IRequest
+    public class CloseAcademicSurveyCommand(Guid surveyId, bool force) : IRequest
     {
-        public Guid SurveyId { get; set; }
-        public DateTime? CloseAt { get; set; }
+        public Guid SurveyId { get; set; } = surveyId;
+        public bool Force { get; set; } = force;
     }
 }

@@ -127,6 +127,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IStudentCompetencyAssessmentsRepository, StudentCompetencyAssessmentsRepository>();
         services.AddScoped<ISurveyTemplateRepository, SurveyTemplateRepository>();
         services.AddScoped<IAcademicSurveyRepository, AcademicSurveyRepository>();
+        services.AddScoped<IAcademicSurveyResponseRepository, AcademicSurveyResponseRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         
         // Evaluation Completion

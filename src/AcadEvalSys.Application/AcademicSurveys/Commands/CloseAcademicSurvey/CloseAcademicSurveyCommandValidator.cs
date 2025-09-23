@@ -1,9 +1,5 @@
 ﻿using FluentValidation;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AcadEvalSys.Application.AcademicSurveys.Commands.CloseAcademicSurvey
 {
@@ -12,7 +8,8 @@ namespace AcadEvalSys.Application.AcademicSurveys.Commands.CloseAcademicSurvey
         public CloseAcademicSurveyCommandValidator()
         {
             RuleFor(x => x.SurveyId)
-                .NotEmpty();
+                .NotEmpty()
+                .WithMessage("El ID de la encuesta es requerido");
         }
     }
 }

@@ -50,8 +50,8 @@ namespace AcadEvalSys.Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("TemplateId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("SurveyType")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -67,8 +67,6 @@ namespace AcadEvalSys.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedByUserId");
-
-                    b.HasIndex("TemplateId");
 
                     b.HasIndex("UpdatedByUserId");
 
@@ -683,9 +681,6 @@ namespace AcadEvalSys.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<int?>("Order")
-                        .HasColumnType("integer");
-
                     b.Property<Guid>("SurveyQuestionId")
                         .HasColumnType("uuid");
 
@@ -722,9 +717,6 @@ namespace AcadEvalSys.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("AcademicSurveyResponseId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("AcademicSurveySubjectId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1186,18 +1178,11 @@ namespace AcadEvalSys.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("CreatedByUserId");
 
-                    b.HasOne("AcadEvalSys.Domain.Entities.SurveyTemplate", "Template")
-                        .WithMany()
-                        .HasForeignKey("TemplateId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("AcadEvalSys.Domain.Entities.User", "UpdatedByUser")
                         .WithMany()
                         .HasForeignKey("UpdatedByUserId");
 
                     b.Navigation("CreatedByUser");
-
-                    b.Navigation("Template");
 
                     b.Navigation("UpdatedByUser");
                 });

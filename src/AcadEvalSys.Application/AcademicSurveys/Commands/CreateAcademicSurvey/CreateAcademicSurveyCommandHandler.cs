@@ -1,6 +1,9 @@
+using AcadEvalSys.Application.AcademicSurveys.Dtos;
+using AcadEvalSys.Application.Users;
 using AcadEvalSys.Domain.Entities;
 using AcadEvalSys.Domain.Interfaces;
 using AcadEvalSys.Domain.Repositories;
+using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -8,32 +11,44 @@ namespace AcadEvalSys.Application.AcademicSurveys.Commands.CreateAcademicSurvey
 {
     public class CreateAcademicSurveyCommandHandler(
         IAcademicSurveyRepository surveyRepository,
-        ISubjectRepository subjectRepository,
         IUnitOfWork unitOfWork,
+        IMapper mapper,
+        IUserContext userContext,
         ILogger<CreateAcademicSurveyCommandHandler> logger)
-
     : IRequestHandler<CreateAcademicSurveyCommand, Guid>
     {
         public async Task<Guid> Handle(CreateAcademicSurveyCommand request, CancellationToken cancellationToken)
         {
             logger.LogInformation("Iniciando creación de encuesta académica: {Title}", request.Title);
-            logger.LogInformation("🔍 Debug Backend - Request data: Title={Title}, Description={Description}, QuestionsCount={QuestionsCount}", 
-                request.Title, request.Description, request.Questions.Count);
 
-            // Crear la encuesta directamente con las preguntas proporcionadas
-            var surveyId = await surveyRepository.CreateWithQuestionsAsync(
-                request.Title, 
-                request.Description,
-                request.Questions.Cast<object>().ToList(),
-                request.PublishAt, 
-                request.CloseAt, 
-                null, 
-                cancellationToken);
+            var user = userContext.GetCurrentUser();
+            
+            if (user == null)
+            {
+                logger.LogError("User context is null despite controller authorization");
+                throw new InvalidOperationException("User context not found");
+            }
+
+            // Mapear el command a la entidad
+            var survey = mapper.Map<AcademicSurvey>(request);
+            survey.CreatedByUserId = user.Id ?? string.Empty;
+       
+            // Mapear las preguntas
+            survey.Questions = request.Questions.Select(q =>
+            {
+                var question = mapper.Map<SurveyQuestion>(q);
+                question.Options = q.Options.Select(o => mapper.Map<SurveyQuestionOption>(o)).ToList();
+                return question;
+            }).ToList();
+            
+            // Crear la encuesta
+            var surveyId = await surveyRepository.CreateAsync(survey, cancellationToken);
 
             logger.LogInformation("Encuesta creada con ID: {SurveyId}", surveyId);
 
-            // Configurar la audiencia
-            await ConfigureSurveyAudienceAsync(surveyId, request.Audience, cancellationToken);
+            // Configurar la audiencia usando el repositorio
+            var audienceData = request.Audience.Select(a => (a.TechnicalCareerId, a.SelectedYears.AsEnumerable()));
+            await surveyRepository.ConfigureSurveyAudienceAsync(surveyId, audienceData, cancellationToken);
 
             logger.LogInformation("Intentando guardar cambios para encuesta {SurveyId}", surveyId);
             var changesSaved = await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -41,54 +56,6 @@ namespace AcadEvalSys.Application.AcademicSurveys.Commands.CreateAcademicSurvey
 
             logger.LogInformation("Encuesta académica creada exitosamente: {SurveyId}", surveyId);
             return surveyId;
-        }
-
-        private async Task ConfigureSurveyAudienceAsync(
-            Guid surveyId, 
-            List<SurveyAudienceDto> audience, 
-            CancellationToken cancellationToken)
-        {
-            logger.LogInformation("Configurando audiencia para encuesta {SurveyId}: {AudienceCount} configuraciones de audiencia", 
-                surveyId, audience.Count);
-
-            var totalSubjectsAdded = 0;
-
-            // Procesar cada configuración de audiencia (tecnicatura + años)
-            foreach (var audienceConfig in audience)
-            {
-                logger.LogInformation("Procesando audiencia: Tecnicatura {CareerId} con años {Years}", 
-                    audienceConfig.TechnicalCareerId, 
-                    string.Join(", ", audienceConfig.SelectedYears));
-
-                // Obtener asignaturas de esta tecnicatura y estos años específicos
-                var subjects = await subjectRepository.GetByCareerAndYearsAsync(
-                    new[] { audienceConfig.TechnicalCareerId }, 
-                    audienceConfig.SelectedYears, 
-                    cancellationToken);
-
-                logger.LogInformation("Encontradas {SubjectCount} asignaturas para tecnicatura {CareerId} y años {Years}", 
-                    subjects.Count(), audienceConfig.TechnicalCareerId, string.Join(", ", audienceConfig.SelectedYears));
-
-                // Crear AcademicSurveySubject para cada asignatura
-                foreach (var subject in subjects)
-                {
-                    var surveySubject = new AcademicSurveySubject
-                    {
-                        AcademicSurveyId = surveyId, // Usar el ID directamente
-                        SubjectId = subject.Id,
-                    };
-
-                    // Agregar directamente al contexto en lugar de a la colección
-                    await surveyRepository.AddSurveySubjectAsync(surveySubject, cancellationToken);
-                    totalSubjectsAdded++;
-
-                    logger.LogInformation("SurveySubject creado: Survey {SurveyId} -> Subject {SubjectId} ({SubjectName}, Año {Year})", 
-                        surveyId, subject.Id, subject.Name, subject.Year);
-                }
-            }
-            
-            logger.LogInformation("Audiencia configurada: {TotalSubjects} asignaturas agregadas a la encuesta {SurveyId}", 
-                totalSubjectsAdded, surveyId);
         }
     }
 }

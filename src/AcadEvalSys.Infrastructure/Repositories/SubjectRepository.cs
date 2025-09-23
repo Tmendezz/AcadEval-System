@@ -127,6 +127,7 @@ public class SubjectRepository(ApplicationDbContext dbContext) : ISubjectReposit
             .ToListAsync();
     }
 
+    // Devuelve una lsita de todas las asignaturas que forman parte de la encuesta
     public async Task<IEnumerable<Subject>> GetByCareerAndYearsAsync(
         IEnumerable<Guid> careerIds, 
         IEnumerable<CareerYear> years, 

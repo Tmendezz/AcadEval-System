@@ -6,7 +6,7 @@ namespace AcadEvalSys.Domain.Entities
     {
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public SurveyTemplateType SurveyType { get; set; }
+        public SurveyType SurveyType { get; set; }
 
         //Para borradores y trazabilidad         
         public bool IsDraft { get; set; } = true;

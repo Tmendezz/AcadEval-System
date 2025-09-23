@@ -9,25 +9,30 @@ namespace AcadEvalSys.Application.AcademicSurveys.Commands.CreateAcademicSurvey
         {
             RuleFor(x => x.Title)
                 .NotEmpty().WithMessage("El título es requerido.")
-                .MaximumLength(200);
+                .Length(5, 200).WithMessage("El título debe tener entre 5 y 200 caracteres.");
 
-            /*RuleFor(x => x.Audience)
+            RuleFor(x => x.Description)
+                .MaximumLength(500).WithMessage("La descripción no puede exceder 1000 caracteres.");
+         
+            RuleFor(x => x.Questions)
+                .NotEmpty().WithMessage("Debe incluir al menos una pregunta.")
+                .Must(q => q.Count <= 50).WithMessage("No puede tener más de 50 preguntas.");
+
+            RuleFor(x => x.Audience)
                 .NotEmpty().WithMessage("Debe configurar al menos una audiencia.");
+            
+            RuleFor(x => x.PublishAt)
+                .NotEmpty().WithMessage("La fecha de publicación es requerida.")
+                .GreaterThanOrEqualTo(DateTime.Today)
+                .WithMessage("La fecha de publicación no puede ser anterior a hoy.");
 
-            RuleForEach(x => x.Audience).ChildRules(audience =>
-            {
-                audience.RuleFor(a => a.TechnicalCareerId)
-                    .NotEmpty().WithMessage("El ID de la tecnicatura es requerido.");
+            RuleFor(x => x.CloseAt)
+                .NotEmpty().WithMessage("La fecha de cierre es requerida.")
+                .GreaterThan(x => x.PublishAt)
+                .WithMessage("La fecha de cierre debe ser posterior a la fecha de publicación.")
+                .GreaterThan(DateTime.Today)
+                .WithMessage("La fecha de cierre no puede ser anterior a hoy.");
 
-                audience.RuleFor(a => a.SelectedYears)
-                    .NotEmpty().WithMessage("Debe seleccionar al menos un año para cada tecnicatura.")
-                    .Must(years => years.All(year => year >= CareerYear.First && year <= CareerYear.Third))
-                    .WithMessage("Los años de cursado deben estar entre First y Third.");
-            });*/
-
-            RuleFor(x => x)
-                .Must(x => !(x.PublishAt.HasValue && x.CloseAt.HasValue) || x.PublishAt <= x.CloseAt)
-                .WithMessage("PublishAt no puede ser mayor que CloseAt.");
         }
     }
 }

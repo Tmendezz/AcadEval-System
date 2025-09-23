@@ -5,58 +5,33 @@ namespace AcadEvalSys.Domain.Repositories;
 
 public interface IAcademicSurveyRepository
 {
-    Task<Guid> CreateFromTemplateAsync(string title, string description, Guid templateId, DateTime? publishAt, DateTime? closeAt, string? userId = null, CancellationToken ct = default);
-    Task<Guid> CreateWithQuestionsAsync(string title, string description, List<object> questions, DateTime? publishAt, DateTime? closeAt, string? userId = null, CancellationToken ct = default);
-    Task SetSubjectsAsync(Guid surveyId, IEnumerable<Guid> subjectIds, string? userId = null, CancellationToken ct = default);
-    Task AddSurveySubjectAsync(AcademicSurveySubject surveySubject, CancellationToken ct = default);
+    Task<Guid> CreateAsync(AcademicSurvey survey, CancellationToken ct = default);
+    
+    Task ConfigureSurveyAudienceAsync(Guid surveyId, IEnumerable<(Guid TechnicalCareerId, IEnumerable<CareerYear> SelectedYears)> audience, CancellationToken ct = default);
 
-    Task PublishAsync(Guid surveyId, DateTime? publishAt = null, CancellationToken ct = default);
-    Task CloseAsync(Guid surveyId, DateTime? closeAt = null, CancellationToken ct = default);
+    Task ReplaceSurveyAudienceAsync(Guid surveyId,
+        IEnumerable<(Guid TechnicalCareerId, IEnumerable<CareerYear> SelectedYears)> audience,
+        CancellationToken ct = default);
+    
+    Task CloseAsync(Guid surveyId, CancellationToken ct = default);
 
-    Task<AcademicSurvey?> GetByIdAsync(Guid id, bool includeChildren = true, CancellationToken ct = default);
+    Task<AcademicSurvey?> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task UpdateAsync(AcademicSurvey survey, CancellationToken ct = default);
-    Task<IReadOnlyList<AcademicSurvey>> ListAsync(
+    Task<IReadOnlyList<AcademicSurvey>> GetAllAsync(
         SurveyStatus? status = null,
-        Guid? technicalCareerId = null,
-        Guid? subjectId = null,
         string? search = null,
         CancellationToken ct = default);
 
     Task<bool> ExistsTitleAsync(string title, Guid? excludingId = null, CancellationToken ct = default);
 
-    // Método para obtener encuestas del usuario con información de respuesta
-    Task<IEnumerable<(AcademicSurvey Survey, AcademicSurveySubject SurveySubject, bool HasResponded, DateTime? RespondedAt)>> GetUserSurveysWithResponseInfoAsync(Guid userId, CancellationToken ct = default);
-    
-    // Método para obtener todos los survey subjects de una encuesta específica para un usuario
-    Task<IEnumerable<(AcademicSurveySubject SurveySubject, bool HasResponded, DateTime? RespondedAt)>> GetSurveySubjectsForUserAsync(Guid surveyId, string userId, CancellationToken ct = default);
+    Task ReplaceSurveyQuestionsAsync(Guid surveyId, IEnumerable<SurveyQuestion> questions, CancellationToken ct = default);
 
-    // NUEVOS métodos para registrar respuestas
-    Task<AcademicSurveySubject?> GetSubjectGraphAsync(Guid surveySubjectId, CancellationToken ct = default);
-    Task<AcademicSurveyResponse?> GetResponseAsync(Guid surveySubjectId, string userId, CancellationToken ct = default);
-    Task<IReadOnlyList<AcademicSurveyResponse>> GetResponsesBySurveyIdAsync(
-            Guid surveyId,
-            bool includeDetails = true,
-            CancellationToken ct = default);
-
-    Task<IReadOnlyList<AcademicSurveyResponse>> GetResponsesBySurveySubjectIdAsync(
-        Guid surveySubjectId,
-        bool includeDetails = true,
-        CancellationToken ct = default);
-    Task<Guid> CreateResponseAsync(AcademicSurveyResponse response, CancellationToken ct = default);
-    Task UpdateResponseAsync(AcademicSurveyResponse response, CancellationToken ct = default);
-
-    // Audience-based subjects for admin analytics
-    Task<IEnumerable<AcademicSurveySubject>> GetSurveySubjectsByAudienceAsync(
+  
+    Task<AcademicSurvey?> GetSurveyWithSubjectsAsync(Guid surveyId, CancellationToken ct = default);
+    Task<IReadOnlyList<AcademicSurveySubject>> GetAudienceSurveySubjectsAsync(
         Guid surveyId,
-        string technicalCareerName,
-        int year,
-        CancellationToken ct = default);
-
-    Task<IReadOnlyList<AcademicSurveyResponse>> GetResponsesBySurveyAndAudienceAsync(
-        Guid surveyId,
-        Guid careerId,
-        int year,
-        string role,
+        Guid technicalCareerId,
+        CareerYear year,
         CancellationToken ct = default);
 
 }

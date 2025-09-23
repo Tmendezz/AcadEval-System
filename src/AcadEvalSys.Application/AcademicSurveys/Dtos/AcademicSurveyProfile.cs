@@ -1,10 +1,6 @@
 ﻿using AcadEvalSys.Domain.Entities;
 using AutoMapper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using AcadEvalSys.Application.AcademicSurveys.Commands.CreateAcademicSurvey;
 
 namespace AcadEvalSys.Application.AcademicSurveys.Dtos
 {
@@ -12,22 +8,53 @@ namespace AcadEvalSys.Application.AcademicSurveys.Dtos
     {
         public AcademicSurveyProfile()
         {
-            CreateMap<AcademicSurvey, AcademicSurveySummaryDto>();
+            CreateMap<CreateAcademicSurveyCommand, AcademicSurvey>();
 
-            CreateMap<AcademicSurvey, AcademicSurveyDetailDto>()
-                .ForMember(d => d.Questions, o => o.MapFrom(s => s.Questions.OrderBy(q => q.Order)))
-                .ForMember(d => d.Subjects, o => o.MapFrom(s => s.Subjects));
-
+            // Mapeos de entidad a DTO (para consultas)
             CreateMap<SurveyQuestion, SurveyQuestionDto>()
-                .ForMember(d => d.Options, o => o.MapFrom(s => s.Options.OrderBy(x => x.Order)))
+                .ForMember(d => d.Options, o => o.MapFrom(s => s.Options.OrderBy(x => x.Value)))
                 .ForMember(d => d.AllowComment, o => o.MapFrom(s => s.AllowComment));
 
             CreateMap<SurveyQuestionOption, SurveyQuestionOptionDto>();
 
-            CreateMap<AcademicSurveySubject, SurveySubjectDto>()
-                .ForMember(d => d.SubjectName, o => o.MapFrom(s => s.Subject != null ? s.Subject.Name : null));
+            // Mapeos de DTO a entidad (para comandos)
+            CreateMap<SurveyQuestionDto, SurveyQuestion>()
+                .ForMember(d => d.Id, o => o.Ignore())
+                .ForMember(d => d.AcademicSurveyId, o => o.Ignore())
+                .ForMember(d => d.AcademicSurvey, o => o.Ignore())
+                .ForMember(d => d.CreatedAt, o => o.Ignore())
+                .ForMember(d => d.UpdatedAt, o => o.Ignore())
+                .ForMember(d => d.CreatedByUserId, o => o.Ignore())
+                .ForMember(d => d.UpdatedByUserId, o => o.Ignore())
+                .ForMember(d => d.CreatedByUser, o => o.Ignore())
+                .ForMember(d => d.UpdatedByUser, o => o.Ignore())
+                .ForMember(d => d.IsActive, o => o.Ignore());
 
-            // No podemos mapear directamente tuplas con AutoMapper, se maneja en el handler
+            CreateMap<SurveyQuestionOptionDto, SurveyQuestionOption>()
+                .ForMember(d => d.Id, o => o.Ignore())
+                .ForMember(d => d.SurveyQuestionId, o => o.Ignore())
+                .ForMember(d => d.SurveyQuestion, o => o.Ignore())
+                .ForMember(d => d.CreatedAt, o => o.Ignore())
+                .ForMember(d => d.UpdatedAt, o => o.Ignore())
+                .ForMember(d => d.CreatedByUserId, o => o.Ignore())
+                .ForMember(d => d.UpdatedByUserId, o => o.Ignore())
+                .ForMember(d => d.CreatedByUser, o => o.Ignore())
+                .ForMember(d => d.UpdatedByUser, o => o.Ignore())
+                .ForMember(d => d.IsActive, o => o.Ignore());
+
+            CreateMap<AcademicSurvey, AcademicSurveyDto>()
+                .ForMember(d => d.Questions, o => o.MapFrom(s => s.Questions.OrderBy(q => q.Order)))
+                .ForMember(d => d.Audience, o => o.MapFrom(s => s.Subjects
+                    .Where(sub => sub.Subject != null && sub.Subject.TechnicalCareer != null && sub.Subject.TechnicalCareerId.HasValue)
+                    .GroupBy(sub => new { sub.Subject!.TechnicalCareerId, sub.Subject.TechnicalCareer!.Name })
+                    .Select(g => new SurveyAudienceDto
+                    {
+                        TechnicalCareerId = g.Key.TechnicalCareerId!.Value,
+                        CareerName = g.Key.Name ?? string.Empty,
+                        SelectedYears = g.Select(sub => sub.Subject!.Year).Distinct().OrderBy(y => y).ToList()
+                    })
+                    .OrderBy(a => a.CareerName)
+                    .ToList()));
         }
     }
 }

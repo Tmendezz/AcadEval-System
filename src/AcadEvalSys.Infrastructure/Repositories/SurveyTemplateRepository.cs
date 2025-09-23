@@ -15,7 +15,7 @@ namespace AcadEvalSys.Infrastructure.Repositories
             return result.Entity.Id;
         }
 
-        public async Task<bool> ExistsNameAsync(string name, SurveyTemplateType type, Guid? excludingId = null, CancellationToken ct = default)
+        public async Task<bool> ExistsNameAsync(string name, SurveyType type, Guid? excludingId = null, CancellationToken ct = default)
         {
             return await dbContext.SurveyTemplates
                 .AnyAsync(s => s.IsActive
@@ -47,7 +47,7 @@ namespace AcadEvalSys.Infrastructure.Repositories
                 .SingleOrDefaultAsync(ct);
         }
 
-        public async Task<IReadOnlyList<SurveyTemplate>> ListAsync(bool? isDraft = null, string? search = null, SurveyTemplateType? type = null, CancellationToken ct = default)
+        public async Task<IReadOnlyList<SurveyTemplate>> ListAsync(bool? isDraft = null, string? search = null, SurveyType? type = null, CancellationToken ct = default)
         {
             return await dbContext.SurveyTemplates
                 .Include(t => t.Questions)

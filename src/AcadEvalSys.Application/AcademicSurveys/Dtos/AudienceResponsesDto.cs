@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace AcadEvalSys.Application.AcademicSurveys.Dtos;
 
 public class AudienceResponsesDto

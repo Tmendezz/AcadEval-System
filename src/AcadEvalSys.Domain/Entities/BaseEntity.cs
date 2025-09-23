@@ -11,8 +11,8 @@ namespace AcadEvalSys.Domain.Entities
         public string? CreatedByUserId { get; set; }
         public string? UpdatedByUserId { get; set; }
 
-        // Navigation properties for audit
+
         public virtual User? CreatedByUser { get; set; }
         public virtual User? UpdatedByUser { get; set; }
     }
-} 
+}

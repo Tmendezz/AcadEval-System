@@ -9,7 +9,7 @@ namespace AcadEvalSys.Application.Templates.Dtos
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public int QuestionCount { get; set; }
-        public SurveyTemplateType SurveyType { get; set; }
+        public SurveyType SurveyType { get; set; }
         public bool IsDraft { get; set; }
         public int Version { get; set; }
         public DateTime UpdatedAtOrCreatedAt { get; set; }

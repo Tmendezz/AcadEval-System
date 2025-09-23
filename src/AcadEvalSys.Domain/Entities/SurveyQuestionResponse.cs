@@ -3,9 +3,8 @@
     public class SurveyQuestionResponse : BaseEntity
     {
         public Guid AcademicSurveyResponseId { get; set; }
-        public Guid AcademicSurveySubjectId { get; set; }
 
-        public Guid SurveyQuestionId { get; set; }   // actualizado para apuntar al snapshot
+        public Guid SurveyQuestionId { get; set; }
 
         public int? SelectedValue { get; set; }
         public string? Text { get; set; }

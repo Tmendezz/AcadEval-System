@@ -30,6 +30,7 @@
       <Folder Include="Evaluations\Dtos\" />
       <Folder Include="Evaluations\Queries\GetAllEvaluationInstanceById\" />
       <Folder Include="Evaluations\Queries\GetAllEvaluationInstances\" />
+      <Folder Include="AcademicSurveysResponses\Commands\" />
       <Folder Include="StudentCompetencyAssessments\" />
       <Folder Include="TechnicalCareers\" />
     </ItemGroup>

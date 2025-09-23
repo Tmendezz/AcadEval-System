@@ -31,7 +31,7 @@ public class SurveyTemplateController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Produces("application/json")]
     public async Task<IActionResult> GetTemplates(
-        [FromQuery] SurveyTemplateType? surveyType = null,
+        [FromQuery] SurveyType? surveyType = null,
         [FromQuery] bool? isDraft = null,
         [FromQuery] string? searchTerm = null)
     {

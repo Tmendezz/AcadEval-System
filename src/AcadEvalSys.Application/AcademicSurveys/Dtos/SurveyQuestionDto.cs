@@ -9,7 +9,7 @@ namespace AcadEvalSys.Application.AcademicSurveys.Dtos
 {
     public class SurveyQuestionDto
     {
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
         public string Text { get; set; } = string.Empty;
         public QuestionType Type { get; set; }
         public int? Order { get; set; }
