@@ -1,1 +1,1 @@
-export { studentEvaluationsApi } from "./student-evaluations-api";
+export { studentEvaluationsApi } from "./student-evaluations-service";

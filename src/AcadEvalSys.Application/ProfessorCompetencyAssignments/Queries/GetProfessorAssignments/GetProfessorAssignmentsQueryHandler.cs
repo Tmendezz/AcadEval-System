@@ -5,22 +5,27 @@ using AcadEvalSys.Domain.Repositories;
 using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using AcadEvalSys.Application.Users;
 
 namespace AcadEvalSys.Application.ProfessorCompetencyAssignments.Queries.GetProfessorAssignments;
 
 public class GetProfessorAssignmentsQueryHandler(
     IProfessorCompetencyAssignmentRepository professorCompetencyAssignmentRepository,
     IMapper mapper,
-    ILogger<GetProfessorAssignmentsQueryHandler> logger)
+    ILogger<GetProfessorAssignmentsQueryHandler> logger,
+    IUserContext userContext)
     : IRequestHandler<GetProfessorAssignmentsQuery, IEnumerable<ProfessorAssignmentWithStudentsDto>>
 {
     public async Task<IEnumerable<ProfessorAssignmentWithStudentsDto>> Handle(GetProfessorAssignmentsQuery request, CancellationToken cancellationToken)
     {
+        var currentUser = userContext.GetCurrentUser();
+        var professorId = currentUser?.Id ?? string.Empty;
+
         logger.LogInformation("Retrieving professor assignments for Professor ID: {ProfessorId}, Evaluation Instance: {EvaluationInstanceId}", 
-            request.ProfessorId, request.EvaluationInstanceId);
+            professorId, request.EvaluationInstanceId);
 
         var assignments = await professorCompetencyAssignmentRepository
-            .GetProfessorAssignmentsAsync(request.ProfessorId, request.EvaluationInstanceId);
+            .GetProfessorAssignmentsAsync(professorId, request.EvaluationInstanceId);
 
         var assignmentsList = assignments.ToList();
         logger.LogInformation("Retrieved {Count} professor assignments", assignmentsList.Count);
@@ -55,12 +60,6 @@ public class GetProfessorAssignmentsQueryHandler(
             };
         });
 
-        // Log detallado para debugging
-        foreach (var assignment in assignmentsList)
-        {
-            logger.LogInformation("Assignment ID: {AssignmentId}, Competency: {CompetencyName}, Subject: {SubjectName}, Status: {Status}, Students Count: {StudentsCount}", 
-                assignment.Id, assignment.Competency?.Name, assignment.Subject?.Name, assignment.Status, assignment.TotalStudentsCount);
-        }
 
         return result;
     }

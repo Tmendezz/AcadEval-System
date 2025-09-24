@@ -12,5 +12,6 @@ public class UserSurveyDto
     public DateTime? CloseAt { get; set; }
     public bool IsCompleted { get; set; }
     public DateTime? SubmittedAt { get; set; }
-    public SurveyStatus Status { get; set; } 
+    public SurveyStatus Status { get; set; }
+    public SurveyType SurveyType { get; set; }
 }

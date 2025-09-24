@@ -7,14 +7,34 @@ export default function EditTemplatePage() {
   const [, setLocation] = useLocation();
   const params = useParams<{ id: string }>();
   const id = params?.id || '';
-  const { data: template, isLoading } = useSurveyTemplate(id);
+  
+  console.log('EditTemplatePage - ID:', id);
+  console.log('EditTemplatePage - Params:', params);
+  
+  const { data: template, isLoading, error } = useSurveyTemplate(id);
   const updateMutation = useUpdateSurveyTemplate();
+  
+  console.log('EditTemplatePage - Template:', template);
+  console.log('EditTemplatePage - Loading:', isLoading);
+  console.log('EditTemplatePage - Error:', error);
 
   if (isLoading) {
     return (
       <PageLayout>
         <PageContent>
           <div className="text-sm text-muted-foreground">Cargando plantilla...</div>
+        </PageContent>
+      </PageLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageLayout>
+        <PageContent>
+          <div className="text-sm text-red-600">
+            Error al cargar la plantilla: {error.message || 'Error desconocido'}
+          </div>
         </PageContent>
       </PageLayout>
     );

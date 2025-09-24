@@ -25,7 +25,7 @@ export const getAllProfessorAssignments = async (): Promise<
   ProfessorAssignment[]
 > => {
   const { data } = await api.get<ProfessorAssignment[]>(
-    PROFESSOR_ASSIGNMENTS_API_URL
+    `${PROFESSOR_ASSIGNMENTS_API_URL}`
   );
   return data;
 };
@@ -39,7 +39,7 @@ export const assessStudent = async (
   }
 ): Promise<void> => {
   await api.post(
-    `${PROFESSOR_ASSIGNMENTS_API_URL}/${assignmentId}/students/${studentId}/assess`,
+    `${PROFESSOR_ASSIGNMENTS_API_URL}/${assignmentId}/students/${studentId}/assessments`,
     assessment
   );
 };

@@ -9,6 +9,7 @@ namespace AcadEvalSys.Domain.Enums
     public enum SurveyType
     {
         Student = 0,
-        Professor = 1
+        Professor = 1,
+        All = 2
     }
 }

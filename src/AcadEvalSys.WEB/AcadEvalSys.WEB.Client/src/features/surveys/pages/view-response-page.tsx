@@ -8,11 +8,11 @@ import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 
 export default function ViewResponsePage() {
   const [, setLocation] = useLocation();
-  const [, params] = useRoute('/encuestas/ver-respuesta/:surveySubjectId');
-  const surveySubjectId = params?.surveySubjectId;
+  const [, params] = useRoute('/encuestas/ver-respuesta/:surveyId');
+  const surveyId = params?.surveyId;
 
   // Obtener la encuesta con las respuestas en modo solo lectura
-  const { data: survey, isLoading, error } = useSurveyForResponse(surveySubjectId || '', true);
+  const { data: survey, isLoading, error } = useSurveyForResponse(surveyId || '', true);
 
   // Función para renderizar una respuesta según su tipo
   const renderResponse = (question: any) => {

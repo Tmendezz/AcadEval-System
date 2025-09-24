@@ -28,6 +28,7 @@ public class AcademicSurveyResponseRepository(ApplicationDbContext db) : IAcadem
             .Include(s => s.Subjects)
             .Where(s => 
                 s.Status == SurveyStatus.Published && 
+                (s.SurveyType == SurveyType.Student || s.SurveyType == SurveyType.All) &&
                 s.Subjects.Any(ass => studentSubjectIds.Contains(ass.SubjectId!.Value)));
 
         // Filtrar por estado si se proporciona
@@ -71,6 +72,7 @@ public class AcademicSurveyResponseRepository(ApplicationDbContext db) : IAcadem
             .Include(s => s.Subjects)
             .Where(s => 
                 s.Status == SurveyStatus.Published && 
+                (s.SurveyType == SurveyType.Professor || s.SurveyType == SurveyType.All) &&
                 s.Subjects.Any(ass => professorSubjectIds.Contains(ass.SubjectId!.Value)));
 
         // Filtrar por estado si se proporciona

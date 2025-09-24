@@ -3,7 +3,7 @@ import { UserRole } from "@infrastructure/api/types/auth";
 
 export interface RouteConfig {
   path: string;
-  component: React.LazyExoticComponent<React.ComponentType<Record<string, unknown>>>;
+  component: React.LazyExoticComponent<React.ComponentType<any>>;
   requiredRoles?: UserRole[];
   isAdminOnly?: boolean;
   title?: string;
@@ -11,7 +11,7 @@ export interface RouteConfig {
 }
 
 export const routes: RouteConfig[] = [
-  // Dashboard
+  // Dashboard  
   {
     path: "/",
     component: React.lazy(() => import("@/features/dashboard/dashboard")),
@@ -24,6 +24,7 @@ export const routes: RouteConfig[] = [
     component: React.lazy(
       () => import("@/features/surveys/pages/surveys-page")
     ),
+    requiredRoles: [UserRole.Admin, UserRole.Coordinator],
     title: "Encuestas",
   },
   {
@@ -31,6 +32,7 @@ export const routes: RouteConfig[] = [
     component: React.lazy(
       () => import("@/features/surveys/pages/create-survey-page")
     ),
+    requiredRoles: [UserRole.Admin],
     title: "Crear Encuesta",
   },
   {
@@ -38,6 +40,7 @@ export const routes: RouteConfig[] = [
     component: React.lazy(
       () => import("@/features/surveys/pages/edit-survey-page")
     ),
+    requiredRoles: [UserRole.Admin, UserRole.Coordinator],
     title: "Editar Encuesta",
   },
   {
@@ -45,6 +48,7 @@ export const routes: RouteConfig[] = [
     component: React.lazy(
       () => import("@/features/surveys/pages/survey-progress-page")
     ),
+    requiredRoles: [UserRole.Admin, UserRole.Coordinator],
     title: "Progreso de Encuesta",
   },
   {
@@ -52,6 +56,7 @@ export const routes: RouteConfig[] = [
     component: React.lazy(
       () => import("@/features/surveys/pages/survey-audience-detail-page")
     ),
+    requiredRoles: [UserRole.Admin, UserRole.Coordinator],
     title: "Detalle de Audiencia",
   },
   {
@@ -59,6 +64,7 @@ export const routes: RouteConfig[] = [
     component: React.lazy(
       () => import("@/features/surveys/pages/survey-results-page")
     ),
+    requiredRoles: [UserRole.Admin, UserRole.Coordinator],
     title: "Resultados de Encuesta",
   },
   {
@@ -66,6 +72,7 @@ export const routes: RouteConfig[] = [
     component: React.lazy(
       () => import("@/features/surveys/pages/templates-page")
     ),
+    requiredRoles: [UserRole.Admin, UserRole.Coordinator],
     title: "Plantillas de Encuestas",
   },
   {
@@ -73,6 +80,7 @@ export const routes: RouteConfig[] = [
     component: React.lazy(
       () => import("@/features/surveys/pages/create-template-page")
     ),
+    requiredRoles: [UserRole.Admin, UserRole.Coordinator],
     title: "Crear Plantilla",
   },
   {
@@ -80,10 +88,9 @@ export const routes: RouteConfig[] = [
     component: React.lazy(
       () => import("@/features/surveys/pages/edit-template-page")
     ),
+    requiredRoles: [UserRole.Admin, UserRole.Coordinator],
     title: "Editar Plantilla",
   },
-
-  // Student surveys
   {
     path: "/encuestas/alumno",
     component: React.lazy(
@@ -93,23 +100,21 @@ export const routes: RouteConfig[] = [
     title: "Mis Encuestas",
   },
   {
-    path: "/encuestas/alumno/responder/:surveySubjectId",
+    path: "/encuestas/responder/:surveyId",
     component: React.lazy(
       () => import("@/features/surveys/pages/respond-survey-page")
     ),
-    requiredRoles: [UserRole.Student],
+    requiredRoles: [UserRole.Student, UserRole.Professor],
     title: "Responder Encuesta",
   },
   {
-    path: "/encuestas/alumno/ver-respuesta/:surveySubjectId",
+    path: "/encuestas/ver-respuesta/:surveyId",
     component: React.lazy(
       () => import("@/features/surveys/pages/view-response-page")
     ),
-    requiredRoles: [UserRole.Student],
+    requiredRoles: [UserRole.Student, UserRole.Professor],
     title: "Ver Respuesta",
-  },
-  
-  // Teacher surveys
+  },  
   {
     path: "/encuestas/docente",
     component: React.lazy(
@@ -118,27 +123,12 @@ export const routes: RouteConfig[] = [
     requiredRoles: [UserRole.Professor],
     title: "Mis Encuestas",
   },
-  {
-    path: "/encuestas/docente/responder/:surveySubjectId",
-    component: React.lazy(
-      () => import("@/features/surveys/pages/respond-survey-page")
-    ),
-    requiredRoles: [UserRole.Professor],
-    title: "Responder Encuesta",
-  },
-  {
-    path: "/encuestas/docente/ver-respuesta/:surveySubjectId",
-    component: React.lazy(
-      () => import("@/features/surveys/pages/view-response-page")
-    ),
-    requiredRoles: [UserRole.Professor],
-    title: "Ver Respuesta",
-  },
+  
 
-  // Evaluations
   {
     path: "/evaluaciones",
     component: React.lazy(() => import("@/features/evaluations/evaluations")),
+    requiredRoles: [UserRole.Admin],
     title: "Evaluaciones",
   },
   {
@@ -146,6 +136,7 @@ export const routes: RouteConfig[] = [
     component: React.lazy(
       () => import("@/features/evaluations/pages/evaluations-dashboard")
     ),
+    requiredRoles: [UserRole.Admin],
     title: "Dashboard de Evaluaciones",
   },
   {
@@ -153,6 +144,7 @@ export const routes: RouteConfig[] = [
     component: React.lazy(
       () => import("@/features/evaluations/pages/create-evaluation-page")
     ),
+    requiredRoles: [UserRole.Admin],
     title: "Nueva Evaluación",
   },
   {
@@ -160,6 +152,7 @@ export const routes: RouteConfig[] = [
     component: React.lazy(
       () => import("@/features/evaluations/pages/evaluation-detail-page")
     ),
+    requiredRoles: [UserRole.Admin],
     title: "Detalle de Evaluación",
   },
   {
@@ -170,6 +163,7 @@ export const routes: RouteConfig[] = [
           "@/features/evaluations/pages/evaluation-to-complete-detail-page"
         )
     ),
+    requiredRoles: [UserRole.Admin],
     title: "Evaluación Pendiente",
   },
   {
@@ -177,6 +171,7 @@ export const routes: RouteConfig[] = [
     component: React.lazy(
       () => import("@/features/evaluations/pages/assignment-detail-page")
     ),
+    requiredRoles: [UserRole.Admin],
     title: "Detalle de Asignación",
   },
   {
@@ -184,6 +179,7 @@ export const routes: RouteConfig[] = [
     component: React.lazy(
       () => import("@/features/competency-detail/pages/competency-detail-page")
     ),
+    requiredRoles: [UserRole.Admin],
     title: "Detalle de Competencia",
   },
   {
@@ -191,15 +187,10 @@ export const routes: RouteConfig[] = [
     component: React.lazy(
       () => import("@/features/evaluations/pages/career-year-detail-page")
     ),
+    requiredRoles: [UserRole.Admin],
     title: "Evaluación por Año",
   },
-  {
-    path: "/evaluaciones/evaluar-estudiantes",
-    component: React.lazy(
-      () => import("@/features/evaluations/pages/evaluate-students-page")
-    ),
-    title: "Evaluar Estudiantes",
-  },
+  
 
   // Professor Routes - Patrón: /profesor/...
   {
@@ -213,8 +204,9 @@ export const routes: RouteConfig[] = [
     requiredRoles: [UserRole.Professor],
     title: "Mis Evaluaciones",
   },
+    
   {
-    path: "/profesor/evaluaciones/evaluar",
+    path: "/profesor/evaluaciones/:assignmentId",
     component: React.lazy(() =>
       import(
         "@/features/professor-evaluations/pages/professor-evaluation-page"
@@ -223,7 +215,7 @@ export const routes: RouteConfig[] = [
       }))
     ),
     requiredRoles: [UserRole.Professor],
-    title: "Evaluar Estudiantes",
+    title: "Evaluación de Asignación",
   },
 
   // Competencies
@@ -244,20 +236,10 @@ export const routes: RouteConfig[] = [
   {
     path: "/estudiante/evaluaciones",
     component: React.lazy(
-      () =>
-        import("@/features/student-evaluations/pages/student-evaluations-page")
+      () => import("@/features/student-evaluations/pages/student-received-evaluations-page")
     ),
     requiredRoles: [UserRole.Student],
     title: "Mis Evaluaciones",
-  },
-  {
-    path: "/estudiante/evaluaciones/recibidas",
-    component: React.lazy(
-      () =>
-        import("@/features/evaluations/pages/student-received-evaluations-page")
-    ),
-    requiredRoles: [UserRole.Student],
-    title: "Evaluaciones Recibidas",
   },
 
   // Career Routes - Patrón: /carreras/...

@@ -4,30 +4,23 @@ import {
   PageContent,
   PageSection,
 } from "@/shared/components/layout/page-layout";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
-import { Clock, CheckCircle, Filter } from "lucide-react";
+
+import { Clock, CheckCircle } from "lucide-react";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { DataSection } from "@/shared/components/ui/data-section";
 import { professorEvaluationColumns } from "../components";
 import { useGetAllProfessorAssignments } from "../hooks";
 import { ProfessorAssignment } from "../models";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 
 export default function ProfessorAllEvaluationsPage() {
   const { data: assignments, isLoading } = useGetAllProfessorAssignments();
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [tab, setTab] = useState<"pending" | "completed">("pending");
 
-  // Filtrar asignaciones según el filtro seleccionado
-  const filteredAssignments =
-    assignments?.filter((assignment: ProfessorAssignment) => {
-      if (statusFilter === "all") return true;
-      return assignment.status === statusFilter;
-    }) || [];
+  const pendingAssignments =
+    assignments?.filter((a: ProfessorAssignment) => a.status === "Pending") || [];
+  const completedAssignments =
+    assignments?.filter((a: ProfessorAssignment) => a.status === "Completed") || [];
 
   if (isLoading) {
     return (
@@ -48,49 +41,7 @@ export default function ProfessorAllEvaluationsPage() {
     );
   }
 
-  const getPageTitle = () => {
-    switch (statusFilter) {
-      case "Pending":
-        return "Evaluaciones Pendientes";
-      case "Completed":
-        return "Evaluaciones Completadas";
-      default:
-        return "Todas las Evaluaciones";
-    }
-  };
-
-  const getPageDescription = () => {
-    switch (statusFilter) {
-      case "Pending":
-        return "Evaluaciones de competencias que requieren tu atención";
-      case "Completed":
-        return "Evaluaciones de competencias que ya has completado";
-      default:
-        return "Gestiona todas tus evaluaciones de competencias asignadas. Usa los filtros para ver evaluaciones pendientes o completadas.";
-    }
-  };
-
-  const getEmptyMessage = () => {
-    switch (statusFilter) {
-      case "Pending":
-        return "No tienes evaluaciones pendientes";
-      case "Completed":
-        return "No has completado ninguna evaluación aún";
-      default:
-        return "No tienes evaluaciones asignadas";
-    }
-  };
-
-  const getEmptyIcon = () => {
-    switch (statusFilter) {
-      case "Pending":
-        return <Clock className="w-8 h-8" />;
-      case "Completed":
-        return <CheckCircle className="w-8 h-8" />;
-      default:
-        return <Clock className="w-8 h-8" />;
-    }
-  };
+  const totalAssignments = assignments?.length || 0;
 
   return (
     <PageLayout>
@@ -107,41 +58,56 @@ export default function ProfessorAllEvaluationsPage() {
             </p>
           </div>
 
-          {/* Filtros */}
-          <div className="mb-6 flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-muted-foreground">
-                Filtrar por:
-              </span>
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-64">
-                <SelectValue placeholder="Seleccionar estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas las evaluaciones</SelectItem>
-                <SelectItem value="Pending">Solo pendientes</SelectItem>
-                <SelectItem value="Completed">Solo completadas</SelectItem>
-              </SelectContent>
-            </Select>
-            <div className="ml-auto text-sm text-muted-foreground">
-              {filteredAssignments.length} de {assignments?.length || 0}{" "}
-              evaluaciones
-            </div>
-          </div>
+          {/* Tabs Pendientes / Completadas */}
+          <div className="mb-6">
+            <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
+              <div className="flex items-center justify-between mb-4">
+                <TabsList>
+                  <TabsTrigger value="pending">
+                    Pendientes
+                    <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-2 text-xs text-muted-foreground">
+                      {pendingAssignments.length}
+                    </span>
+                  </TabsTrigger>
+                  <TabsTrigger value="completed">
+                    Completadas
+                    <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-2 text-xs text-muted-foreground">
+                      {completedAssignments.length}
+                    </span>
+                  </TabsTrigger>
+                </TabsList>
+                <div className="text-sm text-muted-foreground">
+                  {pendingAssignments.length + completedAssignments.length} de {totalAssignments} evaluaciones
+                </div>
+              </div>
 
-          {/* Tabla de Evaluaciones */}
-          <DataSection
-            title={getPageTitle()}
-            description={getPageDescription()}
-            data={filteredAssignments}
-            columns={professorEvaluationColumns}
-            isLoading={isLoading}
-            emptyMessage={getEmptyMessage()}
-            emptyIcon={getEmptyIcon()}
-            className="mb-6"
-          />
+              <TabsContent value="pending">
+                <DataSection
+                  title="Evaluaciones Pendientes"
+                  description="Evaluaciones de competencias que requieren tu atención"
+                  data={pendingAssignments}
+                  columns={professorEvaluationColumns}
+                  isLoading={isLoading}
+                  emptyMessage="No tienes evaluaciones pendientes"
+                  emptyIcon={<Clock className="w-8 h-8" />}
+                  className="mb-6"
+                />
+              </TabsContent>
+
+              <TabsContent value="completed">
+                <DataSection
+                  title="Evaluaciones Completadas"
+                  description="Evaluaciones de competencias que ya has completado"
+                  data={completedAssignments}
+                  columns={professorEvaluationColumns}
+                  isLoading={isLoading}
+                  emptyMessage="No has completado ninguna evaluación aún"
+                  emptyIcon={<CheckCircle className="w-8 h-8" />}
+                  className="mb-6"
+                />
+              </TabsContent>
+            </Tabs>
+          </div>
         </PageSection>
       </PageContent>
     </PageLayout>

@@ -46,8 +46,14 @@ export function ProfessorEvaluationPage() {
   const assignmentId = params?.assignmentId || "";
   const { data: assignment, isLoading: isLoadingAssignment } =
     useProfessorAssignment(assignmentId);
-  const { data: students = [], isLoading: isLoadingStudents } =
+  const { data: studentsRaw, isLoading: isLoadingStudents } =
     useAssignmentStudents(assignmentId);
+
+  // Normalizar listado de estudiantes: usa endpoint dedicado si es array,
+  // de lo contrario toma del detalle de la asignación.
+  const students: StudentForEvaluation[] = Array.isArray(studentsRaw)
+    ? studentsRaw
+    : (assignment?.studentEvaluations as unknown as StudentForEvaluation[]) || [];
 
   const evaluatedStudents = students.filter(
     (student: StudentForEvaluation) => student.status === "Evaluated"

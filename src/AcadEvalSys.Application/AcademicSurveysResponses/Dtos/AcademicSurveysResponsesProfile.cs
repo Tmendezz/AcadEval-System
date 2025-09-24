@@ -16,7 +16,8 @@ public class AcademicSurveysResponsesProfile : Profile
             .ForMember(d => d.CloseAt, o => o.MapFrom(s => s.Survey.CloseAt))
             .ForMember(d => d.IsCompleted, o => o.MapFrom(s => s.HasResponse))
             .ForMember(d => d.SubmittedAt, o => o.MapFrom(s => s.SubmittedAt))
-            .ForMember(d => d.Status, o => o.MapFrom(s => s.Survey.Status));
+            .ForMember(d => d.Status, o => o.MapFrom(s => s.Survey.Status))
+            .ForMember(d => d.SurveyType, o => o.MapFrom(s => s.Survey.SurveyType));
 
         // Mapeo de AcademicSurvey a SurveyForResponseDto (para responder)
         CreateMap<AcademicSurvey, SurveyForResponseDto>()

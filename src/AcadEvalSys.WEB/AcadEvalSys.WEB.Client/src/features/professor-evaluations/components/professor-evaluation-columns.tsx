@@ -31,14 +31,17 @@ export const professorEvaluationColumns: ColumnDef<ProfessorAssignment>[] = [
     ),
   },
   {
-    accessorKey: "dueDate",
+    accessorKey: "periodTo",
     header: "Fecha Límite",
     cell: ({ row }) => {
-      const dueDate = new Date(row.getValue("dueDate"));
-      const isOverdue = dueDate < new Date();
+      const raw = row.original.periodTo ?? row.original.periodFrom;
+      if (!raw) return <div className="text-muted-foreground">Sin fecha</div>;
+      const dueDate = new Date(raw);
+      const isInvalid = isNaN(dueDate.getTime());
+      const isOverdue = !isInvalid && dueDate < new Date();
       return (
         <div className={isOverdue ? "text-destructive" : ""}>
-          {dueDate.toLocaleDateString()}
+          {isInvalid ? "Fecha inválida" : dueDate.toLocaleDateString()}
         </div>
       );
     },
@@ -49,27 +52,15 @@ export const professorEvaluationColumns: ColumnDef<ProfessorAssignment>[] = [
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
       const isCompleted = status === "Completed";
-      const isExpired = status === "Expired";
 
       return (
-        <Badge
-          variant={
-            isCompleted ? "default" : isExpired ? "destructive" : "secondary"
-          }
-          className={
-            isCompleted
-              ? "bg-green-100 text-green-800"
-              : isExpired
-              ? "bg-red-100 text-red-800"
-              : "bg-yellow-100 text-yellow-800"
-          }
-        >
+        <Badge variant={isCompleted ? "default" : "secondary"} className={isCompleted ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}>
           {isCompleted ? (
             <CheckCircle className="w-3 h-3 mr-1" />
           ) : (
             <Clock className="w-3 h-3 mr-1" />
           )}
-          {isCompleted ? "Completada" : isExpired ? "Vencida" : "Pendiente"}
+          {isCompleted ? "Completada" : "Pendiente"}
         </Badge>
       );
     },
@@ -79,7 +70,7 @@ export const professorEvaluationColumns: ColumnDef<ProfessorAssignment>[] = [
     header: "Acciones",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-        <Link href={`/profesor/evaluaciones/${row.original.id}`}>
+        <Link href={`/profesor/evaluaciones/${row.original.assignmentId}`}>
           <Button variant="outline" size="sm" className="gap-2">
             <Eye className="w-4 h-4" />
             Ver Detalle

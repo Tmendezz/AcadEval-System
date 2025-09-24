@@ -11,7 +11,7 @@ export interface ProfessorEvaluationAssignment {
   progressPercentage: number;
 }
 
-export interface ProfessorAssignmentFromApi {
+export interface ProfessorAssignment {
   assignmentId: string;
   competencyName: string;
   competencyDescription: string;
@@ -28,7 +28,7 @@ export interface ProfessorAssignmentFromApi {
   competencyLevelDescriptions: Record<string, string>;
 }
 
-export interface StudentCompetencyEvaluationFromApi {
+export interface StudentCompetencyEvaluation {
   studentCompetencyAssessmentId: string;
   studentId: string;
   studentName: string;

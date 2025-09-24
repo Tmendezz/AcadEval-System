@@ -46,7 +46,7 @@ export function YearDetailModal({
     queryKey: ["assignment-details", selectedAssignment],
     queryFn: async (): Promise<ProfessorAssignmentDetail> => {
       if (!selectedAssignment) throw new Error("No assignment selected");
-      const { data } = await api.get(`/professors/assignments/${selectedAssignment}/students`);
+      const { data } = await api.get(`/professor-assignments/${selectedAssignment}/students`);
       return data;
     },
     enabled: !!selectedAssignment && isOpen,

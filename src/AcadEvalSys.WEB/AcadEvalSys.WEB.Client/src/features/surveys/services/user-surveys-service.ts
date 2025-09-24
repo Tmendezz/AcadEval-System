@@ -12,6 +12,7 @@ export interface UserSurveyDto {
   isCompleted: boolean;
   submittedAt?: string;
   status: number; // SurveyStatus enum value
+  surveyType: number; // SurveyType enum value
 }
 
 // Detalle de encuesta para responder/revisar

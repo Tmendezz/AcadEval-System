@@ -2,8 +2,6 @@ import { useLocation, useRoute } from 'wouter';
 import { PageContent, PageHeader, PageLayout } from '@/shared/components/layout/page-layout';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Badge } from '@/shared/components/ui/badge';
-import { Progress } from '@/shared/components/ui/progress';
 import { ArrowLeft, BookOpen } from 'lucide-react';
 import { useSurvey, useAudienceResponses, useTechnicalCareers } from '../hooks/use-surveys';
 import { useMemo } from 'react';
