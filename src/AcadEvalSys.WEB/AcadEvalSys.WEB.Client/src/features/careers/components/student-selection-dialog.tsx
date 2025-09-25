@@ -15,10 +15,10 @@ import { Badge } from "@/shared/components/ui/badge";
 import { LoadingState } from "@/shared/components/ui/loading-state";
 import { Users, Search, UserPlus, Filter, CheckCircle } from "lucide-react";
 import { useAvailableStudents } from "../hooks";
-import { Student } from "@infrastructure/api/types/student";
-import { CareerYearLabels } from "@infrastructure/api/types/enums";
+import { Student } from "../models";
+import { getCareerYearLabel } from "../models";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import * as subjectService from "@infrastructure/api/clients/subject-service";
+import { enrollStudent } from "../services/subject-service";
 import { toast } from "sonner";
 
 interface StudentSelectionDialogProps {
@@ -56,7 +56,7 @@ export function StudentSelectionDialog({
   const enrollMutation = useMutation({
     mutationFn: async (studentIds: string[]) => {
       const promises = studentIds.map((studentId) =>
-        subjectService.enrollStudent(careerId, subjectId, studentId)
+        enrollStudent(careerId, subjectId, studentId)
       );
       await Promise.all(promises);
     },
@@ -167,7 +167,7 @@ export function StudentSelectionDialog({
               <div className="flex items-center justify-between">
                 <p className="font-medium">{student.name}</p>
                 <Badge variant="outline">
-                  {CareerYearLabels[student.currentYear]}
+                  {getCareerYearLabel(student.currentYear as any)}
                 </Badge>
               </div>
               <p className="text-sm text-gray-500">{student.email}</p>

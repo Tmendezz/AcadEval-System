@@ -42,9 +42,10 @@ public static class ServiceCollectionExtensions
             }
         });
 
-        // Configurar Storage (Azure Blob por defecto)
-        services.Configure<StorageConfiguration>(configuration.GetSection(StorageConfiguration.Section));
-        services.Configure<GoogleDriveStorageConfiguration>(configuration.GetSection(GoogleDriveStorageConfiguration.Section));
+        // Configurar Storage (elige proveedor por clave Storage:Provider)
+        // Bind explícito a las secciones reales en appsettings
+        services.Configure<StorageConfiguration>(configuration.GetSection("BlobStorage"));
+        services.Configure<GoogleDriveStorageConfiguration>(configuration.GetSection("Storage:Google"));
 
         var storageProvider = configuration.GetValue<string>("Storage:Provider");
         if (string.Equals(storageProvider, "GoogleDrive", StringComparison.OrdinalIgnoreCase))

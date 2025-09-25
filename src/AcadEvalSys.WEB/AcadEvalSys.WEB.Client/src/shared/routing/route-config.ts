@@ -1,5 +1,5 @@
+import { UserRole } from "@/features/auth/models";
 import React from "react";
-import { UserRole } from "@infrastructure/api/types/auth";
 
 export interface RouteConfig {
   path: string;
@@ -14,7 +14,7 @@ export const routes: RouteConfig[] = [
   // Dashboard  
   {
     path: "/",
-    component: React.lazy(() => import("@/features/dashboard/dashboard")),
+    component: React.lazy(() => import("@/features/dashboard/pages/dashboard")),
     title: "Dashboard",
   },
 
@@ -68,7 +68,7 @@ export const routes: RouteConfig[] = [
     title: "Resultados de Encuesta",
   },
   {
-    path: "/encuestas/plantillas",
+    path: "/plantillas",
     component: React.lazy(
       () => import("@/features/surveys/pages/templates-page")
     ),
@@ -76,7 +76,7 @@ export const routes: RouteConfig[] = [
     title: "Plantillas de Encuestas",
   },
   {
-    path: "encuestas/plantillas/crear",
+    path: "/plantillas/crear",
     component: React.lazy(
       () => import("@/features/surveys/pages/create-template-page")
     ),
@@ -84,7 +84,7 @@ export const routes: RouteConfig[] = [
     title: "Crear Plantilla",
   },
   {
-    path: "encuestas/plantillas/:id/editar",
+    path: "/plantillas/:id/editar",
     component: React.lazy(
       () => import("@/features/surveys/pages/edit-template-page")
     ),
@@ -127,7 +127,9 @@ export const routes: RouteConfig[] = [
 
   {
     path: "/evaluaciones",
-    component: React.lazy(() => import("@/features/evaluations/evaluations")),
+    component: React.lazy(
+      () => import("@/features/evaluations/pages/evaluations-page")
+    ),
     requiredRoles: [UserRole.Admin],
     title: "Evaluaciones",
   },
@@ -155,26 +157,7 @@ export const routes: RouteConfig[] = [
     requiredRoles: [UserRole.Admin],
     title: "Detalle de Evaluación",
   },
-  {
-    path: "/evaluaciones/pendientes/:id",
-    component: React.lazy(
-      () =>
-        import(
-          "@/features/evaluations/pages/evaluation-to-complete-detail-page"
-        )
-    ),
-    requiredRoles: [UserRole.Admin],
-    title: "Evaluación Pendiente",
-  },
-  {
-    path: "/evaluaciones/asignaciones/:id",
-    component: React.lazy(
-      () => import("@/features/evaluations/pages/assignment-detail-page")
-    ),
-    requiredRoles: [UserRole.Admin],
-    title: "Detalle de Asignación",
-  },
-  {
+    {
     path: "/evaluaciones/competencias/:id",
     component: React.lazy(
       () => import("@/features/competency-detail/pages/competency-detail-page")
@@ -196,10 +179,7 @@ export const routes: RouteConfig[] = [
   {
     path: "/profesor/evaluaciones",
     component: React.lazy(
-      () =>
-        import(
-          "@/features/professor-evaluations/pages/professor-all-evaluations-page"
-        )
+      () => import("@/features/professor-evaluations/pages/professor-all-evaluations-page.tsx")
     ),
     requiredRoles: [UserRole.Professor],
     title: "Mis Evaluaciones",
@@ -209,13 +189,11 @@ export const routes: RouteConfig[] = [
     path: "/profesor/evaluaciones/:assignmentId",
     component: React.lazy(() =>
       import(
-        "@/features/professor-evaluations/pages/professor-evaluation-page"
-      ).then((module) => ({
-        default: module.ProfessorEvaluationPage,
-      }))
+        "@/features/professor-evaluations/pages/professor-evaluation-page.tsx"
+      )
     ),
     requiredRoles: [UserRole.Professor],
-    title: "Evaluación de Asignación",
+    title: "Evaluación de Competencia",
   },
 
   // Competencies
@@ -266,7 +244,7 @@ export const routes: RouteConfig[] = [
   {
     path: "/carreras/:careerId/asignaturas/:subjectId",
     component: React.lazy(() =>
-      import("@/features/careers/components/SubjectDetail").then((module) => ({
+      import("@/features/careers/pages/SubjectDetail").then((module) => ({
         default: module.SubjectDetail,
       }))
     ),
@@ -275,7 +253,7 @@ export const routes: RouteConfig[] = [
   {
     path: "/carreras/:careerId",
     component: React.lazy(() =>
-      import("@/features/careers/components/CareerDetail").then((module) => ({
+      import("@/features/careers/pages/CareerDetail").then((module) => ({
         default: module.CareerDetail,
       }))
     ),

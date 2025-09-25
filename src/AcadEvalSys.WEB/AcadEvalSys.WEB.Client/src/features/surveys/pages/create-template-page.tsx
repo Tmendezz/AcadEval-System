@@ -13,7 +13,7 @@ export default function CreateTemplatePage() {
         <TemplateWizard
           onSubmit={async (payload) => {
             await createMutation.mutateAsync(payload);
-            setLocation('/templates');
+            setLocation('/plantillas');
           }}
           isSubmitting={createMutation.isPending}
         />

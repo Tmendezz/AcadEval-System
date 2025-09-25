@@ -12,6 +12,11 @@ export interface SurveyBasicInfoFormProps {
   maxDescriptionLength?: number;
   // Si es true, adapta los textos para PLANTILLAS
   isTemplate?: boolean;
+  // Labels/placeholder personalizados
+  titleLabel?: string;
+  descriptionLabel?: string;
+  titlePlaceholder?: string;
+  descriptionPlaceholder?: string;
   // Si es true, deshabilita la edición del título
   isTitleDisabled?: boolean;
   // Si es true, deshabilita la edición de la descripción
@@ -28,6 +33,10 @@ export function SurveyBasicInfoForm({
   maxTitleLength = 120,
   maxDescriptionLength = 300,
   isTemplate = false,
+  titleLabel,
+  descriptionLabel,
+  titlePlaceholder,
+  descriptionPlaceholder,
   isTitleDisabled = false,
   isDescriptionDisabled = false,
   showDescription = true,
@@ -48,12 +57,16 @@ export function SurveyBasicInfoForm({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="title" className="mb-1 block">{isTemplate ? 'Título de la Plantilla *' : 'Título de la Encuesta *'}</Label>
+          <Label htmlFor="title" className="mb-1 block">{
+            titleLabel ?? (isTemplate ? 'Título de la Plantilla *' : 'Título de la Encuesta *')
+          }</Label>
           <Input
             id="title"
             value={title}
             onChange={handleTitleChange}
-            placeholder={isTemplate ? 'Ingresa el título de la plantilla' : 'Ingresa el título de la encuesta'}
+            placeholder={
+              titlePlaceholder ?? (isTemplate ? 'Ingresa el título de la plantilla' : 'Ingresa el título de la encuesta')
+            }
             className={`${errors?.title ? 'border-destructive' : ''}`}
             maxLength={maxTitleLength}
             disabled={isTitleDisabled}
@@ -68,12 +81,16 @@ export function SurveyBasicInfoForm({
 
         {showDescription && (
           <div className="space-y-2">
-            <Label htmlFor="description" className="mb-1 block">{isTemplate ? 'Descripción de la Plantilla' : 'Descripción'}</Label>
+            <Label htmlFor="description" className="mb-1 block">{
+              descriptionLabel ?? (isTemplate ? 'Descripción de la Plantilla' : 'Descripción')
+            }</Label>
             <Textarea
               id="description"
               value={description}
               onChange={handleDescriptionChange}
-              placeholder={isTemplate ? 'Describe el propósito de la plantilla' : 'Describe el propósito de la encuesta'}
+              placeholder={
+                descriptionPlaceholder ?? (isTemplate ? 'Describe el propósito de la plantilla' : 'Describe el propósito de la encuesta')
+              }
               rows={3}
               className={`${errors?.description ? 'border-destructive' : ''}`}
               maxLength={maxDescriptionLength}

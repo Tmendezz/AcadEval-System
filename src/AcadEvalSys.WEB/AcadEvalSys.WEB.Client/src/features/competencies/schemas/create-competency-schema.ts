@@ -14,6 +14,12 @@ export const createCompetencySchema = z.object({
   type: z.enum(["Soft", "Technical"], {
     required_error: "Debe seleccionar un tipo de competencia",
   }),
+  levels: z.object({
+    Inicial: z.string().min(1, "Requerido"),
+    Intermedio: z.string().min(1, "Requerido"),
+    Avanzado: z.string().min(1, "Requerido"),
+    Excelente: z.string().min(1, "Requerido"),
+  }),
 });
 
 export type CreateCompetencyFormData = z.infer<typeof createCompetencySchema>;

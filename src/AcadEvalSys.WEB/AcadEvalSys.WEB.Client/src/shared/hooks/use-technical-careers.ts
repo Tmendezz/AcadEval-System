@@ -1,10 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getTechnicalCareers,
-  getTechnicalCareerById,
-  updateTechnicalCareer,
-} from "@infrastructure/api/clients/technical-career-service";
-import { UpdateTechnicalCareerRequest } from "@infrastructure/api/types/technical-career";
+import { technicalCareerService } from "@/features/careers/services/technical-career-service";
+import type { UpdateTechnicalCareerRequest } from "@/features/careers/models";
 import { toast } from "sonner";
 
 export const technicalCareersKeys = {
@@ -19,14 +15,14 @@ export const technicalCareersKeys = {
 export const useTechnicalCareers = () => {
   return useQuery({
     queryKey: technicalCareersKeys.lists(),
-    queryFn: getTechnicalCareers,
+    queryFn: () => technicalCareerService.getAll(),
   });
 };
 
 export const useTechnicalCareerById = (id: string) => {
   return useQuery({
     queryKey: technicalCareersKeys.detail(id),
-    queryFn: () => getTechnicalCareerById(id),
+    queryFn: () => technicalCareerService.getById(id),
     enabled: !!id,
   });
 };
@@ -41,7 +37,7 @@ export const useUpdateTechnicalCareer = () => {
     }: {
       id: string;
       career: UpdateTechnicalCareerRequest;
-    }) => updateTechnicalCareer(id, career),
+    }) => technicalCareerService.update(id, career),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: technicalCareersKeys.lists() });
       queryClient.invalidateQueries({

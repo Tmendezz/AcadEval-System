@@ -1,5 +1,5 @@
 import { useParams } from "wouter";
-import { useCompetencyById } from "@/shared/hooks/use-competencies";
+import { useCompetencyById } from "@/features/competencies/hooks/use-competencies";
 
 export const useCompetencyDetail = () => {
   const params = useParams();

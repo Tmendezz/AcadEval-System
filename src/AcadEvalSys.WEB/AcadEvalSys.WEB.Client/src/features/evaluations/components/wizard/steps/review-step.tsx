@@ -5,9 +5,9 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
-import { EvaluationFormData, Assignment } from "../../../types/evaluation-form";
+import type { EvaluationFormData, Assignment } from "@/features/evaluations/models/evaluation-form";
 import { useTechnicalCareers } from "@/shared/hooks/use-technical-careers";
-import { useCompetencies } from "@/shared/hooks/use-competencies";
+import { useCompetencies } from "@/features/competencies/hooks/use-competencies";
 import {
   getYearName,
   groupAssignmentsByCareer,
@@ -20,7 +20,7 @@ interface ReviewStepProps {
 
 export function ReviewStep({ formData, assignments }: ReviewStepProps) {
   const { data: careers = [] } = useTechnicalCareers();
-  const { data: competencies = [] } = useCompetencies();
+  const { data: competencies = [] as any[] } = useCompetencies();
 
   const groupedAssignments = groupAssignmentsByCareer(assignments);
 
@@ -109,8 +109,8 @@ export function ReviewStep({ formData, assignments }: ReviewStepProps) {
                               </div>
                               <div className="space-y-2 ml-4">
                                 {yearAssignments.map((assignment, index) => {
-                                  const competency = competencies.find(
-                                    (c) => c.id === assignment.competencyId
+                                  const competency = (competencies as any[]).find(
+                                    (c: any) => c.id === assignment.competencyId
                                   );
                                   return (
                                     <div

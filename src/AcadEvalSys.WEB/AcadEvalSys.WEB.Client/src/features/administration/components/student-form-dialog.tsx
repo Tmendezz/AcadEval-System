@@ -30,9 +30,9 @@ import { Button } from "@/shared/components/ui/button";
 import { Separator } from "@/shared/components/ui/separator";
 import { toast } from "sonner";
 import { Student, StudentFormValues } from "../services/student-service";
-import { getTechnicalCareers } from "@infrastructure/api/clients/technical-career-service";
+import { technicalCareerService } from "@/features/careers/services/technical-career-service";
 import { useQuery } from "@tanstack/react-query";
-import type { TechnicalCareer } from "@infrastructure/api/types/technical-career";
+import type { TechnicalCareer } from "@/features/careers/models";
 
 const studentFormSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -64,7 +64,7 @@ export function StudentFormDialog({
 
   const { data: careers = [] } = useQuery<TechnicalCareer[]>({
     queryKey: ["technical-careers"],
-    queryFn: getTechnicalCareers,
+    queryFn: () => technicalCareerService.getAll(),
   });
 
   const form = useForm<StudentFormData>({

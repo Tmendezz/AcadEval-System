@@ -11,8 +11,9 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { technicalCareerService } from "@/features/careers/services/technical-career-service";
 import { NavGroup } from "@/shared/types/ui";
-import { useAuthStore } from "@/features/auth/store";
-import { UserRole } from "@infrastructure/api/types/auth";
+import { useAuthStore } from "@/shared/stores";
+import { UserRole } from "@/features/auth/models";
+
 
 export function useSidebarConfig() {
   const { user } = useAuthStore();
@@ -63,7 +64,7 @@ export function useSidebarConfig() {
         label: "Encuestas",
       },
       {
-        href: "/encuestas/plantillas",
+        href: "/plantillas",
         icon: Copy,
         label: "Plantillas",
       }

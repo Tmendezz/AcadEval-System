@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { getStudentsForAssignment } from "../services";
-import { StudentForEvaluation } from "../models";
+import { getAssignmentStudents } from "@/features/professor-evaluations/services/professor-evaluations-service";
 
-export const useAssignmentStudents = (assignmentId: string) => {
-  return useQuery<StudentForEvaluation[], Error>({
+export function useAssignmentStudents(assignmentId: string) {
+  return useQuery({
     queryKey: ["assignment-students", assignmentId],
-    queryFn: () => getStudentsForAssignment(assignmentId),
-    enabled: !!assignmentId,
+    queryFn: () => getAssignmentStudents(assignmentId),
+    enabled: Boolean(assignmentId),
   });
-};
+}
+
+

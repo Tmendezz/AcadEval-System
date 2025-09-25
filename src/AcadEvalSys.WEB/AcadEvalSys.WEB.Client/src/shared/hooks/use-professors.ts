@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getProfessors, getProfessorById } from "@infrastructure/api/clients/professor-service";
+import { professorService } from "@/features/administration/services/professor-service";
 
 export const professorsKeys = {
   all: ["professors"] as const,
@@ -32,14 +32,22 @@ export const useProfessors = (
       technicalCareerId
     ),
     queryFn: () =>
-      getProfessors(pageNumber, pageSize, searchTerm, technicalCareerId),
+      professorService.getAll({
+        pageNumber,
+        pageSize,
+        searchTerm,
+        technicalCareerId,
+      }),
   });
 };
 
 export const useProfessorById = (id: string) => {
   return useQuery({
     queryKey: professorsKeys.detail(id),
-    queryFn: () => getProfessorById(id),
+    queryFn: async () => {
+      const all = await professorService.getAll();
+      return all.professors.find((p) => p.id === id);
+    },
     enabled: !!id,
   });
 };

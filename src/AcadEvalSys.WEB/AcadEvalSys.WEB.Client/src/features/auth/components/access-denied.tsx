@@ -1,4 +1,4 @@
-import { UserRole, getFirstRoleLabel } from "@infrastructure/api/types/auth";
+import { UserRole, getRoleLabel } from "../models";
 
 interface AccessDeniedProps {
   userRole?: UserRole | null;
@@ -29,6 +29,7 @@ export function AccessDenied({
     }
   };
 
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
       <div className="text-center space-y-6 max-w-md mx-auto p-6">
@@ -41,14 +42,12 @@ export function AccessDenied({
           {userRole && (
             <p>
               <strong>Tu rol:</strong>{" "}
-              {getFirstRoleLabel({ roles: [userRole] })}
+              {getRoleLabel(userRole)}
             </p>
           )}
           <p>
             <strong>Roles requeridos:</strong>{" "}
-            {requiredRoles
-              .map((role) => getFirstRoleLabel({ roles: [role] }))
-              .join(", ")}
+            {requiredRoles.map((role) => getRoleLabel(role)).join(", ")}
           </p>
         </div>
 

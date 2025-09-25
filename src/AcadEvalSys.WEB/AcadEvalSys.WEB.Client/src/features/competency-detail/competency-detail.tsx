@@ -1,5 +1,5 @@
 import { useParams } from "wouter";
-import { useCompetencyById } from "@/shared/hooks/use-competencies";
+import { useCompetencyById } from "@/features/competencies/hooks/use-competencies";
 import { CompetencyDetailLayout } from "./components/competency-detail-layout";
 
 export default function CompetencyDetail() {

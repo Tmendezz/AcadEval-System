@@ -1,37 +1,15 @@
 import { useState } from 'react';
 import { useLocation } from 'wouter';
-import { usePermissions } from '@/features/auth/hooks/use-permissions';
-import { UserRole } from '@infrastructure/api/types/auth';
 import { Button } from '@/shared/components/ui/button';
 import { Plus } from 'lucide-react';
 import { PageContent, PageHeader, PageLayout } from '@/shared/components/layout/page-layout';
 
 // Componentes
-import MySurveysPage from './my-surveys-page';
 import { SurveyList } from '../components/SurveyList';
 import { useSurveys } from '../hooks/use-surveys';
 import { SurveyStatus } from '../models/survey-types';
 
-/**
- * Página principal de encuestas que detecta el rol del usuario
- * y muestra la vista apropiada:
- * - Admin/Coordinador: Vista administrativa completa  
- * - Estudiante/Profesor: Vista de "Mis Encuestas"
- */
 export default function SurveysPage() {
-  const { can } = usePermissions();
-
-  // Si es estudiante o profesor, mostrar solo sus encuestas
-  if (!can([UserRole.Admin, UserRole.Coordinator])) {
-    return <MySurveysPage />;
-  }
-
-  // Vista administrativa para Admin y Coordinador
-  return <AdminSurveysView />;
-}
-
-// Componente de vista administrativa
-function AdminSurveysView() {
   const [filters] = useState({
     status: undefined as SurveyStatus | undefined,
     search: '',
@@ -76,15 +54,15 @@ function AdminSurveysView() {
         </Button>
       </PageHeader>
       <PageContent>
-          <SurveyList
-            surveys={surveys}
-            isLoading={isLoading}
-            error={error}
-            onEdit={handleEditSurvey}
-            onViewProgress={handleViewProgress}
-            onViewResults={handleViewResults}
-            onDelete={handleDeleteSurvey}
-          />
+        <SurveyList
+          surveys={surveys}
+          isLoading={isLoading}
+          error={error}
+          onEdit={handleEditSurvey}
+          onViewProgress={handleViewProgress}
+          onViewResults={handleViewResults}
+          onDelete={handleDeleteSurvey}
+        />
       </PageContent>
     </PageLayout>
   );

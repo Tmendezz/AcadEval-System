@@ -12,8 +12,7 @@ namespace AcadEvalSys.Application.StudentCompetencyAssessments.Commands.Complete
 public class CompleteStudentAssessmentCommandHandler(ILogger<CompleteStudentAssessmentCommandHandler> logger,
     IMapper mapper,
     IStudentCompetencyAssessmentsRepository studentCompetencyAssessmentRepository,
-    IProfessorCompetencyAssignmentRepository professorCompetencyAssignmentRepository,
-    IStudentReportGenerationService evaluationCompletionService
+    IProfessorCompetencyAssignmentRepository professorCompetencyAssignmentRepository
     ) : IRequestHandler<CompleteStudentAssessmentCommand, Guid>
 {
     public async Task<Guid> Handle(CompleteStudentAssessmentCommand request, CancellationToken cancellationToken)

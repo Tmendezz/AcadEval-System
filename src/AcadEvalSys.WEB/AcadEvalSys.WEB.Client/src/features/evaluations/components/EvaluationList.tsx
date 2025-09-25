@@ -2,7 +2,7 @@ import { Link } from "wouter";
 import { Button } from "@/shared/components/ui/button";
 import { DataSection } from "@/shared/components/ui/data-section";
 import { evaluationColumns } from "./evaluation-columns";
-import { EvaluationListItem } from "@infrastructure/api/clients/evaluation-service";
+import { EvaluationListItem } from "@/features/evaluations/services";
 import { Plus } from "lucide-react";
 
 interface EvaluationListProps {
@@ -19,7 +19,7 @@ export function EvaluationList({ evaluations, isLoading }: EvaluationListProps) 
       columns={evaluationColumns}
       isLoading={isLoading}
       emptyMessage="No se encontraron evaluaciones."
-      extraHeaderContent={
+      headerActions={
         <Link href="/evaluaciones/nueva">
           <Button>
             <Plus className="w-4 h-4 mr-2" />

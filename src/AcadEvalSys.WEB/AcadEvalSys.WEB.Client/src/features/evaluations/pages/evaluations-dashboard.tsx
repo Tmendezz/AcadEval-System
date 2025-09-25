@@ -13,16 +13,15 @@ import { LoadingState } from "@/shared/components/ui/loading-state";
 import { createCompetencyColumns } from "@/features/competencies/components/competency-columns";
 import { evaluationColumns } from "../components/evaluation-columns";
 import { DataSection } from "@/shared/components/ui/data-section";
-import { EvaluationListItem } from "@infrastructure/api/clients/evaluation-service";
-import { Competency } from "@infrastructure/api/types/competency";
+import type { EvaluationListItem } from "@/features/evaluations/services/evaluation-service";
+import type { CompetencyDto as Competency } from "@/features/competencies/services/competency-service";
 
 export default function EvaluationsDashboard() {
   // Queries
   const { data: competencies = [], isLoading: isLoadingCompetencies } =
     useCompetencies();
-  const { data: evaluationsData, isLoading: isLoadingEvaluations } =
+  const { data: evaluations = [], isLoading: isLoadingEvaluations } =
     useGetEvaluations();
-  const evaluations = evaluationsData?.items || [];
 
   // Estadísticas
   const evaluationStats = [
@@ -35,9 +34,9 @@ export default function EvaluationsDashboard() {
     {
       key: "evaluationsThisYear",
       label: "Evaluaciones este año",
-      value: evaluations.filter((e: EvaluationListItem) => {
+      value: (evaluations as EvaluationListItem[]).filter((e) => {
         const year = new Date().getFullYear();
-        const evaluationYear = new Date(e.startDate).getFullYear();
+        const evaluationYear = new Date((e as any).startDate ?? e.createdAt).getFullYear();
         return evaluationYear === year;
       }).length,
       icon: <Target className="h-4 w-4" />,
@@ -45,10 +44,10 @@ export default function EvaluationsDashboard() {
     {
       key: "totalAssignments",
       label: "Total Asignaciones",
-      value: evaluations.reduce(
-        (sum: number, e: EvaluationListItem) => sum + e.professorsCount,
-        0
-      ),
+      value: (evaluations as EvaluationListItem[]).reduce((sum, e) => {
+        const count = (e as any).professorsCount ?? (e as any).assignmentsCount ?? 0;
+        return sum + count;
+      }, 0),
       icon: <Brain className="h-4 w-4" />,
     },
   ];

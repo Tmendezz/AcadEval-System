@@ -63,7 +63,7 @@ export function TemplateCards({ templates, onUseTemplate }: TemplateCardsProps) 
                 }
               />
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setLocation(`/templates/editar/${t.id}`)}>
+                <Button variant="outline" onClick={() => setLocation(`/plantillas/${t.id}/editar`)}>
                   Editar
                 </Button>
                 <Button onClick={() => onUseTemplate(t)}>Usar</Button>

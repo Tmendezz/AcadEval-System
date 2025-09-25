@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getSubjectById } from "@infrastructure/api/clients/subject-service";
+import { getSubjectById } from "../services/subject-service";
 
 export const useSubject = (subjectId: string, careerId: string) => {
   const { data: subject, isLoading: isLoadingSubject } = useQuery({

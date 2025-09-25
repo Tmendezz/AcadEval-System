@@ -11,12 +11,12 @@ import {
 import { Button } from "@/shared/components/ui/button";
 
 import { Separator } from "@/shared/components/ui/separator";
-import { X } from "lucide-react";
+// removed unused X import
 import { useImportStudentsToCareer, useBulkEnrollment } from "../hooks";
-import { ImportStudentsResult } from "../types";
+import { ImportStudentsResult } from "../models";
 import { FileUpload } from "./file-upload";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
-import { CareerYear, CareerYearLabels } from "@infrastructure/api/types/enums";
+import { CareerYear, getCareerYearLabel } from "../models";
 import {
   SelectedFileSection,
   FormatHelpSection,
@@ -87,7 +87,7 @@ export function ImportStudentsToCareerDialog({
           <DialogTitle>Importar Estudiantes a la Carrera</DialogTitle>
           <DialogDescription>
             Importa estudiantes desde un archivo Excel a{" "}
-            <strong>{careerName}</strong> para {CareerYearLabels[careerYear]}.
+            <strong>{careerName}</strong> para {getCareerYearLabel(careerYear)}.
           </DialogDescription>
         </DialogHeader>
 

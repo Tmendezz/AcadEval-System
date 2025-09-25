@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import * as subjectService from "@infrastructure/api/clients/subject-service";
-import { studentService } from "@infrastructure/api/clients/student-service";
-import { CareerYear } from "@infrastructure/api/types/enums";
+import * as subjectService from "../services/subject-service";
+import { studentService } from "@/features/administration/services/student-service";
+import { CareerYear } from "../models";
 
 export function useBulkEnrollment() {
   const [isEnrollingAll, setIsEnrollingAll] = useState(false);

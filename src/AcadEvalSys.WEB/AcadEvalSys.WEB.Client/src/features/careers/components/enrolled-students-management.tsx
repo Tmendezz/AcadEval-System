@@ -17,8 +17,8 @@ import { Badge } from "@/shared/components/ui/badge";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 
 import { Users, UserMinus, Trash2 } from "lucide-react";
-import { Student } from "@infrastructure/api/types/student";
-import { CareerYear, CareerYearLabels } from "@infrastructure/api/types/enums";
+import { Student } from "../models";
+import { CareerYear, getCareerYearLabel } from "../models";
 import { useUnenrollStudent, useUnenrollStudents } from "../hooks";
 
 interface EnrolledStudentsManagementProps {
@@ -186,7 +186,7 @@ export const EnrolledStudentsManagement = forwardRef<
               <div className="flex items-center justify-between">
                 <p className="font-medium">{student.name}</p>
                 <Badge variant="outline">
-                  {CareerYearLabels[student.currentYear]}
+                  {getCareerYearLabel(student.currentYear as any)}
                 </Badge>
               </div>
               <p className="text-sm text-gray-500">{student.email}</p>

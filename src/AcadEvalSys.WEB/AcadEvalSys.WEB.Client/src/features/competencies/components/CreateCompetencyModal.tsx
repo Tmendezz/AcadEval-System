@@ -24,7 +24,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { CompetencyFormData } from "@/shared/hooks/use-competencies";
+import { useCreateCompetency } from "@/features/competencies/hooks/use-competencies";
+import { CompetencyFormData } from "@/features/competencies/hooks/use-competencies";
 import { createCompetencySchema } from "../schemas/create-competency-schema";
 
 interface CreateCompetencyModalProps {
@@ -46,6 +47,12 @@ export function CreateCompetencyModal({
       name: "",
       description: "",
       type: "Soft",
+      levels: {
+        Inicial: "",
+        Intermedio: "",
+        Avanzado: "",
+        Excelente: "",
+      },
     },
   });
 
@@ -123,6 +130,30 @@ export function CreateCompetencyModal({
                 </FormItem>
               )}
             />
+
+            <div className="space-y-3">
+              <FormLabel>Descripciones por nivel</FormLabel>
+              {(["Inicial", "Intermedio", "Avanzado", "Excelente"] as const).map((nivel) => (
+                <FormField
+                  key={nivel}
+                  control={form.control}
+                  name={`levels.${nivel}` as const}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs">{nivel}</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder={`Descripción para nivel ${nivel}`}
+                          rows={2}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ))}
+            </div>
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={handleClose}>
                 Cancelar

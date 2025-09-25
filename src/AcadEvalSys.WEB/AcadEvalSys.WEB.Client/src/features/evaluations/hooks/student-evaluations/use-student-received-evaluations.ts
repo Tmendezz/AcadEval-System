@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { getStudentReceivedEvaluations, StudentReceivedEvaluation } from "@infrastructure/api/clients/student-evaluation-service";
+import { studentEvaluationsApi } from "@/features/student-evaluations/services/student-evaluations-service";
+import type { StudentReceivedEvaluation } from "@/features/student-evaluations/models";
 
 export const studentReceivedEvaluationsKeys = {
   all: ["student-received-evaluations"] as const,
@@ -8,9 +9,9 @@ export const studentReceivedEvaluationsKeys = {
 };
 
 export const useStudentReceivedEvaluations = (enabled = true) => {
-  return useQuery({
+  return useQuery<StudentReceivedEvaluation[], Error>({
     queryKey: studentReceivedEvaluationsKeys.all,
-    queryFn: getStudentReceivedEvaluations,
+    queryFn: () => studentEvaluationsApi.getReceivedEvaluations(),
     enabled,
   });
 };

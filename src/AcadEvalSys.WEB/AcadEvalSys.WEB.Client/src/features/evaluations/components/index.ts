@@ -10,6 +10,5 @@ export { studentEvaluationColumns } from "./student-evaluation-columns";
 
 // Subcomponentes organizados
 export * from "./career-year-detail";
-export * from "./evaluate-students";
 export * from "./evaluation-detail";
 export * from "./wizard";

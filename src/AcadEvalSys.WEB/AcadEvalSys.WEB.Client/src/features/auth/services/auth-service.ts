@@ -1,10 +1,6 @@
 import { api } from "@infrastructure/query/axios";
-import { useAuthStore } from "@/features/auth/store";
-import {
-  User,
-  LoginCredentials,
-  SessionStatus,
-} from "@infrastructure/api/types/auth";
+import { useAuthStore } from "../store";
+import { User, LoginCredentials, SessionStatus } from "../models";
 
 const AUTH_API_URL = "/identity";
 

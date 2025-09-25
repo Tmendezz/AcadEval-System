@@ -7,12 +7,11 @@ import {
 import { Target } from "lucide-react";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { DataSection } from "@/shared/components/ui/data-section";
-import { useStudentReceivedEvaluations } from "../../evaluations/hooks/student-evaluations/use-student-received-evaluations";
+import { useReceivedEvaluations } from "../hooks/use-received-evaluations";
 import { studentReceivedEvaluationColumns } from "../components/columns/student-received-evaluations-columns";
 
 export default function StudentReceivedEvaluationsPage() {
-  const { data: receivedEvaluations = [], isLoading } =
-    useStudentReceivedEvaluations();
+  const { data: receivedEvaluations = [], isLoading } = useReceivedEvaluations();
 
   if (isLoading) {
     return (

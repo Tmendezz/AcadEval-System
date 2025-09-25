@@ -1,11 +1,21 @@
-// Re-export types from infrastructure that are used by this feature
-export type {
-  Subject,
-  EnrolledStudent,
-  SubjectAssignment,
-  CareerYearData,
-  CareerData,
-} from "@infrastructure/api/types/subject";
+// Tipos locales de subject usados por el feature
+export interface EnrolledStudent {
+  studentId: string;
+  studentName: string;
+  studentEmail: string;
+  currentYear: "First" | "Second" | "Third" | number;
+  technicalCareerName?: string;
+}
+
+export interface Subject {
+  id: string;
+  name: string;
+  description?: string;
+  year: "First" | "Second" | "Third" | string;
+  professorId?: string;
+  professorName?: string;
+  enrolledStudents?: EnrolledStudent[];
+}
 
 // Feature-specific types for careers
 export interface CareerProfessor {

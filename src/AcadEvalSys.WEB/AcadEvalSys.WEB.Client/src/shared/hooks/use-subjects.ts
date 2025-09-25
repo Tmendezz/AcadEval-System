@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   getSubjectsByCareer,
   getSubjectById,
-} from "@infrastructure/api/clients/subject-service";
+} from "@/features/careers/services/subject-service";
 
 export const subjectsKeys = {
   all: ["subjects"] as const,
@@ -21,7 +21,12 @@ export const useSubjectsByCareer = (
 ) => {
   return useQuery({
     queryKey: subjectsKeys.list(careerId, year),
-    queryFn: () => getSubjectsByCareer(careerId, year, includeEnrolledStudents),
+    queryFn: () =>
+      getSubjectsByCareer(
+        careerId,
+        year as "First" | "Second" | "Third" | undefined,
+        includeEnrolledStudents
+      ),
     enabled: !!careerId,
   });
 };

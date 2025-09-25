@@ -8,15 +8,12 @@ export default function EditTemplatePage() {
   const params = useParams<{ id: string }>();
   const id = params?.id || '';
   
-  console.log('EditTemplatePage - ID:', id);
-  console.log('EditTemplatePage - Params:', params);
+  
   
   const { data: template, isLoading, error } = useSurveyTemplate(id);
   const updateMutation = useUpdateSurveyTemplate();
   
-  console.log('EditTemplatePage - Template:', template);
-  console.log('EditTemplatePage - Loading:', isLoading);
-  console.log('EditTemplatePage - Error:', error);
+  
 
   if (isLoading) {
     return (
@@ -56,12 +53,12 @@ export default function EditTemplatePage() {
         <TemplateWizard
           onSubmit={async (payload) => {
             await updateMutation.mutateAsync({ id, data: payload });
-            setLocation('/templates');
+            setLocation('/plantillas');
           }}
           isSubmitting={updateMutation.isPending}
           initialData={{
-            title: template.title,
-            description: template.description,
+            title: (template as any).title ?? (template as any).name ?? '',
+            description: (template as any).description ?? '',
             surveyType: template.surveyType,
             isDraft: template.isDraft,
             questions: template.questions,

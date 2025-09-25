@@ -1,4 +1,4 @@
-import { User } from '@/shared/types/auth';
+import { User } from '../models';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 

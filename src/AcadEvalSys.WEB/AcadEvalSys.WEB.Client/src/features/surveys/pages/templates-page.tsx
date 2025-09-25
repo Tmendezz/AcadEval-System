@@ -18,7 +18,7 @@ export default function TemplatesPage() {
   const { setSelectedTemplateId } = useSurveysStore();
   
   const handleCreateTemplate = () => {
-    setLocation('/templates/crear');
+    setLocation('/plantillas/crear');
   };
 
   return (

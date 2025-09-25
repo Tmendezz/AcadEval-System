@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getTechnicalCareers } from "@infrastructure/api/clients/technical-career-service";
+import { technicalCareerService } from "../services/technical-career-service";
 
 export const technicalCareersKeys = {
   all: ["technical-careers"] as const,
@@ -10,6 +10,6 @@ export const technicalCareersKeys = {
 export const useGetTechnicalCareers = () => {
   return useQuery({
     queryKey: technicalCareersKeys.list(),
-    queryFn: getTechnicalCareers,
+    queryFn: () => technicalCareerService.getAll(),
   });
 };

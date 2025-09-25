@@ -27,7 +27,7 @@ export function TemplateList({ onPreview }: TemplateListProps) {
   // Handlers de filtros y crear se habilitarán cuando se agregue la UI
 
   const handleEdit = (template: SurveyTemplateListItem) => {
-    setLocation(`/templates/editar/${template.id}`);
+    setLocation(`/plantillas/${template.id}/editar`);
   };
 
   const handleDuplicate = async (template: SurveyTemplateListItem) => {

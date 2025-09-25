@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ImportStudentsResult } from "@/features/careers/types/import";
-import * as technicalCareerService from "@infrastructure/api/clients/technical-career-service";
+import { ImportStudentsResult } from "@/features/careers/models";
+import { technicalCareerService } from "@/features/careers/services/technical-career-service";
 import { toast } from "sonner";
 
 interface ImportStudentsParams {

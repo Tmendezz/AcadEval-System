@@ -19,10 +19,7 @@ export { useDeleteEvaluation } from "./evaluations/mutations/use-delete-evaluati
 // Professor evaluation hooks moved to professor-evaluations feature
 
 // Shared hooks (re-export from shared)
-export {
-  useCompetencies,
-  useCompetencyById,
-} from "@/shared/hooks/use-competencies";
+export { useCompetencies, useCompetencyById, useCreateCompetency, useUpdateCompetency, useDeleteCompetency, competenciesKeys } from "@/features/competencies/hooks/use-competencies";
 export {
   useTechnicalCareers,
   useTechnicalCareerById,

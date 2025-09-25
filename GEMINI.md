@@ -69,10 +69,7 @@ shared/    # ONLY for 2+ feature usage
   stores/    # Global Zustand stores
 infrastructure/    # Cross-cutting concerns
   ui/              # shadcn/ui components and configuration
-  lib/             # Tailwind CSS configuration, design tokens
-  api/
-    clients/       # API clients
-    types/         # API types
+  lib/             # Tailwind CSS configuration, 
   query/           # React Query configuration & providers
   auth/
   monitoring/

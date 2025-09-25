@@ -1,6 +1,6 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import { EvaluationListItem } from "@infrastructure/api/clients/evaluation-service";
+import { EvaluationListItem } from "@/features/evaluations/services";
 import { Badge } from "@/shared/components/ui/badge";
 import { Link } from "wouter";
 import { Button } from "@/shared/components/ui/button";
@@ -22,13 +22,14 @@ export const evaluationColumns: ColumnDef<EvaluationListItem>[] = [
     accessorKey: "status",
     header: "Estado",
     cell: ({ row }) => {
-      const status = row.original.status;
-      const variant = {
+      const status = row.original.status as keyof typeof variantMap;
+      const variantMap = {
         Published: "default",
         Completed: "success",
         Draft: "secondary",
         Archived: "outline",
-      }[status];
+      } as const;
+      const variant = variantMap[status];
       return (
         <Badge
           variant={

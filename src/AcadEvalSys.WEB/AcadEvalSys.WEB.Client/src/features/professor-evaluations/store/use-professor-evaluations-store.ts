@@ -1,42 +1,37 @@
 import { create } from "zustand";
 
-interface ProfessorEvaluationsState {
-  isLoading: boolean;
-  error: string | null;
-  selectedAssignment: string | null;
-  selectedStudent: string | null;
-  currentEvaluation: { id: string; competencyLevel: string; comments?: string } | null;
+type CompetencyLevel = "Inicial" | "Intermedio" | "Avanzado" | "Excelente";
 
-  setLoading: (isLoading: boolean) => void;
-  setError: (error: string | null) => void;
-  clearError: () => void;
-  setSelectedAssignment: (assignmentId: string | null) => void;
-  setSelectedStudent: (studentId: string | null) => void;
-  setCurrentEvaluation: (evaluation: { id: string; competencyLevel: string; comments?: string } | null) => void;
-  resetEvaluation: () => void;
+export interface ProfessorEvaluationsState {
+  selectedAssignmentId: string | null;
+  setSelectedAssignmentId: (id: string | null) => void;
+
+  pendingSaves: Record<string, CompetencyLevel>;
+  setPendingSave: (studentId: string, level: CompetencyLevel) => void;
+  removePendingSave: (studentId: string) => void;
+  clearPendingSaves: () => void;
+
+  lastSavedAt: number | null;
+  setLastSavedAt: (ts: number) => void;
 }
 
-export const useProfessorEvaluationsStore = create<ProfessorEvaluationsState>(
-  (set) => ({
-    isLoading: false,
-    error: null,
-    selectedAssignment: null,
-    selectedStudent: null,
-    currentEvaluation: null,
+export const useProfessorEvaluationsStore = create<ProfessorEvaluationsState>((set) => ({
+  selectedAssignmentId: null,
+  setSelectedAssignmentId: (id) => set({ selectedAssignmentId: id }),
 
-    setLoading: (isLoading) => set({ isLoading }),
-    setError: (error) => set({ error }),
-    clearError: () => set({ error: null }),
-    setSelectedAssignment: (assignmentId) =>
-      set({ selectedAssignment: assignmentId }),
-    setSelectedStudent: (studentId) => set({ selectedStudent: studentId }),
-    setCurrentEvaluation: (evaluation) =>
-      set({ currentEvaluation: evaluation }),
-    resetEvaluation: () =>
-      set({
-        selectedAssignment: null,
-        selectedStudent: null,
-        currentEvaluation: null,
-      }),
-  })
-);
+  pendingSaves: {},
+  setPendingSave: (studentId, level) =>
+    set((state) => ({ pendingSaves: { ...state.pendingSaves, [studentId]: level } })),
+  removePendingSave: (studentId) =>
+    set((state) => {
+      const next = { ...state.pendingSaves };
+      delete next[studentId];
+      return { pendingSaves: next };
+    }),
+  clearPendingSaves: () => set({ pendingSaves: {} }),
+
+  lastSavedAt: null,
+  setLastSavedAt: (ts) => set({ lastSavedAt: ts }),
+}));
+
+

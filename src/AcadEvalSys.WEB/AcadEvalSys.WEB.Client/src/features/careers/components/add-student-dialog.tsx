@@ -28,7 +28,7 @@ import {
 } from "@/shared/components/ui/select";
 import { UserPlus, Eye, EyeOff } from "lucide-react";
 import { useAddStudentToCareer } from "../hooks";
-import { CreateStudentRequest } from "../types";
+import { CreateStudentRequest } from "../models";
 import { useState } from "react";
 
 const studentSchema = z.object({

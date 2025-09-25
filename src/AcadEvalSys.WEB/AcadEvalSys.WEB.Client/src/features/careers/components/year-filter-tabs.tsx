@@ -1,5 +1,5 @@
 import { Tabs, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
-import { CareerYear } from "@infrastructure/api/types/enums";
+import { CareerYear, getCareerYearLabel } from "../models";
 
 interface YearFilterTabsProps {
   selectedYear: CareerYear;
@@ -21,7 +21,7 @@ export function YearFilterTabs({
             value={year.toString()}
             onClick={() => onYearChange(year)}
           >
-            {year}º Año
+            {getCareerYearLabel(year)}
           </TabsTrigger>
         ))}
       </TabsList>

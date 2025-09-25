@@ -1,6 +1,6 @@
 import { useParams } from "wouter";
 import { useGetTechnicalCareerById } from "./hooks/use-technical-careers";
-import { CareerDetail } from "./components/CareerDetail";
+import { CareerDetail } from "./pages";
 import { LoadingState } from "@/shared/components/ui/loading-state";
 import {
   PageLayout,

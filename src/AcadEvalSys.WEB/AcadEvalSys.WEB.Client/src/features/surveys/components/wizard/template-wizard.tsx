@@ -18,7 +18,7 @@ interface TemplateWizardProps {
 export function TemplateWizard({ onSubmit, isSubmitting = false, initialData }: TemplateWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [form, setForm] = useState<SurveyTemplateForm>(() => ({
-    title: initialData?.title ?? '',
+    title: initialData?.title ?? (initialData as any)?.name ?? '',
     description: initialData?.description ?? '',
     surveyType: initialData?.surveyType ?? 'Student',
     isDraft: initialData?.isDraft ?? true,
@@ -28,7 +28,7 @@ export function TemplateWizard({ onSubmit, isSubmitting = false, initialData }: 
   useEffect(() => {
     if (initialData) {
       setForm({
-        title: initialData.title ?? '',
+        title: initialData.title ?? (initialData as any)?.name ?? '',
         description: initialData.description ?? '',
         surveyType: initialData.surveyType ?? 'Student',
         isDraft: initialData.isDraft ?? true,
@@ -38,7 +38,7 @@ export function TemplateWizard({ onSubmit, isSubmitting = false, initialData }: 
   }, [initialData]);
 
   const steps = [
-    { id: 0, title: 'Información básica' },
+    { id: 0, title: initialData ? 'Editar información básica' : 'Información básica' },
     { id: 1, title: 'Configuración' },
     { id: 2, title: 'Revisión' },
   ];
@@ -109,6 +109,7 @@ export function TemplateWizard({ onSubmit, isSubmitting = false, initialData }: 
                 ...(updates.title !== undefined && { title: updates.title }),
                 ...(updates.description !== undefined && { description: updates.description })
               }))}
+              isTemplate
             />
             <SurveyQuestionsEditor
               questions={form.questions}

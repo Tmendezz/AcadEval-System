@@ -24,6 +24,13 @@ export const technicalCareerService = {
     return data;
   },
 
+  async getCareerCoordinator(careerId: string) {
+    const { data } = await api.get(
+      `${TECHNICAL_CAREERS_API_URL}/${careerId}/coordinator`
+    );
+    return data;
+  },
+
   async create(career: CreateTechnicalCareerRequest): Promise<string> {
     const { data } = await api.post<{ id: string }>(
       TECHNICAL_CAREERS_API_URL,
@@ -47,9 +54,6 @@ export const technicalCareerService = {
     careerId: string,
     file: File
   ): Promise<ImportStudentsResult> {
-    console.log(`📂 Importing students from file to career ${careerId}`);
-
-    try {
       const formData = new FormData();
       formData.append("file", file);
 
@@ -63,31 +67,29 @@ export const technicalCareerService = {
         }
       );
 
-      console.log(`✅ Students imported successfully to career:`, data);
+    
       return data;
-    } catch (error) {
-      console.error(`❌ Error importing students to career:`, error);
-      throw error;
-    }
+    
   },
 
   async addStudentToCareer(
     careerId: string,
     student: CreateStudentRequest
   ): Promise<string> {
-    console.log(`👨‍🎓 Adding student to career ${careerId}:`, student);
-
-    try {
       const { data } = await api.post<{ id: string }>(
         `${TECHNICAL_CAREERS_API_URL}/${careerId}/students`,
         { ...student, technicalCareerId: careerId }
       );
-
-      console.log(`✅ Student added successfully to career:`, data);
       return data.id;
-    } catch (error) {
-      console.error(`❌ Error adding student to career:`, error);
-      throw error;
-    }
+  },
+
+  async assignCoordinator(careerId: string, coordinatorUserId: string): Promise<void> {
+    await api.put(`${TECHNICAL_CAREERS_API_URL}/${careerId}/coordinator`, {
+      coordinatorUserId,
+    });
+  },
+
+  async removeCoordinator(careerId: string): Promise<void> {
+    await api.delete(`${TECHNICAL_CAREERS_API_URL}/${careerId}/coordinator`);
   },
 };

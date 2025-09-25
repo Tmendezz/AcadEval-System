@@ -4,19 +4,13 @@ import {
   PageContent,
   PageSection,
 } from "@/shared/components/layout/page-layout";
-import {
-  useGetEvaluations,
-  useEvaluationFilters,
-  useDeleteEvaluation,
-} from "../hooks";
-import { EvaluationFilters } from "../components";
+import { useGetEvaluations, useDeleteEvaluation } from "../hooks";
 import { evaluationColumns } from "../components/evaluation-columns";
 import { navigate } from "wouter/use-browser-location";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { DataSection } from "@/shared/components/ui/data-section";
 import { useState } from "react";
-import type { Evaluation } from "@infrastructure/api/types/evaluation";
 import {
   Dialog,
   DialogContent,
@@ -25,27 +19,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
+import type { EvaluationListItem } from "@/features/evaluations/services/evaluation-service";
 
 export default function EvaluationsPage() {
   const { data: evaluations = [], isLoading } = useGetEvaluations();
   const deleteEvaluationMutation = useDeleteEvaluation();
 
-  const {
-    filteredData: filteredEvaluations,
-    activeFilters,
-    updateFilter,
-    sortBy,
-    setSortBy,
-  } = useEvaluationFilters(evaluations as Evaluation[]);
+  const filteredEvaluations = evaluations as EvaluationListItem[];
 
   const [evaluationToDelete, setEvaluationToDelete] =
-    useState<Evaluation | null>(null);
+    useState<EvaluationListItem | null>(null);
 
   const handleNewEvaluation = () => {
     navigate("/evaluaciones/nueva");
   };
 
-  const _handleDeleteEvaluation = (evaluation: Evaluation) => {
+  const _handleDeleteEvaluation = (evaluation: EvaluationListItem) => {
     setEvaluationToDelete(evaluation);
   };
 
@@ -72,16 +61,6 @@ export default function EvaluationsPage() {
 
       <PageContent>
         <PageSection>
-          <EvaluationFilters
-            statusFilter={activeFilters.status || "all"}
-            onStatusFilterChange={(value) => updateFilter("status", value)}
-            careerFilter={activeFilters.career || "all"}
-            onCareerFilterChange={(value) => updateFilter("career", value)}
-            sortBy={sortBy}
-            onSortByChange={setSortBy}
-            className="mb-6"
-          />
-
           <DataSection
             title="Lista de Evaluaciones"
             description="Gestiona las evaluaciones por competencias"

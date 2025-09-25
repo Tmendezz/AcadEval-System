@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createEvaluation } from "@infrastructure/api/clients/evaluation-service";
+import { createEvaluation } from "@/features/evaluations/services/evaluation-service";
 import { EvaluationFormData } from "../models/evaluation-form";
 import { evaluationsKeys } from "./use-get-evaluations";
 import { toast } from "sonner";

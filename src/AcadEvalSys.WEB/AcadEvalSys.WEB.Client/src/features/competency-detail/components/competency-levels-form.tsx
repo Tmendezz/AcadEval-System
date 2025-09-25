@@ -15,7 +15,7 @@ import {
   FormMessage,
 } from "@/shared/components/ui/form";
 import { Textarea } from "@/shared/components/ui/textarea";
-import { useUpdateCompetency } from "@/shared/hooks/use-competencies";
+import { useCompetencyById, useUpdateCompetency } from "@/features/competencies/hooks/use-competencies";
 import { toast } from "sonner";
 
 interface CompetencyLevelsFormProps {

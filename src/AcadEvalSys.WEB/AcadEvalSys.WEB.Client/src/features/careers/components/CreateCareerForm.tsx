@@ -15,14 +15,11 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { Card } from "@/shared/components/ui/card";
-import {
-  createTechnicalCareer,
-  assignCareerCoordinator,
-} from "@infrastructure/api/clients/technical-career-service";
-import { createProfessor } from "@infrastructure/api/clients/professor-service";
-import * as subjectService from "@infrastructure/api/clients/subject-service";
+import { technicalCareerService } from "../services/technical-career-service";
+import { professorService } from "@/features/administration/services/professor-service";
+import * as subjectService from "../services/subject-service";
 import { useProfessors } from "@/shared/hooks/use-professors";
-import type { Professor } from "@infrastructure/api/types/professor";
+import type { Professor } from "../models";
 import { ProfessorCombobox } from "../components/professor-combobox";
 import { toast } from "sonner";
 import type { AxiosError } from "axios";
@@ -102,7 +99,7 @@ export function CreateCareerForm() {
 
   const createCareerMutation = useMutation({
     mutationFn: async () => {
-      const careerId = await createTechnicalCareer({ name: careerName });
+      const careerId = await technicalCareerService.create({ name: careerName });
 
       const newProfessorIdByIndex = new Map<number, string>();
 
@@ -110,7 +107,7 @@ export function CreateCareerForm() {
         const s = subjects[i];
         let professorId = s.professorId;
         if (!professorId && s.newProfessor) {
-          professorId = await createProfessor({
+          professorId = await professorService.create({
             name: s.newProfessor.name,
             email: s.newProfessor.email,
             password: s.newProfessor.password,
@@ -144,7 +141,7 @@ export function CreateCareerForm() {
           if (createdId) coordinatorUserId = createdId;
         }
         if (coordinatorUserId) {
-          await assignCareerCoordinator(careerId, coordinatorUserId);
+          await technicalCareerService.assignCoordinator(careerId, coordinatorUserId);
         }
       }
 

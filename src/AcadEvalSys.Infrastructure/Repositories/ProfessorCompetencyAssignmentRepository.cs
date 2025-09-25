@@ -61,6 +61,7 @@ public class ProfessorCompetencyAssignmentRepository : IProfessorCompetencyAssig
     {
         var query = _context.ProfessorCompetencyAssignments
             .Include(pca => pca.Competency)
+                .ThenInclude(c => c.LevelDescriptions)
             .Include(pca => pca.Subject)
                 .ThenInclude(s => s.TechnicalCareer)
             .Include(pca => pca.CompetencyEvaluationInstance)
@@ -89,6 +90,7 @@ public class ProfessorCompetencyAssignmentRepository : IProfessorCompetencyAssig
     {
         return await _context.ProfessorCompetencyAssignments
             .Include(pca => pca.Competency)
+                .ThenInclude(c => c.LevelDescriptions)
             .Include(pca => pca.Subject)
                 .ThenInclude(s => s.TechnicalCareer)
             .Include(pca => pca.CompetencyEvaluationInstance)

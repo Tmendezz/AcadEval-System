@@ -4,13 +4,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
-import { Competency } from "@infrastructure/api/types/competency";
+import type { CompetencyDto as Competency } from "@/features/competencies/services/competency-service";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   editCompetencySchema,
   EditCompetencyFormData,
 } from "../schemas/edit-competency-schema";
+import type { CompetencyFormData } from "@/features/competencies/hooks/use-competencies";
 import { Button } from "@/shared/components/ui/button";
 import {
   Form,
@@ -29,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { CompetencyFormData } from "@/shared/hooks/use-competencies";
+import { useCompetencyById, useUpdateCompetency } from "@/features/competencies/hooks/use-competencies";
 
 interface EditCompetencyModalProps {
   competency: Competency;
@@ -52,6 +53,16 @@ export function EditCompetencyModal({
       name: competency.name,
       description: competency.description,
       type: competency.type,
+      levels: {
+        Inicial:
+          (competency.levels || []).find((l) => l.level === "Inicial")?.description || "",
+        Intermedio:
+          (competency.levels || []).find((l) => l.level === "Intermedio")?.description || "",
+        Avanzado:
+          (competency.levels || []).find((l) => l.level === "Avanzado")?.description || "",
+        Excelente:
+          (competency.levels || []).find((l) => l.level === "Excelente")?.description || "",
+      },
     },
   });
 
@@ -59,6 +70,7 @@ export function EditCompetencyModal({
     onSubmit({
       ...data,
       type: data.type as "Technical" | "Soft",
+      levels: data.levels,
     });
   };
 
@@ -131,6 +143,30 @@ export function EditCompetencyModal({
                 </FormItem>
               )}
             />
+
+            <div className="space-y-3">
+              <FormLabel>Descripciones por nivel</FormLabel>
+              {(["Inicial", "Intermedio", "Avanzado", "Excelente"] as const).map((nivel) => (
+                <FormField
+                  key={nivel}
+                  control={form.control}
+                  name={`levels.${nivel}` as const}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs">{nivel}</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder={`Descripción para nivel ${nivel}`}
+                          rows={2}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ))}
+            </div>
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={handleClose}>
                 Cancelar

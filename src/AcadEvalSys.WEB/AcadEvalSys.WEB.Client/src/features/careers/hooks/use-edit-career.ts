@@ -1,18 +1,12 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  getTechnicalCareerById,
-  assignCareerCoordinator,
-  getCareerCoordinator,
-  removeCareerCoordinator,
-} from "@infrastructure/api/clients/technical-career-service";
+import { technicalCareerService } from "../services/technical-career-service";
 import { useUpdateTechnicalCareer } from "@/shared/hooks/use-technical-careers";
-import * as subjectService from "@infrastructure/api/clients/subject-service";
+import * as subjectService from "../services/subject-service";
 import { useProfessors } from "@/shared/hooks/use-professors";
 import { useDeleteSubject } from "./use-delete-subject";
-import type { Professor } from "@infrastructure/api/types/professor";
-import type { Subject } from "@infrastructure/api/types/subject";
+import type { Professor, Subject } from "../models";
 
 // Local row model matches Subject, with optional id for new subjects
 type SubjectRow = Subject & { isNew?: boolean };
@@ -25,7 +19,7 @@ export function useEditCareer(careerId: string | undefined) {
   // Queries
   const { data: career } = useQuery({
     queryKey: ["technical-career", careerId],
-    queryFn: () => getTechnicalCareerById(careerId || ""),
+    queryFn: () => technicalCareerService.getById(careerId || ""),
     enabled: !!careerId,
   });
 
@@ -38,7 +32,7 @@ export function useEditCareer(careerId: string | undefined) {
 
   const { data: currentCoordinator } = useQuery({
     queryKey: ["career-coordinator", careerId],
-    queryFn: () => getCareerCoordinator(careerId || ""),
+    queryFn: () => technicalCareerService.getCareerCoordinator(careerId || ""),
     enabled: !!careerId,
   });
 
@@ -150,10 +144,10 @@ export function useEditCareer(careerId: string | undefined) {
         selectedCoordinator &&
         selectedCoordinator !== currentCoordinator?.userId
       ) {
-        await assignCareerCoordinator(careerId, selectedCoordinator);
+        await technicalCareerService.assignCoordinator(careerId, selectedCoordinator);
         toast.success("Coordinador asignado correctamente");
       } else if (!selectedCoordinator && currentCoordinator) {
-        await removeCareerCoordinator(careerId);
+        await technicalCareerService.removeCoordinator(careerId);
         toast.success("Coordinador removido correctamente");
       }
     },

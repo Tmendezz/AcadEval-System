@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getEvaluationById } from "@infrastructure/api/clients/evaluation-service";
+import { getEvaluationById } from "@/features/evaluations/services/evaluation-service";
 import { useGetCareerYearAssignmentDetails } from "./evaluations/queries/use-get-assignment-details";
 
 interface CareerYearAssignmentDetail {

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "wouter";
-import { useAuthStore } from "../store";
 import { useSessionCheck } from "./use-session-check";
+import { useAuthStore } from "../store";
 
 interface UseAuthRouterReturn {
   isCheckingSession: boolean;

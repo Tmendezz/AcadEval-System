@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { technicalCareerService } from "../services/technical-career-service";
-import { CreateStudentRequest } from "../types";
+import { CreateStudentRequest } from "@/features/careers/models/student";
 import { toast } from "sonner";
 import { getErrorMessage } from "@shared/utils/error-handler";
 
@@ -16,7 +16,7 @@ export const useAddStudentToCareer = () => {
     mutationFn: async ({ careerId, student }) => {
       return await technicalCareerService.addStudentToCareer(careerId, student);
     },
-    onSuccess: (studentId, variables) => {
+    onSuccess: (_, variables) => {
       toast.success(
         `✅ Estudiante "${variables.student.name}" creado exitosamente`
       );

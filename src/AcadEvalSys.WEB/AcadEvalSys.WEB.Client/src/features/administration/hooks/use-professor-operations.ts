@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { professorService } from "@infrastructure/api/clients/professor-service";
-import { Professor } from "@infrastructure/api/types/professor";
+import { professorService } from "../services/professor-service";
+type Professor = { userId: string; name: string; email: string; phone?: string };
 import { ProfessorFormValues } from "../components/professor-form-dialog";
 import { toast } from "sonner";
 
@@ -25,8 +25,8 @@ export function useProfessorOperations() {
   const { data: professorList, isLoading: isLoadingProfessorList } = useQuery({
     queryKey: ["professors"],
     queryFn: async () => {
-      const result = await professorService.getAll();
-      return result.professors;
+      const result = await professorService.getAll({ pageNumber: 1, pageSize: 50 });
+      return result.items;
     },
     staleTime: 10_000,
   });
@@ -55,7 +55,7 @@ export function useProfessorOperations() {
   const updateProfessor = useMutation({
     mutationFn: async (values: ProfessorFormValues) => {
       if (!selectedProfessor) throw new Error("No professor selected");
-      const id = await professorService.update(selectedProfessor.id, values);
+      const id = await professorService.update(selectedProfessor.userId, values);
       return id;
     },
     onSuccess: async () => {
@@ -70,7 +70,7 @@ export function useProfessorOperations() {
 
   const deleteProfessor = useMutation({
     mutationFn: async (professor: Professor) => {
-      const response = await professorService.delete(professor.id);
+      const response = await professorService.delete(professor.userId);
       return { professor, response };
     },
     onSuccess: async (data) => {

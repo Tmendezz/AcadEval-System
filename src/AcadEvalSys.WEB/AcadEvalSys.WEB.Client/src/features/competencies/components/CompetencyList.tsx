@@ -31,12 +31,7 @@ export function CompetencyList({
       columns={columns}
       isLoading={isLoading}
       emptyMessage="No se encontraron competencias."
-      onRowClick={(id: string) => {
-        const competency = competencies.find((c) => c.id === id);
-        if (competency && onRowClick) {
-          onRowClick(competency);
-        }
-      }}
+      // Sin redirección por click en fila; usar acciones de columna
     />
   );
 }

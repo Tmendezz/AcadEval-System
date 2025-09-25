@@ -1,4 +1,4 @@
-import { api } from "@infrastructure/query/axios";
+import { api } from "@/infrastructure/query/axios";
 
 export const dashboardService = {
   // Obtener estadísticas del dashboard

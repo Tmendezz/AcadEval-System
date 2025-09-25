@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { Assignment } from "../../../types/evaluation-form";
 import { useTechnicalCareers } from "@/shared/hooks/use-technical-careers";
 import { useSubjectsByCareer } from "@/shared/hooks/use-subjects";
-import { useCompetencies } from "@/shared/hooks/use-competencies";
+import { useCompetencies } from "@/features/competencies/hooks/use-competencies";
 import {
   getAssignmentsForCareerAndYear,
   formatAssignmentCount,

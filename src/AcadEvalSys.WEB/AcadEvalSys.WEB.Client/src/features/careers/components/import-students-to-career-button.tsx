@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Upload } from "lucide-react";
 import { ImportStudentsToCareerDialog } from "./import-students-to-career-dialog";
-import { CareerYear } from "@infrastructure/api/types/enums";
+import { CareerYear } from "../models";
 
 interface ImportStudentsToCareerButtonProps {
   careerId: string;

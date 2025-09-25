@@ -21,7 +21,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/shared/components/ui/form";
-import { Subject } from "@/shared/types";
+import { Subject } from "../models";
 
 const schema = z.object({
   name: z.string().min(2, "Requerido"),

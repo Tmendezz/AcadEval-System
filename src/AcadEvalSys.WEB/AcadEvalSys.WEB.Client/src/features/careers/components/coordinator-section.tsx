@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import type { Professor } from "@infrastructure/api/types/professor";
+import type { Professor } from "../models";
 
 interface CoordinatorSectionProps {
   currentCoordinator?: {

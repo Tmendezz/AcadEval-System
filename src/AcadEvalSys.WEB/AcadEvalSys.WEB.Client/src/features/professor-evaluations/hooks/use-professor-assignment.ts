@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { getProfessorAssignmentById } from "../services";
-import { ProfessorAssignment } from "../models";
+import { getProfessorAssignmentById } from "@/features/professor-evaluations/services/professor-evaluations-service";
 
-export const useProfessorAssignment = (assignmentId: string) => {
-  return useQuery<ProfessorAssignment, Error>({
+export function useProfessorAssignment(assignmentId: string) {
+  return useQuery({
     queryKey: ["professor-assignment", assignmentId],
     queryFn: () => getProfessorAssignmentById(assignmentId),
-    enabled: !!assignmentId,
+    enabled: Boolean(assignmentId),
   });
-};
+}
+
+

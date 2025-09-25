@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { finalizeEvaluation } from "@infrastructure/api/clients/evaluation-service";
+import { finalizeEvaluation } from "@/features/evaluations/services/evaluation-service";
 import { toast } from "sonner";
 
 interface FinalizeEvaluationParams {

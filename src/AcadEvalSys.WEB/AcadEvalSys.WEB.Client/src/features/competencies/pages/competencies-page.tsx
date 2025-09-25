@@ -12,12 +12,12 @@ import {
   useUpdateCompetency,
   useDeleteCompetency,
   CompetencyFormData,
-} from "@/shared/hooks/use-competencies";
+} from "@/features/competencies/hooks/use-competencies";
 import { useCompetenciesStore } from "@/shared/stores/use-competencies-store";
 import { CompetencyList } from "../components/CompetencyList";
 import { CreateCompetencyModal } from "../components/CreateCompetencyModal";
 import { EditCompetencyModal } from "../components/EditCompetencyModal";
-import { CompetencyFilters } from "../components/CompetencyFilters";
+// Filtros removidos temporalmente
 import { Competency } from "@infrastructure/api/types/competency";
 
 export function CompetenciesPage() {
@@ -31,14 +31,9 @@ export function CompetenciesPage() {
 
   // Store de estado
   const {
-    searchTerm,
-    selectedType,
     isCreateModalOpen,
     isEditModalOpen,
     selectedCompetency,
-    setSearchTerm,
-    setSelectedType,
-    clearFilters,
     openCreateModal,
     closeCreateModal,
     openEditModal,
@@ -47,15 +42,8 @@ export function CompetenciesPage() {
 
   // Lógica de filtrado
   const filteredCompetencies = useMemo(() => {
-    return competencies.filter((competency: Competency) => {
-      const matchesSearch = competency.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-      const matchesType =
-        selectedType === "all" || competency.type === selectedType;
-      return matchesSearch && matchesType;
-    });
-  }, [competencies, searchTerm, selectedType]);
+    return competencies as Competency[];
+  }, [competencies]);
 
   // Handlers de acciones
   const handleCreateCompetency = (data: CompetencyFormData) => {
@@ -127,18 +115,16 @@ export function CompetenciesPage() {
       <PageHeader
         title="Gestión de Competencias"
         description="Administra las competencias generales y específicas del sistema."
-      />
+      >
+        <button
+          className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-primary-foreground shadow hover:opacity-90"
+          onClick={openCreateModal}
+        >
+          <span className="i-lucide-plus h-4 w-4"></span>
+          Nueva Competencia
+        </button>
+      </PageHeader>
       <PageContent>
-        {/* Filtros */}
-        <CompetencyFilters
-          searchTerm={searchTerm}
-          selectedType={selectedType}
-          onSearchChange={setSearchTerm}
-          onTypeChange={setSelectedType}
-          onClearFilters={clearFilters}
-          onCreateNew={openCreateModal}
-        />
-
         {/* Lista de competencias */}
         <CompetencyList
           competencies={filteredCompetencies}

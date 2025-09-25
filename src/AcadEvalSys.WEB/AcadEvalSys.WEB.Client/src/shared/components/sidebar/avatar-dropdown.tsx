@@ -17,9 +17,9 @@ import {
   SidebarMenuButton,
 } from "@/shared/components/ui/sidebar";
 import { cn } from "@infrastructure/lib/cn";
-import { User, getFirstRoleLabel } from "@infrastructure/api/types/auth";
 import { getUserInitials } from "@infrastructure/lib/utils";
 import { useSidebar } from "@/shared/components/ui/sidebar";
+import { User, UserRole, getFirstRole } from "@/features/auth/models";
 
 interface AvatarDropdownProps {
   user: User;
@@ -43,11 +43,11 @@ function UserAvatar({
   return (
     <Avatar className={cn("rounded-lg flex-shrink-0", sizeClasses[size])}>
       <AvatarImage
-        src={user.avatar || "/placeholder.svg?height=32&width=32"}
+        src={ "/placeholder.svg?height=32&width=32"}
         alt={user.email || "Usuario"}
       />
       <AvatarFallback className="bg-primary text-primary-foreground">
-        {getUserInitials(user.name)}
+        {getUserInitials(user.name || "")}
       </AvatarFallback>
     </Avatar>
   );
@@ -62,6 +62,18 @@ function UserInfo({
   variant?: "default" | "compact";
 }) {
   const isCompact = variant === "compact";
+
+  function getFirstRoleLabel(user: User): React.ReactNode {
+    const role = getFirstRole(user);
+    if (!role) return "Sin rol";
+    const labels: Record<UserRole, string> = {
+      [UserRole.Admin]: "Administrador",
+      [UserRole.Coordinator]: "Coordinador",
+      [UserRole.Professor]: "Profesor",
+      [UserRole.Student]: "Estudiante",
+    };
+    return labels[role];
+  }
 
   return (
     <div

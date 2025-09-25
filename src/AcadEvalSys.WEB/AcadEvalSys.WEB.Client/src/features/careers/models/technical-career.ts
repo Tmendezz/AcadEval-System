@@ -1,26 +1,28 @@
-// Import types from infrastructure
-import type {
-  TechnicalCareer,
-  CreateTechnicalCareerRequest,
-  UpdateTechnicalCareerRequest,
-} from "@infrastructure/api/types/technical-career";
 
-// Re-export types from infrastructure that are used by this feature
-export type {
-  TechnicalCareer,
-  CreateTechnicalCareerRequest,
-  UpdateTechnicalCareerRequest,
-};
+export interface TechnicalCareer {
+  id: string;
+  name: string;
+  totalStudents: number;
+  totalProfessors: number;
+}
 
-// Feature-specific types for careers
+// Requests
+export interface CreateTechnicalCareerRequest {
+  name: string;
+}
+
+export interface UpdateTechnicalCareerRequest {
+  id?: string;
+  name: string;
+}
+
+// Tipos específicos del feature (formularios/UI)
 export interface CareerFormData {
   name: string;
-  description: string;
-  coordinatorId?: string;
 }
 
 export interface CareerWithStats extends TechnicalCareer {
-  studentsCount: number;
-  subjectsCount: number;
+  studentsCount?: number;
+  subjectsCount?: number;
   coordinatorName?: string;
 }

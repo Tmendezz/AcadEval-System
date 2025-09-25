@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteSubject } from "@infrastructure/api/clients/subject-service";
+import { deleteSubject } from "../services/subject-service";
 import { toast } from "sonner";
 import { subjectsKeys } from "./use-subjects-by-year";
 

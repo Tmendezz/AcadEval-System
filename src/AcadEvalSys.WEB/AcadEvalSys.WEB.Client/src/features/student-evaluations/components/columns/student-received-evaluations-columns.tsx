@@ -2,7 +2,8 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/shared/components/ui/button";
 import { Link } from "wouter";
 import { Eye, Target } from "lucide-react";
-import type { StudentReceivedEvaluation } from "@infrastructure/api/clients/student-evaluation-service";
+import type { StudentReceivedEvaluation } from "../../models";
+import { studentEvaluationsApi } from "../../services/student-evaluations-service";
 
 export const studentReceivedEvaluationColumns: ColumnDef<StudentReceivedEvaluation>[] = [
   {
@@ -32,13 +33,27 @@ export const studentReceivedEvaluationColumns: ColumnDef<StudentReceivedEvaluati
     header: "Acciones",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-        <Link href={`/estudiante/evaluaciones/${row.original.id}`}>
-          <Button variant="outline" size="sm" className="gap-2">
-            <Eye className="w-4 h-4" />
-            Ver Detalle
-          </Button>
-        </Link>
-        <Button variant="outline" size="sm" className="gap-2">
+      
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2"
+          disabled={!row.original.reportId}
+          onClick={async () => {
+            if (!row.original.reportId) return;
+            const blob = await studentEvaluationsApi.downloadReport(
+              row.original.reportId
+            );
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `reporte-${row.original.id}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+          }}
+        >
           <Target className="w-4 h-4" />
           Descargar PDF
         </Button>

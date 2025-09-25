@@ -1,8 +1,8 @@
 import React from "react";
 import { Route } from "wouter";
 import { AdminRoute, ProtectedRoute } from "@/features/auth/components";
-import { UserRole } from "@infrastructure/api/types/auth";
 import { RouteConfig } from "./route-config";
+import { UserRole } from "@/features/auth/models";
 
 interface RouteRendererProps {
   route: RouteConfig;

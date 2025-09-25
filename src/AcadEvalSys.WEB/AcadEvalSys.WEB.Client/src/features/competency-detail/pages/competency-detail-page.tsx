@@ -1,6 +1,7 @@
 import { useParams, Link } from "wouter";
+import { useState } from "react";
 import { ChevronLeft, Brain, Target, Edit, Trash2 } from "lucide-react";
-import { useCompetencyById } from "@/shared/hooks/use-competencies";
+import { useCompetencyById, useUpdateCompetency } from "@/features/competencies/hooks/use-competencies";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import {
@@ -16,10 +17,14 @@ import {
   PageContent,
   PageSection,
 } from "@/shared/components/layout/page-layout";
+import { EditCompetencyModal } from "@/features/competencies/components/EditCompetencyModal";
+import type { CompetencyDto } from "@/features/competencies/services/competency-service";
 
 export default function CompetencyDetailPage() {
   const { id } = useParams();
   const { data: competency, isLoading, error } = useCompetencyById(id || "");
+  const updateMutation = useUpdateCompetency();
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -106,7 +111,12 @@ export default function CompetencyDetailPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => setIsEditOpen(true)}
+              >
                 <Edit className="w-4 h-4" />
                 Editar
               </Button>
@@ -151,29 +161,16 @@ export default function CompetencyDetailPage() {
             <CardContent>
               <div className="space-y-4">
                 {competency.levels && competency.levels.length > 0 ? (
-                  competency.levels.map((level) => (
-                    <div
-                      key={level.level}
-                      className="flex items-start justify-between p-4 border rounded-lg bg-muted/30"
-                    >
+                  competency.levels.map((lvl) => (
+                    <div key={lvl.level} className="flex items-start justify-between p-4 border rounded-lg bg-muted/30">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
                           <Badge variant="outline" className="font-medium">
-                            {level.level}
+                            {lvl.level}
                           </Badge>
                         </div>
-                        <p className="text-sm text-foreground leading-relaxed">
-                          {level.description}
-                        </p>
+                        <p className="text-sm text-foreground leading-relaxed">{lvl.description}</p>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="gap-2 text-muted-foreground hover:text-foreground"
-                      >
-                        <Edit className="w-4 h-4" />
-                        Editar
-                      </Button>
                     </div>
                   ))
                 ) : (
@@ -185,6 +182,18 @@ export default function CompetencyDetailPage() {
             </CardContent>
           </Card>
         </PageSection>
+        {competency && (
+          <EditCompetencyModal
+            competency={competency as CompetencyDto}
+            isOpen={isEditOpen}
+            onClose={() => setIsEditOpen(false)}
+            onSubmit={async (data) => {
+              await updateMutation.mutateAsync({ id: competency.id, data });
+              setIsEditOpen(false);
+            }}
+            isLoading={updateMutation.isPending}
+          />
+        )}
       </PageContent>
     </PageLayout>
   );

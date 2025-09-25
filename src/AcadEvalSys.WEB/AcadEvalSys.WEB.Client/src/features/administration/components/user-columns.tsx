@@ -1,6 +1,6 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import { UserListItem } from "@infrastructure/api/clients/identity-admin-service";
+import { UserListItem } from "@/features/administration/services/identity-admin-service";
 import { Badge } from "@/shared/components/ui/badge";
 
 export const userColumns: ColumnDef<UserListItem>[] = [
@@ -23,7 +23,7 @@ export const userColumns: ColumnDef<UserListItem>[] = [
     accessorKey: "isLockedOut",
     header: "Estado",
     cell: ({ row }) => (
-      <Badge variant={row.original.isLockedOut ? "destructive" : "success"}>
+      <Badge variant={row.original.isLockedOut ? "destructive" : "secondary"}>
         {row.original.isLockedOut ? "Bloqueado" : "Activo"}
       </Badge>
     ),

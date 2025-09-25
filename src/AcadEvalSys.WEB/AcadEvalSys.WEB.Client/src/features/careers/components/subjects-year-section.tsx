@@ -3,8 +3,8 @@ import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { ProfessorCombobox } from "./professor-combobox";
 import { Trash2, Plus } from "lucide-react";
-import type { Subject } from "@infrastructure/api/types/subject";
-import type { Professor } from "@infrastructure/api/types/professor";
+import type { Subject } from "@/features/careers/models/subject";
+import type { Professor } from "@/features/careers/models/professor";
 
 type SubjectRow = Subject & { isNew?: boolean };
 

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getSurveys } from "@infrastructure/api/clients/survey-service";
+import { getSurveys } from "@/features/surveys/services/survey-service";
 
 export const surveysKeys = {
   all: ["surveys"] as const,

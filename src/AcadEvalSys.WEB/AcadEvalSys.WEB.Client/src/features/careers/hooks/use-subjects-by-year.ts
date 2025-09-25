@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CareerYear } from "@infrastructure/api/types/enums";
-import { getSubjectsByCareer } from "@infrastructure/api/clients/subject-service";
-import { Subject } from "@infrastructure/api/types/subject";
+import { CareerYear } from "../models";
+import { getSubjectsByCareer } from "../services/subject-service";
+import { Subject } from "../models";
 
 interface UseSubjectsByYearOptions {
   includeEnrolledStudents?: boolean;

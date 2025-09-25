@@ -1,9 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
 import { authService } from "../services/auth-service";
-import { useAuthStore } from "@/features/auth/store";
+import { useAuthStore } from "../store";
 import { navigate } from "wouter/use-browser-location";
 import { toast } from "sonner";
-import { LoginCredentials } from "@infrastructure/api/types/auth";
+import { LoginCredentials } from "../models";
 
 export const useLogin = () => {
   const { isLoading, error } = useAuthStore();
@@ -20,14 +20,14 @@ export const useLogin = () => {
           data?: { detail?: string; title?: string; message?: string };
         };
       };
-      const _serverMessage =
+      const serverMessage =
         axiosError.response?.data?.detail ||
         axiosError.response?.data?.title ||
         axiosError.response?.data?.message;
 
       // También actualizar el store con el error completo para que se muestre en el formulario
       const store = useAuthStore.getState();
-      store.setError(error);
+      store.setError(serverMessage ?? "Error al iniciar sesión");
     },
   });
 

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getCareerYearAssignmentDetails } from "@infrastructure/api/clients/evaluation-service";
+import { getCareerYearAssignmentDetails } from "@/features/evaluations/services/evaluation-service";
 
 export const assignmentDetailsKeys = {
   all: ["assignment-details"] as const,
