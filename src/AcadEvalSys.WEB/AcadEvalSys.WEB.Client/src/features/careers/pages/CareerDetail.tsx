@@ -11,9 +11,9 @@ import {
 import { LoadingState } from "@/shared/components/ui/loading-state";
 import { useGetTechnicalCareerById } from "../hooks/use-technical-careers";
 import { useDeleteSubject } from "../hooks/use-delete-subject";
-import { CoordinatorCard } from "./CoordinatorCard";
-import { ImportStudentsToCareerButton } from "./import-students-to-career-button";
-import { YearFilterTabs } from "./year-filter-tabs";
+import { CoordinatorCard } from "../components/CoordinatorCard";
+import { ImportStudentsToCareerButton } from "../components/import-students-to-career-button";
+import { YearFilterTabs } from "../components/year-filter-tabs";
 
 export function CareerDetail() {
   const { careerId } = useParams();

@@ -4,8 +4,8 @@ import {
   PageContent,
 } from "@/shared/components/layout/page-layout";
 import { Users, GraduationCap, ClipboardCheck } from "lucide-react";
-import { useGetDashboardStats } from "./hooks/use-get-dashboard-stats";
-import { StatsCard, DashboardGrid } from "./components";
+import { useGetDashboardStats } from "../hooks/use-get-dashboard-stats";
+import { StatsCard, DashboardGrid } from "../components";
 
 export default function Dashboard() {
   const { data: stats, isLoading } = useGetDashboardStats();
