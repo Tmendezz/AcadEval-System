@@ -63,7 +63,7 @@ export default function CreateSurveyPage() {
           </Alert>
           <div className="mt-6 text-center">
             <Button 
-              onClick={() => setLocation('/encuestas/plantillas')}
+              onClick={() => setLocation('/plantillas')}
               className="gap-2"
             >
               <FileText className="w-4 h-4" />
@@ -139,7 +139,7 @@ export default function CreateSurveyPage() {
                 audience: audience,
                 publishAt: convertDateTimeLocalToISO(scheduling.publishAt || ''),
                 closeAt: convertDateTimeLocalToISO(scheduling.closeAt || ''),
-                questions: form.questions.map(q => ({
+                questions: form.questions.map(q => ({   
                   id: q.id || '',
                   text: q.text,
                   type: q.type === 'SingleChoice' ? 0 : q.type === 'MultipleChoice' ? 1 : 2,
