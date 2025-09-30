@@ -12,7 +12,9 @@ public class CoordinatorRepository(ApplicationDbContext dbContext) : ICoordinato
         => dbContext.Coordinators.FirstOrDefaultAsync(c => c.UserId == userId);
 
     public Task<Coordinator?> GetByCareerIdAsync(Guid technicalCareerId)
-        => dbContext.Coordinators.FirstOrDefaultAsync(c => c.TechnicalCareerId == technicalCareerId);
+        => dbContext.Coordinators
+            .Include(c => c.User)
+            .FirstOrDefaultAsync(c => c.TechnicalCareerId == technicalCareerId);
 
     public async Task RemoveByCareerIdAsync(Guid technicalCareerId)
     {

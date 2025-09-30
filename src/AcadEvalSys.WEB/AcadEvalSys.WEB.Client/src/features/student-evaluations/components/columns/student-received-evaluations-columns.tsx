@@ -1,7 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/shared/components/ui/button";
-import { Link } from "wouter";
-import { Eye, Target } from "lucide-react";
+import {  Download } from "lucide-react";
 import type { StudentReceivedEvaluation } from "../../models";
 import { studentEvaluationsApi } from "../../services/student-evaluations-service";
 
@@ -33,11 +32,9 @@ export const studentReceivedEvaluationColumns: ColumnDef<StudentReceivedEvaluati
     header: "Acciones",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-      
         <Button
           variant="outline"
           size="sm"
-          className="gap-2"
           disabled={!row.original.reportId}
           onClick={async () => {
             if (!row.original.reportId) return;
@@ -54,12 +51,10 @@ export const studentReceivedEvaluationColumns: ColumnDef<StudentReceivedEvaluati
             window.URL.revokeObjectURL(url);
           }}
         >
-          <Target className="w-4 h-4" />
-          Descargar PDF
+          <Download className="h-4 w-4" />
+          Descargar
         </Button>
       </div>
     ),
   },
 ];
-
-

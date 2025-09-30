@@ -1,12 +1,12 @@
 import React from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Users, Edit, Trash2, Eye } from "lucide-react";
-import { Subject } from "@infrastructure/api/types/subject";
 import { Button } from "@/shared/components/ui/button";
 import { navigate } from "wouter/use-browser-location";
 
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { UseMutationResult } from "@tanstack/react-query";
+import {Subject} from "@features/careers";
 
 export const createSubjectColumns = (
   careerId?: string,
@@ -62,22 +62,22 @@ export const createSubjectColumns = (
         };
 
         return (
-          <div className="flex gap-1">
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={handleView}
-              className="h-7 w-7 p-0"
             >
-              <Eye className="w-3 h-3" />
+              <Eye className="h-4 w-4" />
+              Ver
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={handleEdit}
-              className="h-7 w-7 p-0"
             >
-              <Edit className="w-3 h-3" />
+              <Edit className="h-4 w-4" />
+              Editar
             </Button>
             <ConfirmDialog
               title="¿Eliminar Asignatura?"
@@ -85,13 +85,13 @@ export const createSubjectColumns = (
               onConfirm={handleDelete}
               trigger={
                 <Button
-                  variant="outline"
+                  variant="destructive"
                   size="sm"
                   onClick={(e) => e.stopPropagation()}
-                  className="h-7 w-7 p-0"
                   disabled={deleteSubjectMutation?.isPending}
                 >
-                  <Trash2 className="w-3 h-3" />
+                  <Trash2 className="h-4 w-4" />
+                  Eliminar
                 </Button>
               }
             />

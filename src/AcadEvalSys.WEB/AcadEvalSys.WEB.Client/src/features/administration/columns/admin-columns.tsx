@@ -40,15 +40,14 @@ export const adminColumns = ({
       const handleDelete = () => onDelete?.(row.original);
 
       return (
-        <div className="flex gap-1">
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={handleEdit}
-            className="h-7 w-7 p-0"
-            title="Editar"
           >
-            <Edit className="w-3 h-3" />
+            <Edit className="h-4 w-4" />
+            Editar
           </Button>
           <ConfirmDialog
             title="Eliminar administrador"
@@ -57,8 +56,12 @@ export const adminColumns = ({
             cancelText="Cancelar"
             onConfirm={handleDelete}
             trigger={
-              <Button variant="outline" size="sm" className="h-7 w-7 p-0">
-                <Trash2 className="w-3 h-3" />
+              <Button
+                variant="destructive"
+                size="sm"
+              >
+                <Trash2 className="h-4 w-4" />
+                Eliminar
               </Button>
             }
           />

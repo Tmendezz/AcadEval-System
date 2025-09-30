@@ -2,9 +2,11 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/shared/components/ui/badge";
-import { StudentCompetencyEvaluationFromApi } from "../types/professor-evaluation";
+import { Button } from "@/shared/components/ui/button";
+import { Eye } from "lucide-react";
+import {StudentCompetencyEvaluation} from "@features/student-evaluations/models";
 
-export const studentEvaluationColumns: ColumnDef<StudentCompetencyEvaluationFromApi>[] =
+export const studentEvaluationColumns: ColumnDef<StudentCompetencyEvaluation>[] =
   [
     {
       id: "studentName",
@@ -64,16 +66,36 @@ export const studentEvaluationColumns: ColumnDef<StudentCompetencyEvaluationFrom
         const label = status === "Completed" ? "Completada" : "Pendiente";
 
         return (
-          <Badge
-            className={`text-xs ${
-              status === "Completed"
-                ? "bg-green-100 text-green-800 border-green-200"
-                : "bg-orange-100 text-orange-800 border-orange-200"
-            }`}
-            variant={variant}
-          >
+          <Badge variant={variant}>
             {label}
           </Badge>
+        );
+      },
+    },
+    {
+      id: "actions",
+      header: "Acciones",
+      size: 120,
+      minSize: 100,
+      cell: ({ row }) => {
+        const student = row.original;
+
+        const handleView = () => {
+          // TODO: Implementar navegación a detalle del estudiante
+          console.log("Ver detalle estudiante:", student.studentName);
+        };
+
+        return (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleView}
+            >
+              <Eye className="h-4 w-4" />
+              Ver
+            </Button>
+          </div>
         );
       },
     },

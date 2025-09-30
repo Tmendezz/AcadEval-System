@@ -10,6 +10,9 @@ export { CompetencyFilters } from "./components/CompetencyFilters";
 export { CreateCompetencyModal } from "./components/CreateCompetencyModal";
 export { EditCompetencyModal } from "./components/EditCompetencyModal";
 
+// Models
+export * from "./models";
+
 // Schemas
 export { createCompetencySchema } from "./schemas/create-competency-schema";
 export { editCompetencySchema } from "./schemas/edit-competency-schema";

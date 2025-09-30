@@ -34,9 +34,9 @@ export function createSubjectColumns(
       cell: ({ row }) => {
         const year = row.original.year;
         const yearLabels = {
-          First: "1er Año",
-          Second: "2do Año",
-          Third: "3er Año",
+          First: "Primer Año",
+          Second: "Segundo Año",
+          Third: "Tercer Año",
         };
         
         return (
@@ -80,7 +80,7 @@ export function createSubjectColumns(
         return (
           <div className="flex items-center gap-2">
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               asChild
             >
@@ -92,7 +92,7 @@ export function createSubjectColumns(
             
             {deleteSubjectMutation && (
               <Button
-                variant="ghost"
+                variant="destructive"
                 size="sm"
                 onClick={() => deleteSubjectMutation.mutate(subject.id)}
                 disabled={deleteSubjectMutation.isPending}

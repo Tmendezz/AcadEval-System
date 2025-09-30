@@ -2,6 +2,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { ProfessorEvaluationAssignment } from "@/features/professor-evaluations/models/professor-evaluation";
 import { Button } from "@/shared/components/ui/button";
 import { Link } from "wouter";
+import { Eye } from "lucide-react";
 
 export const professorAssignmentsColumns: ColumnDef<ProfessorEvaluationAssignment>[] = [
   {
@@ -24,11 +25,18 @@ export const professorAssignmentsColumns: ColumnDef<ProfessorEvaluationAssignmen
     id: "actions",
     header: "Acciones",
     cell: ({ row }) => (
-      <Button asChild variant="outline" size="sm">
-        <Link href={`/profesor/evaluaciones/${row.original.assignmentId}`}>Evaluar</Link>
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          asChild
+        >
+          <Link href={`/profesor/evaluaciones/${row.original.assignmentId}`}>
+            <Eye className="h-4 w-4" />
+            Evaluar
+          </Link>
+        </Button>
+      </div>
     ),
   },
 ];
-
-

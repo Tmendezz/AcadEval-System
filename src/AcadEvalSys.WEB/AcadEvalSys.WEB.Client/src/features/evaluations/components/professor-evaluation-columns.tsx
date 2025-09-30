@@ -1,6 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
+import { Eye } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
@@ -112,14 +113,7 @@ export const professorEvaluationColumns: ColumnDef<ProfessorAssignmentFromApi>[]
         const label = status === "Completed" ? "Completada" : "Pendiente";
 
         return (
-          <Badge
-            className={`text-xs ${
-              status === "Completed"
-                ? "bg-green-100 text-green-800 border-green-200"
-                : "bg-orange-100 text-orange-800 border-orange-200"
-            }`}
-            variant={variant}
-          >
+          <Badge variant={variant}>
             {label}
           </Badge>
         );
@@ -169,14 +163,16 @@ export const professorEvaluationColumns: ColumnDef<ProfessorAssignmentFromApi>[]
         };
 
         return (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleView}
-            className="h-8 px-3 text-xs font-medium cursor-pointer"
-          >
-            Ver evaluación
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleView}
+            >
+              <Eye className="h-4 w-4" />
+              Ver
+            </Button>
+          </div>
         );
       },
     },

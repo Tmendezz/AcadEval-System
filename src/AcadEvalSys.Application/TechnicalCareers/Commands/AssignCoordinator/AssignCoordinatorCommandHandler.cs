@@ -13,7 +13,6 @@ public class AssignCoordinatorCommandHandler(
     ILogger<AssignCoordinatorCommandHandler> logger,
     ITechnicalCareerRepository careerRepository,
     UserManager<User> userManager,
-    ISubjectRepository subjectRepository,
     ICoordinatorRepository coordinatorRepository
 ) : IRequestHandler<AssignCoordinatorCommand>
 {
@@ -27,12 +26,7 @@ public class AssignCoordinatorCommandHandler(
         var user = await userManager.FindByIdAsync(request.UserId)
                    ?? throw new NotFoundException(nameof(User), request.UserId);
 
-        // Validar que dicta al menos una asignatura en la carrera
-        var teachesInCareer = await subjectRepository.UserTeachesInCareerAsync(user.Id, request.TechnicalCareerId);
-        if (!teachesInCareer)
-        {
-            throw new BadRequestException("El usuario seleccionado no dicta asignaturas en esta tecnicatura.");
-        }
+        // Validación removida: cualquier usuario puede ser coordinador
 
         // Asegurar rol Coordinator
         if (!await userManager.IsInRoleAsync(user, UserRoles.Coordinator))

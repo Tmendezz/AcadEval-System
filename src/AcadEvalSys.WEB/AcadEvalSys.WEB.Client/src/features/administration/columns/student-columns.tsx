@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import { Edit, Trash2, Key } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { Student } from "../services/student-service";
 
 interface StudentColumnsProps {
@@ -40,7 +40,7 @@ export const studentColumns = ({
     cell: ({ row }) => {
       const career = row.getValue("technicalCareerName") as string;
       return (
-        <Badge variant="outline" className="text-xs">
+        <Badge variant="outline">
           {career}
         </Badge>
       );
@@ -57,7 +57,7 @@ export const studentColumns = ({
         3: "Tercer Año",
       };
       return (
-        <Badge variant="secondary" className="text-xs">
+        <Badge variant="secondary">
           {yearLabels[year as keyof typeof yearLabels] || `Año ${year}`}
         </Badge>
       );
@@ -69,13 +69,12 @@ export const studentColumns = ({
     cell: ({ row }) => {
       const isActive = row.getValue("isActive") as boolean;
       return (
-        <Badge variant={isActive ? "default" : "secondary"} className="text-xs">
+        <Badge variant={isActive ? "default" : "secondary"}>
           {isActive ? "Activo" : "Inactivo"}
         </Badge>
       );
     },
   },
-
   {
     id: "actions",
     header: "Acciones",
@@ -83,25 +82,23 @@ export const studentColumns = ({
       const student = row.original;
 
       return (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={() => onEdit(student)}
-            className="h-8 w-8 p-0"
-            title="Editar estudiante"
           >
             <Edit className="h-4 w-4" />
+            Editar
           </Button>
 
           <Button
-            variant="ghost"
+            variant="destructive"
             size="sm"
             onClick={() => onDelete(student)}
-            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-            title="Eliminar estudiante"
           >
             <Trash2 className="h-4 w-4" />
+            Eliminar
           </Button>
         </div>
       );

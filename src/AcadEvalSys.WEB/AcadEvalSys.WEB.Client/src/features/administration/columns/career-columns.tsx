@@ -42,22 +42,22 @@ export const careerColumns = (
       };
 
       return (
-        <div className="flex gap-1">
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={handleView}
-            className="h-7 w-7 p-0"
           >
-            <Eye className="w-3 h-3" />
+            <Eye className="h-4 w-4" />
+            Ver
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={handleEdit}
-            className="h-7 w-7 p-0"
           >
-            <Edit className="w-3 h-3" />
+            <Edit className="h-4 w-4" />
+            Editar
           </Button>
           <ConfirmDialog
             title="Eliminar carrera técnica"
@@ -66,8 +66,12 @@ export const careerColumns = (
             cancelText="Cancelar"
             onConfirm={handleDelete}
             trigger={
-              <Button variant="outline" size="sm" className="h-7 w-7 p-0">
-                <Trash2 className="w-3 h-3" />
+              <Button
+                variant="destructive"
+                size="sm"
+              >
+                <Trash2 className="h-4 w-4" />
+                Eliminar
               </Button>
             }
           />

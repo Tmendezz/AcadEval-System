@@ -103,6 +103,8 @@ export function createSurveyColumns({
         const isDraft = statusNum === 0;
         const isScheduled = statusNum === 1;
         
+        // Se puede editar solo si NO está publicada (borrador o programada)
+        const canEdit = isDraft || isScheduled;
         // Se puede eliminar solo si NO está activa (borrador o programada)
         const canDelete = isDraft || isScheduled;
         // Se puede ver progreso solo si está publicada o cerrada
@@ -110,54 +112,50 @@ export function createSurveyColumns({
         
         return (
           <div className="flex items-center gap-2">
-            {/* Botón Editar - siempre disponible */}
-            {onEdit && (
+            {/* Botón Editar - solo si se puede editar */}
+            {canEdit && onEdit && (
               <Button 
-                size="sm" 
-                variant="outline" 
+                variant="outline"
+                size="sm"
                 onClick={() => onEdit(survey)}
-                className="h-8 px-2 text-xs"
               >
-                <Edit className="w-3 h-3 mr-1" />
+                <Edit className="h-4 w-4" />
                 Editar
               </Button>
             )}
             
-                    {/* Botón Ver Progreso - solo si está publicada */}
-                    {isPublished && onViewProgress && (
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        onClick={() => onViewProgress(survey)}
-                        className="h-8 px-2 text-xs"
-                      >
-                        <BarChart className="w-3 h-3 mr-1" />
-                        Progreso
-                      </Button>
-                    )}
-                    
-                    {/* Botón Ver Resultados - solo si está cerrada */}
-                    {isClosed && onViewResults && (
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        onClick={() => onViewResults(survey)}
-                        className="h-8 px-2 text-xs"
-                      >
-                        <BarChart className="w-3 h-3 mr-1" />
-                        Resultados
-                      </Button>
-                    )}
+            {/* Botón Ver Progreso - solo si está publicada */}
+            {isPublished && onViewProgress && (
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => onViewProgress(survey)}
+              >
+                <BarChart className="h-4 w-4" />
+                Progreso
+              </Button>
+            )}
             
-            {/* Botón Eliminar - solo si NO está activa */}
+            {/* Botón Ver Resultados - solo si está cerrada */}
+            {isClosed && onViewResults && (
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => onViewResults(survey)}
+              >
+                <BarChart className="h-4 w-4" />
+                Resultados
+              </Button>
+            )}
+            
+            {/* Botón Eliminar - solo si se puede eliminar */}
             {canDelete && onDelete && (
               <Button 
-                size="sm" 
-                variant="outline" 
+                variant="destructive"
+                size="sm"
                 onClick={() => onDelete(survey)}
-                className="h-8 px-2 text-xs text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
               >
-                <Trash2 className="w-3 h-3 mr-1" />
+                <Trash2 className="h-4 w-4" />
                 Eliminar
               </Button>
             )}
@@ -167,5 +165,3 @@ export function createSurveyColumns({
     },
   ];
 }
-
-
