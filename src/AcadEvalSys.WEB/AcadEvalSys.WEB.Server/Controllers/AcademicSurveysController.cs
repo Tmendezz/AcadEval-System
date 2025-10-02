@@ -1,5 +1,7 @@
 using AcadEvalSys.Application.AcademicSurveys.Commands.CloseAcademicSurvey;
 using AcadEvalSys.Application.AcademicSurveys.Commands.CreateAcademicSurvey;
+using AcadEvalSys.Application.AcademicSurveys.Commands.DeleteAcademicSurvey;
+using AcadEvalSys.Application.AcademicSurveys.Commands.PublishAcademicSurvey;
 using AcadEvalSys.Application.AcademicSurveys.Commands.UpdateAcademicSurvey;
 using AcadEvalSys.Application.AcademicSurveys.Dtos;
 using AcadEvalSys.Application.AcademicSurveys.Queries.GetAcademicSurveyById;
@@ -11,7 +13,6 @@ using AcadEvalSys.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using AcadEvalSys.Application.AcademicSurveys.Commands.PublishAcademicSurvey;
 
 
 namespace AcadEvalSys.WEB.Server.Controllers;
@@ -94,5 +95,16 @@ public class AcademicSurveysController(IMediator mediator) : ControllerBase
     {
         var result = await mediator.Send(new GetSurveyAudienceResponsesQuery(id, careerId, year));
         return Ok(result);
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = UserRoles.Admin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> DeleteSurvey([FromRoute] Guid id)
+    {
+        await mediator.Send(new DeleteAcademicSurveyCommand { Id = id });
+        return NoContent();
     }
 }

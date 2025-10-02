@@ -6,7 +6,8 @@ namespace AcadEvalSys.Application.Templates.Dtos
     public class SurveyTemplateReadDto
     {
         public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         public SurveyType SurveyType { get; set; }
         public bool IsDraft { get; set; }
         public int Version { get; set; }

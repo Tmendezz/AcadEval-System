@@ -34,4 +34,6 @@ public interface IAcademicSurveyRepository
         CareerYear year,
         CancellationToken ct = default);
 
+    Task DeleteAsync(Guid surveyId, CancellationToken ct = default);
+
 }

@@ -11,7 +11,8 @@ namespace AcadEvalSys.Application.Templates.Dtos
         {
             // Mapping para lectura completa de template
             CreateMap<SurveyTemplate, SurveyTemplateReadDto>()
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Title)) // FIX: Mapear Title a Name
+                .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title)) // FIX: Mapear Title a Name
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
                 .ForMember(dest => dest.Questions, opt => opt.MapFrom(src => src.Questions.OrderBy(q => q.Order)));
 
             // Mapping para listado de templates

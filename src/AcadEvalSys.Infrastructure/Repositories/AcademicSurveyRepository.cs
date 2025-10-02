@@ -1,5 +1,6 @@
 using AcadEvalSys.Domain.Entities;
 using AcadEvalSys.Domain.Enums;
+using AcadEvalSys.Domain.Exceptions;
 using AcadEvalSys.Domain.Repositories;
 using AcadEvalSys.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -205,5 +206,34 @@ public class AcademicSurveyRepository(ApplicationDbContext db, ISubjectRepositor
                          && ss.Subject!.Year == year
                          && ss.IsActive)
             .ToListAsync(ct);
+    }
+
+    public async Task DeleteAsync(Guid surveyId, CancellationToken ct = default)
+    {
+        // Buscar SIN filtrar IsActive
+        var survey = await db.AcademicSurveys
+            .FirstOrDefaultAsync(s => s.Id == surveyId, ct);
+
+        if (survey is null)
+        {
+            throw new NotFoundException(nameof(AcademicSurvey), surveyId.ToString());
+        }
+
+        // Regla: no eliminar si hay respuestas en cualquier subject de la encuesta
+        var hasResponses = await db.AcademicSurveySubjects
+            .Where(ss => ss.AcademicSurveyId == surveyId)
+            .AnyAsync(ss => ss.Responses.Any(), ct);
+
+        if (hasResponses)
+        {
+            throw new InvalidOperationException("No se puede eliminar la encuesta porque tiene respuestas registradas.");
+        }
+
+        // Soft delete: mantener consistencia con IsActive
+        survey.IsActive = false;
+        survey.UpdatedAt = DateTime.UtcNow;
+
+        db.AcademicSurveys.Update(survey);
+        await db.SaveChangesAsync(ct);
     }
 }
