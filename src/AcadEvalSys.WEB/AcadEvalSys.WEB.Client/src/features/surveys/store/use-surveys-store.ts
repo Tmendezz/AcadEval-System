@@ -59,7 +59,7 @@ interface SurveysState {
 
   // Acciones de plantilla
   setSelectedTemplateId: (templateId: string | null) => void;
-
+  clearCreateState: () => void;
 
   // Acciones de filtros
   setSearchTerm: (term: string) => void;
@@ -150,6 +150,14 @@ export const useSurveysStore = create<SurveysState>((set) => ({
 
   // Acciones de plantilla
   setSelectedTemplateId: (templateId) => set({ selectedTemplateId: templateId }),
+  
+  clearCreateState: () => set({ 
+    selectedTemplateId: null,
+    formData: null,
+    formErrors: {},
+    isCreating: false,
+    isEditing: false
+  }),
 
   // Acciones de respuestas removidas
 
@@ -189,7 +197,7 @@ export const useSurveysStore = create<SurveysState>((set) => ({
       selectedSurvey: survey,
       formData: {
         title: survey.title,
-        description: survey.description,
+        description: survey.description || '',
         type: survey.type,
         targetAudience: survey.targetAudience,
         questions: survey.questions.map(({ id: _id, ...rest }) => rest),

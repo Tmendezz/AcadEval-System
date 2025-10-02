@@ -8,6 +8,7 @@ import { PageContent, PageHeader, PageLayout } from '@/shared/components/layout/
 import { SurveyList } from '../components/SurveyList';
 import { useSurveys } from '../hooks/use-surveys';
 import { SurveyStatus } from '../models/survey-types';
+import { useSurveysStore } from '../store/use-surveys-store';
 
 export default function SurveysPage() {
   const [filters] = useState({
@@ -39,6 +40,9 @@ export default function SurveysPage() {
   };
 
   const handleCreateSurvey = () => {
+    // Limpiar cualquier template previamente seleccionada antes de navegar
+    const { clearCreateState } = useSurveysStore.getState();
+    clearCreateState();
     setLocation('/encuestas/crear');
   };
 

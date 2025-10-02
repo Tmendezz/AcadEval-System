@@ -15,23 +15,30 @@ import { ArrowLeft, FileText } from 'lucide-react';
 export default function CreateSurveyPage() {
   const [, setLocation] = useLocation();
   const createSurveyMutation = useCreateSurvey();
-  const { selectedTemplateId, setSelectedTemplateId } = useSurveysStore();
+  const { selectedTemplateId, clearCreateState } = useSurveysStore();
   const { data: templateData, isFetching: isFetchingTemplate } = useSurveyTemplate(selectedTemplateId || '', !!selectedTemplateId);
   const { data: careers = [], isLoading: isLoadingCareers } = useTechnicalCareers();
 
   // Configuración gestionada dentro del Wizard
 
   const handleCancel = () => {
-    setSelectedTemplateId(null);
+    clearCreateState();
     setLocation('/encuestas');
   };
 
-  // Limpiar templateId cuando se complete la creación
+  // Limpiar state cuando se complete la creación o se desmonte el componente
   useEffect(() => {
     if (createSurveyMutation.isSuccess) {
-      setSelectedTemplateId(null);
+      clearCreateState();
     }
-  }, [createSurveyMutation.isSuccess, setSelectedTemplateId]);
+  }, [createSurveyMutation.isSuccess, clearCreateState]);
+
+  // Cleanup al desmontar el componente - esto evita que la template quede "stuck"
+  useEffect(() => {
+    return () => {
+      clearCreateState();
+    };
+  }, [clearCreateState]);
 
   // Manejo de cambios ahora es interno del Wizard
 
@@ -133,7 +140,7 @@ export default function CreateSurveyPage() {
                 })
               }));
               
-              const surveyToCreate: CreateAcademicSurveyRequest = {
+              const surveyToCreate = {
                 title: form.title,
                 description: form.description,
                 audience: audience,
@@ -158,8 +165,8 @@ export default function CreateSurveyPage() {
 
             console.log('🔍 Debug CreateSurvey - Form data:', form);
             console.log('🔍 Debug CreateSurvey - Survey to create:', surveyToCreate);
-            await createSurveyMutation.mutateAsync(surveyToCreate);
-            setSelectedTemplateId(null);
+            await createSurveyMutation.mutateAsync(surveyToCreate as unknown as CreateAcademicSurveyRequest);
+            clearCreateState();
             setLocation('/encuestas');
           }}
           onCancel={handleCancel}

@@ -8,6 +8,66 @@ import {
 
 const SURVEY_TEMPLATES_API_URL = '/survey-templates';
 
+// Función auxiliar para convertir tipo numérico a string
+const convertTypeToString = (type: number | string): string => {
+  if (typeof type === 'string') return type; // Ya es string
+  switch (type) {
+    case 0: return 'SingleChoice';
+    case 1: return 'MultipleChoice';
+    case 2: return 'OpenText';
+    default: return 'SingleChoice';
+  }
+};
+
+// Función auxiliar para mapear datos del frontend al formato esperado por el backend
+const mapFormDataToBackend = (data: SurveyTemplateForm, id?: string, originalTemplate?: any) => {
+  const payload = {
+    id: id,
+    title: data.title,
+    description: data.description,
+    surveyType: data.surveyType, // Mantener como string (Student/Professor)
+    isDraft: data.isDraft,
+    // Incluir campos adicionales del template original si estamos actualizando
+    ...(originalTemplate && {
+      version: originalTemplate.version,
+      createdAt: originalTemplate.createdAt,
+      updatedAt: originalTemplate.updatedAt
+    }),
+    questions: data.questions.map((question, questionIndex) => {
+      // Buscar la pregunta original por índice o texto para obtener su ID
+      const originalQuestion = originalTemplate?.questions?.[questionIndex];
+      
+      return {
+        id: originalQuestion?.id || null, // Usar el ID del template original
+        text: question.text,
+        type: convertTypeToString(question.type),
+        order: question.order || (questionIndex + 1),
+        required: question.required,
+        allowComment: question.allowComment || false,
+        options: (question.options || []).map((option, optionIndex) => {
+          // Buscar la opción original por índice para obtener su ID
+          const originalOption = originalQuestion?.options?.[optionIndex];
+          
+          return {
+            id: originalOption?.id || null, // Usar el ID de la opción original
+            value: typeof option.value === 'number' ? option.value : (optionIndex + 1),
+            text: option.text,
+            order: option.order || (optionIndex + 1),
+            allowOpenText: option.allowOpenText || false
+          };
+        })
+      };
+    })
+  };
+
+  // Remover id si es undefined para creación
+  if (!id) {
+    delete payload.id;
+  }
+
+  return payload;
+};
+
 export const surveyTemplateService = {
   // Obtener todas las plantillas con filtros
   async getTemplates(filters?: SurveyTemplateFilters): Promise<SurveyTemplateListItem[]> {
@@ -38,8 +98,10 @@ export const surveyTemplateService = {
 
   // Crear nueva plantilla
   async createTemplate(data: SurveyTemplateForm): Promise<string> {
+    const mappedData = mapFormDataToBackend(data);
+    
     try {
-      const { data: response } = await api.post<string>(SURVEY_TEMPLATES_API_URL, data);
+      const { data: response } = await api.post<string>(SURVEY_TEMPLATES_API_URL, mappedData);
       return response;
     } catch (error: any) {
       const errorMessage = error.response?.data?.title || 'Error al crear plantilla';
@@ -61,7 +123,16 @@ export const surveyTemplateService = {
 
   // Actualizar plantilla existente
   async updateTemplate(id: string, data: SurveyTemplateForm): Promise<void> {
-    await api.put(`${SURVEY_TEMPLATES_API_URL}/${id}`, data);
+    try {
+      // Primero obtener el template original para incluir campos necesarios
+      const originalTemplate = await this.getTemplateById(id);
+      
+      const mappedData = mapFormDataToBackend(data, id, originalTemplate);
+      
+      await api.put(`${SURVEY_TEMPLATES_API_URL}/${id}`, mappedData);
+    } catch (error: any) {
+      throw error;
+    }
   },
 
   // Eliminar plantilla
