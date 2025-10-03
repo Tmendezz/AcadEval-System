@@ -81,15 +81,68 @@ export default function EditSurveyPage() {
               })
             }));
 
-            const payload: CreateAcademicSurveyRequest = {
-              title: form.title,
-              templateId: survey.templateId,
-              publishAt: convertDateTimeLocalToISO(scheduling.publishAt || ''),
-              closeAt: convertDateTimeLocalToISO(scheduling.closeAt || ''),
-              audience,
+            // Validación: asegurar que hay al menos un elemento en audience
+            if (audience.length === 0 && careers.length > 0) {
+              audience.push({
+                technicalCareerId: careers[0].id,
+                selectedYears: ['First']
+              });
+            }
+
+            // Asegurar que las fechas sean válidas y cumplan validaciones del backend
+            let publishAtDate = scheduling.publishAt ? convertDateTimeLocalToISO(scheduling.publishAt) : null;
+            let closeAtDate = scheduling.closeAt ? convertDateTimeLocalToISO(scheduling.closeAt) : null;
+            
+            // Si no hay fechas, usar fechas por defecto que cumplan las validaciones
+            if (!publishAtDate) {
+              const today = new Date();
+              publishAtDate = today.toISOString();
+            }
+            if (!closeAtDate) {
+              const tomorrow = new Date();
+              tomorrow.setDate(tomorrow.getDate() + 7); // Una semana después
+              closeAtDate = tomorrow.toISOString();
+            }
+
+            const payload = {
+              title: form.title?.trim() || '',
+              description: form.description?.trim() || '',
+              publishAt: publishAtDate,
+              closeAt: closeAtDate,
+              audience: audience || [],
+              questions: form.questions?.map(q => {
+                const question: any = {
+                  text: q.text,
+                  type: q.type === 'SingleChoice' ? 0 : q.type === 'MultipleChoice' ? 1 : 2,
+                  order: q.order || 0,
+                  isRequired: q.required,
+                  allowComment: q.allowComment || false,
+                  options: q.options.map(o => {
+                    const option: any = {
+                      text: o.text,
+                      value: parseInt(o.value) || 0,
+                      order: o.order || 0,
+                      allowOpenText: o.allowOpenText || false
+                    };
+                    // Solo incluir ID si existe y no es una nueva opción
+                    if (o.id && !o.id.startsWith('new_')) {
+                      option.id = o.id;
+                    }
+                    return option;
+                  })
+                };
+                // Solo incluir ID si existe y no es una nueva pregunta
+                if (q.id && !q.id.startsWith('new_')) {
+                  question.id = q.id;
+                }
+                return question;
+              }) || []
             };
 
-            await updateSurveyMutation.mutateAsync({ id: surveyId, survey: payload });
+            console.log('🔍 Debug UpdateSurvey - Form data:', form);
+            console.log('🔍 Debug UpdateSurvey - Payload being sent:', payload);
+            console.log('🔍 Debug UpdateSurvey - JSON Payload:', JSON.stringify(payload, null, 2));
+            await updateSurveyMutation.mutateAsync({ id: surveyId, survey: payload as unknown as CreateAcademicSurveyRequest });
           }}
           onCancel={() => setLocation('/encuestas')}
           isSubmitting={updateSurveyMutation.isPending}
