@@ -59,7 +59,12 @@ export function CreateCareerForm() {
     1000,
     search || undefined
   );
-  const existingProfessors: Professor[] = professorsData?.professors ?? [];
+  const existingProfessors: Professor[] = professorsData?.items?.map(p => ({
+    id: p.userId,
+    name: p.name,
+    email: p.email,
+    phone: p.phone
+  })) ?? [];
 
   // Mini diálogo para crear profesor
   const [newProfOpen, setNewProfOpen] = useState(false);

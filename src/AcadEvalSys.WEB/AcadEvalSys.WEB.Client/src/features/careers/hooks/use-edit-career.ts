@@ -43,7 +43,12 @@ export function useEditCareer(careerId: string | undefined) {
     1000,
     search || undefined
   );
-  const existingProfessors: Professor[] = professorsData?.professors ?? [];
+  const existingProfessors: Professor[] = professorsData?.items?.map(p => ({
+    id: p.userId,
+    name: p.name,
+    email: p.email,
+    phone: p.phone
+  })) ?? [];
 
   // Local state
   const [name, setName] = useState("");

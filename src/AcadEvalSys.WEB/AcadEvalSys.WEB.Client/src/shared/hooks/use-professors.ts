@@ -45,8 +45,8 @@ export const useProfessorById = (id: string) => {
   return useQuery({
     queryKey: professorsKeys.detail(id),
     queryFn: async () => {
-      const all = await professorService.getAll();
-      return all.professors.find((p) => p.id === id);
+      const result = await professorService.getAll();
+      return result.items.find((p) => p.userId === id);
     },
     enabled: !!id,
   });

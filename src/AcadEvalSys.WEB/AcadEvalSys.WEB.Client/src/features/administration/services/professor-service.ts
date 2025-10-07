@@ -1,9 +1,27 @@
 import { api } from "@/infrastructure/query/axios";
 
+export interface ProfessorDto {
+  userId: string;
+  name: string;
+  email: string;
+  phone?: string;
+  subjects: Array<{ id: string; name: string; }>;
+}
+
+export interface PagedProfessorResult {
+  items: ProfessorDto[];
+  totalPages: number;
+  totalItems: number;
+  currentPage: number;
+  pageSize: number;
+}
+
 export const professorService = {
   async getAll(params?: { pageNumber?: number; pageSize?: number; searchTerm?: string; technicalCareerId?: string }) {
+    console.log('🔍 Professor Service - Making request to /professors with params:', params);
     const { data } = await api.get("/professors", { params });
-    return data as { items: Array<{ userId: string; name: string; email: string; phone?: string }> };
+    console.log('🔍 Professor Service - Response data:', data);
+    return data as PagedProfessorResult;
   },
 
   async create(body: { name: string; email: string; password: string; phone?: string }) {
