@@ -43,7 +43,15 @@ export const technicalCareerService = {
     id: string,
     career: UpdateTechnicalCareerRequest
   ): Promise<void> {
-    await api.put(`${TECHNICAL_CAREERS_API_URL}/${id}`, career);
+    // El backend espera solo { name } en el payload, no incluir id
+    const payload = {
+      name: career.name
+    };
+    console.log('🔍 TechnicalCareer Service - Update request:', {
+      url: `${TECHNICAL_CAREERS_API_URL}/${id}`,
+      payload
+    });
+    await api.put(`${TECHNICAL_CAREERS_API_URL}/${id}`, payload);
   },
 
   async delete(id: string): Promise<void> {
@@ -84,9 +92,24 @@ export const technicalCareerService = {
   },
 
   async assignCoordinator(careerId: string, coordinatorUserId: string): Promise<void> {
-    await api.put(`${TECHNICAL_CAREERS_API_URL}/${careerId}/coordinator`, {
+    // El backend espera AssignCoordinatorCommand: { technicalCareerId, userId }
+    const payload = {
+      technicalCareerId: careerId,
+      userId: coordinatorUserId
+    };
+    
+    const url = `${TECHNICAL_CAREERS_API_URL}/${careerId}/coordinator`;
+    
+    console.log('🔍 TechnicalCareer - assignCoordinator:', {
+      url,
+      payload,
+      careerId,
       coordinatorUserId,
+      method: 'PUT'
     });
+    
+    // Endpoint correcto: PUT /technical-careers/{id}/coordinator
+    await api.put(url, payload);
   },
 
   async removeCoordinator(careerId: string): Promise<void> {

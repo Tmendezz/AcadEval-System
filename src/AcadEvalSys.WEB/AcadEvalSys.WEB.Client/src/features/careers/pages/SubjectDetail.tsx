@@ -113,17 +113,6 @@ export function SubjectDetail() {
                   <div>
                     <p className="font-medium">{subject.professorName}</p>
                   </div>
-                  {subject.professorId ? (
-                    <Button variant="outline" size="sm">
-                      <Pencil className="w-4 h-4 mr-2" />
-                      Cambiar Profesor
-                    </Button>
-                  ) : (
-                    <Button variant="outline" size="sm">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Asignar Profesor
-                    </Button>
-                  )}
                 </div>
               ) : (
                 <div className="flex items-center justify-center py-8">

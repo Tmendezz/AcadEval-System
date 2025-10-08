@@ -12,8 +12,8 @@ export interface CreateTechnicalCareerRequest {
 }
 
 export interface UpdateTechnicalCareerRequest {
-  id?: string;
   name: string;
+  // Nota: el id va en la URL, no en el payload
 }
 
 // Tipos específicos del feature (formularios/UI)

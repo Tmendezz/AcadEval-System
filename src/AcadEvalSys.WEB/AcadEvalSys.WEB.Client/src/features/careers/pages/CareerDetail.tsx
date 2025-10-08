@@ -1,6 +1,6 @@
 import { useParams } from "wouter";
 import { useSubjectsByYear } from "../hooks/use-subjects-by-year";
-import { createSubjectColumns } from "./subject-columns";
+import { createSubjectColumns } from "../components/subject-columns";
 import { DataSection } from "@/shared/components/ui/data-section";
 import {
   PageLayout,

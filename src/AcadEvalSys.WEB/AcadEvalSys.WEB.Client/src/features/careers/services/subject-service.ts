@@ -3,7 +3,7 @@ import type { Subject } from "../models";
 import type { UnenrollStudentsResult } from "../models";
 
 export async function enrollStudent(careerId: string, subjectId: string, studentId: string) {
-  await api.post(`/technical-careers/${careerId}/subjects/${subjectId}/students/${studentId}`);
+  await api.post(`/technical-careers/${careerId}/subjects/${subjectId}/enroll-student`, { studentId });
 }
 
 export async function deleteSubject(careerId: string, subjectId: string) {

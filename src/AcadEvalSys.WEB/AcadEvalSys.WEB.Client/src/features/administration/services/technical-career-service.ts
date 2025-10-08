@@ -3,7 +3,7 @@ import type {
   TechnicalCareer,
   CreateTechnicalCareerRequest,
   UpdateTechnicalCareerRequest,
-} from "@infrastructure/api/types/technical-career";
+} from "../../careers/models/technical-career";
 
 const TECHNICAL_CAREERS_API_URL = "/technical-careers";
 
@@ -34,7 +34,15 @@ export const technicalCareerService = {
     id: string,
     career: UpdateTechnicalCareerRequest
   ): Promise<void> {
-    await api.put(`${TECHNICAL_CAREERS_API_URL}/${id}`, career);
+    // El backend espera solo { name } en el payload, no incluir id
+    const payload = {
+      name: career.name
+    };
+    console.log('🔍 Admin TechnicalCareer Service - Update request:', {
+      url: `${TECHNICAL_CAREERS_API_URL}/${id}`,
+      payload
+    });
+    await api.put(`${TECHNICAL_CAREERS_API_URL}/${id}`, payload);
   },
 
   async delete(id: string): Promise<void> {
