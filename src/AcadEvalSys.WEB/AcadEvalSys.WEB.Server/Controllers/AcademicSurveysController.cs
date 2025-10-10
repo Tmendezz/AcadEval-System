@@ -104,7 +104,7 @@ public class AcademicSurveysController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> DeleteSurvey([FromRoute] Guid id)
     {
-        await mediator.Send(new DeleteAcademicSurveyCommand(id));
+        await mediator.Send(new DeleteAcademicSurveyCommand { Id = id });
         return NoContent();
     }
 }

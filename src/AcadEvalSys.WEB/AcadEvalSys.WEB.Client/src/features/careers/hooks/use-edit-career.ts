@@ -1,18 +1,11 @@
-import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import {
-  getTechnicalCareerById,
-  assignCareerCoordinator,
-  getCareerCoordinator,
-  removeCareerCoordinator,
-} from "@infrastructure/api/clients/technical-career-service";
-import { useUpdateTechnicalCareer } from "@/shared/hooks/use-technical-careers";
-import * as subjectService from "@infrastructure/api/clients/subject-service";
-import { useProfessors } from "@/shared/hooks/use-professors";
+import { Professor, Subject } from "../models";
 import { useDeleteSubject } from "./use-delete-subject";
-import type { Professor } from "@infrastructure/api/types/professor";
-import type { Subject } from "@infrastructure/api/types/subject";
+import { useUpdateTechnicalCareer } from "./use-technical-careers";
+import { assignProfessor, createSubject, getSubjectsByCareer, technicalCareerService, updateSubject } from "../services";
+import { useEffect, useState } from "react";
+import { useProfessors } from "@/shared/hooks/use-professors";
+import { toast } from "sonner";
 
 // Local row model matches Subject, with optional id for new subjects
 type SubjectRow = Subject & { isNew?: boolean };
@@ -25,20 +18,20 @@ export function useEditCareer(careerId: string | undefined) {
   // Queries
   const { data: career } = useQuery({
     queryKey: ["technical-career", careerId],
-    queryFn: () => getTechnicalCareerById(careerId || ""),
+    queryFn: () => technicalCareerService.getById(careerId || ""),
     enabled: !!careerId,
   });
 
   const { data: subjects = [] } = useQuery({
     queryKey: ["subjects", careerId],
     queryFn: () =>
-      subjectService.getSubjectsByCareer(careerId || "", undefined, true),
+      getSubjectsByCareer(careerId || "", undefined, true),
     enabled: !!careerId,
   });
 
   const { data: currentCoordinator } = useQuery({
     queryKey: ["career-coordinator", careerId],
-    queryFn: () => getCareerCoordinator(careerId || ""),
+    queryFn: () => technicalCareerService.getCareerCoordinator(careerId || ""),
     enabled: !!careerId,
   });
 
@@ -49,7 +42,12 @@ export function useEditCareer(careerId: string | undefined) {
     1000,
     search || undefined
   );
-  const existingProfessors: Professor[] = professorsData?.professors ?? [];
+  const existingProfessors: Professor[] = professorsData?.items?.map(p => ({
+    id: p.userId,
+    name: p.name,
+    email: p.email,
+    phone: p.phone
+  })) ?? [];
 
   // Local state
   const [name, setName] = useState("");
@@ -126,7 +124,7 @@ export function useEditCareer(careerId: string | undefined) {
         if (r.isNew) {
           // Solo crear si tiene nombre
           if (r.name.trim()) {
-            const subjectId = await subjectService.createSubject(careerId, {
+            const subjectId = await createSubject(careerId, {
               name: r.name,
               description: r.description?.trim() || `Descripción de ${r.name}`,
               year: r.year as "First" | "Second" | "Third",
@@ -135,7 +133,7 @@ export function useEditCareer(careerId: string | undefined) {
             
             // Si tiene profesor asignado, asignarlo
             if (r.professorId) {
-              await subjectService.assignProfessor(
+              await assignProfessor(
                 careerId,
                 subjectId,
                 r.professorId
@@ -159,7 +157,7 @@ export function useEditCareer(careerId: string | undefined) {
                 professorId: r.professorId,
               };
 
-              await subjectService.updateSubject(careerId, r.id, updateData);
+              await updateSubject(careerId, r.id, updateData);
             }
           }
         }
@@ -288,3 +286,11 @@ export function useEditCareer(careerId: string | undefined) {
     handleDeleteSubject,
   };
 }
+function assignCareerCoordinator(careerId: string, selectedCoordinator: string) {
+  throw new Error("Function not implemented.");
+}
+
+function removeCareerCoordinator(careerId: string) {
+  throw new Error("Function not implemented.");
+}
+

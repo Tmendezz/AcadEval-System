@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { Button } from "@/shared/components/ui/button";
 import { ChevronLeft } from "lucide-react";
-import { Evaluation } from "@infrastructure/api/types/evaluation";
+import { Evaluation } from "../../models";
 
 interface EvaluationHeaderProps {
   evaluation: Evaluation;

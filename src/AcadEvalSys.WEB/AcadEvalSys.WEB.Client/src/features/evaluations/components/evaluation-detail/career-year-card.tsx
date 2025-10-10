@@ -1,5 +1,5 @@
 import { Users, ChevronRight } from "lucide-react";
-import { CompetencyAssignmentDto } from "@infrastructure/api/types/evaluation";
+import { CompetencyAssignmentDto } from "../../models";
 import { Link } from "wouter";
 
 interface CareerYearCardProps {

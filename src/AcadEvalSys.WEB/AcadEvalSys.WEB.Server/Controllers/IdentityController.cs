@@ -101,7 +101,7 @@ public class IdentityController(IMediator mediator, ILogoutService logoutService
         /// <summary>
         /// Obtiene la lista paginada de usuarios por rol.
         /// </summary>
-        /// <param name="role">Rol específico a filtrar (opcional). Si no se especifica, retorna todos los usuarios.</param>
+        /// <param name="query">Query con parámetros de filtrado y paginación.</param>
         [HttpGet("users")]
         [Authorize(Roles = UserRoles.Admin)]
         [ProducesResponseType(StatusCodes.Status200OK)]

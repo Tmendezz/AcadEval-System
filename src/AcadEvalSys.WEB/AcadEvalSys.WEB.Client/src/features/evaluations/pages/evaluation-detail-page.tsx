@@ -1,6 +1,6 @@
 import { useParams } from "wouter";
 import { useGetEvaluationById } from "../hooks";
-import type { Evaluation } from "@infrastructure/api/types/evaluation";
+import type { Evaluation } from "../models";
 import {
   PageLayout,
   PageContent,

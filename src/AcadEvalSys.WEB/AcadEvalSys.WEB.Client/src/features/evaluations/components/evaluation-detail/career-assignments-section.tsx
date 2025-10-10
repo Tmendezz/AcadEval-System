@@ -5,7 +5,7 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Users } from "lucide-react";
-import { CompetencyAssignmentByCareerYearDto } from "@infrastructure/api/types/evaluation";
+import { CompetencyAssignmentByCareerYearDto } from "../../models";
 
 import { CareerYearCard } from "@/features/evaluations/components/evaluation-detail/career-year-card";
 

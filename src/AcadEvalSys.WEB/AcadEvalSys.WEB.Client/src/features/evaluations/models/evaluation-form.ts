@@ -1,6 +1,6 @@
-import { Competency } from "@infrastructure/api/types/competency";
-import { Subject } from "@infrastructure/api/types/subject";
-import { TechnicalCareer } from "@infrastructure/api/types/technical-career";
+/**
+ * Tipos para el formulario de creación de evaluaciones
+ */
 
 export interface EvaluationFormData {
   title: string;
@@ -35,6 +35,31 @@ export interface Assignment {
   year?: number;
 }
 
+// Tipos simplificados para entities usadas en el wizard
+export interface Competency {
+  id: string;
+  name: string;
+  description: string;
+  type: "Soft" | "Technical";
+}
+
+export interface Subject {
+  id: string;
+  name: string;
+  year: number;
+  technicalCareer?: string;
+  technicalCareerId?: string;
+  professorName?: string;
+  professorId?: string;
+}
+
+export interface TechnicalCareer {
+  id: string;
+  name: string;
+  totalStudents?: number;
+  totalProfessors?: number;
+}
+
 export interface AssignmentWithSubject extends Assignment {
   subject: Subject;
 }
@@ -44,6 +69,3 @@ export interface CareerAssignment {
   year: number;
   assignments: Assignment[];
 }
-
-// Re-export shared types for convenience
-export type { Competency, Subject, TechnicalCareer };

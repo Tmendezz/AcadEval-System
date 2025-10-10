@@ -36,7 +36,7 @@ public class StudentEvaluationsController(IMediator mediator, IUserContext userC
             return Unauthorized();
         }
 
-        var query = new GetStudentEvaluationInstancesQuery(currentUser.Id);
+        var query = new GetStudentEvaluationInstancesQuery(currentUser.Id!);
         var instances = await mediator.Send(query);
         
         return Ok(instances);
@@ -60,7 +60,7 @@ public class StudentEvaluationsController(IMediator mediator, IUserContext userC
             return Unauthorized();
         }
 
-        var query = new GetStudentEvaluationsQuery(currentUser.Id, evaluationInstanceId);
+        var query = new GetStudentEvaluationsQuery(currentUser.Id!, evaluationInstanceId);
         var evaluations = await mediator.Send(query);
         
         if (!evaluations.Any())
@@ -87,7 +87,7 @@ public class StudentEvaluationsController(IMediator mediator, IUserContext userC
             return Unauthorized();
         }
 
-        var query = new GetStudentEvaluationsQuery(currentUser.Id);
+        var query = new GetStudentEvaluationsQuery(currentUser.Id!);
         var evaluations = await mediator.Send(query);
         
         return Ok(evaluations);
@@ -109,7 +109,7 @@ public class StudentEvaluationsController(IMediator mediator, IUserContext userC
             return Unauthorized();
         }
 
-        var query = new GetStudentReceivedEvaluationsQuery(currentUser.Id);
+        var query = new GetStudentReceivedEvaluationsQuery(currentUser.Id!);
         var receivedEvaluations = await mediator.Send(query);
         
         return Ok(receivedEvaluations);
