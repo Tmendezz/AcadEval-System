@@ -2,9 +2,9 @@ import React from "react";
 
 import { Button } from "@/shared/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
-import type { Professor } from "@infrastructure/api/types/professor";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import type { ColumnDef } from "@tanstack/react-table";
+import {Professor} from "@features/careers";
 
 interface ProfessorColumnHandlers {
   onEdit?: (prof: Professor) => void;
@@ -35,15 +35,14 @@ export const professorColumns = ({
       const handleDelete = () => onDelete?.(row.original);
 
       return (
-        <div className="flex gap-1">
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={handleEdit}
-            className="h-7 w-7 p-0"
-            title="Editar"
           >
-            <Edit className="w-3 h-3" />
+            <Edit className="h-4 w-4" />
+            Editar
           </Button>
           <ConfirmDialog
             title="Eliminar profesor"
@@ -52,8 +51,12 @@ export const professorColumns = ({
             cancelText="Cancelar"
             onConfirm={handleDelete}
             trigger={
-              <Button variant="outline" size="sm" className="h-7 w-7 p-0">
-                <Trash2 className="w-3 h-3" />
+              <Button
+                variant="destructive"
+                size="sm"
+              >
+                <Trash2 className="h-4 w-4" />
+                Eliminar
               </Button>
             }
           />

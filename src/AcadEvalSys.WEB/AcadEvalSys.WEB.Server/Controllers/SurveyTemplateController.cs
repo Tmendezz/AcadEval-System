@@ -72,16 +72,8 @@ public class SurveyTemplateController(IMediator mediator) : ControllerBase
     [Produces("application/json")]
     public async Task<IActionResult> CreateTemplate([FromBody] CreateSurveyTemplateCommand command)
     {
-        try
-        {
-            var id = await mediator.Send(command);
-            return CreatedAtAction(nameof(GetTemplateById), new { id }, null);
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Error al crear plantilla: {ErrorMessage}", ex.Message);
-            throw;
-        }
+        var id = await mediator.Send(command);
+        return CreatedAtAction(nameof(GetTemplateById), new { id }, null);
     }
 
     /// <summary>

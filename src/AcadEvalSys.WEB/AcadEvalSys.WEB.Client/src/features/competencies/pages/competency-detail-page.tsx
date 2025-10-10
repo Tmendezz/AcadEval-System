@@ -1,7 +1,6 @@
 import { useParams, Link } from "wouter";
-import { useState } from "react";
-import { ChevronLeft, Brain, Target, Edit, Trash2 } from "lucide-react";
-import { useCompetencyById, useUpdateCompetency } from "@/features/competencies/hooks/use-competencies";
+import { ChevronLeft, Brain, Target } from "lucide-react";
+import { useCompetencyById } from "@/features/competencies/hooks/use-competencies";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import {
@@ -17,14 +16,10 @@ import {
   PageContent,
   PageSection,
 } from "@/shared/components/layout/page-layout";
-import { EditCompetencyModal } from "@/features/competencies/components/EditCompetencyModal";
-import type { CompetencyDto } from "@/features/competencies/services/competency-service";
 
 export default function CompetencyDetailPage() {
   const { id } = useParams();
   const { data: competency, isLoading, error } = useCompetencyById(id || "");
-  const updateMutation = useUpdateCompetency();
-  const [isEditOpen, setIsEditOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -109,26 +104,6 @@ export default function CompetencyDetailPage() {
                 </div>
               </div>
             </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                onClick={() => setIsEditOpen(true)}
-              >
-                <Edit className="w-4 h-4" />
-                Editar
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2 text-destructive hover:text-destructive"
-              >
-                <Trash2 className="w-4 h-4" />
-                Eliminar
-              </Button>
-            </div>
           </div>
         </PageSection>
 
@@ -182,19 +157,8 @@ export default function CompetencyDetailPage() {
             </CardContent>
           </Card>
         </PageSection>
-        {competency && (
-          <EditCompetencyModal
-            competency={competency as CompetencyDto}
-            isOpen={isEditOpen}
-            onClose={() => setIsEditOpen(false)}
-            onSubmit={async (data) => {
-              await updateMutation.mutateAsync({ id: competency.id, data });
-              setIsEditOpen(false);
-            }}
-            isLoading={updateMutation.isPending}
-          />
-        )}
       </PageContent>
     </PageLayout>
   );
 }
+

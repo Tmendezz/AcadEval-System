@@ -3,7 +3,7 @@ import { api } from "@/infrastructure/query/axios";
 export type EvaluationListItem = {
   id: string;
   title: string;
-  status: "Draft" | "Published" | "Completed" | "Archived";
+  status: "Draft" | "Published" | "Completed" | "Archived" | "Pending";
   createdAt: string;
   updatedAt?: string;
   periodFrom?: string;

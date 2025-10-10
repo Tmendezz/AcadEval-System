@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useLocation } from "wouter";
+    
 import { toast } from "sonner";
 import {
   PageLayout,
@@ -14,14 +14,19 @@ import {
   CompetencyFormData,
 } from "@/features/competencies/hooks/use-competencies";
 import { useCompetenciesStore } from "@/shared/stores/use-competencies-store";
-import { CompetencyList } from "../components/CompetencyList";
+
 import { CreateCompetencyModal } from "../components/CreateCompetencyModal";
 import { EditCompetencyModal } from "../components/EditCompetencyModal";
+import { ViewCompetencyModal } from "../components/ViewCompetencyModal";
+import {Competency} from "@features/competencies";
+  import { DataSection } from "@/shared/components/ui/data-section";
+import { createCompetencyColumns } from "../components/competency-columns";
+import { Button } from "@/shared/components/ui/button";
+import { Plus } from "lucide-react";
 // Filtros removidos temporalmente
-import { Competency } from "@infrastructure/api/types/competency";
 
 export function CompetenciesPage() {
-  const [, setLocation] = useLocation();
+ 
 
   // Hooks de datos
   const { data: competencies = [], isLoading, error } = useCompetencies();
@@ -33,11 +38,14 @@ export function CompetenciesPage() {
   const {
     isCreateModalOpen,
     isEditModalOpen,
+    isViewModalOpen,
     selectedCompetency,
     openCreateModal,
     closeCreateModal,
     openEditModal,
     closeEditModal,
+    openViewModal,
+    closeViewModal,
   } = useCompetenciesStore();
 
   // Lógica de filtrado
@@ -86,13 +94,9 @@ export function CompetenciesPage() {
     });
   };
 
-  const handleRowClick = (competency: Competency) => {
-    setLocation(`/competencias/${competency.id}`);
-  };
+ 
 
-  const handleEditClick = (competency: Competency) => {
-    openEditModal(competency);
-  };
+ 
 
   if (error) {
     return (
@@ -116,22 +120,26 @@ export function CompetenciesPage() {
         title="Gestión de Competencias"
         description="Administra las competencias generales y específicas del sistema."
       >
-        <button
-          className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-primary-foreground shadow hover:opacity-90"
+        <Button
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-primary-foreground shadow hover:opacity-90"
+         
           onClick={openCreateModal}
         >
-          <span className="i-lucide-plus h-4 w-4"></span>
+          <Plus className="h-4 w-4" />
           Nueva Competencia
-        </button>
+        </Button>
       </PageHeader>
       <PageContent>
-        {/* Lista de competencias */}
-        <CompetencyList
-          competencies={filteredCompetencies}
+        <DataSection
+          data={filteredCompetencies}
+          columns={createCompetencyColumns({
+            onViewClick: openViewModal,
+            onEditClick: openEditModal,
+            onDeleteClick: handleDeleteCompetency,
+          })}
           isLoading={isLoading}
-          onRowClick={handleRowClick}
-          onEditClick={handleEditClick}
-          onDeleteClick={handleDeleteCompetency}
+          emptyMessage="No se encontraron competencias"
+          className="py-6"
         />
 
         {/* Modales */}
@@ -143,13 +151,21 @@ export function CompetenciesPage() {
         />
 
         {selectedCompetency && (
-          <EditCompetencyModal
-            competency={selectedCompetency}
-            isOpen={isEditModalOpen}
-            onClose={closeEditModal}
-            onSubmit={handleUpdateCompetency}
-            isLoading={updateCompetency.isPending}
-          />
+          <>
+            <ViewCompetencyModal
+              competency={selectedCompetency}
+              isOpen={isViewModalOpen}
+              onClose={closeViewModal}
+            />
+            
+            <EditCompetencyModal
+              competency={selectedCompetency}
+              isOpen={isEditModalOpen}
+              onClose={closeEditModal}
+              onSubmit={handleUpdateCompetency}
+              isLoading={updateCompetency.isPending}
+            />
+          </>
         )}
       </PageContent>
     </PageLayout>

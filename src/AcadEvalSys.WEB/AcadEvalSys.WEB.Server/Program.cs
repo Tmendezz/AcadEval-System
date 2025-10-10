@@ -47,6 +47,9 @@ try
         app.UseHangfireDashboard("/hangfire");
     }
 
+    // Configurar jobs automáticos de Hangfire
+    app.UseEnrollmentExpirationJobs();
+
     app.UseHttpsRedirection();
     app.UseDefaultFiles();
     app.UseStaticFiles();

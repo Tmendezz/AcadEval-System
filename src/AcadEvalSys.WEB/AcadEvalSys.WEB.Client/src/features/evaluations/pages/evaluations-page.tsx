@@ -5,9 +5,9 @@ import {
   PageSection,
 } from "@/shared/components/layout/page-layout";
 import { useGetEvaluations, useDeleteEvaluation } from "../hooks";
-import { evaluationColumns } from "../components/evaluation-columns";
+import { createEvaluationColumns } from "../components/evaluation-columns";
 import { navigate } from "wouter/use-browser-location";
-import { PlusCircle } from "lucide-react";
+import { Plus, PlusCircle } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { DataSection } from "@/shared/components/ui/data-section";
 import { useState } from "react";
@@ -34,7 +34,7 @@ export default function EvaluationsPage() {
     navigate("/evaluaciones/nueva");
   };
 
-  const _handleDeleteEvaluation = (evaluation: EvaluationListItem) => {
+  const handleDeleteEvaluation = (evaluation: EvaluationListItem) => {
     setEvaluationToDelete(evaluation);
   };
 
@@ -45,6 +45,10 @@ export default function EvaluationsPage() {
     setEvaluationToDelete(null);
   };
 
+  const columns = createEvaluationColumns({
+    onDelete: handleDeleteEvaluation,
+  });
+
   return (
     <PageLayout>
       <PageHeader
@@ -53,7 +57,7 @@ export default function EvaluationsPage() {
       >
         <div className="flex gap-3">
           <Button onClick={handleNewEvaluation}>
-            <PlusCircle className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 h-4 w-4" />
             Nueva Evaluación
           </Button>
         </div>
@@ -62,14 +66,12 @@ export default function EvaluationsPage() {
       <PageContent>
         <PageSection>
           <DataSection
-            title="Lista de Evaluaciones"
-            description="Gestiona las evaluaciones por competencias"
             data={filteredEvaluations}
-            columns={evaluationColumns}
+            columns={columns}
             isLoading={isLoading}
             emptyMessage="No se encontraron evaluaciones"
             emptyIcon="FileBarChart"
-            className="mb-6"
+            className="py-6"
           />
         </PageSection>
       </PageContent>

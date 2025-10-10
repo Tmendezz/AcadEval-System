@@ -19,13 +19,19 @@ public class GetProfessorAssignmentsQueryHandler(
     public async Task<IEnumerable<ProfessorAssignmentWithStudentsDto>> Handle(GetProfessorAssignmentsQuery request, CancellationToken cancellationToken)
     {
         var currentUser = userContext.GetCurrentUser();
-        var professorId = currentUser?.Id ?? string.Empty;
+        if (currentUser == null)
+        {
+            logger.LogWarning("No authenticated user found");
+            return Enumerable.Empty<ProfessorAssignmentWithStudentsDto>();
+        }
 
-        logger.LogInformation("Retrieving professor assignments for Professor ID: {ProfessorId}, Evaluation Instance: {EvaluationInstanceId}", 
-            professorId, request.EvaluationInstanceId);
+        // Para el histórico de asignaciones, usamos el UserId directamente
+        // ya que Subject.ProfessorId contiene el UserId del profesor
+        logger.LogInformation("Retrieving professor assignments for User ID: {UserId}, Evaluation Instance: {EvaluationInstanceId}", 
+            currentUser.Id, request.EvaluationInstanceId);
 
         var assignments = await professorCompetencyAssignmentRepository
-            .GetProfessorAssignmentsAsync(professorId, request.EvaluationInstanceId);
+            .GetProfessorAssignmentsAsync(currentUser.Id, request.EvaluationInstanceId);
 
         var assignmentsList = assignments.ToList();
         logger.LogInformation("Retrieved {Count} professor assignments", assignmentsList.Count);
@@ -55,7 +61,10 @@ public class GetProfessorAssignmentsQueryHandler(
                 ProgressPercentage = assignment.ProgressPercentage,
                 PeriodFrom = assignment.CompetencyEvaluationInstance?.PeriodFrom,
                 PeriodTo = assignment.CompetencyEvaluationInstance?.PeriodTo,
-                StudentEvaluations = mapper.Map<IEnumerable<StudentCompetencyEvaluationDto>>(assignment.StudentCompetencyAssessments ?? new List<Domain.Entities.StudentCompetencyAssessment>()),
+                StudentEvaluations = mapper.Map<IEnumerable<StudentCompetencyEvaluationDto>>(
+                    assignment.StudentCompetencyAssessments?.Where(sca => 
+                        sca.Student?.StudentSubjects?.Any(ss => 
+                            ss.SubjectId == assignment.SubjectId && ss.IsActive) == true) ?? new List<Domain.Entities.StudentCompetencyAssessment>()),
                 CompetencyLevelDescriptions = levelDescriptions
             };
         });

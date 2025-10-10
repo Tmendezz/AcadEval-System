@@ -160,7 +160,7 @@ export const routes: RouteConfig[] = [
     {
     path: "/evaluaciones/competencias/:id",
     component: React.lazy(
-      () => import("@/features/competency-detail/pages/competency-detail-page")
+      () => import("@/features/competencies/pages/competency-detail-page")
     ),
     requiredRoles: [UserRole.Admin],
     title: "Detalle de Competencia",
@@ -201,13 +201,6 @@ export const routes: RouteConfig[] = [
     path: "/competencias",
     component: React.lazy(() => import("@/features/competencies/competencies")),
     title: "Competencias",
-  },
-  {
-    path: "/competencias/:id",
-    component: React.lazy(
-      () => import("@/features/competency-detail/competency-detail")
-    ),
-    title: "Detalle de Competencia",
   },
 
   // Student Routes - Patrón: /estudiante/...

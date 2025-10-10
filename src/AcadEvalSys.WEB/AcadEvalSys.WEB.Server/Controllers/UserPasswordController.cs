@@ -33,23 +33,16 @@ public class UserPasswordController : ControllerBase
     [HttpPost("change")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangeUserPasswordRequest request)
     {
-        try
+        var command = new ChangePasswordCommand(request.UserId, request.NewPassword);
+        var result = await _mediator.Send(command);
+        
+        if (result)
         {
-            var command = new ChangePasswordCommand(request.UserId, request.NewPassword);
-            var result = await _mediator.Send(command);
-            
-            if (result)
-            {
-                return Ok(new { message = "Contraseña cambiada exitosamente", userId = request.UserId });
-            }
-            else
-            {
-                return NotFound(new { error = "Usuario no encontrado" });
-            }
+            return Ok(new { message = "Contraseña cambiada exitosamente", userId = request.UserId });
         }
-        catch (Exception ex)
+        else
         {
-            return BadRequest(new { error = ex.Message });
+            return NotFound(new { error = "Usuario no encontrado" });
         }
     }
 
@@ -59,20 +52,13 @@ public class UserPasswordController : ControllerBase
     [HttpPost("generate-temporary")]
     public async Task<IActionResult> GenerateTemporaryPassword([FromBody] GenerateTemporaryPasswordRequest request)
     {
-        try
+        var command = new GenerateTemporaryPasswordCommand
         {
-            var command = new GenerateTemporaryPasswordCommand
-            {
-                UserId = request.UserId
-            };
+            UserId = request.UserId
+        };
 
-            var result = await _mediator.Send(command);
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        var result = await _mediator.Send(command);
+        return Ok(result);
     }
 }
 

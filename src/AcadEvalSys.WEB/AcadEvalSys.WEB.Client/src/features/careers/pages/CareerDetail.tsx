@@ -49,7 +49,7 @@ export function CareerDetail() {
       />
 
       <PageContent>
-        <CoordinatorCard coordinator={careerData?.coordinator} />
+        <CoordinatorCard careerId={careerId!} />
         <PageSection className="space-y-6">
           <div className="flex items-center justify-between">
             <YearFilterTabs

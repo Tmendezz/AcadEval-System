@@ -82,9 +82,16 @@ export const createPendingSurveyColumns = (
       const isExpired = closeAt ? new Date(closeAt).getTime() < Date.now() : false;
       if (!isCompleted && !isExpired) {
         return (
-          <Button size="sm" onClick={() => onRespond(surveyId)}>
-            Responder
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onRespond(surveyId)}
+            >
+              <Eye className="h-4 w-4" />
+              Responder
+            </Button>
+          </div>
         );
       }
       return <span className="text-muted-foreground text-sm">No disponible</span>;

@@ -9,6 +9,11 @@ using AcadEvalSys.Application.Subjects.Queries.GetAllSubjects;
 using AcadEvalSys.Application.Subjects.Queries.GetSubjectById;
 using AcadEvalSys.Application.Students.Queries.GetAvailableStudents;
 using AcadEvalSys.Application.Students.Dtos;
+using AcadEvalSys.Application.Students.Commands.RevokeExpiredEnrollments;
+using AcadEvalSys.Application.Students.Commands.RevokeEnrollmentsByYear;
+using AcadEvalSys.Application.Students.Queries.GetAcademicYearInfo;
+
+using AcadEvalSys.Infrastructure.Services;
 using AcadEvalSys.Domain.Constants.Constants;
 using AcadEvalSys.Domain.Enums;
 using MediatR;
@@ -23,7 +28,10 @@ namespace AcadEvalSys.WEB.Server.Controllers;
 [ApiController]
 [Route("technical-careers/{careerId}/subjects")]
 [Authorize] // Base authorization - specific roles defined per endpoint
-public class SubjectController(IMediator mediator) : ControllerBase
+public class SubjectController(
+    IMediator mediator,
+    EnrollmentExpirationBackgroundService backgroundService,
+    ILogger<SubjectController> logger) : ControllerBase
 {
     /// <summary>
     /// Crea una nueva asignatura en una carrera técnica específica.
@@ -239,6 +247,104 @@ public class SubjectController(IMediator mediator) : ControllerBase
             StudentIds = request.StudentIds
         };
         var result = await mediator.Send(command);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Revoca automáticamente todas las inscripciones expiradas del año anterior
+    /// </summary>
+    /// <param name="careerId">ID de la carrera técnica (no usado pero necesario para la ruta)</param>
+    /// <returns>Resultado de la operación</returns>
+    [HttpPost("revoke-expired-enrollments")]
+    [Authorize(Roles = UserRoles.Admin)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<AcadEvalSys.Application.Students.Dtos.RevokeExpiredEnrollmentsResult>> RevokeExpiredEnrollments(Guid careerId)
+    {
+        logger.LogInformation("Admin initiated manual revocation of expired enrollments for career {CareerId}", careerId);
+        
+        var command = new RevokeExpiredEnrollmentsCommand
+        {
+            ExecutedBy = User.Identity?.Name ?? "Unknown"
+        };
+        
+        var result = await mediator.Send(command);
+        
+        logger.LogInformation("Manual revocation completed. {RevokedCount} enrollments revoked", result.RevokedCount);
+        
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Revoca inscripciones de un año académico específico
+    /// </summary>
+    /// <param name="careerId">ID de la carrera técnica (no usado pero necesario para la ruta)</param>
+    /// <param name="academicYear">Año académico a revocar</param>
+    /// <returns>Resultado de la operación</returns>
+    [HttpPost("revoke-enrollments-by-year/{academicYear}")]
+    [Authorize(Roles = UserRoles.Admin)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<AcadEvalSys.Application.Students.Dtos.RevokeExpiredEnrollmentsResult>> RevokeEnrollmentsByYear(Guid careerId, int academicYear)
+    {
+        logger.LogInformation("Admin initiated revocation of enrollments for academic year {AcademicYear} in career {CareerId}", academicYear, careerId);
+        
+        var command = new RevokeEnrollmentsByYearCommand
+        {
+            AcademicYear = academicYear,
+            ExecutedBy = User.Identity?.Name ?? "Unknown"
+        };
+        
+        var result = await mediator.Send(command);
+        
+        logger.LogInformation("Manual revocation by year completed. {RevokedCount} enrollments revoked for year {AcademicYear}", 
+            result.RevokedCount, academicYear);
+        
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Programa la ejecución inmediata del job de revocación automática
+    /// </summary>
+    /// <param name="careerId">ID de la carrera técnica (no usado pero necesario para la ruta)</param>
+    /// <returns>Confirmación de la programación</returns>
+    [HttpPost("schedule-immediate-revocation")]
+    [Authorize(Roles = UserRoles.Admin)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public ActionResult ScheduleImmediateRevocation(Guid careerId)
+    {
+        logger.LogInformation("Admin scheduled immediate enrollment revocation for career {CareerId}", careerId);
+        
+        // Programar ejecución inmediata usando Hangfire
+        Hangfire.BackgroundJob.Enqueue(() => backgroundService.RevokeExpiredEnrollmentsAsync());
+        
+        return Ok(new { 
+            message = "Job de revocación programado para ejecución inmediata",
+            scheduledAt = DateTime.UtcNow
+        });
+    }
+
+    /// <summary>
+    /// Obtiene información sobre el año académico actual y el estado de las inscripciones
+    /// </summary>
+    /// <param name="careerId">ID de la carrera técnica (no usado pero necesario para la ruta)</param>
+    /// <returns>Información del año académico</returns>
+    [HttpGet("academic-year-info")]
+    [Authorize(Roles = UserRoles.Admin)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public ActionResult GetAcademicYearInfo(Guid careerId)
+    {
+        var query = new GetAcademicYearInfoQuery();
+        var result = mediator.Send(query).Result;
+        
         return Ok(result);
     }
 }

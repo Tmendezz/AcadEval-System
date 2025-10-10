@@ -9,6 +9,7 @@ interface CompetenciesState {
   // Estado de UI
   isCreateModalOpen: boolean;
   isEditModalOpen: boolean;
+  isViewModalOpen: boolean;
   selectedCompetency: Competency | null;
 
   // Acciones para filtros
@@ -21,6 +22,8 @@ interface CompetenciesState {
   closeCreateModal: () => void;
   openEditModal: (competency: Competency) => void;
   closeEditModal: () => void;
+  openViewModal: (competency: Competency) => void;
+  closeViewModal: () => void;
 
   // Acciones para competencia seleccionada
   setSelectedCompetency: (competency: Competency | null) => void;
@@ -32,6 +35,7 @@ export const useCompetenciesStore = create<CompetenciesState>((set) => ({
   selectedType: "all",
   isCreateModalOpen: false,
   isEditModalOpen: false,
+  isViewModalOpen: false,
   selectedCompetency: null,
 
   // Acciones para filtros
@@ -50,6 +54,16 @@ export const useCompetenciesStore = create<CompetenciesState>((set) => ({
   closeEditModal: () =>
     set({
       isEditModalOpen: false,
+      selectedCompetency: null,
+    }),
+  openViewModal: (competency) =>
+    set({
+      isViewModalOpen: true,
+      selectedCompetency: competency,
+    }),
+  closeViewModal: () =>
+    set({
+      isViewModalOpen: false,
       selectedCompetency: null,
     }),
 

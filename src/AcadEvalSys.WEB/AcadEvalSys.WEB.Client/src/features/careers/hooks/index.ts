@@ -8,7 +8,7 @@ export * from "./use-import-students-to-career";
 export * from "./use-available-students";
 export * from "./use-add-student-to-career";
 export * from "./use-unenroll-students";
-export * from "./use-career-coordinator";
+export * from "./use-coordinator-operations";
 export * from "./use-bulk-enrollment";
 export * from "./use-password-download";
 export * from "./use-delete-subject";

@@ -1,17 +1,20 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import { Competency } from "@infrastructure/api/types/competency";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Eye, Edit, Trash } from "lucide-react";
+import { TruncatedText } from "../../../shared/components/ui/truncated-text";
 import { ConfirmationModal } from "@/shared/components/ui/confirmation-modal";
+import { Competency } from "../models";
 
 interface CompetencyColumnsProps {
+  onViewClick?: (competency: Competency) => void;
   onEditClick?: (competency: Competency) => void;
   onDeleteClick?: (competencyId: string) => void;
 }
 
 export const createCompetencyColumns = ({
+  onViewClick,
   onEditClick,
   onDeleteClick,
 }: CompetencyColumnsProps): ColumnDef<Competency>[] => [
@@ -40,33 +43,40 @@ export const createCompetencyColumns = ({
     accessorKey: "description",
     header: "Descripción",
     cell: ({ row }) => (
-      <p className="truncate max-w-xs">{row.original.description}</p>
+      <TruncatedText 
+        text={row.original.description} 
+        maxLength={40}
+        className="text-sm text-muted-foreground"
+      />
     ),
   },
   {
     id: "actions",
+    header: "Acciones",
     cell: ({ row }) => {
       const competency = row.original;
 
       return (
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() =>
-              window.open(`/competencias/${competency.id}`, "_blank")
-            }
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
+          {onViewClick && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onViewClick(competency)}
+            >
+              <Eye className="h-4 w-4" />
+              Ver
+            </Button>
+          )}
 
           {onEditClick && (
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={() => onEditClick(competency)}
             >
               <Edit className="h-4 w-4" />
+              Editar
             </Button>
           )}
 
@@ -77,11 +87,11 @@ export const createCompetencyColumns = ({
               onConfirm={() => onDeleteClick(competency.id)}
             >
               <Button
-                variant="ghost"
+                variant="destructive"
                 size="sm"
-                className="text-red-600 hover:text-red-700"
               >
                 <Trash className="h-4 w-4" />
+                Eliminar
               </Button>
             </ConfirmationModal>
           )}

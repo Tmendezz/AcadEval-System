@@ -51,7 +51,7 @@ public class AcademicSurveysController(IMediator mediator) : ControllerBase
 
     [HttpPut("{id}/close")]
     [Authorize(Roles = UserRoles.Admin)]
-    public async Task<IActionResult> CloseSurvey([FromRoute]Guid id, [FromQuery] bool force, [FromBody] CloseAcademicSurveyCommand command)
+    public async Task<IActionResult> CloseSurvey([FromRoute]Guid id, [FromQuery] bool force)
     {
         await mediator.Send(new CloseAcademicSurveyCommand(id, force));
         return NoContent();
@@ -104,7 +104,7 @@ public class AcademicSurveysController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> DeleteSurvey([FromRoute] Guid id)
     {
-        await mediator.Send(new DeleteAcademicSurveyCommand { Id = id });
+        await mediator.Send(new DeleteAcademicSurveyCommand(id));
         return NoContent();
     }
 }

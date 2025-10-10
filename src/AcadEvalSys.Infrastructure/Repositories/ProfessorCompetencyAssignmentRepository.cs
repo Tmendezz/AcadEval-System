@@ -68,7 +68,8 @@ public class ProfessorCompetencyAssignmentRepository : IProfessorCompetencyAssig
             .Include(pca => pca.StudentCompetencyAssessments!)
                 .ThenInclude(sca => sca.Student!)
                     .ThenInclude(s => s.User)
-            .Where(pca => pca.Subject!.ProfessorId == professorId);
+            .Where(pca => pca.Subject!.ProfessorId == professorId && 
+                         pca.CompetencyEvaluationInstance != null); // Solo asignaciones con evaluación existente
 
         if (evaluationInstanceId.HasValue)
         {
@@ -139,5 +140,11 @@ public class ProfessorCompetencyAssignmentRepository : IProfessorCompetencyAssig
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<Professor?> GetProfessorByUserIdAsync(string userId)
+    {
+        return await _context.Professors
+            .Include(p => p.User)
+            .FirstOrDefaultAsync(p => p.UserId == userId);
+    }
 
 }

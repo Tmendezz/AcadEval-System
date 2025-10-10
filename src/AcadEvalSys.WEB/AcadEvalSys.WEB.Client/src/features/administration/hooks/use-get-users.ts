@@ -10,6 +10,6 @@ export const usersKeys = {
 export const useGetUsers = () => {
   return useQuery({
     queryKey: usersKeys.list(),
-    queryFn: () => identityAdminService.getAllUsers(),
+    queryFn: () => identityAdminService.getUsers({ pageSize: 1000, role: "Professor" }), // Solo profesores
   });
 };

@@ -1,12 +1,18 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { technicalCareerService } from "../services/technical-career-service";
+import {
+  getTechnicalCareerById,
+  assignCareerCoordinator,
+  getCareerCoordinator,
+  removeCareerCoordinator,
+} from "@infrastructure/api/clients/technical-career-service";
 import { useUpdateTechnicalCareer } from "@/shared/hooks/use-technical-careers";
-import * as subjectService from "../services/subject-service";
+import * as subjectService from "@infrastructure/api/clients/subject-service";
 import { useProfessors } from "@/shared/hooks/use-professors";
 import { useDeleteSubject } from "./use-delete-subject";
-import type { Professor, Subject } from "../models";
+import type { Professor } from "@infrastructure/api/types/professor";
+import type { Subject } from "@infrastructure/api/types/subject";
 
 // Local row model matches Subject, with optional id for new subjects
 type SubjectRow = Subject & { isNew?: boolean };
@@ -19,7 +25,7 @@ export function useEditCareer(careerId: string | undefined) {
   // Queries
   const { data: career } = useQuery({
     queryKey: ["technical-career", careerId],
-    queryFn: () => technicalCareerService.getById(careerId || ""),
+    queryFn: () => getTechnicalCareerById(careerId || ""),
     enabled: !!careerId,
   });
 
@@ -32,7 +38,7 @@ export function useEditCareer(careerId: string | undefined) {
 
   const { data: currentCoordinator } = useQuery({
     queryKey: ["career-coordinator", careerId],
-    queryFn: () => technicalCareerService.getCareerCoordinator(careerId || ""),
+    queryFn: () => getCareerCoordinator(careerId || ""),
     enabled: !!careerId,
   });
 
@@ -43,12 +49,7 @@ export function useEditCareer(careerId: string | undefined) {
     1000,
     search || undefined
   );
-  const existingProfessors: Professor[] = professorsData?.items?.map(p => ({
-    id: p.userId,
-    name: p.name,
-    email: p.email,
-    phone: p.phone
-  })) ?? [];
+  const existingProfessors: Professor[] = professorsData?.professors ?? [];
 
   // Local state
   const [name, setName] = useState("");
@@ -149,10 +150,10 @@ export function useEditCareer(careerId: string | undefined) {
         selectedCoordinator &&
         selectedCoordinator !== currentCoordinator?.userId
       ) {
-        await technicalCareerService.assignCoordinator(careerId, selectedCoordinator);
+        await assignCareerCoordinator(careerId, selectedCoordinator);
         toast.success("Coordinador asignado correctamente");
       } else if (!selectedCoordinator && currentCoordinator) {
-        await technicalCareerService.removeCoordinator(careerId);
+        await removeCareerCoordinator(careerId);
         toast.success("Coordinador removido correctamente");
       }
     },
