@@ -65,7 +65,19 @@ export const studentService = {
     id: string,
     values: Partial<StudentFormValues>
   ): Promise<string> {
-    const { data } = await api.put(`${STUDENTS_API_URL}/${id}`, values);
+    console.log("[StudentService] Updating student:", { id, values });
+    
+    // Map frontend values to backend command structure
+    const updateCommand = {
+      name: values.name,
+      email: values.email,
+      technicalCareerId: values.technicalCareerId,
+      currentYear: values.currentYear,
+    };
+    
+    console.log("[StudentService] Sending update command:", updateCommand);
+    
+    const { data } = await api.put(`${STUDENTS_API_URL}/${id}`, updateCommand);
     return data;
   },
 

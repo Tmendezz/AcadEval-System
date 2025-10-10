@@ -129,6 +129,7 @@ export function useStudentOperations() {
   };
 
   const handleEditStudent = (student: Student) => {
+    console.log("[useStudentOperations] Opening student for editing:", student);
     setSelectedStudent(student);
     setIsStudentDialogOpen(true);
   };

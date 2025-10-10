@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -70,13 +70,36 @@ export function StudentFormDialog({
   const form = useForm<StudentFormData>({
     resolver: zodResolver(studentFormSchema),
     defaultValues: {
-      name: student?.name || "",
-      email: student?.email || "",
+      name: "",
+      email: "",
       password: "",
-      currentYear: student?.currentYear || 1,
-      technicalCareerId: student?.technicalCareerId || "",
+      currentYear: 1,
+      technicalCareerId: "",
     },
   });
+
+  // Reset form when student prop changes
+  useEffect(() => {
+    if (student) {
+      console.log("[StudentFormDialog] Loading student data:", student);
+      form.reset({
+        name: student.name || "",
+        email: student.email || "",
+        password: "",
+        currentYear: student.currentYear || 1,
+        technicalCareerId: student.technicalCareerId || "",
+      });
+    } else {
+      console.log("[StudentFormDialog] Resetting form for new student");
+      form.reset({
+        name: "",
+        email: "",
+        password: "",
+        currentYear: 1,
+        technicalCareerId: "",
+      });
+    }
+  }, [student, form]);
 
   const handleSubmit = async (values: StudentFormData) => {
     try {
@@ -192,7 +215,7 @@ export function StudentFormDialog({
                   <FormLabel>Año de Carrera</FormLabel>
                   <Select
                     onValueChange={(value) => field.onChange(parseInt(value))}
-                    defaultValue={field.value?.toString()}
+                    value={field.value?.toString()}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -218,7 +241,7 @@ export function StudentFormDialog({
                   <FormLabel>Carrera Técnica</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
