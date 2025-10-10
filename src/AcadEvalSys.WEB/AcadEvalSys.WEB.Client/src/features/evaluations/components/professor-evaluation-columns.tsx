@@ -6,10 +6,10 @@ import { Eye } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { navigate } from "wouter/use-browser-location";
-import { ProfessorAssignmentFromApi } from "../types/professor-evaluation";
 import { format } from "date-fns";
+import { ProfessorAssignment } from "@/features/professor-evaluations/models/professor-evaluation";
 
-export const professorEvaluationColumns: ColumnDef<ProfessorAssignmentFromApi>[] =
+export const professorEvaluationColumns: ColumnDef<ProfessorAssignment>[] =
   [
     {
       id: "competencyName",

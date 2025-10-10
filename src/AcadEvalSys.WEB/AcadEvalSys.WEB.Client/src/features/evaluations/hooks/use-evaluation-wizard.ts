@@ -5,7 +5,7 @@ import {
   evaluationFormSchema,
   EvaluationFormSchema,
 } from "../schemas/evaluation-form";
-import { Assignment } from "../types/evaluation-form";
+import { Assignment } from "../models/evaluation-form";
 import { WIZARD_STEPS } from "../constants/wizard-steps";
 
 export function useEvaluationWizard() {
@@ -85,15 +85,27 @@ export function useEvaluationWizard() {
   const canProceed = (): boolean => {
     switch (currentStep) {
       case 1:
-        return !!(
+        // Verificar que todos los campos estén llenos
+        const hasAllFields = !!(
           watchedValues.title &&
           watchedValues.description &&
           watchedValues.semester &&
           watchedValues.periodFrom &&
-          watchedValues.periodTo &&
-          !errors.title &&
-          !errors.description
+          watchedValues.periodTo
         );
+        
+        // Verificar que no haya errores de validación
+        const hasNoErrors = !errors.title && !errors.description && !errors.periodFrom && !errors.periodTo;
+        
+        // Verificar que la fecha de fin sea posterior a la de inicio
+        let datesValid = true;
+        if (watchedValues.periodFrom && watchedValues.periodTo) {
+          const from = new Date(watchedValues.periodFrom);
+          const to = new Date(watchedValues.periodTo);
+          datesValid = to > from;
+        }
+        
+        return hasAllFields && hasNoErrors && datesValid;
       case 2:
         return !!(
           assignments.length > 0 &&
@@ -107,15 +119,27 @@ export function useEvaluationWizard() {
   const isStepCompleted = (step: number): boolean => {
     switch (step) {
       case 1:
-        return !!(
+        // Verificar que todos los campos estén llenos
+        const hasAllFields = !!(
           watchedValues.title &&
           watchedValues.description &&
           watchedValues.semester &&
           watchedValues.periodFrom &&
-          watchedValues.periodTo &&
-          !errors.title &&
-          !errors.description
+          watchedValues.periodTo
         );
+        
+        // Verificar que no haya errores de validación
+        const hasNoErrors = !errors.title && !errors.description && !errors.periodFrom && !errors.periodTo;
+        
+        // Verificar que la fecha de fin sea posterior a la de inicio
+        let datesValid = true;
+        if (watchedValues.periodFrom && watchedValues.periodTo) {
+          const from = new Date(watchedValues.periodFrom);
+          const to = new Date(watchedValues.periodTo);
+          datesValid = to > from;
+        }
+        
+        return hasAllFields && hasNoErrors && datesValid;
       case 2:
         return !!(
           assignments.length > 0 &&

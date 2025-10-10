@@ -20,6 +20,20 @@ export const evaluationFormSchema = z.object({
       })
     )
     .min(1, "Debe asignar al menos una competencia"),
-});
+}).refine(
+  (data) => {
+    // Validar que la fecha de fin sea posterior a la de inicio
+    if (data.periodFrom && data.periodTo) {
+      const from = new Date(data.periodFrom);
+      const to = new Date(data.periodTo);
+      return to > from;
+    }
+    return true;
+  },
+  {
+    message: "La fecha de fin debe ser posterior a la fecha de inicio",
+    path: ["periodTo"],
+  }
+);
 
 export type EvaluationFormSchema = z.infer<typeof evaluationFormSchema>;

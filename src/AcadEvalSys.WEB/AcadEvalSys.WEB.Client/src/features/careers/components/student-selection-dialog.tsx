@@ -237,7 +237,7 @@ export function StudentSelectionDialog({
           )}
 
           {/* Lista de estudiantes */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="overflow-y-auto max-h-[400px] pr-4">
             {isLoading ? (
               <LoadingState message="Cargando estudiantes disponibles..." />
             ) : filteredStudents.length === 0 ? (

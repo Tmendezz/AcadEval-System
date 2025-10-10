@@ -28,13 +28,14 @@ export const createCompetencyColumns = ({
     cell: ({ row }) => {
       const type = row.original.type;
       const variant = type === "Soft" ? "secondary" : "default";
+      const typeLabel = type === "Soft" ? "Blanda" : "Técnica";
       return (
         <Badge
           variant={
             variant as "default" | "secondary" | "destructive" | "outline"
           }
         >
-          {type}
+          {typeLabel}
         </Badge>
       );
     },

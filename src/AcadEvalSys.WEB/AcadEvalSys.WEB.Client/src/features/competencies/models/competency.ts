@@ -43,3 +43,12 @@ export const CompetencyTypes = {
   Soft: "Soft" as const,
   Technical: "Technical" as const,
 } as const;
+
+// Funciones de mapeo para mostrar en español
+export const competencyTypeToSpanish = (type: CompetencyType): string => {
+  return type === "Soft" ? "Blanda" : "Técnica";
+};
+
+export const competencyTypeFromSpanish = (type: string): CompetencyType => {
+  return type === "Blanda" ? "Soft" : "Technical";
+};

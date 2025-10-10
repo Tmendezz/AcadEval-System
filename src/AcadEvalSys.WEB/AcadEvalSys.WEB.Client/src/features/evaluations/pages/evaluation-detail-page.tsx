@@ -1,6 +1,6 @@
 import { useParams } from "wouter";
-import { useEffect } from "react";
 import { useGetEvaluationById } from "../hooks";
+import type { Evaluation } from "@infrastructure/api/types/evaluation";
 import {
   PageLayout,
   PageContent,
@@ -21,17 +21,13 @@ import {
 
 export default function EvaluationDetailPage() {
   const { id } = useParams();
-  const { data: evaluation, isLoading, error } = useGetEvaluationById(id || "");
+  const { data: evaluation, isLoading, error } = useGetEvaluationById(id || "") as {
+    data: Evaluation | undefined;
+    isLoading: boolean;
+    error: Error | null;
+  };
 
-  useEffect(() => {
-    if (error) {
-      console.error("Error fetching evaluation:", error);
-    }
-    if (evaluation) {
-      console.log("Evaluation data received:", evaluation);
-    }
-  }, [evaluation, error]);
-
+  // Mostrar loading mientras se carga
   if (isLoading) {
     return (
       <PageLayout>
@@ -44,8 +40,8 @@ export default function EvaluationDetailPage() {
     );
   }
 
+  // Mostrar error si hay uno
   if (error) {
-    console.error("Error details:", error);
     return (
       <PageLayout>
         <Link href="/evaluaciones">
@@ -60,8 +56,7 @@ export default function EvaluationDetailPage() {
               Error al cargar la evaluación
             </h3>
             <p className="text-sm text-muted-foreground">
-              No se pudo cargar la evaluación "{id}". Verifica la consola para
-              más detalles.
+              No se pudo cargar la evaluación. Por favor, intenta nuevamente.
             </p>
           </CardContent>
         </Card>
@@ -69,6 +64,7 @@ export default function EvaluationDetailPage() {
     );
   }
 
+  // Si no hay evaluación después de cargar, mostrar "no encontrada"
   if (!evaluation) {
     return (
       <PageLayout>
@@ -84,14 +80,15 @@ export default function EvaluationDetailPage() {
               Evaluación no encontrada
             </h3>
             <p className="text-sm text-muted-foreground">
-              La evaluación "{id}" no existe.
+              La evaluación solicitada no existe.
             </p>
           </CardContent>
         </Card>
       </PageLayout>
     );
   }
-  console.log(evaluation);
+
+  // En este punto, TypeScript sabe que evaluation existe
   return (
     <PageLayout>
       <PageContent>
