@@ -17,6 +17,7 @@ import { useCompetenciesStore } from "@/shared/stores/use-competencies-store";
 
 import { CreateCompetencyModal } from "../components/CreateCompetencyModal";
 import { EditCompetencyModal } from "../components/EditCompetencyModal";
+import { ViewCompetencyModal } from "../components/ViewCompetencyModal";
 import {Competency} from "@features/competencies";
   import { DataSection } from "@/shared/components/ui/data-section";
 import { createCompetencyColumns } from "../components/competency-columns";
@@ -37,11 +38,14 @@ export function CompetenciesPage() {
   const {
     isCreateModalOpen,
     isEditModalOpen,
+    isViewModalOpen,
     selectedCompetency,
     openCreateModal,
     closeCreateModal,
     openEditModal,
     closeEditModal,
+    openViewModal,
+    closeViewModal,
   } = useCompetenciesStore();
 
   // Lógica de filtrado
@@ -129,6 +133,7 @@ export function CompetenciesPage() {
         <DataSection
           data={filteredCompetencies}
           columns={createCompetencyColumns({
+            onViewClick: openViewModal,
             onEditClick: openEditModal,
             onDeleteClick: handleDeleteCompetency,
           })}
@@ -146,13 +151,21 @@ export function CompetenciesPage() {
         />
 
         {selectedCompetency && (
-          <EditCompetencyModal
-            competency={selectedCompetency}
-            isOpen={isEditModalOpen}
-            onClose={closeEditModal}
-            onSubmit={handleUpdateCompetency}
-            isLoading={updateCompetency.isPending}
-          />
+          <>
+            <ViewCompetencyModal
+              competency={selectedCompetency}
+              isOpen={isViewModalOpen}
+              onClose={closeViewModal}
+            />
+            
+            <EditCompetencyModal
+              competency={selectedCompetency}
+              isOpen={isEditModalOpen}
+              onClose={closeEditModal}
+              onSubmit={handleUpdateCompetency}
+              isLoading={updateCompetency.isPending}
+            />
+          </>
         )}
       </PageContent>
     </PageLayout>

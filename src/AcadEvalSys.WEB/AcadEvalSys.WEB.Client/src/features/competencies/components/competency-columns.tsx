@@ -8,11 +8,13 @@ import { ConfirmationModal } from "@/shared/components/ui/confirmation-modal";
 import { Competency } from "../models";
 
 interface CompetencyColumnsProps {
+  onViewClick?: (competency: Competency) => void;
   onEditClick?: (competency: Competency) => void;
   onDeleteClick?: (competencyId: string) => void;
 }
 
 export const createCompetencyColumns = ({
+  onViewClick,
   onEditClick,
   onDeleteClick,
 }: CompetencyColumnsProps): ColumnDef<Competency>[] => [
@@ -56,16 +58,16 @@ export const createCompetencyColumns = ({
 
       return (
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              window.open(`/competencias/${competency.id}`, "_blank")
-            }
-          >
-            <Eye className="h-4 w-4" />
-            Ver
-          </Button>
+          {onViewClick && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onViewClick(competency)}
+            >
+              <Eye className="h-4 w-4" />
+              Ver
+            </Button>
+          )}
 
           {onEditClick && (
             <Button

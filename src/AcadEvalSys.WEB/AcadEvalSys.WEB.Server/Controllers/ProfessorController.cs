@@ -97,18 +97,18 @@ public class ProfessorController(IMediator mediator) : ControllerBase
             return NoContent();
         }
         
+        // Si tiene asignaturas asignadas, devolver BadRequest con el mensaje
         if (result.HasAssignments)
         {
-            return BadRequest(new
-            {
+            return BadRequest(new { 
                 message = result.Message,
                 hasAssignments = result.HasAssignments,
                 assignedSubjects = result.AssignedSubjects
             });
         }
         
+        // Si no se encontró el profesor/usuario, devolver NotFound
         return NotFound(new { message = result.Message });
     }
 
-    // Listado de asignaciones movido a ProfessorAssignmentsController
 }

@@ -84,7 +84,7 @@ export function createSubjectColumns(
               size="sm"
               asChild
             >
-              <Link href={`/careers/${careerId}/subjects/${subject.id}`}>
+              <Link href={`/carreras/${careerId}/asignaturas/${subject.id}`}>
                 <Eye className="h-4 w-4" />
                 Ver
               </Link>
