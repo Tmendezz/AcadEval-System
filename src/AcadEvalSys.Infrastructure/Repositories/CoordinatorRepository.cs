@@ -8,20 +8,34 @@ namespace AcadEvalSys.Infrastructure.Repositories;
 
 public class CoordinatorRepository(ApplicationDbContext dbContext) : ICoordinatorRepository
 {
-    public Task<Coordinator?> GetByUserIdAsync(string userId)
-        => dbContext.Coordinators.FirstOrDefaultAsync(c => c.UserId == userId);
+    public async Task<Coordinator?> GetByUserIdAsync(string userId)
+    {
+        return await dbContext.Coordinators
+            .AsNoTracking()
+            .Include(c => c.User)
+            .Include(c => c.TechnicalCareer)
+            .FirstOrDefaultAsync(c => c.UserId == userId);
+    }
 
-    public Task<Coordinator?> GetByCareerIdAsync(Guid technicalCareerId)
-        => dbContext.Coordinators.FirstOrDefaultAsync(c => c.TechnicalCareerId == technicalCareerId);
+    public async Task<Coordinator?> GetByCareerIdAsync(Guid technicalCareerId)
+    {
+        return await dbContext.Coordinators
+            .AsNoTracking()
+            .Include(c => c.User)
+            .Include(c => c.TechnicalCareer)
+            .FirstOrDefaultAsync(c => c.TechnicalCareerId == technicalCareerId);
+    }
 
     public async Task RemoveByCareerIdAsync(Guid technicalCareerId)
     {
-        var existing = await dbContext.Coordinators.FirstOrDefaultAsync(c => c.TechnicalCareerId == technicalCareerId);
-        if (existing is not null)
-        {
-            dbContext.Coordinators.Remove(existing);
-            await dbContext.SaveChangesAsync();
-        }
+        var toRemove = await dbContext.Coordinators
+            .Where(c => c.TechnicalCareerId == technicalCareerId)
+            .ToListAsync();
+
+        if (toRemove.Count == 0) return;
+
+        dbContext.Coordinators.RemoveRange(toRemove);
+        await dbContext.SaveChangesAsync();
     }
 
     public async Task AddAsync(Coordinator coordinator)
