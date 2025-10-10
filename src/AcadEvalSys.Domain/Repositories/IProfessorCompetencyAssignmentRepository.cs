@@ -18,4 +18,6 @@ public interface IProfessorCompetencyAssignmentRepository
     Task<IEnumerable<StudentCompetencyAssessment>> GetAssignmentStudentsAsync(
         Guid assignmentId, 
         CancellationToken cancellationToken = default);
+        
+    Task<Professor?> GetProfessorByUserIdAsync(string userId);
 }

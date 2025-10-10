@@ -43,10 +43,12 @@ export async function completeStudentAssessment(
 }
 
 export async function getProfessorAssignments(params?: { evaluationInstanceId?: string }) {
+  console.log("getProfessorAssignments", params);
   const { data } = await api.get<ProfessorEvaluationAssignment[]>(
     "/professor-assignments",
     { params }
   );
+  console.log(data, "Ruta: /professor-assignments");
   return data;
 }
 

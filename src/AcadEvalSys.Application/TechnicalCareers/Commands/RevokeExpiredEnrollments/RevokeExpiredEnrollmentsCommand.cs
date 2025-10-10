@@ -1,4 +1,5 @@
 using MediatR;
+using AcadEvalSys.Application.Students.Dtos;
 
 namespace AcadEvalSys.Application.TechnicalCareers.Commands.RevokeExpiredEnrollments;
 

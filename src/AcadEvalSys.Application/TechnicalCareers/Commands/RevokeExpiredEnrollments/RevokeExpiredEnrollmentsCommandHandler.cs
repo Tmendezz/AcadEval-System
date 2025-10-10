@@ -1,4 +1,5 @@
 using AcadEvalSys.Application.Services;
+using AcadEvalSys.Application.Students.Dtos;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -30,7 +31,8 @@ public class RevokeExpiredEnrollmentsCommandHandler(
         {
             RevokedCount = revokedCount,
             AcademicYear = academicYear,
-            ProcessedAt = DateTime.UtcNow
+            ExecutedAt = DateTime.UtcNow,
+            ExecutedBy = "System" // Para comandos automáticos
         };
 
         logger.LogInformation("Successfully revoked {RevokedCount} enrollments from academic year {AcademicYear}", 
