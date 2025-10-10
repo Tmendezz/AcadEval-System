@@ -86,11 +86,31 @@ export function useEditCareer(careerId: string | undefined) {
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: async () => {
-      if (!careerId) return;
+      console.log("[useEditCareer] Save mutation started", {
+        careerId,
+        name,
+        careerName: career?.name,
+        selectedCoordinator,
+        currentCoordinatorUserId: currentCoordinator?.userId,
+        rowsCount: rows.length
+      });
+      
+      if (!careerId) {
+        console.error("[useEditCareer] No careerId provided");
+        return;
+      }
 
       const currentName = career?.name ?? "";
       const effectiveName = (name ?? "").trim() || currentName;
+      console.log("[useEditCareer] Name update check", {
+        currentName,
+        newName: name,
+        effectiveName,
+        nameChanged: effectiveName !== currentName
+      });
+      
       if (effectiveName && effectiveName !== currentName) {
+        console.log("[useEditCareer] Updating career name to:", effectiveName);
         await updateCareerMutation.mutateAsync({
           id: careerId,
           career: { name: effectiveName },
@@ -107,8 +127,8 @@ export function useEditCareer(careerId: string | undefined) {
           if (r.name.trim()) {
             const subjectId = await subjectService.createSubject(careerId, {
               name: r.name,
-              description: r.description.trim() || `Descripción de ${r.name}`,
-              year: r.year,
+              description: r.description?.trim() || `Descripción de ${r.name}`,
+              year: r.year as "First" | "Second" | "Third",
               professorId: r.professorId || undefined,
             });
             
@@ -134,7 +154,7 @@ export function useEditCareer(careerId: string | undefined) {
               const updateData = {
                 name: r.name,
                 description: r.description || originalSubject.description,
-                year: r.year,
+                year: r.year as "First" | "Second" | "Third",
                 professorId: r.professorId,
               };
 
@@ -157,6 +177,7 @@ export function useEditCareer(careerId: string | undefined) {
       }
     },
     onSuccess: async () => {
+      console.log("[useEditCareer] Save mutation completed successfully");
       await queryClient.invalidateQueries({ queryKey: ["technical-careers"] });
       await queryClient.invalidateQueries({
         queryKey: ["technical-career", careerId],
@@ -167,7 +188,8 @@ export function useEditCareer(careerId: string | undefined) {
       });
       toast.success("Tecnicatura actualizada correctamente.");
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("[useEditCareer] Save mutation failed:", error);
       toast.error("No se pudo guardar los cambios");
     },
   });
