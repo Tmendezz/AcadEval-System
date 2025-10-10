@@ -94,4 +94,40 @@ export async function getAvailableStudentsForSubject(
   return data;
 }
 
+export async function updateSubject(
+  careerId: string,
+  subjectId: string,
+  updateData: {
+    name: string;
+    description?: string;
+    year: "First" | "Second" | "Third" | string;
+    professorId?: string;
+  }
+): Promise<void> {
+  console.log("[SubjectService] Updating subject:", {
+    careerId,
+    subjectId,
+    updateData
+  });
+  
+  // Map string year to enum if needed
+  let year: "First" | "Second" | "Third";
+  if (updateData.year === "First" || updateData.year === "Second" || updateData.year === "Third") {
+    year = updateData.year;
+  } else {
+    // Default fallback or throw error
+    year = "First";
+    console.warn("[SubjectService] Invalid year value, defaulting to First:", updateData.year);
+  }
+  
+  const payload = {
+    name: updateData.name,
+    description: updateData.description,
+    year,
+    professorId: updateData.professorId
+  };
+  
+  await api.put(`/technical-careers/${careerId}/subjects/${subjectId}`, payload);
+}
+
 
