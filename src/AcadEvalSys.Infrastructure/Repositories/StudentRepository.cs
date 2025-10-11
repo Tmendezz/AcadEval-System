@@ -212,14 +212,20 @@ public class StudentRepository(ApplicationDbContext dbContext, ILogger<StudentRe
             .Include(s => s.User)
             .FirstOrDefaultAsync(s => s.UserId == studentId);
 
-        if (student != null && (int)subjectYear > (int)student.CurrentYear)
+        if (student != null)
         {
-            var previousYear = student.CurrentYear;
-            student.CurrentYear = subjectYear;
-            await dbContext.SaveChangesAsync();
+            // Si el estudiante no tiene año asignado O el año de la materia es superior
+            bool shouldUpdate = !student.CurrentYear.HasValue || (int)subjectYear > (int)student.CurrentYear.Value;
             
-            logger.LogInformation("Student {StudentName} ({StudentId}) year updated from {PreviousYear} to {NewYear} due to enrollment in higher year subject", 
-                student.User?.Name, student.UserId, previousYear, subjectYear);
+            if (shouldUpdate)
+            {
+                var previousYear = student.CurrentYear;
+                student.CurrentYear = subjectYear;
+                await dbContext.SaveChangesAsync();
+                
+                logger.LogInformation("Student {StudentName} ({StudentId}) year updated from {PreviousYear} to {NewYear} due to enrollment in higher year subject", 
+                    student.User?.Name, student.UserId, previousYear?.ToString() ?? "null", subjectYear);
+            }
         }
     }
 

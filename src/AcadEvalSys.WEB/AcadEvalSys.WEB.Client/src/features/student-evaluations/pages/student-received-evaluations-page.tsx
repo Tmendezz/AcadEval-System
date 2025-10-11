@@ -32,7 +32,6 @@ export default function StudentReceivedEvaluationsPage() {
     );
   }
 
-
   return (
     <PageLayout>
       <PageContent>
@@ -43,8 +42,7 @@ export default function StudentReceivedEvaluationsPage() {
               Mis Evaluaciones Recibidas
             </h1>
             <p className="text-muted-foreground">
-              Revisa las evaluaciones de competencias que has recibido de tus
-              profesores
+              Revisa las evaluaciones de competencias que has recibido de tus profesores y descarga tus reportes
             </p>
           </div>
 

@@ -48,17 +48,19 @@ public class EnrollStudentInSubjectCommandHandler(
 
         try
         {
+            // Guardar el año actual del estudiante ANTES de actualizar
+            var previousYear = student.CurrentYear;
+            
             await studentRepository.EnrollInSubjectAsync(request.StudentId, request.SubjectId, currentUser.Id!);
             
             // Actualizar automáticamente el año del estudiante si la asignatura es de un año superior
             // Esto permite que estudiantes avancen de año cuando se inscriben en materias de años superiores
-            var studentBeforeUpdate = await studentRepository.GetByIdAsync(request.StudentId);
             await studentRepository.UpdateStudentYearIfNeededAsync(request.StudentId, subject.Year);
             
-            if (studentBeforeUpdate != null && (int)subject.Year > (int)studentBeforeUpdate.CurrentYear)
+            if ((int)subject.Year > (int)previousYear)
             {
                 logger.LogInformation("Student {StudentId} year automatically updated from {PreviousYear} to {NewYear} when enrolled in subject {SubjectName} ({SubjectId})", 
-                    request.StudentId, studentBeforeUpdate.CurrentYear, subject.Year, subject.Name, request.SubjectId);
+                    request.StudentId, previousYear, subject.Year, subject.Name, request.SubjectId);
             }
             
             logger.LogInformation("Student {StudentId} enrolled in subject {SubjectId} of career {CareerId} successfully", request.StudentId, request.SubjectId, request.TechnicalCareerId);

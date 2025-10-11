@@ -9,6 +9,7 @@ namespace AcadEvalSys.Application.StudentCompetencyAssessments.Queries.GetStuden
 public class GetStudentReceivedEvaluationsQueryHandler(
     IStudentCompetencyAssessmentsRepository studentCompetencyAssessmentRepository,
     ICompetencyEvaluationInstanceRepository evaluationInstanceRepository,
+    IStudentEvaluationReportRepository reportRepository,
     ILogger<GetStudentReceivedEvaluationsQueryHandler> logger)
     : IRequestHandler<GetStudentReceivedEvaluationsQuery, IEnumerable<StudentReceivedEvaluationDto>>
 {
@@ -52,6 +53,9 @@ public class GetStudentReceivedEvaluationsQueryHandler(
                     _ => Domain.Enums.CompetencyLevel.Inicial
                 };
 
+                // Buscar el reporte del estudiante para esta instancia
+                var report = await reportRepository.GetByStudentAndInstanceAsync(request.StudentId, instance.Id);
+
                 var instanceResult = new StudentReceivedEvaluationDto
                 {
                     Id = instance.Id,
@@ -66,7 +70,9 @@ public class GetStudentReceivedEvaluationsQueryHandler(
                     DueDate = instance.PeriodTo,
                     Observations = $"Progreso: {completedCompetencies}/{totalCompetencies} competencias evaluadas",
                     EvaluationInstanceTitle = instance.Title ?? "Instancia de Evaluación",
-                    EvaluationInstanceDescription = instance.Description ?? $"Período: {instance.PeriodFrom:dd/MM/yyyy} - {instance.PeriodTo:dd/MM/yyyy}"
+                    EvaluationInstanceDescription = instance.Description ?? $"Período: {instance.PeriodFrom:dd/MM/yyyy} - {instance.PeriodTo:dd/MM/yyyy}",
+                    ReportId = report?.Id,
+                    Semester = instance.Semester
                 };
 
                 studentResults.Add(instanceResult);

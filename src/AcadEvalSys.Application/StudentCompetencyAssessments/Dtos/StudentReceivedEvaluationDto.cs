@@ -17,4 +17,6 @@ public class StudentReceivedEvaluationDto
     public string? Observations { get; set; }
     public string EvaluationInstanceTitle { get; set; } = string.Empty;
     public string EvaluationInstanceDescription { get; set; } = string.Empty;
+    public Guid? ReportId { get; set; }
+    public Semester Semester { get; set; }
 }

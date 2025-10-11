@@ -26,7 +26,8 @@ export interface StudentCompetencyEvaluation {
     observations?: string | null;
     evaluationInstanceTitle: string;
     evaluationInstanceDescription: string;
-  reportId?: string | null;
+    reportId?: string | null;
+    semester: "First" | "Second";
   }
   
   export interface StudentEvaluationInstance {
