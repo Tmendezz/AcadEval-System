@@ -17,8 +17,14 @@ public class StudentCompetencyAssessmentsRepository(ApplicationDbContext context
                 .ThenInclude(pca => pca.Competency)
             .Include(sca => sca.ProfessorCompetencyAssignment!)
                 .ThenInclude(pca => pca.Subject)
-            .FirstOrDefaultAsync(sca => sca.StudentId == studentId &&
-                                      sca.ProfessorCompetencyAssignmentId == professorCompetencyAssignmentId);
+            .Include(sca => sca.ProfessorCompetencyAssignment!)
+                .ThenInclude(pca => pca.CompetencyEvaluationInstance)
+            .Where(sca => sca.StudentId == studentId &&
+                         sca.ProfessorCompetencyAssignmentId == professorCompetencyAssignmentId &&
+                         sca.IsActive && // Solo assessments activos
+                         sca.ProfessorCompetencyAssignment!.IsActive && // Solo asignaciones activas
+                         sca.ProfessorCompetencyAssignment.CompetencyEvaluationInstance!.IsActive) // Solo instancias activas
+            .FirstOrDefaultAsync();
     }
 
     public async Task<StudentCompetencyAssessment?> GetByStudentAndInstanceAsync(string studentId, Guid evaluationInstanceId)
@@ -30,8 +36,14 @@ public class StudentCompetencyAssessmentsRepository(ApplicationDbContext context
                 .ThenInclude(pca => pca.Competency)
             .Include(sca => sca.ProfessorCompetencyAssignment!)
                 .ThenInclude(pca => pca.Subject)
-            .FirstOrDefaultAsync(sca => sca.StudentId == studentId &&
-                                      sca.ProfessorCompetencyAssignment!.CompetencyEvaluationInstanceId == evaluationInstanceId);
+            .Include(sca => sca.ProfessorCompetencyAssignment!)
+                .ThenInclude(pca => pca.CompetencyEvaluationInstance)
+            .Where(sca => sca.StudentId == studentId &&
+                         sca.ProfessorCompetencyAssignment!.CompetencyEvaluationInstanceId == evaluationInstanceId &&
+                         sca.IsActive && // Solo assessments activos
+                         sca.ProfessorCompetencyAssignment.IsActive && // Solo asignaciones activas
+                         sca.ProfessorCompetencyAssignment.CompetencyEvaluationInstance!.IsActive) // Solo instancias activas
+            .FirstOrDefaultAsync();
     }
 
     public async Task<IEnumerable<StudentCompetencyAssessment>> GetByAssignmentAsync(Guid professorCompetencyAssignmentId)
@@ -43,7 +55,12 @@ public class StudentCompetencyAssessmentsRepository(ApplicationDbContext context
                 .ThenInclude(pca => pca.Competency)
             .Include(sca => sca.ProfessorCompetencyAssignment!)
                 .ThenInclude(pca => pca.Subject)
-            .Where(sca => sca.ProfessorCompetencyAssignmentId == professorCompetencyAssignmentId)
+            .Include(sca => sca.ProfessorCompetencyAssignment!)
+                .ThenInclude(pca => pca.CompetencyEvaluationInstance)
+            .Where(sca => sca.ProfessorCompetencyAssignmentId == professorCompetencyAssignmentId &&
+                         sca.IsActive && // Solo assessments activos
+                         sca.ProfessorCompetencyAssignment!.IsActive && // Solo asignaciones activas
+                         sca.ProfessorCompetencyAssignment.CompetencyEvaluationInstance!.IsActive) // Solo instancias activas
             .ToListAsync();
     }
 
@@ -63,7 +80,10 @@ public class StudentCompetencyAssessmentsRepository(ApplicationDbContext context
                         .ThenInclude(p => p.User)
             .Include(sca => sca.ProfessorCompetencyAssignment!)
                 .ThenInclude(pca => pca.CompetencyEvaluationInstance)
-            .Where(sca => sca.StudentId == studentId)
+            .Where(sca => sca.StudentId == studentId &&
+                         sca.IsActive && // Solo assessments activos
+                         sca.ProfessorCompetencyAssignment!.IsActive && // Solo asignaciones activas
+                         sca.ProfessorCompetencyAssignment.CompetencyEvaluationInstance!.IsActive) // Solo instancias activas
             .ToListAsync();
     }
 
@@ -88,9 +108,14 @@ public class StudentCompetencyAssessmentsRepository(ApplicationDbContext context
                 .ThenInclude(pca => pca.Competency).ThenInclude(pca => pca!.LevelDescriptions)
             .Include(sca => sca.ProfessorCompetencyAssignment!)
                 .ThenInclude(pca => pca.Subject)
+            .Include(sca => sca.ProfessorCompetencyAssignment!)
+                .ThenInclude(pca => pca.CompetencyEvaluationInstance)
             .Where(sca => sca.StudentId == studentId &&
                           sca.ProfessorCompetencyAssignment!.CompetencyEvaluationInstanceId == evaluationInstanceId &&
-                          sca.Status == AssessmentStatus.Completed)
+                          sca.Status == AssessmentStatus.Completed &&
+                          sca.IsActive && // Solo assessments activos
+                          sca.ProfessorCompetencyAssignment.IsActive && // Solo asignaciones activas
+                          sca.ProfessorCompetencyAssignment.CompetencyEvaluationInstance!.IsActive) // Solo instancias activas
             .ToListAsync();
     }
 }

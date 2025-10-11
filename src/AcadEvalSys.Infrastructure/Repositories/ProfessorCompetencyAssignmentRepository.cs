@@ -90,7 +90,9 @@ public class ProfessorCompetencyAssignmentRepository : IProfessorCompetencyAssig
                 .ThenInclude(sca => sca.Student!)
                     .ThenInclude(s => s.User)
             .Where(pca => pca.Subject!.ProfessorId == professorId && 
-                         pca.CompetencyEvaluationInstance != null); // Solo asignaciones con evaluación existente
+                         pca.CompetencyEvaluationInstance != null && // Solo asignaciones con evaluación existente
+                         pca.IsActive && // Solo asignaciones activas (no borradas)
+                         pca.CompetencyEvaluationInstance.IsActive); // Solo instancias de evaluación activas
 
         if (evaluationInstanceId.HasValue)
         {
@@ -119,6 +121,7 @@ public class ProfessorCompetencyAssignmentRepository : IProfessorCompetencyAssig
             .Include(pca => pca.StudentCompetencyAssessments!)
                 .ThenInclude(sca => sca.Student!)
                     .ThenInclude(s => s.User)
+            .Where(pca => pca.IsActive) // Solo asignaciones activas
             .FirstOrDefaultAsync(pca => pca.Id == id);
     }
 
@@ -145,7 +148,8 @@ public class ProfessorCompetencyAssignmentRepository : IProfessorCompetencyAssig
                 .ThenInclude(s => s.User)
             .Where(pca => pca.CompetencyEvaluationInstanceId == evaluationId
                          && pca.Subject.TechnicalCareerId == careerId
-                         && pca.Subject.Year == year)
+                         && pca.Subject.Year == year
+                         && pca.IsActive) // Solo asignaciones activas
             .ToListAsync(cancellationToken);
     }
 
@@ -156,7 +160,10 @@ public class ProfessorCompetencyAssignmentRepository : IProfessorCompetencyAssig
         return await _context.StudentCompetencyAssessments
             .Include(sca => sca.Student)
                 .ThenInclude(s => s.User)
-            .Where(sca => sca.ProfessorCompetencyAssignmentId == assignmentId)
+            .Include(sca => sca.ProfessorCompetencyAssignment)
+            .Where(sca => sca.ProfessorCompetencyAssignmentId == assignmentId
+                         && sca.IsActive // Solo assessments activos
+                         && sca.ProfessorCompetencyAssignment!.IsActive) // Solo si la asignación está activa
             .OrderBy(sca => sca.Student.User.Name)
             .ToListAsync(cancellationToken);
     }

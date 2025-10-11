@@ -27,7 +27,10 @@ public class StudentEvaluationReportRepository : IStudentEvaluationReportReposit
             .Include(r => r.Student)
                 .ThenInclude(s => s.User)
             .Include(r => r.CompetencyEvaluationInstance)
-            .FirstOrDefaultAsync(r => r.Id == reportId);
+            .Where(r => r.Id == reportId &&
+                       r.IsActive && // Solo reportes activos
+                       r.CompetencyEvaluationInstance.IsActive) // Solo instancias activas
+            .FirstOrDefaultAsync();
     }
 
     public async Task<IEnumerable<StudentEvaluationReport>> GetByStudentIdAsync(string studentId)
@@ -35,7 +38,9 @@ public class StudentEvaluationReportRepository : IStudentEvaluationReportReposit
         return await _context.StudentEvaluationReports
             .Include(r => r.Student)
             .Include(r => r.CompetencyEvaluationInstance)
-            .Where(r => r.StudentId == studentId)
+            .Where(r => r.StudentId == studentId &&
+                       r.IsActive && // Solo reportes activos
+                       r.CompetencyEvaluationInstance.IsActive) // Solo instancias activas
             .OrderByDescending(r => r.GeneratedAt)
             .ToListAsync();
     }
@@ -45,7 +50,9 @@ public class StudentEvaluationReportRepository : IStudentEvaluationReportReposit
         return await _context.StudentEvaluationReports
             .Include(r => r.Student)
             .Include(r => r.CompetencyEvaluationInstance)
-            .Where(r => r.CompetencyEvaluationInstanceId == evaluationInstanceId)
+            .Where(r => r.CompetencyEvaluationInstanceId == evaluationInstanceId &&
+                       r.IsActive && // Solo reportes activos
+                       r.CompetencyEvaluationInstance.IsActive) // Solo instancias activas
             .OrderByDescending(r => r.GeneratedAt)
             .ToListAsync();
     }
@@ -55,8 +62,11 @@ public class StudentEvaluationReportRepository : IStudentEvaluationReportReposit
         return await _context.StudentEvaluationReports
             .Include(r => r.Student)
             .Include(r => r.CompetencyEvaluationInstance)
-            .FirstOrDefaultAsync(r => r.StudentId == studentId && 
-                                    r.CompetencyEvaluationInstanceId == evaluationInstanceId);
+            .Where(r => r.StudentId == studentId && 
+                       r.CompetencyEvaluationInstanceId == evaluationInstanceId &&
+                       r.IsActive && // Solo reportes activos
+                       r.CompetencyEvaluationInstance.IsActive) // Solo instancias activas
+            .FirstOrDefaultAsync();
     }
 
     public async Task UpdateAsync(StudentEvaluationReport report)
