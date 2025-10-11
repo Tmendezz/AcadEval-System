@@ -11,6 +11,7 @@ import { convertDateTimeLocalToISO } from '@/shared/utils/date-utils';
 import { Button } from '@/shared/components/ui/button';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 import { ArrowLeft, FileText } from 'lucide-react';
+import { PageLoader } from '@/shared/components/ui/page-loader';
 
 export default function CreateSurveyPage() {
   const [, setLocation] = useLocation();
@@ -87,14 +88,7 @@ export default function CreateSurveyPage() {
     return (
       <PageLayout>
         <PageContent>
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">
-                {isFetchingTemplate ? 'Cargando plantilla...' : 'Cargando tecnicaturas...'}
-              </p>
-            </div>
-          </div>
+          <PageLoader />
         </PageContent>
       </PageLayout>
     );

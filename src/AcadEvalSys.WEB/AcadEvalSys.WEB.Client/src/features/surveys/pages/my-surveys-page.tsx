@@ -7,6 +7,7 @@ import { DataTable } from '@/shared/components/data-table/data-table';
 import { CheckCircle, Clock } from 'lucide-react';
 import { usePendingSurveys, useCompletedSurveys, UserSurveyDto } from '../hooks/use-surveys';
 import { createPendingSurveyColumns, createCompletedSurveyColumns } from '../components/survey-table-columns';
+import { TableSkeleton } from '@/shared/components/ui/skeletons';
 
 export default function MySurveysPage() {
   const [, setLocation] = useLocation();
@@ -59,10 +60,7 @@ export default function MySurveysPage() {
            
               
               {isLoadingPending ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                  <p>Cargando encuestas pendientes...</p>
-                </div>
+                <TableSkeleton rows={5} columns={4} />
               ) : sortedPendingSurveys.length > 0 ? (
                 <DataTable 
                   columns={pendingColumns} 
@@ -82,10 +80,7 @@ export default function MySurveysPage() {
            
               
               {isLoadingCompleted ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                  <p>Cargando encuestas completadas...</p>
-                </div>
+                <TableSkeleton rows={5} columns={4} />
               ) : sortedCompletedSurveys.length > 0 ? (
                   <DataTable 
                     columns={completedColumns} 

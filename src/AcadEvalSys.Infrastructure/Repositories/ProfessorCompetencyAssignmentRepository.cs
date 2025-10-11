@@ -42,19 +42,40 @@ public class ProfessorCompetencyAssignmentRepository : IProfessorCompetencyAssig
             return; // No hay estudiantes inscritos activamente en esta materia
         }
 
-        // Crear un StudentCompetencyAssessment para cada estudiante
-        var studentAssessments = enrolledStudents.Select(studentId => new StudentCompetencyAssessment
-        {
-            StudentId = studentId,
-            ProfessorCompetencyAssignmentId = assignment.Id,
-            Status = AssessmentStatus.Pending,
-            CompetencyLevel = null,
-            CreatedByUserId = assignment.CreatedByUserId,
-            CreatedAt = DateTime.UtcNow
-        }).ToList();
+        var studentAssessments = new List<StudentCompetencyAssessment>();
 
-        _context.StudentCompetencyAssessments.AddRange(studentAssessments);
-        await _context.SaveChangesAsync();
+        // Para cada estudiante, verificar si YA existe un assessment para esta competencia
+        foreach (var studentId in enrolledStudents)
+        {
+            // Verificar si ya existe un StudentCompetencyAssessment para este estudiante
+            // con la misma competencia en esta instancia de evaluación
+            var existingAssessment = await _context.StudentCompetencyAssessments
+                .AnyAsync(sca => 
+                    sca.StudentId == studentId &&
+                    sca.ProfessorCompetencyAssignment!.CompetencyId == assignment.CompetencyId &&
+                    sca.ProfessorCompetencyAssignment.CompetencyEvaluationInstanceId == assignment.CompetencyEvaluationInstanceId);
+
+            // Solo crear si NO existe ya un assessment
+            // (Esto evita duplicados cuando el estudiante cursa la misma competencia en múltiples materias)
+            if (!existingAssessment)
+            {
+                studentAssessments.Add(new StudentCompetencyAssessment
+                {
+                    StudentId = studentId,
+                    ProfessorCompetencyAssignmentId = assignment.Id,
+                    Status = AssessmentStatus.Pending,
+                    CompetencyLevel = null,
+                    CreatedByUserId = assignment.CreatedByUserId,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+        }
+
+        if (studentAssessments.Any())
+        {
+            _context.StudentCompetencyAssessments.AddRange(studentAssessments);
+            await _context.SaveChangesAsync();
+        }
     }
 
     public async Task<IEnumerable<ProfessorCompetencyAssignment>> GetProfessorAssignmentsAsync(string professorId, Guid? evaluationInstanceId = null)
@@ -146,5 +167,4 @@ public class ProfessorCompetencyAssignmentRepository : IProfessorCompetencyAssig
             .Include(p => p.User)
             .FirstOrDefaultAsync(p => p.UserId == userId);
     }
-
 }

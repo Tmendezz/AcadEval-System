@@ -16,19 +16,15 @@ export function useFinalizeEvaluation() {
       forceClose = false,
     }: FinalizeEvaluationParams) =>
       finalizeEvaluation(evaluationId, forceClose),
-    onSuccess: (data, variables) => {
-      if (data.success) {
-        toast.success("Evaluación finalizada exitosamente");
-        // Invalidar las queries relacionadas para refrescar los datos
-        queryClient.invalidateQueries({
-          queryKey: ["evaluation", variables.evaluationId],
-        });
-        queryClient.invalidateQueries({ queryKey: ["evaluations"] });
-      } else {
-        toast.error(data.message || "Error al finalizar la evaluación");
-      }
+    onSuccess: (_, variables) => {
+      toast.success("Evaluación finalizada exitosamente. Los reportes se están generando en segundo plano.");
+      // Invalidar las queries relacionadas para refrescar los datos
+      queryClient.invalidateQueries({
+        queryKey: ["evaluation", variables.evaluationId],
+      });
+      queryClient.invalidateQueries({ queryKey: ["evaluations"] });
     },
-    onError: (error: unknown) => {
+    onError: (error: any) => {
       console.error("Error finalizing evaluation:", error);
       toast.error(
         error.response?.data?.message ||

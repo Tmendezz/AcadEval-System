@@ -9,6 +9,7 @@ import { useSurveyForResponse, useSubmitSurveyResponse, useSurveySubjectsForUser
 import { StudentSurveyRunner } from '../components/runner/StudentSurveyRunner';
 import { useSurveyResponseStore } from '../store/use-survey-response-store';
 import type { StudentSurveyTarget, FixedQuestion } from '../models/survey-runner-types';
+import { PageLoader } from '@/shared/components/ui/page-loader';
 
 export default function RespondSurveyPage() {
   const [, setLocation] = useLocation();
@@ -178,12 +179,7 @@ export default function RespondSurveyPage() {
     return (
       <PageLayout>
         <PageContent>
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Cargando encuesta...</p>
-            </div>
-          </div>
+          <PageLoader />
         </PageContent>
       </PageLayout>
     );

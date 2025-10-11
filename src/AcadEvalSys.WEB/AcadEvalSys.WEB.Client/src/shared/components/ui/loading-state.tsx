@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { cn } from "@infrastructure/lib/cn";
+import { PageLoader } from "./page-loader";
 
 interface LoadingStateProps {
   message?: string;
@@ -8,29 +9,19 @@ interface LoadingStateProps {
   size?: "sm" | "md" | "lg";
 }
 
+/**
+ * @deprecated Use PageLoader or skeleton components instead
+ * This component is kept for backward compatibility
+ */
 export function LoadingState({
   message = "Cargando...",
   icon,
   className,
   size = "md",
 }: LoadingStateProps) {
-  const sizeClasses = {
-    sm: "h-6 w-6",
-    md: "h-8 w-8",
-    lg: "h-12 w-12",
-  };
-
   return (
-    <div className={cn("text-center py-8", className)}>
-      <div
-        className={cn(
-          "animate-spin rounded-full border-b-2 border-primary mx-auto mb-4",
-          sizeClasses[size]
-        )}
-      >
-        {icon}
-      </div>
-      <p className="text-muted-foreground">{message}</p>
+    <div className={className}>
+      <PageLoader />
     </div>
   );
 }

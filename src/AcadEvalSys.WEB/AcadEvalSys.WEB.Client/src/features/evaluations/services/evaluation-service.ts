@@ -29,8 +29,9 @@ export async function deleteEvaluation(id: string) {
   await api.delete(`/evaluation-instances/${id}`);
 }
 
-export async function finalizeEvaluation(id: string) {
-  await api.post(`/evaluation-instances/${id}/finalize`, {});
+export async function finalizeEvaluation(id: string, forceClose: boolean = false) {
+  const { data } = await api.post(`/evaluation-instances/${id}/finalize?forceClose=${forceClose}`, {});
+  return data;
 }
 
 export async function getCareerYearAssignmentDetails(

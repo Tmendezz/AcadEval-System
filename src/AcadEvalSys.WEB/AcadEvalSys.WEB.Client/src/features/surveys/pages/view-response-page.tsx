@@ -5,6 +5,7 @@ import { Button } from '@/shared/components/ui/button';
 import { ArrowLeft, Calendar, Eye } from 'lucide-react';
 import { useSurveyForResponse } from '../hooks/use-surveys';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
+import { PageLoader } from '@/shared/components/ui/page-loader';
 
 export default function ViewResponsePage() {
   const [, setLocation] = useLocation();
@@ -72,12 +73,7 @@ export default function ViewResponsePage() {
     return (
       <PageLayout>
         <PageContent>
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Cargando respuestas...</p>
-            </div>
-          </div>
+          <PageLoader />
         </PageContent>
       </PageLayout>
     );

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { ArrowLeft, BookOpen } from 'lucide-react';
 import { useSurvey, useAudienceResponses, useTechnicalCareers } from '../hooks/use-surveys';
 import { useMemo } from 'react';
+import { PageLoader } from '@/shared/components/ui/page-loader';
 
 export default function SurveyAudienceDetailPage() {
   const [, setLocation] = useLocation();
@@ -42,12 +43,7 @@ export default function SurveyAudienceDetailPage() {
     return (
       <PageLayout>
         <PageContent>
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
-              <p className="text-muted-foreground">Cargando detalle de audiencia...</p>
-            </div>
-          </div>
+          <PageLoader />
         </PageContent>
       </PageLayout>
     );

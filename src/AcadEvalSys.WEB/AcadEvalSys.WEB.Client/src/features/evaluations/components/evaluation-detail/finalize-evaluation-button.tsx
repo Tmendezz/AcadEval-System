@@ -40,39 +40,38 @@ export function FinalizeEvaluationButton({
 
   const handleFinalize = () => {
     finalizeEvaluationMutation.mutate(
-      { evaluationId, forceClose },
+      { evaluationId, forceClose: isCompleted ? true : forceClose },
       {
-        onSuccess: (data) => {
-          if (data.success) {
-            setIsOpen(false);
-          }
+        onSuccess: () => {
+          setIsOpen(false);
         },
       }
     );
   };
 
-  if (isCompleted) {
-    return (
-      <Button disabled variant="outline" className="gap-2">
-        <CheckCircle className="w-4 h-4 text-green-600" />
-        Evaluación Finalizada
-      </Button>
-    );
-  }
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button
-          variant={isFullyCompleted ? "default" : "destructive"}
+          variant={isCompleted ? "outline" : isFullyCompleted ? "default" : "destructive"}
           className="gap-2"
         >
-          {isFullyCompleted ? (
-            <CheckCircle className="w-4 h-4" />
+          {isCompleted ? (
+            <>
+              <CheckCircle className="w-4 h-4 text-green-600" />
+              Evaluación Finalizada
+            </>
+          ) : isFullyCompleted ? (
+            <>
+              <CheckCircle className="w-4 h-4" />
+              Finalizar Evaluación
+            </>
           ) : (
-            <AlertTriangle className="w-4 h-4" />
+            <>
+              <AlertTriangle className="w-4 h-4" />
+              Finalizar Evaluación
+            </>
           )}
-          Finalizar Evaluación
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
