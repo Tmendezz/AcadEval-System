@@ -1,6 +1,7 @@
 import { api } from "@infrastructure/query/axios";
 import { useAuthStore } from "../store";
 import { User, LoginCredentials, SessionStatus } from "../models";
+import { getErrorMessage } from "@/shared/utils/error-handler";
 
 const AUTH_API_URL = "/identity";
 
@@ -23,11 +24,8 @@ export const authService = {
 
       return userInfo;
     } catch (error: unknown) {
-      const axiosError = error as {
-        response?: { data?: { message?: string } };
-      };
-      const message =
-        axiosError.response?.data?.message || "Error al iniciar sesión";
+      // Usar el handler centralizado de errores
+      const message = getErrorMessage(error);
       store.setError(message);
       throw error;
     } finally {

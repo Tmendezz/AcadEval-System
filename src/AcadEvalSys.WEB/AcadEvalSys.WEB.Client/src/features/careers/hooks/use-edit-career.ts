@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 import { useProfessors } from "@/shared/hooks/use-professors";
 import { toast } from "sonner";
 
-// Local row model matches Subject, with optional id for new subjects
 type SubjectRow = Subject & { isNew?: boolean };
 
 export function useEditCareer(careerId: string | undefined) {

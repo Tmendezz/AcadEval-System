@@ -4,6 +4,7 @@ import { useAuthStore } from "../store";
 import { navigate } from "wouter/use-browser-location";
 import { toast } from "sonner";
 import { LoginCredentials } from "../models";
+import { getErrorMessage } from "@/shared/utils/error-handler";
 
 export const useLogin = () => {
   const { isLoading, error } = useAuthStore();
@@ -14,20 +15,12 @@ export const useLogin = () => {
       navigate("/dashboard");
     },
     onError: (error: unknown) => {
-      // Extraer el mensaje del servidor si está disponible
-      const axiosError = error as {
-        response?: {
-          data?: { detail?: string; title?: string; message?: string };
-        };
-      };
-      const serverMessage =
-        axiosError.response?.data?.detail ||
-        axiosError.response?.data?.title ||
-        axiosError.response?.data?.message;
-
-      // También actualizar el store con el error completo para que se muestre en el formulario
+      // Usar el handler centralizado de errores
+      const errorMessage = getErrorMessage(error);
+      
+      // Actualizar el store con el error para que se muestre en el formulario
       const store = useAuthStore.getState();
-      store.setError(serverMessage ?? "Error al iniciar sesión");
+      store.setError(errorMessage);
     },
   });
 
