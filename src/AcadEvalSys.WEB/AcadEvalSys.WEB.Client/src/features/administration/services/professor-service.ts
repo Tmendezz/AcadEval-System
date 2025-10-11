@@ -1,4 +1,5 @@
 import { api } from "@/infrastructure/query/axios";
+import { userManagementService } from "./user-management-service";
 
 export interface ProfessorDto {
   userId: string;
@@ -37,6 +38,21 @@ export const professorService = {
   async delete(id: string) {
     const { data } = await api.delete(`/professors/${id}`);
     return data as { success: boolean; hasAssignments?: boolean; assignedSubjects?: Array<{ id: string; name: string; careerName: string; year: number }>; message?: string };
+  },
+
+  /**
+   * Cambia la contraseña de un profesor
+   * @deprecated Usar userManagementService.changePassword directamente
+   */
+  async changePassword(userId: string, newPassword: string) {
+    return userManagementService.changePassword(userId, newPassword);
+  },
+
+  /**
+   * Genera una contraseña temporal para un profesor
+   */
+  async generateTemporaryPassword(userId: string) {
+    return userManagementService.generateTemporaryPassword(userId);
   },
 };
 

@@ -55,7 +55,20 @@ export function useProfessorOperations() {
   const updateProfessor = useMutation({
     mutationFn: async (values: ProfessorFormValues) => {
       if (!selectedProfessor) throw new Error("No professor selected");
-      const id = await professorService.update(selectedProfessor.userId, values);
+      
+      // 1. Actualizar datos básicos del profesor (nombre, email, teléfono)
+      const id = await professorService.update(selectedProfessor.userId, {
+        name: values.name,
+        email: values.email,
+        phone: values.phone,
+      });
+      
+      // 2. Si hay contraseña, cambiarla en un endpoint separado
+      if (values.password && values.password.trim()) {
+        console.log("🔑 Cambiando contraseña del profesor...");
+        await professorService.changePassword(selectedProfessor.userId, values.password);
+      }
+      
       return id;
     },
     onSuccess: async () => {

@@ -21,9 +21,7 @@ import {
 } from "@/shared/components/ui/form";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
-import { Separator } from "@/shared/components/ui/separator";
-import { Key, Eye, EyeOff, RefreshCw } from "lucide-react";
-import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 import type { Professor } from "@infrastructure/api/types/professor";
 
 const baseSchema = z.object({
@@ -49,8 +47,6 @@ export function ProfessorFormDialog({
 }: ProfessorFormDialogProps) {
   const isEditing = Boolean(professor);
   const [showPassword, setShowPassword] = useState(false);
-  const [isResetting, setIsResetting] = useState(false);
-  const [newPassword, setNewPassword] = useState("");
 
   const form = useForm<ProfessorFormValues>({
     resolver: zodResolver(baseSchema),
@@ -67,7 +63,6 @@ export function ProfessorFormDialog({
       email: professor?.email ?? "",
       password: "",
     });
-    setNewPassword("");
   }, [professor, form, open]);
 
   const handleSubmit = (values: ProfessorFormValues) => {
@@ -76,38 +71,7 @@ export function ProfessorFormDialog({
   };
 
   const handleClose = () => {
-    setNewPassword("");
     onOpenChange(false);
-  };
-
-  const handleResetPassword = async () => {
-    if (!professor?.id || !newPassword.trim()) {
-      toast.error("Debe ingresar una nueva contraseña");
-      return;
-    }
-
-    setIsResetting(true);
-    try {
-      const response = await fetch("/api/user-password/reset", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId: professor.id, newPassword }),
-      });
-
-      if (response.ok) {
-        toast.success("Contraseña actualizada exitosamente");
-        setNewPassword("");
-      } else {
-        const error = await response.json();
-        toast.error(error.error || "Error al actualizar contraseña");
-      }
-    } catch {
-      toast.error("Error de conexión");
-    } finally {
-      setIsResetting(false);
-    }
   };
 
   return (
@@ -161,43 +125,25 @@ export function ProfessorFormDialog({
               )}
             />
 
-            {!isEditing && (
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Contraseña</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Contraseña temporal"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            {/* Gestión de contraseñas solo para edición */}
-            {isEditing && (
-              <>
-                <Separator />
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Key className="w-4 h-4 text-muted-foreground" />
-                    <h4 className="font-medium">Cambiar Contraseña</h4>
-                  </div>
-
-                  <div className="space-y-2">
+            {/* Campo de contraseña siempre visible */}
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    {isEditing
+                      ? "Nueva Contraseña (dejar vacío para no cambiar)"
+                      : "Contraseña"}
+                  </FormLabel>
+                  <FormControl>
                     <div className="relative">
                       <Input
                         type={showPassword ? "text" : "password"}
-                        placeholder="Nueva contraseña"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder={
+                          isEditing ? "Nueva contraseña" : "Contraseña"
+                        }
+                        {...field}
                         className="pr-10"
                       />
                       <Button
@@ -214,21 +160,23 @@ export function ProfessorFormDialog({
                         )}
                       </Button>
                     </div>
-                    <Button
-                      onClick={handleResetPassword}
-                      disabled={isResetting || !newPassword.trim()}
-                      className="w-full"
-                    >
-                      {isResetting ? (
-                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                      ) : (
-                        "Actualizar Contraseña"
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </>
-            )}
+                  </FormControl>
+                  <FormMessage />
+                  {!isEditing && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      <p>La contraseña debe contener:</p>
+                      <ul className="list-disc list-inside space-y-1 mt-1">
+                        <li>Al menos 8 caracteres</li>
+                        <li>Una letra mayúscula (A-Z)</li>
+                        <li>Una letra minúscula (a-z)</li>
+                        <li>Un número (0-9)</li>
+                        <li>Un carácter especial (!@#$%^&*)</li>
+                      </ul>
+                    </div>
+                  )}
+                </FormItem>
+              )}
+            />
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={handleClose}>

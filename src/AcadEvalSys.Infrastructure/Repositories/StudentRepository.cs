@@ -131,7 +131,25 @@ public class StudentRepository(ApplicationDbContext dbContext, ILogger<StudentRe
 
         if (studentSubject != null)
         {
+            // Marcar como inactivo la inscripción
             studentSubject.IsActive = false;
+            
+            // Eliminar evaluaciones pendientes del estudiante para esta asignatura
+            // Solo eliminamos las evaluaciones no completadas para evitar perder historial
+            var pendingAssessments = await dbContext.StudentCompetencyAssessments
+                .Include(sca => sca.ProfessorCompetencyAssignment)
+                .Where(sca => sca.StudentId == studentId 
+                    && sca.ProfessorCompetencyAssignment!.SubjectId == subjectId
+                    && sca.CompetencyLevel == null) // No evaluadas todavía
+                .ToListAsync();
+            
+            if (pendingAssessments.Any())
+            {
+                dbContext.StudentCompetencyAssessments.RemoveRange(pendingAssessments);
+                logger.LogInformation("Removed {Count} pending assessments for student {StudentId} from subject {SubjectId}", 
+                    pendingAssessments.Count, studentId, subjectId);
+            }
+            
             await dbContext.SaveChangesAsync();
         }
     }

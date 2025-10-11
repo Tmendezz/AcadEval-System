@@ -1,4 +1,5 @@
 import { api } from "@infrastructure/query/axios";
+import { userManagementService } from "./user-management-service";
 
 export interface Student {
   id: string;
@@ -85,9 +86,18 @@ export const studentService = {
     await api.delete(`${STUDENTS_API_URL}/${id}`);
   },
 
+  /**
+   * Cambia la contraseña de un estudiante
+   * @deprecated Usar userManagementService.changePassword directamente
+   */
   async changePassword(id: string, newPassword: string): Promise<void> {
-    await api.post(`${STUDENTS_API_URL}/${id}/change-password`, {
-      newPassword,
-    });
+    return userManagementService.changePassword(id, newPassword);
+  },
+
+  /**
+   * Genera una contraseña temporal para un estudiante
+   */
+  async generateTemporaryPassword(id: string) {
+    return userManagementService.generateTemporaryPassword(id);
   },
 };
