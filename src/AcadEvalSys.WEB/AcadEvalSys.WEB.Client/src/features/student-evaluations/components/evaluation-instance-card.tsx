@@ -77,18 +77,18 @@ export function EvaluationInstanceCard({ instance }: EvaluationInstanceCardProps
         <div className="ml-4">
           <Button
             onClick={handleDownloadReport}
-            disabled={!instance.hasReport || isDownloading}
-            variant={instance.hasReport ? "default" : "outline"}
+            disabled={!instance.reportId || isDownloading}
+            variant={instance.reportId ? "default" : "outline"}
             size="lg"
           >
             <Download className="h-4 w-4 mr-2" />
             {isDownloading
               ? "Descargando..."
-              : instance.hasReport
+              : instance.reportId
               ? "Descargar Reporte"
               : "Sin Reporte"}
           </Button>
-          {!instance.hasReport && (
+          {!instance.reportId && (
             <p className="text-xs text-muted-foreground mt-2 text-center">
               El reporte estará disponible una vez finalizada la evaluación
             </p>

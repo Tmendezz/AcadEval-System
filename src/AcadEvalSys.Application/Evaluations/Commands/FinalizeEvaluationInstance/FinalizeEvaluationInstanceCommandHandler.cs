@@ -35,15 +35,6 @@ public class FinalizeEvaluationInstanceCommandHandler(
             throw new NotFoundException(nameof(CompetencyEvaluationInstance), request.EvaluationInstanceId.ToString());
         }
 
-        // TODO -> Descomentars
-        /*
-        if (instance.Status == EvaluationStatus.Completed)
-        {
-            logger.LogInformation("Evaluation instance {InstanceId} is already completed", request.EvaluationInstanceId);
-            return true;
-        }
-        */
-
         // Verificar condiciones de finalización
         var (completedAssignments, totalAssignments, allProfessorsCompleted) = ValidateAssignmentCompletion(instance, request.ForceClose, request.EvaluationInstanceId);
 
