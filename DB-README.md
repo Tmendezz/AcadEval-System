@@ -18,7 +18,7 @@ Este proyecto incluye un archivo `docker-compose.yml` para configurar rápidamen
 
 2. **pgAdmin4**: Interfaz gráfica para administrar PostgreSQL
    - Puerto: 5050
-   - Email: admin@acadeval.com
+   - Email: 
    - Contraseña: admin
 
 ## Inicio rápido

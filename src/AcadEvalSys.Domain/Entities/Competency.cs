@@ -8,7 +8,7 @@ namespace AcadEvalSys.Domain.Entities
         public string Description { get; set; } = string.Empty;
         public CompetencyType Type { get; set; }
 
-        public virtual ICollection<FormQuestion>? FormQuestions { get; set; } = new List<FormQuestion>();
+        public virtual ICollection<SurveyQuestion>? FormQuestions { get; set; } = new List<SurveyQuestion>();
         public virtual ICollection<ProfessorCompetencyAssignment>? ProfessorCompetencyAssignments { get; set; } = new List<ProfessorCompetencyAssignment>();
         public virtual ICollection<CompetencyLevelDescription>? LevelDescriptions { get; set; } = new List<CompetencyLevelDescription>();
     }

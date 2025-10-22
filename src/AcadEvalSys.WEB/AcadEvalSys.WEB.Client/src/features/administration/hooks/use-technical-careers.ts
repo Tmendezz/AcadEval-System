@@ -1,11 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { technicalCareerService } from "../services/technical-career-service";
-import {
-  TechnicalCareer,
-  CreateTechnicalCareerRequest,
-  UpdateTechnicalCareerRequest,
-} from "../types/technical-career";
+import { CreateTechnicalCareerRequest } from "@infrastructure/api/types/technical-career";
 
 // Query keys
 export const technicalCareerKeys = {
@@ -52,30 +48,8 @@ export const useCreateTechnicalCareer = () => {
   });
 };
 
-export const useUpdateTechnicalCareer = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      id,
-      career,
-    }: {
-      id: string;
-      career: UpdateTechnicalCareerRequest;
-    }) => technicalCareerService.update(id, career),
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: technicalCareerKeys.lists() });
-      queryClient.invalidateQueries({
-        queryKey: technicalCareerKeys.detail(id),
-      });
-      toast.success("Tecnicatura actualizada exitosamente");
-    },
-    onError: (error) => {
-      console.error("Error al actualizar tecnicatura:", error);
-      toast.error("Error al actualizar la tecnicatura");
-    },
-  });
-};
+// Re-export from shared hooks to maintain compatibility
+export { useUpdateTechnicalCareer } from "@/shared/hooks/use-technical-careers";
 
 export const useDeleteTechnicalCareer = () => {
   const queryClient = useQueryClient();

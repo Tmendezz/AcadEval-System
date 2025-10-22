@@ -1,13 +1,29 @@
 import { useMemo } from "react";
-import { Subject } from "../types/subject";
-import { TechnicalCareer } from "../types/technical-career";
-import { CareerYear, CareerYearLabels } from "@/shared/types/enums";
+import { Subject } from "@/features/careers/models/subject";
+import { TechnicalCareer } from "@/features/careers/models/technical-career";
+import { CareerYear, getCareerYearLabel } from "@/features/careers/models/enums";
 import { useYearConverter } from "@/shared/hooks/use-year-converter";
-import {
-  AdminStatistics,
-  CareerStatistics,
-  YearStatistics,
-} from "@/shared/types/statistics";
+type AdminStatistics = {
+  totalStudents: number;
+  totalProfessors: number;
+  totalCareers: number;
+  totalYears: number;
+};
+
+type CareerStatistics = {
+  id: string;
+  name: string;
+  fullName: string;
+  totalStudents: number;
+  totalProfessors: number;
+};
+
+type YearStatistics = {
+  value: CareerYear;
+  label: string;
+  count: number;
+  active: boolean;
+};
 
 export const useAdminStatistics = (
   subjects: Subject[],
@@ -18,8 +34,7 @@ export const useAdminStatistics = (
 
   const stats = useMemo((): AdminStatistics => {
     const totalStudents = subjects.reduce(
-      (sum: number, subject: Subject) =>
-        sum + (subject.totalStudents || subject.enrolledStudents?.length || 0),
+      (sum: number, subject: Subject) => sum + (subject.enrolledStudents?.length || 0),
       0
     );
     const totalProfessors = 72; // Mock data for now
@@ -36,13 +51,12 @@ export const useAdminStatistics = (
 
   const careerStats = useMemo((): CareerStatistics[] => {
     return careers.map((career) => {
-      const careerSubjects = subjects.filter(
-        (subject: Subject) => subject.technicalCareer === career.name
-      );
+      const careerSubjects = subjects.filter((subject: Subject) => {
+        const tcName = (subject as any).technicalCareerName as string | undefined;
+        return tcName ? tcName === career.name : false;
+      });
       const totalStudents = careerSubjects.reduce(
-        (sum: number, subject: Subject) =>
-          sum +
-          (subject.totalStudents || subject.enrolledStudents?.length || 0),
+        (sum: number, subject: Subject) => sum + (subject.enrolledStudents?.length || 0),
         0
       );
       const totalProfessors = 18; // Mock data for now
@@ -61,7 +75,7 @@ export const useAdminStatistics = (
     const stats = [
       {
         value: CareerYear.First,
-        label: CareerYearLabels[CareerYear.First],
+        label: getCareerYearLabel(CareerYear.First),
         count: subjects.filter(
           (s: Subject) => getYearNumber(s.year) === CareerYear.First
         ).length,
@@ -69,7 +83,7 @@ export const useAdminStatistics = (
       },
       {
         value: CareerYear.Second,
-        label: CareerYearLabels[CareerYear.Second],
+        label: getCareerYearLabel(CareerYear.Second),
         count: subjects.filter(
           (s: Subject) => getYearNumber(s.year) === CareerYear.Second
         ).length,
@@ -77,7 +91,7 @@ export const useAdminStatistics = (
       },
       {
         value: CareerYear.Third,
-        label: CareerYearLabels[CareerYear.Third],
+        label: getCareerYearLabel(CareerYear.Third),
         count: subjects.filter(
           (s: Subject) => getYearNumber(s.year) === CareerYear.Third
         ).length,

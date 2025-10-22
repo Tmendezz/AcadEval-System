@@ -72,9 +72,6 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
                 var descriptions = GetCompetencyLevelDescriptions(insertedCompetencies);
                 dbContext.CompetencyLevelDescriptions.AddRange(descriptions);
                 await dbContext.SaveChangesAsync();
-
-
-                await dbContext.SaveChangesAsync();
             }
 
             if (!dbContext.Subjects.Any())
@@ -86,46 +83,96 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
 
             if (!dbContext.StudentSubjects.Any())
             {
-                var studentSubject = new StudentSubject
+                // Verificar que el estudiante existe antes de crear StudentSubject
+                var student = await dbContext.Students.FirstOrDefaultAsync(s => s.UserId == studentId);
+                if (student != null)
                 {
-                    StudentId = studentId,
-                    SubjectId = dbContext.Subjects.First().Id,
-                    CreatedByUserId = adminId
-                };
-                dbContext.StudentSubjects.Add(studentSubject);
-                await dbContext.SaveChangesAsync();
+                    var studentSubject = new StudentSubject
+                    {
+                        StudentId = studentId,
+                        SubjectId = dbContext.Subjects.First().Id,
+                        CreatedByUserId = adminId
+                    };
+                    dbContext.StudentSubjects.Add(studentSubject);
+                    await dbContext.SaveChangesAsync();
+                }
             }
 
             if (!dbContext.CompetencyEvaluationInstances.Any())
             {
-                var evaluationInstance = new CompetencyEvaluationInstance
+                // Crear múltiples evaluaciones con fechas diferentes para probar el ordenamiento
+                var evaluationInstances = new List<CompetencyEvaluationInstance>
                 {
-                    Title = "Evaluación de Competencias - Test Finalize",
-                    Description = "Instancia de evaluación para testear la funcionalidad de finalización y generación de reportes",
-                    PeriodFrom = DateTime.UtcNow.AddDays(-7),
-                    PeriodTo = DateTime.UtcNow.AddDays(7),
-                    Status = EvaluationStatus.Pending,
-                    CreatedByUserId = adminId
+                    new CompetencyEvaluationInstance
+                    {
+                        Title = "Evaluación de Competencias - Test Finalize",
+                        Description = "Instancia de evaluación para testear la funcionalidad de finalización y generación de reportes",
+                        PeriodFrom = DateTime.UtcNow.AddDays(-7),
+                        PeriodTo = DateTime.UtcNow.AddDays(7),
+                        Status = EvaluationStatus.Pending,
+                        CreatedAt = DateTime.UtcNow.AddDays(-30), // Evaluación más antigua
+                        CreatedByUserId = adminId
+                    },
+                    new CompetencyEvaluationInstance
+                    {
+                        Title = "Evaluación de Competencias - Semestre Actual",
+                        Description = "Evaluación del semestre actual para todas las carreras",
+                        PeriodFrom = DateTime.UtcNow.AddDays(-15),
+                        PeriodTo = DateTime.UtcNow.AddDays(15),
+                        Status = EvaluationStatus.Pending,
+                        CreatedAt = DateTime.UtcNow.AddDays(-15), // Evaluación intermedia
+                        CreatedByUserId = adminId
+                    },
+                    new CompetencyEvaluationInstance
+                    {
+                        Title = "Evaluación de Competencias - Próximo Semestre",
+                        Description = "Evaluación planificada para el próximo semestre",
+                        PeriodFrom = DateTime.UtcNow.AddDays(30),
+                        PeriodTo = DateTime.UtcNow.AddDays(60),
+                        Status = EvaluationStatus.Pending,
+                        CreatedAt = DateTime.UtcNow.AddDays(-5), // Evaluación más reciente
+                        CreatedByUserId = adminId
+                    }
                 };
-                dbContext.CompetencyEvaluationInstances.Add(evaluationInstance);
+
+                dbContext.CompetencyEvaluationInstances.AddRange(evaluationInstances);
                 await dbContext.SaveChangesAsync();
+
+                // Usar la primera evaluación para crear las asignaciones
+                var evaluationInstance = evaluationInstances.First();
 
                 var professorAssignments = CreateProfessorCompetencyAssignments(
                     evaluationInstance.Id,
                     dbContext.Competencies.ToList(),
                     dbContext.Subjects.First().Id,
                     adminId);
-
+             
+                
                 dbContext.ProfessorCompetencyAssignments.AddRange(professorAssignments);
                 await dbContext.SaveChangesAsync();
+                
 
-                var studentAssessments = CreateStudentCompetencyAssessments(
-                    professorAssignments,
-                    studentId,
-                    adminId);
+                // Verificar que el estudiante existe antes de crear StudentCompetencyAssessments
+                var student = await dbContext.Students.FirstOrDefaultAsync(s => s.UserId == studentId);
+                if (student != null)
+                {
+                    var studentAssessments = CreateStudentCompetencyAssessments(
+                        professorAssignments,
+                        studentId,
+                        adminId);
 
-                dbContext.StudentCompetencyAssessments.AddRange(studentAssessments);
-                await dbContext.SaveChangesAsync();
+                    Console.WriteLine($"Creating {studentAssessments.Count()} student assessments");
+                    Console.WriteLine($"Student ID: {studentId}");
+                    
+                    dbContext.StudentCompetencyAssessments.AddRange(studentAssessments);
+                    await dbContext.SaveChangesAsync();
+                    
+                    Console.WriteLine($"Created {studentAssessments.Count()} student assessments successfully");
+                }
+                else
+                {
+                    Console.WriteLine($"Warning: Student with UserId {studentId} not found, skipping student assessments creation");
+                }
             }
         }
     }
@@ -293,28 +340,32 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
             {
                 CompetencyId = competency.Id,
                 Level = CompetencyLevel.Inicial,
-                Description = GetLevel1Description(competency.Name)
+                Description = GetLevel1Description(competency.Name),
+                CreatedByUserId = competency.CreatedByUserId
             });
 
             descriptions.Add(new CompetencyLevelDescription
             {
                 CompetencyId = competency.Id,
                 Level = CompetencyLevel.Intermedio,
-                Description = GetLevel2Description(competency.Name)
+                Description = GetLevel2Description(competency.Name),
+                CreatedByUserId = competency.CreatedByUserId
             });
 
             descriptions.Add(new CompetencyLevelDescription
             {
                 CompetencyId = competency.Id,
                 Level = CompetencyLevel.Avanzado,
-                Description = GetLevel3Description(competency.Name)
+                Description = GetLevel3Description(competency.Name),
+                CreatedByUserId = competency.CreatedByUserId
             });
 
             descriptions.Add(new CompetencyLevelDescription
             {
                 CompetencyId = competency.Id,
                 Level = CompetencyLevel.Excelente,
-                Description = GetLevel4Description(competency.Name)
+                Description = GetLevel4Description(competency.Name),
+                CreatedByUserId = competency.CreatedByUserId
             });
         }
 
@@ -382,18 +433,25 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
     {
         var assignments = new List<ProfessorCompetencyAssignment>();
 
+        Console.WriteLine($"CreateProfessorCompetencyAssignments: evaluationInstanceId={evaluationInstanceId}, subjectId={subjectId}, createdByUserId={createdByUserId}");
+        Console.WriteLine($"Competencies count: {competencies.Count()}");
+
         foreach (var competency in competencies)
         {
-            assignments.Add(new ProfessorCompetencyAssignment
+            var assignment = new ProfessorCompetencyAssignment
             {
                 CompetencyEvaluationInstanceId = evaluationInstanceId,
                 CompetencyId = competency.Id,
                 SubjectId = subjectId,
                 Status = ProfessorAssignmentStatus.Pending, // Activo para que se pueda evaluar
                 CreatedByUserId = createdByUserId
-            });
+            };
+            
+            assignments.Add(assignment);
+            Console.WriteLine($"Created assignment for competency: {competency.Name} (ID: {competency.Id})");
         }
 
+        Console.WriteLine($"Total assignments created: {assignments.Count}");
         return assignments;
     }
 
@@ -412,10 +470,13 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
             CompetencyLevel.Excelente    // Trabajo en Equipo
         };
 
+        Console.WriteLine($"CreateStudentCompetencyAssessments: studentId={studentId}, createdByUserId={createdByUserId}");
+        Console.WriteLine($"Professor assignments count: {professorAssignments.Count()}");
+
         int levelIndex = 0;
         foreach (var assignment in professorAssignments)
         {
-            assessments.Add(new StudentCompetencyAssessment
+            var assessment = new StudentCompetencyAssessment
             {
                 ProfessorCompetencyAssignmentId = assignment.Id,
                 StudentId = studentId,
@@ -424,10 +485,14 @@ internal class DbSeeder(ApplicationDbContext dbContext, UserManager<User> userMa
                 CompletedAt = DateTime.UtcNow.AddHours(-1), // Completado hace 1 hora
                 CreatedByUserId = createdByUserId,
                 UpdatedAt = DateTime.UtcNow.AddHours(-1)
-            });
+            };
+            
+            assessments.Add(assessment);
+            Console.WriteLine($"Created assessment for assignment {assignment.Id} with level {competencyLevels[levelIndex % competencyLevels.Length]}");
             levelIndex++;
         }
 
+        Console.WriteLine($"Total assessments created: {assessments.Count}");
         return assessments;
     }
 }

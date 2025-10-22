@@ -1,0 +1,128 @@
+---
+description: "Reglas de arquitectura y buenas prácticas para React 19 con TypeScript"
+globs: ["**/*.tsx", "**/*.ts"]
+alwaysApply: false
+---
+
+# 📘 Instrucciones para Agente de IA – Arquitectura y Buenas Prácticas en React 19
+
+Estas reglas definen la estructura y estándares que debés aplicar o validar al generar componentes, hooks, stores y archivos relacionados en una aplicación de React 19 que utiliza React Query, Zustand y Screaming Architecture.
+
+---
+
+## 🔧 Estructura del Proyecto
+
+Organizá el proyecto por **módulos de dominio** dentro de `src/features/`, nunca por tipo (`components/`, `services/`, etc).
+
+
+## 📊 Reglas de Componentización
+
+Aplicá estas reglas al crear o refactorizar componentes:
+
+| Criterio        | Regla                                                     |
+| --------------- | --------------------------------------------------------- |
+| Responsabilidad | Un solo propósito por componente                          |
+| Tamaño máximo   | 150 líneas por componente, 100 para presentacionales      |
+| Reutilización   | Extraé partes en subcomponentes si se repiten o crecen    |
+| Lógica compleja | Moverla a hooks personalizados en `hooks/`                |
+| Estado          | Usar React Query para datos remotos, Zustand para locales |
+
+---
+
+## 🔏 Límites por Tipo de Archivo
+
+| Tipo                            | Líneas máximas   |
+| ------------------------------- | ---------------- |
+| Componente presentacional       | 50–100           |
+| Componente conectado o complejo | 100–150          |
+| Hook personalizado              | 20–80            |
+| Archivo completo                | Idealmente < 300 |
+
+---
+
+## 🔄 Estado: React Query vs Zustand
+
+### React Query
+
+Usalo para fetching, caching, y mutaciones de datos remotos.
+
+```tsx
+return useQuery(["products"], fetchProducts);
+```
+
+Colocar hooks en `features/<nombre>/hooks/`.
+
+### Zustand
+
+Usalo para manejar estado local persistente o de UI. Cada módulo debe tener su propio store en `store/`.
+
+```ts
+const useProductStore = create((set) => ({
+  selected: null,
+  setSelected: (p) => set({ selected: p }),
+}));
+```
+
+---
+
+## ✅ Buenas Prácticas Vite + React
+
+- **Routing:** Usar React Router con configuración en `routes/`
+- **Build optimization:**
+
+  - Configurar code splitting y lazy loading
+  - Usar React Query para caching y optimistic updates
+  - Implementar lazy loading para rutas con `React.lazy()`
+
+- **Bundling:** Aprovechar Vite para hot reload y build optimizado
+- **Nombres de archivos:** Usar kebab-case para los nombres de los archivos, ejemplo: `use-products.ts`
+- **Nombres de componentes:** Usar PascalCase para los nombres de los componentes, ejemplo: `ListaProductos()`
+
+---
+
+## 🛠️ Carpeta `shared/`
+
+Usá `shared/` solo para elementos **reutilizables entre módulos**:
+
+| Carpeta       | Contenido                                |
+| ------------- | ---------------------------------------- |
+| `components/` | UI genérica (`Button`, `Input`, `Modal`) |
+| `hooks/`      | Hooks `useClickOutside`                  |
+| `utils/`      | Funciones puras reutilizables            |
+| `constants/`  | Enums, valores estáticos, rutas          |
+
+---
+
+## 🛝 Convenciones de Nombres
+
+| Elemento           | Convención                        |
+| ------------------ | --------------------------------- |
+| Componentes        | PascalCase (`InventoryTable.tsx`) |
+| Hooks              | `useNombre.ts`                    |
+| Zustand stores     | `useXStore.ts`                    |
+| Archivos múltiples | Usar barrel (`index.ts`)          |
+
+---
+
+## ✅ Checklist para el Agente
+
+Cuando generes o modifiques código, asegurate de:
+
+- [ ] Cumple la estructura modular y ubicación correcta
+- [ ] Orden correcto de imports
+- [ ] Hooks al principio del componente
+- [ ] Tamaño adecuado (líneas máximas)
+- [ ] Responsabilidad única por componente
+- [ ] Lógica compleja fuera de UI (hooks o stores)
+- [ ] React Query para fetching y mutaciones remotas
+- [ ] Zustand para estado local/UI persistente
+- [ ] Uso correcto de Vite + React: routing con React Router, lazy loading
+- [ ] Uso adecuado de componentes de `shared/`
+- [ ] Nombres respetan convenciones
+- [ ] Código claro, separado lógica/JSX
+- [ ] Usar características de Vite para optimización (assets, code splitting)
+- [ ] Variables de entorno usadas para configuración
+
+---
+
+Este instructivo puede ser modificado o extendido según necesidades del proyecto. Ante cambios estructurales, replicar este criterio para mantener consistencia.

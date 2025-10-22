@@ -3,13 +3,19 @@ using AcadEvalSys.Application.Users.Commands.UnassignUserRole;
 using AcadEvalSys.Application.Users.Queries;
 using AcadEvalSys.Application.Users.Queries.GetCurrentUserInfo;
 using AcadEvalSys.Application.Users.Queries.GetSessionStatus;
+using AcadEvalSys.Application.Users.Queries.GetUsersByRole;
 using AcadEvalSys.Application.Users.Dtos;
+using AcadEvalSys.Application.Users.Commands.CreateAdmin;
+using AcadEvalSys.Application.Users.Commands.UpdateAdmin;
+using AcadEvalSys.Application.Users.Commands.DeleteAdmin;
+using AcadEvalSys.Application.Users.Commands.DeactivateUser;
 using AcadEvalSys.Domain.Constants.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using AcadEvalSys.Infrastructure.Services;
 
 namespace AcadEvalSys.WEB.Server.Controllers;
 
@@ -19,18 +25,18 @@ namespace AcadEvalSys.WEB.Server.Controllers;
 [Route("identity")]
 [Tags("Identity")]
 [ApiController]
-public class IdentityController(IMediator mediator) : ControllerBase
+public class IdentityController(IMediator mediator, ILogoutService logoutService) : ControllerBase
 {
 
     /// <summary>
-    /// Cierra la sesión del usuario actual.
+    /// Cierra la sesión del usuario actual y limpia todas las cookies.
     /// </summary>
     /// <returns>NoContent si se cierra la sesión correctamente.</returns>
     [HttpPost("logout")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Logout()
     {
-        await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+        await logoutService.ExecuteLogoutAsync();
         return NoContent();
     }
 
@@ -91,4 +97,72 @@ public class IdentityController(IMediator mediator) : ControllerBase
         var sessionStatus = await mediator.Send(new GetSessionStatusQuery());
         return Ok(sessionStatus);
     }
+
+        /// <summary>
+        /// Obtiene la lista paginada de usuarios por rol.
+        /// </summary>
+        /// <param name="query">Query con parámetros de filtrado y paginación.</param>
+        [HttpGet("users")]
+        [Authorize(Roles = UserRoles.Admin)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Produces("application/json")]
+        public async Task<IActionResult> GetUsersByRole([FromQuery] GetUsersByRoleQuery query)
+        {
+            var result = await mediator.Send(query);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Crea un usuario con rol Administrador.
+        /// </summary>
+        [HttpPost("admins")]
+        [Authorize(Roles = UserRoles.Admin)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CreateAdmin([FromBody] CreateAdminUserCommand command)
+        {
+            var id = await mediator.Send(command);
+            return Created($"/identity/admins/{id}", new { id });
+        }
+
+        /// <summary>
+        /// Actualiza un usuario administrador.
+        /// </summary>
+        [HttpPut("admins/{id}")]
+        [Authorize(Roles = UserRoles.Admin)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateAdmin(string id, [FromBody] UpdateAdminUserCommand command)
+        {
+            command.Id = id;
+            await mediator.Send(command);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Elimina un usuario administrador.
+        /// </summary>
+        [HttpDelete("admins/{id}")]
+        [Authorize(Roles = UserRoles.Admin)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteAdmin(string id)
+        {
+            var command = new DeleteAdminUserCommand { Id = id };
+            await mediator.Send(command);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Desactiva un usuario (no podrá iniciar sesión).
+        /// </summary>
+        [HttpPost("deactivate-user")]
+        [Authorize(Roles = UserRoles.Admin)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> DeactivateUser([FromBody] DeactivateUserCommand command)
+        {
+            await mediator.Send(command);
+            return NoContent();
+        }
 }

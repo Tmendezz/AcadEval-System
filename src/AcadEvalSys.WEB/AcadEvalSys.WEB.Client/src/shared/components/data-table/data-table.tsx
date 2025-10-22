@@ -52,12 +52,11 @@ export function DataTable<TData, TValue>({
     },
   });
 
-  const handleRowClick = (row: any) => {
+  const handleRowClick = (row: { original: TData }) => {
     if (onRowClick && row.original?.id) {
       onRowClick(row.original.id);
     }
   };
-
   return (
     <div className="space-y-4 w-full">
       <div className="rounded-md border">

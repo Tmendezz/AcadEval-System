@@ -8,6 +8,7 @@ public interface IStudentEvaluationReportRepository
     Task<StudentEvaluationReport?> GetByIdAsync(Guid reportId);
     Task<IEnumerable<StudentEvaluationReport>> GetByStudentIdAsync(string studentId);
     Task<IEnumerable<StudentEvaluationReport>> GetByInstanceIdAsync(Guid evaluationInstanceId);
+    Task<StudentEvaluationReport?> GetByStudentAndInstanceAsync(string studentId, Guid evaluationInstanceId);
     Task UpdateAsync(StudentEvaluationReport report);
     Task DeleteAsync(Guid reportId);
 }

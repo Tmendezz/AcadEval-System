@@ -12,8 +12,7 @@ namespace AcadEvalSys.Application.StudentCompetencyAssessments.Commands.Complete
 public class CompleteStudentAssessmentCommandHandler(ILogger<CompleteStudentAssessmentCommandHandler> logger,
     IMapper mapper,
     IStudentCompetencyAssessmentsRepository studentCompetencyAssessmentRepository,
-    IProfessorCompetencyAssignmentRepository professorCompetencyAssignmentRepository,
-    IStudentReportGenerationService evaluationCompletionService
+    IProfessorCompetencyAssignmentRepository professorCompetencyAssignmentRepository
     ) : IRequestHandler<CompleteStudentAssessmentCommand, Guid>
 {
     public async Task<Guid> Handle(CompleteStudentAssessmentCommand request, CancellationToken cancellationToken)
@@ -36,6 +35,7 @@ public class CompleteStudentAssessmentCommandHandler(ILogger<CompleteStudentAsse
         
         // Actualizar el assessment existente
         existingAssessment.CompetencyLevel = request.CompetencyLevel ?? throw new ArgumentNullException(nameof(request.CompetencyLevel));
+        existingAssessment.Observations = request.Observations;
         existingAssessment.Status = AssessmentStatus.Completed;
         existingAssessment.CompletedAt = DateTime.UtcNow;
         existingAssessment.UpdatedAt = DateTime.UtcNow;

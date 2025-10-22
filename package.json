@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@modelcontextprotocol/server-postgres": "^0.6.2",
+    "react-icons": "^5.5.0"
+  }
+}

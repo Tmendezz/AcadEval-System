@@ -1,12 +1,8 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { navigate } from "wouter/use-browser-location";
 import { Button } from "@/shared/components/ui/button";
 import { StatCard } from "@/shared/components/ui/stat-card";
 import { PlusCircle, FileBarChart, Target, Brain, Code } from "lucide-react";
-import { Competency, Evaluation } from "@/shared/types";
-import { getCompetencies } from "@/shared/services/competency-service";
-import { getEvaluations } from "../services/evaluation-service";
+import { useGetEvaluations, useCompetencies } from "../hooks";
 import {
   PageLayout,
   PageHeader,
@@ -14,22 +10,18 @@ import {
   PageSection,
 } from "@/shared/components/layout/page-layout";
 import { LoadingState } from "@/shared/components/ui/loading-state";
-import { competencyColumns } from "../columns/competency-columns";
-import { columns as evaluationColumns } from "../columns/evaluation-columns";
+import { createCompetencyColumns } from "@/features/competencies/components/competency-columns";
+import { evaluationColumns } from "../components/evaluation-columns";
 import { DataSection } from "@/shared/components/ui/data-section";
+import type { EvaluationListItem } from "@/features/evaluations/services/evaluation-service";
+import type { CompetencyDto as Competency } from "@/features/competencies/services/competency-service";
 
 export default function EvaluationsDashboard() {
   // Queries
   const { data: competencies = [], isLoading: isLoadingCompetencies } =
-    useQuery({
-      queryKey: ["competencies"],
-      queryFn: getCompetencies,
-    });
-
-  const { data: evaluations = [], isLoading: isLoadingEvaluations } = useQuery({
-    queryKey: ["evaluations"],
-    queryFn: getEvaluations,
-  });
+    useCompetencies();
+  const { data: evaluations = [], isLoading: isLoadingEvaluations } =
+    useGetEvaluations();
 
   // Estadísticas
   const evaluationStats = [
@@ -42,9 +34,9 @@ export default function EvaluationsDashboard() {
     {
       key: "evaluationsThisYear",
       label: "Evaluaciones este año",
-      value: evaluations.filter((e: Evaluation) => {
+      value: (evaluations as EvaluationListItem[]).filter((e) => {
         const year = new Date().getFullYear();
-        const evaluationYear = new Date(e.periodFrom).getFullYear();
+        const evaluationYear = new Date((e as any).startDate ?? e.createdAt).getFullYear();
         return evaluationYear === year;
       }).length,
       icon: <Target className="h-4 w-4" />,
@@ -52,15 +44,10 @@ export default function EvaluationsDashboard() {
     {
       key: "totalAssignments",
       label: "Total Asignaciones",
-      value: evaluations.reduce(
-        (sum: number, e: Evaluation) =>
-          sum +
-          e.careerAssignments.reduce(
-            (acc: number, ca) => acc + ca.totalAssignments,
-            0
-          ),
-        0
-      ),
+      value: (evaluations as EvaluationListItem[]).reduce((sum, e) => {
+        const count = (e as any).professorsCount ?? (e as any).assignmentsCount ?? 0;
+        return sum + count;
+      }, 0),
       icon: <Brain className="h-4 w-4" />,
     },
   ];
@@ -170,7 +157,7 @@ export default function EvaluationsDashboard() {
           title="Competencias Recientes"
           description="Últimas competencias creadas"
           data={competencies.slice(0, 5)}
-          columns={competencyColumns}
+          columns={createCompetencyColumns({})}
           isLoading={isLoadingCompetencies}
           emptyMessage="No hay competencias recientes"
           emptyIcon={<Target className="w-8 h-8" />}

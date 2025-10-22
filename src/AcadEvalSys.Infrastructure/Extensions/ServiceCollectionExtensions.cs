@@ -1,3 +1,4 @@
+using AcadEvalSys.Application.Services;
 using AcadEvalSys.Domain.Entities;
 using AcadEvalSys.Domain.Repositories;
 using AcadEvalSys.Infrastructure.Authorization;
@@ -41,9 +42,20 @@ public static class ServiceCollectionExtensions
             }
         });
 
-        // Configurar Storage
-        services.Configure<StorageConfiguration>(configuration.GetSection(StorageConfiguration.Section));
-        services.AddScoped<IStorageService, StorageService>();
+        // Configurar Storage (elige proveedor por clave Storage:Provider)
+        // Bind explícito a las secciones reales en appsettings
+        services.Configure<StorageConfiguration>(configuration.GetSection("BlobStorage"));
+        services.Configure<GoogleDriveStorageConfiguration>(configuration.GetSection("Storage:Google"));
+
+        var storageProvider = configuration.GetValue<string>("Storage:Provider");
+        if (string.Equals(storageProvider, "GoogleDrive", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddScoped<IStorageService, GoogleDriveStorageService>();
+        }
+        else
+        {
+            services.AddScoped<IStorageService, StorageService>();
+        }
         
         // Configurar Reportes
         services.AddScoped<IReportService, PdfReportService>();
@@ -107,12 +119,16 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICompetencyRepository, CompetencyRepository>();
         services.AddScoped<ISubjectRepository, SubjectRepository>();
         services.AddScoped<IProfessorRepository, ProfessorRepository>();
+    services.AddScoped<ICoordinatorRepository, CoordinatorRepository>();
         services.AddScoped<IUserProfileService, UserProfileService>();
         services.AddScoped<ISessionService, SessionService>();
         services.AddScoped<ICompetencyEvaluationInstanceRepository, CompetencyEvaluationInstanceRepository>();
         services.AddScoped<IProfessorCompetencyAssignmentRepository, ProfessorCompetencyAssignmentRepository>();
         services.AddScoped<IStudentRepository, StudentRepository>();
         services.AddScoped<IStudentCompetencyAssessmentsRepository, StudentCompetencyAssessmentsRepository>();
+        services.AddScoped<ISurveyTemplateRepository, SurveyTemplateRepository>();
+        services.AddScoped<IAcademicSurveyRepository, AcademicSurveyRepository>();
+        services.AddScoped<IAcademicSurveyResponseRepository, AcademicSurveyResponseRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         
         // Evaluation Completion
@@ -121,8 +137,18 @@ public static class ServiceCollectionExtensions
         // Student Reports - NUEVO
         services.AddScoped<IStudentEvaluationReportRepository, StudentEvaluationReportRepository>();
         
+        // Enrollment Expiration Service
+        services.AddScoped<IEnrollmentExpirationService, EnrollmentExpirationService>();
+        
+        // Enrollment Expiration Background Service
+        services.AddScoped<EnrollmentExpirationBackgroundService>();
+
+        // HttpContextAccessor y LogoutService para manejo de sesión/cookies
+        services.AddHttpContextAccessor();
+        services.AddScoped<ILogoutService, LogoutService>();
+        
         // Configurar Hangfire con PostgreSQL
-        services.AddHangfireServices(connectionString);
+    services.AddHangfireServices(connectionString!);
         
         return services;
     }

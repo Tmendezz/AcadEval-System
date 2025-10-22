@@ -27,12 +27,11 @@ try
 
     var app = builder.Build();
 
-/*  using (var scope = app.Services.CreateScope())
+    using (var scope = app.Services.CreateScope())
     {
         var seeder = scope.ServiceProvider.GetRequiredService<IDbSeeder>();
         await seeder.Seed();
-    }*/
-    
+    }
     app.UseSerilogRequestLogging();
     app.UseMiddleware<ErrorHandlingMiddleware>();
 
@@ -47,6 +46,9 @@ try
         // Dashboard de Hangfire para monitorear trabajos
         app.UseHangfireDashboard("/hangfire");
     }
+
+    // Configurar jobs automáticos de Hangfire
+    app.UseEnrollmentExpirationJobs();
 
     app.UseHttpsRedirection();
     app.UseDefaultFiles();

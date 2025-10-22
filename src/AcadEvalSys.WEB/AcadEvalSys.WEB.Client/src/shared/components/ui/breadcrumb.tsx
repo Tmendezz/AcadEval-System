@@ -1,6 +1,6 @@
 import { ChevronRight } from "lucide-react";
 import { Link } from "wouter";
-import { cn } from "@/shared/lib/cn";
+import { cn } from "@infrastructure/lib/cn";
 import { useBreadcrumbs } from "@/shared/hooks/use-breadcrumbs";
 
 export function Breadcrumb() {

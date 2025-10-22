@@ -7,52 +7,79 @@ import path from "path";
 import child_process from "child_process";
 import { env } from "process";
 
-// Conditionally generate and use HTTPS certs if not in Docker build
 let httpsConfig = undefined;
 
 if (env.DOCKER_BUILD !== "true") {
-  const baseFolder =
-    env.APPDATA !== undefined && env.APPDATA !== ""
-      ? `${env.APPDATA}/ASP.NET/https`
-      : `${env.HOME}/.aspnet/https`;
-  console.log(baseFolder);
-  const certificateName = "reacttest.client";
-  const certFilePath = path.join(baseFolder, `${certificateName}.pem`);
-  const keyFilePath = path.join(baseFolder, `${certificateName}.key`);
+  try {
+    const baseFolder =
+      env.APPDATA !== undefined && env.APPDATA !== ""
+        ? `${env.APPDATA}/ASP.NET/https`
+        : `${env.HOME}/.aspnet/https`;
+    console.log(`Certificate folder: ${baseFolder}`);
+    
+    const certificateName = "reacttest.client";
+    const certFilePath = path.join(baseFolder, `${certificateName}.pem`);
+    const keyFilePath = path.join(baseFolder, `${certificateName}.key`);
 
-  if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
-    console.log(
-      `Attempting to create certificate... cert: ${certFilePath}, key: ${keyFilePath}`
-    );
-    // Ensure the base folder exists
-    if (!fs.existsSync(baseFolder)) {
-      fs.mkdirSync(baseFolder, { recursive: true });
-    }
+    if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
+      console.log(
+        `Attempting to create certificate... cert: ${certFilePath}, key: ${keyFilePath}`
+      );
+      
+      // Ensure the base folder exists
+      if (!fs.existsSync(baseFolder)) {
+        fs.mkdirSync(baseFolder, { recursive: true });
+      }
 
-    if (
-      0 !==
-      child_process.spawnSync(
-        "dotnet",
-        [
-          "dev-certs",
-          "https",
-          "--export-path",
-          certFilePath,
-          "--format",
-          "Pem",
-          "--no-password",
-        ],
-        { stdio: "inherit" }
-      ).status
-    ) {
-      throw new Error("Could not create certificate.");
+      // Check if dotnet is available
+      const dotnetCheck = child_process.spawnSync("dotnet", ["--version"], { 
+        stdio: "pipe",
+        timeout: 5000 
+      });
+      
+      if (dotnetCheck.status !== 0) {
+        console.warn("dotnet not available, skipping HTTPS certificate creation");
+        httpsConfig = undefined;
+      } else {
+        const certResult = child_process.spawnSync(
+          "dotnet",
+          [
+            "dev-certs",
+            "https",
+            "--export-path",
+            certFilePath,
+            "--format",
+            "Pem",
+            "--no-password",
+          ],
+          { 
+            stdio: "pipe",
+            timeout: 10000 
+          }
+        );
+        
+        if (certResult.status !== 0) {
+          console.warn(`Certificate creation failed: ${certResult.stderr?.toString()}`);
+          console.warn("Continuing without HTTPS certificate");
+          httpsConfig = undefined;
+        } else {
+          httpsConfig = {
+            key: fs.readFileSync(keyFilePath),
+            cert: fs.readFileSync(certFilePath),
+          };
+        }
+      }
+    } else {
+      httpsConfig = {
+        key: fs.readFileSync(keyFilePath),
+        cert: fs.readFileSync(certFilePath),
+      };
     }
+  } catch (error) {
+    console.warn(`HTTPS configuration error: ${error}`);
+    console.warn("Continuing without HTTPS certificate");
+    httpsConfig = undefined;
   }
-
-  httpsConfig = {
-    key: fs.readFileSync(keyFilePath),
-    cert: fs.readFileSync(certFilePath),
-  };
 }
 
 // Configura la URL del API basada en variables de entorno o usa valores predeterminados
@@ -69,6 +96,9 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@features": path.resolve(__dirname, "./src/features"),
+      "@shared": path.resolve(__dirname, "./src/shared"),
+      "@infrastructure": path.resolve(__dirname, "./src/infrastructure"),
     },
   },
   server: {

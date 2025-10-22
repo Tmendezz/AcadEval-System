@@ -1,45 +1,59 @@
-import { api } from "@/shared/config/axios";
-import { Professor } from "@/shared/types";
+import { api } from "@/infrastructure/query/axios";
+import { userManagementService } from "./user-management-service";
 
-const PROFESSORS_API_URL = "/professors";
+export interface ProfessorDto {
+  userId: string;
+  name: string;
+  email: string;
+  phone?: string;
+  subjects: Array<{ id: string; name: string; }>;
+}
+
+export interface PagedProfessorResult {
+  items: ProfessorDto[];
+  totalPages: number;
+  totalItems: number;
+  currentPage: number;
+  pageSize: number;
+}
 
 export const professorService = {
-  async getAll(
-    pageNumber = 1,
-    pageSize = 50,
-    searchTerm?: string,
-    technicalCareerId?: string
-  ): Promise<{ professors: Professor[]; totalCount: number }> {
-    const params = new URLSearchParams({
-      pageNumber: pageNumber.toString(),
-      pageSize: pageSize.toString(),
-    });
-
-    if (searchTerm) params.append("searchTerm", searchTerm);
-    if (technicalCareerId)
-      params.append("technicalCareerId", technicalCareerId);
-
-    const { data } = await api.get<{
-      professors: Professor[];
-      totalCount: number;
-    }>(`${PROFESSORS_API_URL}?${params}`);
-    return data;
+  async getAll(params?: { pageNumber?: number; pageSize?: number; searchTerm?: string; technicalCareerId?: string }) {
+    console.log('🔍 Professor Service - Making request to /professors with params:', params);
+    const { data } = await api.get("/professors", { params });
+    console.log('🔍 Professor Service - Response data:', data);
+    return data as PagedProfessorResult;
   },
 
-  async getById(id: string): Promise<Professor> {
-    const { data } = await api.get<Professor>(`${PROFESSORS_API_URL}/${id}`);
-    return data;
+  async create(body: { name: string; email: string; password: string; phone?: string }) {
+    const { data } = await api.post<{ id: string }>("/professors", body);
+    return data.id;
   },
 
-  async getAvailableProfessors(
-    technicalCareerId?: string
-  ): Promise<Professor[]> {
-    const params = technicalCareerId
-      ? `?technicalCareerId=${technicalCareerId}`
-      : "";
-    const { data } = await api.get<Professor[]>(
-      `${PROFESSORS_API_URL}/available${params}`
-    );
-    return data;
+  async update(id: string, body: { name?: string; email?: string; password?: string; phone?: string }) {
+    await api.put(`/professors/${id}`, body);
+    return id;
+  },
+
+  async delete(id: string) {
+    const { data } = await api.delete(`/professors/${id}`);
+    return data as { success: boolean; hasAssignments?: boolean; assignedSubjects?: Array<{ id: string; name: string; careerName: string; year: number }>; message?: string };
+  },
+
+  /**
+   * Cambia la contraseña de un profesor
+   * @deprecated Usar userManagementService.changePassword directamente
+   */
+  async changePassword(userId: string, newPassword: string) {
+    return userManagementService.changePassword(userId, newPassword);
+  },
+
+  /**
+   * Genera una contraseña temporal para un profesor
+   */
+  async generateTemporaryPassword(userId: string) {
+    return userManagementService.generateTemporaryPassword(userId);
   },
 };
+
+

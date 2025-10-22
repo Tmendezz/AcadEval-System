@@ -1,7 +1,8 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useLoginMutation } from "@/shared/auth/hooks/use-login-mutation";
+import { useLogin } from "@/features/auth/hooks/use-login";
+import { useAuthStore } from "@/features/auth/store";
 import { Link } from "wouter";
 import { AuthButton } from "./auth-button";
 import { Form, FormField, FormMessage } from "@/shared/components/ui/form";
@@ -9,7 +10,6 @@ import { FormItem } from "@/shared/components/ui/form";
 import { FormLabel } from "@/shared/components/ui/form";
 import { FormControl } from "@/shared/components/ui/form";
 import { Input } from "@/shared/components/ui/input";
-import { getErrorMessage } from "@/shared/lib/error-handler";
 
 const loginSchema = z.object({
   email: z.string().email("Ingrese un correo académico válido"),
@@ -29,21 +29,14 @@ export const LoginForm = () => {
 
   const { handleSubmit, control } = form;
 
-  const {
-    mutate: login,
-    isPending: isLoading,
-    error: loginError,
-  } = useLoginMutation();
-
+  const { login, isLoading } = useLogin();
+  const { error: storeError } = useAuthStore();
+  
   const onSubmit = async (data: LoginFormData) => {
-    try {
-      await login({
-        email: data.email,
-        password: data.password,
-      });
-    } catch (error) {
-      console.error("Error en submit:", error);
-    }
+    await login({
+      email: data.email,
+      password: data.password,
+    });
   };
 
   return (
@@ -93,9 +86,9 @@ export const LoginForm = () => {
           )}
         />
 
-        {loginError && (
+        {storeError && (
           <div className="text-red-700 text-sm text-center p-3 bg-red-50 border border-red-200 rounded-lg">
-            {getErrorMessage(loginError)}
+            {storeError}
           </div>
         )}
 

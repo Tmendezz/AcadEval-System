@@ -2,9 +2,9 @@ using MediatR;
 
 namespace AcadEvalSys.Application.Reports.Queries.GetReportDownloadUrl;
 
-public class GetReportDownloadUrlQuery : IRequest<GetReportDownloadUrlDto>
+public class GetReportDownloadUrlQuery(Guid reportId) : IRequest<GetReportDownloadUrlDto>
 {
-    public Guid ReportId { get; set; }
+    public Guid ReportId { get; set; } = reportId;
 }
 
 public class GetReportDownloadUrlDto

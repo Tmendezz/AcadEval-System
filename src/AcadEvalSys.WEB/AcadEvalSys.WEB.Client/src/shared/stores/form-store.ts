@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 interface FormData {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface FormState {
@@ -11,12 +11,12 @@ interface FormState {
   careerForm: FormData;
 
   updateForm: (formType: string, data: FormData) => void;
-  setFormField: (formType: string, field: string, value: any) => void;
+  setFormField: (formType: string, field: string, value: unknown) => void;
   clearForm: (formType: string) => void;
   clearAllForms: () => void;
 }
 
-export const useFormStore = create<FormState>((set, get) => ({
+export const useFormStore = create<FormState>((set) => ({
   evaluationForm: {},
   competencyForm: {},
   subjectForm: {},
@@ -27,7 +27,7 @@ export const useFormStore = create<FormState>((set, get) => ({
       [formType]: { ...state[formType as keyof FormState], ...data },
     })),
 
-  setFormField: (formType: string, field: string, value: any) =>
+  setFormField: (formType: string, field: string, value: unknown) =>
     set((state) => ({
       [formType]: {
         ...state[formType as keyof FormState],
@@ -36,7 +36,7 @@ export const useFormStore = create<FormState>((set, get) => ({
     })),
 
   clearForm: (formType: string) =>
-    set((state) => ({
+    set(() => ({
       [formType]: {},
     })),
 

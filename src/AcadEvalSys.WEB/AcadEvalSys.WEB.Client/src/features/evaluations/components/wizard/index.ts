@@ -1,7 +1,7 @@
 export { EvaluationWizard } from "./evaluation-wizard";
-export { WizardStepIndicator } from "./wizard-step-indicator";
-export { WizardStepTitle } from "./wizard-step-title";
-export { WizardNavigation } from "./wizard-navigation";
+export { WizardStepIndicator } from "@/shared/components/wizard/WizardStepIndicator";
+export { WizardStepTitle } from "@/shared/components/wizard/WizardStepTitle";
+export { WizardNavigation } from "@/shared/components/wizard/WizardNavigation";
 export { BasicInfoStep } from "./steps/basic-info-step";
 export { CompetencyAssignmentsStep } from "./steps/competency-assignments-step";
 export { CareerCompetencyAssignmentsStep } from "./steps/career-competency-assignments-step";

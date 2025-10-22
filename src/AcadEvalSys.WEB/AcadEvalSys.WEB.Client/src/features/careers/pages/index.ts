@@ -1,3 +1,2 @@
-// Páginas del módulo de careers
-export { default as SubjectsPage } from "./subjects-page";
-export { default as SubjectDetailPage } from "./subject-detail-page";
+export { CareerDetail } from "./CareerDetail";
+export { SubjectDetail } from "./SubjectDetail";

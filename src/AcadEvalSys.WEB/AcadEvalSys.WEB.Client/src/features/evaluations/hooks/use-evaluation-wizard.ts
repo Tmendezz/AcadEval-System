@@ -5,7 +5,7 @@ import {
   evaluationFormSchema,
   EvaluationFormSchema,
 } from "../schemas/evaluation-form";
-import { Assignment } from "../types/evaluation-form";
+import { Assignment } from "../models/evaluation-form";
 import { WIZARD_STEPS } from "../constants/wizard-steps";
 
 export function useEvaluationWizard() {
@@ -25,7 +25,7 @@ export function useEvaluationWizard() {
   });
 
   const {
-    handleSubmit,
+    handleSubmit: _handleSubmit,
     setValue,
     watch,
     formState: { errors },
@@ -33,14 +33,32 @@ export function useEvaluationWizard() {
   const watchedValues = watch();
 
   const nextStep = () => {
+    console.log("useEvaluationWizard - nextStep llamado:", {
+      currentStep,
+      totalSteps: WIZARD_STEPS.length,
+      canProceed: canProceed(),
+    });
+
     if (currentStep < WIZARD_STEPS.length) {
-      setCurrentStep(currentStep + 1);
+      const newStep = currentStep + 1;
+      console.log("useEvaluationWizard - Cambiando al paso:", newStep);
+      setCurrentStep(newStep);
+    } else {
+      console.log("useEvaluationWizard - Ya estamos en el último paso");
     }
   };
 
   const prevStep = () => {
+    console.log("useEvaluationWizard - prevStep llamado:", {
+      currentStep,
+    });
+
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+      const newStep = currentStep - 1;
+      console.log("useEvaluationWizard - Cambiando al paso:", newStep);
+      setCurrentStep(newStep);
+    } else {
+      console.log("useEvaluationWizard - Ya estamos en el primer paso");
     }
   };
 
@@ -51,6 +69,7 @@ export function useEvaluationWizard() {
   };
 
   const updateAssignments = (newAssignments: Assignment[]) => {
+    console.log("Assignments actualizados:", newAssignments);
     setAssignments(newAssignments);
     // Convertir las asignaciones al formato esperado por el backend
     const backendAssignments = newAssignments.map(
@@ -59,21 +78,34 @@ export function useEvaluationWizard() {
         subjectId,
       })
     );
+    console.log("Formato backend:", backendAssignments);
     setValue("competencyAssignments", backendAssignments);
   };
 
   const canProceed = (): boolean => {
     switch (currentStep) {
       case 1:
-        return !!(
+        // Verificar que todos los campos estén llenos
+        const hasAllFields = !!(
           watchedValues.title &&
           watchedValues.description &&
           watchedValues.semester &&
           watchedValues.periodFrom &&
-          watchedValues.periodTo &&
-          !errors.title &&
-          !errors.description
+          watchedValues.periodTo
         );
+        
+        // Verificar que no haya errores de validación
+        const hasNoErrors = !errors.title && !errors.description && !errors.periodFrom && !errors.periodTo;
+        
+        // Verificar que la fecha de fin sea posterior a la de inicio
+        let datesValid = true;
+        if (watchedValues.periodFrom && watchedValues.periodTo) {
+          const from = new Date(watchedValues.periodFrom);
+          const to = new Date(watchedValues.periodTo);
+          datesValid = to > from;
+        }
+        
+        return hasAllFields && hasNoErrors && datesValid;
       case 2:
         return !!(
           assignments.length > 0 &&
@@ -87,15 +119,27 @@ export function useEvaluationWizard() {
   const isStepCompleted = (step: number): boolean => {
     switch (step) {
       case 1:
-        return !!(
+        // Verificar que todos los campos estén llenos
+        const hasAllFields = !!(
           watchedValues.title &&
           watchedValues.description &&
           watchedValues.semester &&
           watchedValues.periodFrom &&
-          watchedValues.periodTo &&
-          !errors.title &&
-          !errors.description
+          watchedValues.periodTo
         );
+        
+        // Verificar que no haya errores de validación
+        const hasNoErrors = !errors.title && !errors.description && !errors.periodFrom && !errors.periodTo;
+        
+        // Verificar que la fecha de fin sea posterior a la de inicio
+        let datesValid = true;
+        if (watchedValues.periodFrom && watchedValues.periodTo) {
+          const from = new Date(watchedValues.periodFrom);
+          const to = new Date(watchedValues.periodTo);
+          datesValid = to > from;
+        }
+        
+        return hasAllFields && hasNoErrors && datesValid;
       case 2:
         return !!(
           assignments.length > 0 &&

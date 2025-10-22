@@ -18,7 +18,7 @@ public class GetStudentAssessmentByAssignmentQueryHandler(
             request.StudentId, request.AssignmentId);
 
         var assessment = await studentCompetencyAssessmentRepository
-            .GetByStudentAndInstanceAsync(request.StudentId, request.AssignmentId);
+            .GetByStudentAndAssignmentAsync(request.StudentId, request.AssignmentId);
 
         if (assessment == null)
         {

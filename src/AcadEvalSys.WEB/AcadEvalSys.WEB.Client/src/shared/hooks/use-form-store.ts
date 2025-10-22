@@ -12,12 +12,12 @@ export const useFormStoreHook = () => {
     clearAllForms,
   } = useFormStore();
 
-  const updateEvaluationForm = (data: any) =>
+  const updateEvaluationForm = (data: unknown) =>
     updateForm("evaluationForm", data);
-  const updateCompetencyForm = (data: any) =>
+  const updateCompetencyForm = (data: unknown) =>
     updateForm("competencyForm", data);
-  const updateSubjectForm = (data: any) => updateForm("subjectForm", data);
-  const updateCareerForm = (data: any) => updateForm("careerForm", data);
+  const updateSubjectForm = (data: unknown) => updateForm("subjectForm", data);
+  const updateCareerForm = (data: unknown) => updateForm("careerForm", data);
 
   const clearEvaluationForm = () => clearForm("evaluationForm");
   const clearCompetencyForm = () => clearForm("competencyForm");

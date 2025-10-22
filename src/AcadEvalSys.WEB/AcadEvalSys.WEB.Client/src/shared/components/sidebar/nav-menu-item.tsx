@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link } from "wouter";
-import { cn } from "@/shared/lib/cn";
+// import { cn } from "@infrastructure/lib/cn";
 import { NavItem } from "@/shared/types";
 import {
   SidebarMenuItem,

@@ -68,7 +68,7 @@ public class StudentSummaryReportData
 public class CompetencyReportDto
 {
     public string Name { get; set; } = string.Empty;
-    public CompetencyLevel CompetencyLevel { get; set; }
+    public CompetencyLevel? CompetencyLevel { get; set; }
     public string Subject { get; set; } = string.Empty;
     public string Professor { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;

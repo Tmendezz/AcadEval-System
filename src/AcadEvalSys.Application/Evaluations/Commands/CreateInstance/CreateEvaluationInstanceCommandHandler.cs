@@ -41,27 +41,41 @@ public class CreateEvaluationInstanceCommandHandler(
         logger.LogInformation("CompetencyEvaluationInstance created with ID: {Id}", competencyEvaluationInstanceId);
 
         // Crear las asignaciones de competencias a profesores
-        var professorAssignments = new List<ProfessorCompetencyAssignment>();
+        // ORDENAR POR AÑO DESCENDENTE para crear primero las del año superior
+        var professorAssignments = new List<(ProfessorCompetencyAssignment Assignment, Subject Subject)>();
 
         foreach (var assignment in request.CompetencyAssignments)
         {
+            // Obtener la información del Subject para establecer los campos faltantes
+            var subject = await subjectRepository.GetSubjectByIdAsync(assignment.SubjectId);
+            if (subject == null)
+            {
+                throw new NotFoundException(nameof(Subject), assignment.SubjectId.ToString());
+            }
+
             var professorAssignment = mapper.Map<ProfessorCompetencyAssignment>(assignment);
             professorAssignment.CompetencyEvaluationInstanceId = competencyEvaluationInstanceId;
-
-            professorAssignments.Add(professorAssignment);
+            
+            professorAssignments.Add((professorAssignment, subject));
         }
 
         if (professorAssignments.Any())
         {
-            // Usar el repositorio que genera automáticamente los StudentCompetencyAssessments
-            foreach (var assignment in professorAssignments)
+            // IMPORTANTE: Ordenar por año DESCENDENTE (3º, 2º, 1º)
+            // Así los assessments del año superior se crean primero
+            var orderedAssignments = professorAssignments
+                .OrderByDescending(x => (int)x.Subject.Year)
+                .ToList();
+
+            foreach (var (assignment, subject) in orderedAssignments)
             {
                 assignment.CreatedAt = DateTime.UtcNow;
                 assignment.CreatedByUserId = user.Id;
-                // Usar el método que genera automáticamente los StudentCompetencyAssessments
+                // El repositorio ahora verificará si ya existe un assessment para cada estudiante/competencia
                 await professorCompetencyAssignmentRepository.CreateAsync(assignment);
             }
-            logger.LogInformation("Created {Count} professor competency assignments with automatic student assessments", professorAssignments.Count);
+            
+            logger.LogInformation("Created {Count} professor competency assignments with automatic student assessments (ordered by year)", professorAssignments.Count);
         }
 
         return competencyEvaluationInstanceId;
@@ -92,4 +106,5 @@ public class CreateEvaluationInstanceCommandHandler(
             }
         }
     }
+
 }

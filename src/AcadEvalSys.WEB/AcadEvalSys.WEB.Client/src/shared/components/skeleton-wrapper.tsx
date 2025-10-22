@@ -1,19 +1,34 @@
 import { ReactNode } from "react";
-import { Skeleton } from "./ui/skeleton";
+import { 
+  ListSkeleton, 
+  CardGridSkeleton, 
+  TableSkeleton, 
+  FormSkeleton,
+  DetailSkeleton,
+  CardSkeleton,
+  StatsSkeleton,
+  TextSkeleton
+} from "./ui/skeletons";
 
 interface SkeletonWrapperProps {
   children: ReactNode;
   isLoading: boolean;
   fallback?: ReactNode;
-  variant?: "default" | "grid" | "list";
+  variant?: "list" | "grid" | "table" | "form" | "detail" | "card" | "stats" | "text";
+  count?: number;
   className?: string;
 }
 
+/**
+ * Wrapper que muestra un skeleton mientras está cargando
+ * y el contenido real cuando termina de cargar
+ */
 export function SkeletonWrapper({
   children,
   isLoading,
   fallback,
-  variant = "default",
+  variant = "list",
+  count,
   className,
 }: SkeletonWrapperProps) {
   if (isLoading) {
@@ -23,33 +38,31 @@ export function SkeletonWrapper({
 
     switch (variant) {
       case "grid":
-        return (
-          <div
-            className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ${
-              className || ""
-            }`}
-          >
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-48 w-full rounded-lg" />
-            ))}
-          </div>
-        );
-
+        return <div className={className}><CardGridSkeleton count={count} /></div>;
+      
       case "list":
-        return (
-          <div className={`space-y-3 ${className || ""}`}>
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full" />
-            ))}
-          </div>
-        );
-
+        return <div className={className}><ListSkeleton count={count} /></div>;
+      
+      case "table":
+        return <div className={className}><TableSkeleton rows={count} /></div>;
+      
+      case "form":
+        return <div className={className}><FormSkeleton fields={count} /></div>;
+      
+      case "detail":
+        return <div className={className}><DetailSkeleton /></div>;
+      
+      case "card":
+        return <div className={className}><CardSkeleton /></div>;
+      
+      case "stats":
+        return <div className={className}><StatsSkeleton count={count} /></div>;
+      
+      case "text":
+        return <div className={className}><TextSkeleton lines={count} /></div>;
+      
       default:
-        return (
-          <div className={className}>
-            <Skeleton className="h-32 w-full" />
-          </div>
-        );
+        return <div className={className}><ListSkeleton count={count} /></div>;
     }
   }
 

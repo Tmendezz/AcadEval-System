@@ -9,7 +9,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
+import { Alert, AlertDescription } from "@/shared/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 import { EvaluationFormSchema } from "../../../schemas/evaluation-form";
+import { useMemo } from "react";
 
 interface BasicInfoStepProps {
   form: UseFormReturn<EvaluationFormSchema>;
@@ -23,6 +26,18 @@ export function BasicInfoStep({ form }: BasicInfoStepProps) {
     formState: { errors },
   } = form;
   const watchedValues = watch();
+
+  // Validar fechas en tiempo real
+  const dateError = useMemo(() => {
+    if (watchedValues.periodFrom && watchedValues.periodTo) {
+      const from = new Date(watchedValues.periodFrom);
+      const to = new Date(watchedValues.periodTo);
+      if (to <= from) {
+        return "La fecha de fin debe ser posterior a la fecha de inicio";
+      }
+    }
+    return null;
+  }, [watchedValues.periodFrom, watchedValues.periodTo]);
 
   return (
     <div className="space-y-6">
@@ -78,7 +93,7 @@ export function BasicInfoStep({ form }: BasicInfoStepProps) {
             id="periodFrom"
             type="date"
             {...register("periodFrom")}
-            className={errors.periodFrom ? "border-red-500" : ""}
+            className={errors.periodFrom || dateError ? "border-red-500" : ""}
           />
           {errors.periodFrom && (
             <p className="text-sm text-red-500">{errors.periodFrom.message}</p>
@@ -91,13 +106,20 @@ export function BasicInfoStep({ form }: BasicInfoStepProps) {
             id="periodTo"
             type="date"
             {...register("periodTo")}
-            className={errors.periodTo ? "border-red-500" : ""}
+            className={errors.periodTo || dateError ? "border-red-500" : ""}
           />
           {errors.periodTo && (
             <p className="text-sm text-red-500">{errors.periodTo.message}</p>
           )}
         </div>
       </div>
+
+      {dateError && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{dateError}</AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 }

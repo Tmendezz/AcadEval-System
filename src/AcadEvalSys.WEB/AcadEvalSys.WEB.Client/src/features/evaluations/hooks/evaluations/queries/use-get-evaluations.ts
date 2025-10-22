@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getEvaluations } from "../../../services/evaluation-service";
+import { getEvaluations } from "@/features/evaluations/services";
 
 export const evaluationsKeys = {
   all: ["evaluations"] as const,
