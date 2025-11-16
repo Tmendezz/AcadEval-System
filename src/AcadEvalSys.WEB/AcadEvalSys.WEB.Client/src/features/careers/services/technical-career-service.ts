@@ -32,11 +32,19 @@ export const technicalCareerService = {
   },
 
   async create(career: CreateTechnicalCareerRequest): Promise<string> {
-    const { data } = await api.post<{ id: string }>(
-      TECHNICAL_CAREERS_API_URL,
-      career
-    );
-    return data.id;
+    try {
+      const { data } = await api.post<{ id: string }>(
+        TECHNICAL_CAREERS_API_URL,
+        career
+      );
+      return data.id;
+    } catch (error: any) {
+      // Si el servidor responde 201, consideramos que es un éxito
+      if (error.response?.status === 201) {
+        return error.response.data?.id || '';
+      }
+      throw error;
+    }
   },
 
   async update(
