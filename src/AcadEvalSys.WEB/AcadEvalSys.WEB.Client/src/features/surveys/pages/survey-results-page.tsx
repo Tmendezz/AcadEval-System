@@ -7,6 +7,7 @@ import { Badge } from '@/shared/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { Progress } from '@/shared/components/ui/progress';
+import { toast } from 'sonner';
 import { 
   ArrowLeft, 
   BarChart3, 
@@ -18,7 +19,6 @@ import {
   PieChart
 } from 'lucide-react';
 import { useSurvey, useSurveyResponses } from '../hooks/use-surveys';
-import { SurveyResponsesOverviewDto, SurveyUserResponseDto, SurveyAnswerDto } from '../services/survey-service';
 import { PageLoader } from '@/shared/components/ui/page-loader';
 
 interface QuestionStatistics {
@@ -129,12 +129,12 @@ export default function SurveyResultsPage() {
 
   const handleExportPDF = () => {
     // TODO: Implementar exportación a PDF
-    console.log('Exportar a PDF');
+    toast.info("Funcionalidad de exportación a PDF próximamente disponible");
   };
 
   const handleExportExcel = () => {
     // TODO: Implementar exportación a Excel
-    console.log('Exportar a Excel');
+    toast.info("Funcionalidad de exportación a Excel próximamente disponible");
   };
 
   return (

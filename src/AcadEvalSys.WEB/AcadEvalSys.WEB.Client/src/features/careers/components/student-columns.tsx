@@ -37,19 +37,16 @@ export const studentColumns: ColumnDef<EnrolledStudent>[] = [
 			const handleEdit = (e: React.MouseEvent) => {
 				e.stopPropagation();
 				// TODO: Implementar lógica de edición
-				console.log("Editar estudiante:", row.original.studentId);
 			};
 
 			const handleDelete = (e: React.MouseEvent) => {
 				e.stopPropagation();
 				// TODO: Implementar lógica de eliminación
-				console.log("Eliminar estudiante:", row.original.studentId);
 			};
 
 			const handleView = (e: React.MouseEvent) => {
 				e.stopPropagation();
 				// TODO: Implementar lógica de ver detalle
-				console.log("Ver detalle estudiante:", row.original.studentId);
 			};
 
 			return (

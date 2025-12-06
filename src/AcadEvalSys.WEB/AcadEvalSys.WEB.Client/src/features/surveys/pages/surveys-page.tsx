@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useLocation } from 'wouter';
 import { Button } from '@/shared/components/ui/button';
 import { Plus } from 'lucide-react';
@@ -11,7 +11,6 @@ import { SurveyStatus } from '../models/survey-types';
 import { useSurveysStore } from '../store/use-surveys-store';
 import { SurveyListItem } from '../services/survey-service';
 import { createSurveyColumns } from '../components/columns/survey-columns';
-import { toast } from 'sonner';
 import { DataSection } from '@/shared/components/ui/data-section';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@radix-ui/react-dialog';
 import { DialogFooter, DialogHeader } from '@/shared/components/ui/dialog';
@@ -28,48 +27,57 @@ export default function SurveysPage() {
   
   const [surveyToDelete, setSurveyToDelete] = useState<SurveyListItem | null>(null);
 
-  const handleEditSurvey = (survey: SurveyListItem) => {
+  const handleEditSurvey = useCallback((survey: SurveyListItem) => {
     setLocation(`/encuestas/editar/${survey.id}`);
-  };
+  }, [setLocation]);
 
-  const handleViewProgress = (survey: SurveyListItem) => {
+  const handleViewProgress = useCallback((survey: SurveyListItem) => {
     setLocation(`/encuestas/progreso/${survey.id}`);
-  };
+  }, [setLocation]);
 
-  const handleViewResults = (survey: SurveyListItem) => {
+  const handleViewResults = useCallback((survey: SurveyListItem) => {
     setLocation(`/encuestas/resultados/${survey.id}`);
-  };
+  }, [setLocation]);
 
-  const handleDeleteSurvey = (survey: SurveyListItem) => {
+  const handleDeleteSurvey = useCallback((survey: SurveyListItem) => {
     setSurveyToDelete(survey);
-  };
+  }, []);
 
-  const confirmDeleteSurvey = async () => {
+  const confirmDeleteSurvey = useCallback(async () => {
     if (!surveyToDelete) return;
 
     try {
       await deleteSurveyMutation.mutateAsync(surveyToDelete.id);
-      toast.success("Encuesta eliminada exitosamente");
       setSurveyToDelete(null);
-    } catch (error) {
-      toast.error("Error al eliminar la encuesta");
-      console.error("Error deleting survey:", error);
+    } catch {
+      // Silently handle delete errors
     }
-  };
+  }, [surveyToDelete, deleteSurveyMutation]);
 
-  const handleCreateSurvey = () => {
+  const handleCreateSurvey = useCallback(() => {
     // Limpiar cualquier template previamente seleccionada antes de navegar
     const { clearCreateState } = useSurveysStore.getState();
     clearCreateState();
     setLocation('/encuestas/crear');
-  };
+  }, [setLocation]);
 
-  const columns = createSurveyColumns({
-    onEdit: handleEditSurvey,
-    onViewProgress: handleViewProgress,
-    onViewResults: handleViewResults,
-    onDelete: handleDeleteSurvey,
-  });
+  const handleRowClick = useCallback((id: string) => {
+    const survey = surveys.find((s) => s.id === id);
+    if (survey) {
+      handleViewProgress(survey);
+    }
+  }, [surveys, handleViewProgress]);
+
+  const columns = useMemo(
+    () =>
+      createSurveyColumns({
+        onEdit: handleEditSurvey,
+        onViewProgress: handleViewProgress,
+        onViewResults: handleViewResults,
+        onDelete: handleDeleteSurvey,
+      }),
+    [handleEditSurvey, handleViewProgress, handleViewResults, handleDeleteSurvey]
+  );
 
   return (
     <PageLayout>
@@ -90,12 +98,7 @@ export default function SurveysPage() {
           emptyMessage="No se encontraron encuestas"
           emptyIcon="FileBarChart"
           className="py-6"
-          onRowClick={(id: string) => {
-            const survey = surveys.find((s) => s.id === id);
-            if (survey) {
-              handleViewProgress(survey);
-            }
-          }}
+          onRowClick={handleRowClick}
         />
       </PageContent>
 

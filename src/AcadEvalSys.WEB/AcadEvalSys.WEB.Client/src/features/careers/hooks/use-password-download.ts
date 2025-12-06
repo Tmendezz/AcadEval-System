@@ -1,4 +1,5 @@
 import { ImportStudentsResult } from "../types";
+import { toast } from "sonner";
 
 export function usePasswordDownload() {
   const downloadPasswordsCSV = (
@@ -21,6 +22,7 @@ export function usePasswordDownload() {
     }.csv`;
     a.click();
     URL.revokeObjectURL(url);
+    toast.success("Archivo CSV descargado exitosamente");
   };
 
   return {

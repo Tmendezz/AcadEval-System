@@ -1,12 +1,11 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { surveyService } from '../services/survey-service';
-import { userSurveysService, UserSurveyDto, UserSurveyFilters } from '../services/user-surveys-service';
+import { userSurveysService, UserSurveyFilters } from '../services/user-surveys-service';
 import { CreateAcademicSurveyRequest, SurveyFilters } from '../models/survey-types';
 import { api } from '@/infrastructure/query/axios';
 import {
   createQueryKeys,
   useOptimisticMutation,
-  useStaleQuery,
   useEntityQuery,
 } from '@/shared/lib/query-utils';
 
@@ -49,7 +48,10 @@ export function useSurvey(id: string) {
 
 export function useCreateSurvey() {
   return useOptimisticMutation<string, CreateAcademicSurveyRequest>({
-    mutationFn: surveyService.createSurvey,
+    mutationFn: async (survey) => {
+      const result = await surveyService.createSurvey(survey);
+      return result.id;
+    },
     messages: {
       success: 'Encuesta creada exitosamente',
       error: 'Error al crear la encuesta',
@@ -89,7 +91,10 @@ export function useDeleteSurvey() {
 
 export function useDuplicateSurvey() {
   return useOptimisticMutation<string, { id: string; newTitle: string }>({
-    mutationFn: ({ id, newTitle }) => surveyService.duplicateSurvey(id, newTitle),
+    mutationFn: async ({ id, newTitle }) => {
+      const result = await surveyService.duplicateSurvey(id, newTitle);
+      return result.id;
+    },
     messages: {
       success: 'Encuesta duplicada exitosamente',
       error: 'Error al duplicar la encuesta',
@@ -134,7 +139,9 @@ export function useArchiveSurvey() {
   const queryClient = useQueryClient();
 
   return useOptimisticMutation<void, string>({
-    mutationFn: surveyService.archiveSurvey,
+    mutationFn: async (id) => {
+      await surveyService.archiveSurvey(id);
+    },
     messages: {
       success: 'Encuesta archivada exitosamente',
       error: 'Error al archivar la encuesta',
@@ -207,7 +214,7 @@ export function useAudienceResponses(
  */
 export function useUserSurveys(filters?: UserSurveyFilters) {
   return useQuery({
-    queryKey: userSurveysKeys.list(filters),
+    queryKey: userSurveysKeys.list(filters as Record<string, unknown>),
     queryFn: () => userSurveysService.getMySurveys(filters),
     staleTime: 2 * 60 * 1000, // 2 minutos
     gcTime: 10 * 60 * 1000, // 10 minutos
@@ -255,30 +262,29 @@ export function useSurveyForResponse(surveyId: string, readOnly: boolean = false
  * Hook para enviar respuestas de una encuesta
  */
 export function useSubmitSurveyResponse() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ 
-      surveyId,
-      surveySubjectId,
-      subjectAnswers
-    }: { 
+  return useOptimisticMutation<
+    void,
+    {
       surveyId: string;
       surveySubjectId: string;
-      subjectAnswers: Array<{ questionId: string; selectedValue?: number; text?: string; }>; 
-    }) => {
-      return userSurveysService.submitSurveyResponse(surveyId, { surveySubjectId, subjectAnswers });
+      subjectAnswers: Array<{ questionId: string; selectedValue?: number; text?: string }>;
+    }
+  >({
+    mutationFn: ({ surveyId, surveySubjectId, subjectAnswers }) =>
+      userSurveysService.submitSurveyResponse(surveyId, { surveySubjectId, subjectAnswers }),
+    messages: {
+      success: 'Respuesta enviada exitosamente',
+      error: 'Error al enviar la respuesta',
     },
-    onSuccess: (_, { surveyId }) => {
-      // Invalidar queries relacionadas
-      queryClient.invalidateQueries({ queryKey: userSurveysKeys.all });
-      queryClient.invalidateQueries({ 
-        queryKey: [...userSurveysKeys.all, 'survey-for-response', surveyId] 
+    invalidateKeys: [userSurveysKeys.all],
+    onSuccessCallback: async (_, { surveyId }) => {
+      const { useQueryClient } = await import('@tanstack/react-query');
+      const queryClient = useQueryClient();
+      await queryClient.invalidateQueries({
+        queryKey: [...userSurveysKeys.all, 'survey-for-response', surveyId],
       });
     },
-    onError: (error) => {
-      console.error('Error al enviar respuesta de encuesta:', error);
-    }
+    showSuccessToast: false, // Silencioso para permitir lógica custom
   });
 }
 

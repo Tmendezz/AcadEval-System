@@ -22,13 +22,11 @@ api.interceptors.response.use(
       try {
         const { useAuthStore } = await import("@/features/auth/store");
         useAuthStore.getState().logout();
-      } catch (e) {
-        console.warn("Could not clear auth store:", e);
+      } catch {
+        // Silently fail if auth store cannot be cleared
       }
 
       navigate("/auth/login");
-
-      toast.warning("Su sesión ha expirado. Inicie sesión nuevamente.");
 
       return Promise.reject(
         new Error("Su sesión ha expirado. Inicie sesión nuevamente.")
@@ -39,7 +37,6 @@ api.interceptors.response.use(
       const message = "No tiene permisos para realizar esta acción.";
 
       toast.error(message);
-      console.warn("Access forbidden:", error.config?.url);
       return Promise.reject(new Error(message));
     }
 
@@ -55,7 +52,6 @@ api.interceptors.response.use(
       const message = "Error del servidor. Intente nuevamente más tarde.";
 
       toast.error(message);
-      console.error("Server error:", error.config?.url, error.response?.status);
       return Promise.reject(new Error(message));
     }
 

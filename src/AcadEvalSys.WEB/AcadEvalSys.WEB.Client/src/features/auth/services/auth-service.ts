@@ -65,14 +65,18 @@ export const authService = {
 
   /**
    * Verifica el estado de la sesión
+   * Usa getCurrentUser directamente ya que es más confiable que session-check
    */
   async checkSession(): Promise<SessionStatus> {
     try {
-      const response = await api.get<SessionStatus>(
-        `${AUTH_API_URL}/session-check`
-      );
-      return response.data;
+      // Usar getCurrentUser directamente - si funciona, hay sesión válida
+      const user = await authService.getCurrentUser();
+      return {
+        isAuthenticated: true,
+        user,
+      };
     } catch {
+      // Si getCurrentUser falla (401/403), no hay sesión válida
       return { isAuthenticated: false };
     }
   },
@@ -86,8 +90,7 @@ export const authService = {
     try {
       const userInfo = await authService.getCurrentUser();
       store.setUser(userInfo);
-    } catch (error) {
-      console.error("Error al actualizar información del usuario:", error);
+    } catch {
       // Si no puede obtener la info, posiblemente la sesión expiró
       store.logout();
     }

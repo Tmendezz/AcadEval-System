@@ -103,17 +103,7 @@ export function ProfessorCombobox({
                   key={opt.value}
                   value={opt.label}
                   onSelect={() => {
-                    console.log("🎯 CommandItem onSelect llamado:", {
-                      optValue: opt.value,
-                      optLabel: opt.label,
-                      currentValue: value,
-                    });
                     setLocalSelectedLabel(opt.label);
-                    console.log(
-                      "📞 Llamando onChange con:",
-                      opt.value,
-                      opt.label
-                    );
                     onChange(opt.value, opt.label);
                     setOpen(false);
                   }}

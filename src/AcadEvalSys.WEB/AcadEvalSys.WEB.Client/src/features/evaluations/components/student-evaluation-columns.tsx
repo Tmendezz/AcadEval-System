@@ -82,7 +82,6 @@ export const studentEvaluationColumns: ColumnDef<StudentCompetencyEvaluation>[] 
 
         const handleView = () => {
           // TODO: Implementar navegación a detalle del estudiante
-          console.log("Ver detalle estudiante:", student.studentName);
         };
 
         return (

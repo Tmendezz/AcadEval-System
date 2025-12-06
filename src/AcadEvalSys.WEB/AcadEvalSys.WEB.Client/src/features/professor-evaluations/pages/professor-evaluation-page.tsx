@@ -19,6 +19,7 @@ import { Skeleton } from "@/shared/components/ui/skeleton";
 import { ArrowLeft, Users, BookOpen, Save } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/infrastructure/query/queryClient";
+import { toast } from "sonner";
 import { completeStudentAssessment } from "@/features/professor-evaluations/services/professor-evaluations-service";
 import { useProfessorAssignment } from "@/features/professor-evaluations/hooks/use-professor-assignment";
 import { useAssignmentStudents } from "@/features/professor-evaluations/hooks/use-assignment-students";
@@ -91,6 +92,7 @@ export function ProfessorEvaluationPage() {
     onSuccess: async () => {
       setLastSavedAt(Date.now());
       clearPendingSaves();
+      toast.success("Evaluaciones guardadas exitosamente");
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: ["assignment-students", assignmentId],
@@ -99,6 +101,9 @@ export function ProfessorEvaluationPage() {
           queryKey: ["professor-assignment", assignmentId],
         }),
       ]);
+    },
+    onError: () => {
+      toast.error("Error al guardar las evaluaciones");
     },
   });
 

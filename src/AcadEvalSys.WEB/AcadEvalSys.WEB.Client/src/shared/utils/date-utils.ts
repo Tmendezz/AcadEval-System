@@ -24,14 +24,12 @@ export function convertDateTimeLocalToISO(dateTimeLocal: string): string | undef
     
     // Verificar que la fecha sea válida
     if (!isValid(date)) {
-      console.warn('Invalid date provided:', dateTimeLocal);
       return undefined;
     }
     
     // Convertir a ISO string (UTC)
     return date.toISOString();
-  } catch (error) {
-    console.error('Error converting datetime-local to ISO:', error);
+  } catch {
     return undefined;
   }
 }
@@ -55,14 +53,12 @@ export function convertISOToDateTimeLocal(isoString: string): string {
     const date = parseISO(isoString);
     
     if (!isValid(date)) {
-      console.warn('Invalid ISO date provided:', isoString);
       return '';
     }
     
     // Formatear a YYYY-MM-DDTHH:mm (formato datetime-local)
     return format(date, "yyyy-MM-dd'T'HH:mm");
-  } catch (error) {
-    console.error('Error converting ISO to datetime-local:', error);
+  } catch {
     return '';
   }
 }
@@ -109,8 +105,7 @@ export function formatDateForDisplay(
         day: 'numeric'
       });
     }
-  } catch (error) {
-    console.error('Error formatting date for display:', error);
+  } catch {
     return 'Fecha inválida';
   }
 }

@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import { Redirect } from "wouter";
 import { useAuthStore } from "@/features/auth/store";
-import { useSessionCheck } from "../hooks/use-session-check";
 import { UserRole, getFirstRole, hasAnyRole } from "../models";
 import { AccessDenied } from "./access-denied";
 import { SessionLoadingScreen } from "@/shared/components/loading-screen";
@@ -18,10 +17,10 @@ export function ProtectedRoute({
   fallbackUrl = "/auth/login" 
 }: ProtectedRouteProps) {
   const { isAuthenticated, user, isLoading } = useAuthStore();
-  const { isCheckingSession } = useSessionCheck();
 
-  // Mostrar loading mientras se verifica la sesión
-  if (isCheckingSession || isLoading) {
+  // Mostrar loading mientras se carga el estado inicial
+  // La verificación de sesión ya se hace en AuthRouter, no es necesario repetirla aquí
+  if (isLoading) {
     return <SessionLoadingScreen />;
   }
 

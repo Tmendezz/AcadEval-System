@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { identityAdminService } from "../services/identity-admin-service";
 import { AdminFormValues } from "../components/admin-form-dialog";
 import { Professor } from "@infrastructure/api/types/professor";
@@ -70,6 +71,10 @@ export function useAdminOperations() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: adminKeys.lists() });
+      toast.success("Administrador actualizado exitosamente");
+    },
+    onError: () => {
+      toast.error("Error al actualizar el administrador");
     },
   });
 

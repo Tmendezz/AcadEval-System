@@ -31,12 +31,6 @@ export const userManagementService = {
    * @param newPassword - Nueva contraseña
    */
   async changePassword(userId: string, newPassword: string): Promise<void> {
-    console.log("🔐 [Frontend] Enviando cambio de contraseña:");
-    console.log("  - UserId:", userId);
-    console.log("  - Password length:", newPassword?.length ?? 0);
-    console.log("  - Password:", newPassword);
-    console.log("  - Request body:", { userId, newPassword });
-    
     await api.post("/user-password/change", { userId, newPassword });
   },
 

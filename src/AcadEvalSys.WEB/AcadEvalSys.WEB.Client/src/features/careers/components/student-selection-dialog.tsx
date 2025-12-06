@@ -78,7 +78,6 @@ export function StudentSelectionDialog({
       onOpenChange(false);
     },
     onError: (error) => {
-      console.error("Error enrolling students:", error);
       toast.error("❌ Error al inscribir estudiantes: " + error.message);
     },
   });

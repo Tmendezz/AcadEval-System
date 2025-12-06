@@ -1,8 +1,9 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Route } from "wouter";
 import { AdminRoute, ProtectedRoute } from "@/features/auth/components";
 import { RouteConfig } from "./route-config";
 import { UserRole } from "@/features/auth/models";
+import { PageLoader } from "@/shared/components/ui/page-loader";
 
 interface RouteRendererProps {
   route: RouteConfig;
@@ -16,7 +17,9 @@ export const RouteRenderer: React.FC<RouteRendererProps> = ({ route }) => {
     return (
       <Route path={path}>
         <AdminRoute>
-          <Component />
+          <Suspense fallback={<PageLoader />}>
+            <Component />
+          </Suspense>
         </AdminRoute>
       </Route>
     );
@@ -26,7 +29,9 @@ export const RouteRenderer: React.FC<RouteRendererProps> = ({ route }) => {
     return (
       <Route path={path}>
         <ProtectedRoute requiredRoles={requiredRoles}>
-          <Component />
+          <Suspense fallback={<PageLoader />}>
+            <Component />
+          </Suspense>
         </ProtectedRoute>
       </Route>
     );
@@ -51,7 +56,7 @@ export const RouteList: React.FC<RouteListProps> = ({ routes, userRole }) => {
 };
 
 // Función helper para renderizar rutas directamente (para usar con Switch de wouter)
-export const renderRoutes = (routes: RouteConfig[], userRole?: UserRole) => {
+export const renderRoutes = (routes: RouteConfig[]) => {
   return routes.map((route) => {
     const { path, component: Component, requiredRoles, isAdminOnly } = route;
 
@@ -59,7 +64,9 @@ export const renderRoutes = (routes: RouteConfig[], userRole?: UserRole) => {
       return (
         <Route key={path} path={path}>
           <AdminRoute>
-            <Component />
+            <Suspense fallback={<PageLoader />}>
+              <Component />
+            </Suspense>
           </AdminRoute>
         </Route>
       );
@@ -69,7 +76,9 @@ export const renderRoutes = (routes: RouteConfig[], userRole?: UserRole) => {
       return (
         <Route key={path} path={path}>
           <ProtectedRoute requiredRoles={requiredRoles}>
-            <Component />
+            <Suspense fallback={<PageLoader />}>
+              <Component />
+            </Suspense>
           </ProtectedRoute>
         </Route>
       );

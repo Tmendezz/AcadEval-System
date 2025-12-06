@@ -41,8 +41,7 @@ export const useCreateTechnicalCareer = () => {
       queryClient.invalidateQueries({ queryKey: technicalCareerKeys.lists() });
       toast.success("Tecnicatura creada exitosamente");
     },
-    onError: (error) => {
-      console.error("Error al crear tecnicatura:", error);
+    onError: () => {
       toast.error("Error al crear la tecnicatura");
     },
   });
@@ -60,8 +59,7 @@ export const useDeleteTechnicalCareer = () => {
       queryClient.invalidateQueries({ queryKey: technicalCareerKeys.lists() });
       toast.success("Tecnicatura eliminada exitosamente");
     },
-    onError: (error) => {
-      console.error("Error al eliminar tecnicatura:", error);
+    onError: () => {
       toast.error("Error al eliminar la tecnicatura");
     },
   });

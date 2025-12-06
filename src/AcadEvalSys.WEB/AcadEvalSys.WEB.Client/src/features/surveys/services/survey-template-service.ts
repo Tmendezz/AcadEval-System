@@ -108,7 +108,6 @@ export const surveyTemplateService = {
       const validationErrors = error.response?.data?.errors;
       
       if (validationErrors) {
-        console.error('Errores de validación:', validationErrors);
         // Crear un error más descriptivo con los detalles de validación
         const errorDetails = Object.entries(validationErrors)
           .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)

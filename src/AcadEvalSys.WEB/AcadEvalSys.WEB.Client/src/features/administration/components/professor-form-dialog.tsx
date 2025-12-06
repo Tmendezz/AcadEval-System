@@ -88,6 +88,10 @@ export function ProfessorFormDialog({
     setShowPassword((prev) => !prev);
   }, []);
 
+  const handleClose = useCallback(() => {
+    handleOpenChange(false);
+  }, [handleOpenChange]);
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">

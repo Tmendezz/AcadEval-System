@@ -41,7 +41,6 @@ export const useImportStudents = () => {
       });
     },
     onError: (error) => {
-      console.error("❌ Error importing students:", error);
       toast.error("❌ Error al importar estudiantes: " + error.message);
     },
   });

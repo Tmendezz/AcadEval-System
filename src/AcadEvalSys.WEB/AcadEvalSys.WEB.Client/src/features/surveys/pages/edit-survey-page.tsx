@@ -135,9 +135,6 @@ export default function EditSurveyPage() {
               }) || []
             };
 
-            console.log('🔍 Debug UpdateSurvey - Form data:', form);
-            console.log('🔍 Debug UpdateSurvey - Payload being sent:', payload);
-            console.log('🔍 Debug UpdateSurvey - JSON Payload:', JSON.stringify(payload, null, 2));
             await updateSurveyMutation.mutateAsync({ id: surveyId, survey: payload as unknown as CreateAcademicSurveyRequest });
           }}
           onCancel={() => setLocation('/encuestas')}

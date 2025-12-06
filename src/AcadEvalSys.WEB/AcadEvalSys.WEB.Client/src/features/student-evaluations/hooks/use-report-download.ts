@@ -19,7 +19,6 @@ export function useReportDownload() {
       window.URL.revokeObjectURL(url);
       toast.success("Reporte descargado exitosamente");
     } catch (error) {
-      console.error("Error downloading report:", error);
       toast.error("Error al descargar el reporte");
       throw error;
     } finally {
@@ -35,7 +34,6 @@ export function useReportDownload() {
       window.open(downloadUrl.downloadUrl, "_blank");
       toast.success("Reporte abierto en nueva pestaña");
     } catch (error) {
-      console.error("Error opening report:", error);
       toast.error("Error al abrir el reporte");
       throw error;
     }

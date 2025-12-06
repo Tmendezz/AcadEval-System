@@ -3,7 +3,6 @@ import { useMutation } from "@tanstack/react-query";
 import { authService } from "../services/auth-service";
 import { useAuthStore } from "../store";
 import { navigate } from "wouter/use-browser-location";
-import { toast } from "sonner";
 import { LoginCredentials } from "../models";
 import { getErrorMessage } from "@/shared/utils/error-handler";
 
@@ -53,11 +52,9 @@ export const useLogout = () => {
   const logoutMutation = useMutation({
     mutationFn: authService.logout,
     onSuccess: () => {
-      toast.success("Sesión cerrada correctamente");
       navigate("/auth/login");
     },
     onError: () => {
-      toast.error("Error al cerrar sesión");
       // Redirigir de todas formas para limpiar el estado
       navigate("/auth/login");
     },

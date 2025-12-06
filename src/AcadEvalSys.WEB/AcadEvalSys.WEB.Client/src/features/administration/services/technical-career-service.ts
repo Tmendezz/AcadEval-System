@@ -38,10 +38,6 @@ export const technicalCareerService = {
     const payload = {
       name: career.name
     };
-    console.log('🔍 Admin TechnicalCareer Service - Update request:', {
-      url: `${TECHNICAL_CAREERS_API_URL}/${id}`,
-      payload
-    });
     await api.put(`${TECHNICAL_CAREERS_API_URL}/${id}`, payload);
   },
 

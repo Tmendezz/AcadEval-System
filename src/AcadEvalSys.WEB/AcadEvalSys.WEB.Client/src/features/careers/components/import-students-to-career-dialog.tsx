@@ -64,8 +64,8 @@ export function ImportStudentsToCareerDialog({
       setImportResult(result);
       // Mostrar prompt para inscribir a todas las asignaturas
       setShowEnrollAllPrompt(true);
-    } catch (error) {
-      console.error("Error importing students:", error);
+    } catch {
+      // Silently handle import errors
     }
   };
 

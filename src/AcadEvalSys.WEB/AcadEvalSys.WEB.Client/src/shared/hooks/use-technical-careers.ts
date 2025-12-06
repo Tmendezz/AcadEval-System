@@ -45,8 +45,7 @@ export const useUpdateTechnicalCareer = () => {
       });
       toast.success("Tecnicatura actualizada exitosamente");
     },
-    onError: (error) => {
-      console.error("Error al actualizar tecnicatura:", error);
+    onError: () => {
       toast.error("Error al actualizar la tecnicatura");
     },
   });

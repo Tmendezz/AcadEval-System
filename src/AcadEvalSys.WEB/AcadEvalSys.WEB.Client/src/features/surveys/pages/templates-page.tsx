@@ -1,3 +1,4 @@
+import { useCallback, useState } from "react";
 import {
   PageLayout,
   PageHeader,
@@ -8,18 +9,26 @@ import { Plus } from "lucide-react";
 import { useLocation } from "wouter";
 import { TemplateCards } from "../components/template-cards";
 import { useSurveyTemplates } from "../hooks/use-survey-templates";
-import { useState } from "react";
 import { useSurveysStore } from "../store/use-surveys-store";
 
 export default function TemplatesPage() {
   const [, setLocation] = useLocation();
   const { data: templates = [], isLoading } = useSurveyTemplates();
   const [isNavigating, setIsNavigating] = useState(false);
-  const { setSelectedTemplateId } = useSurveysStore();
+  const setSelectedTemplateId = useSurveysStore((state) => state.setSelectedTemplateId);
   
-  const handleCreateTemplate = () => {
+  const handleCreateTemplate = useCallback(() => {
     setLocation('/plantillas/crear');
-  };
+  }, [setLocation]);
+
+  const handleUseTemplate = useCallback(async (t: { id: string }) => {
+    if (isNavigating) return;
+    setIsNavigating(true);
+    // Guardar el ID de la plantilla en el store
+    setSelectedTemplateId(t.id);
+    // Navegar al page de creación
+    setLocation('/encuestas/crear');
+  }, [isNavigating, setLocation, setSelectedTemplateId]);
 
   return (
     <PageLayout>
@@ -38,14 +47,7 @@ export default function TemplatesPage() {
         ) : (
           <TemplateCards
             templates={templates}
-            onUseTemplate={async (t) => {
-              if (isNavigating) return;
-              setIsNavigating(true);
-              // Guardar el ID de la plantilla en el store
-              setSelectedTemplateId(t.id);
-              // Navegar al page de creación
-              setLocation('/encuestas/crear');
-            }}
+            onUseTemplate={handleUseTemplate}
           />
         )}
       </PageContent>

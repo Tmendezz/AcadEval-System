@@ -31,8 +31,7 @@ export function EvaluationInstanceCard({ instance }: EvaluationInstanceCardProps
       a.remove();
       window.URL.revokeObjectURL(url);
       toast.success("Reporte descargado exitosamente");
-    } catch (error) {
-      console.error("Error downloading report:", error);
+    } catch {
       toast.error("Error al descargar el reporte");
     } finally {
       setIsDownloading(false);

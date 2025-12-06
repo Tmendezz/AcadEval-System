@@ -1,5 +1,6 @@
+import { memo, useMemo } from 'react';
 import { DataSection } from '@/shared/components/ui/data-section';
-import { SurveyListItem } from '../models/survey-types';
+import { SurveyListItem } from '../services/survey-service';
 import { createSurveyColumns } from './columns/survey-columns';
 
 interface SurveyListProps {
@@ -12,7 +13,7 @@ interface SurveyListProps {
   onViewResults?: (survey: SurveyListItem) => void;
 }
 
-export function SurveyList({ 
+export const SurveyList = memo(function SurveyList({ 
   surveys, 
   isLoading, 
   error: _error,
@@ -21,12 +22,16 @@ export function SurveyList({
   onViewProgress,
   onViewResults
 }: SurveyListProps) {
-  const columns = createSurveyColumns({ 
-    onEdit, 
-    onDelete, 
-    onViewProgress,
-    onViewResults
-  });
+  const columns = useMemo(
+    () =>
+      createSurveyColumns({
+        onEdit,
+        onDelete,
+        onViewProgress,
+        onViewResults,
+      }),
+    [onEdit, onDelete, onViewProgress, onViewResults]
+  );
 
   return (
     <DataSection
@@ -36,4 +41,4 @@ export function SurveyList({
       emptyMessage="No hay encuestas disponibles"
     />
   );
-}
+});

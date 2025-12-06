@@ -1,21 +1,36 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { authService } from "../services/auth-service";
 import { useAuthStore } from "../store";
 
+// Variable global para evitar múltiples llamadas simultáneas
+let sessionCheckPromise: Promise<void> | null = null;
+let hasCheckedGlobally = false;
+
 /**
  * Hook para verificar el estado de la sesión al cargar la app
- * Solo se ejecuta una vez al montar el componente
+ * Solo se ejecuta UNA VEZ globalmente, no importa cuántas veces se monte el hook
  */
 export const useSessionCheck = () => {
-  const [isCheckingSession, setIsCheckingSession] = useState(true);
-  const hasChecked = useRef(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(!hasCheckedGlobally);
 
   useEffect(() => {
-    // Prevenir múltiples llamadas - el ref persiste entre renders pero se resetea si el componente se desmonta y remonta
-    if (hasChecked.current) return;
-    hasChecked.current = true;
+    // Si ya se verificó globalmente, no hacer nada
+    if (hasCheckedGlobally) {
+      setIsCheckingSession(false);
+      return;
+    }
 
-    const checkSession = async () => {
+    // Si ya hay una verificación en curso, esperar a que termine
+    if (sessionCheckPromise) {
+      sessionCheckPromise.then(() => setIsCheckingSession(false));
+      return;
+    }
+
+    // Marcar que se está verificando globalmente
+    hasCheckedGlobally = true;
+
+    // Crear la promesa de verificación
+    sessionCheckPromise = (async () => {
       try {
         const sessionStatus = await authService.checkSession();
         const { setUser, logout } = useAuthStore.getState();
@@ -31,11 +46,10 @@ export const useSessionCheck = () => {
         logout();
       } finally {
         setIsCheckingSession(false);
+        sessionCheckPromise = null;
       }
-    };
-
-    checkSession();
-  }, []); 
+    })();
+  }, []);
 
   return { isCheckingSession };
 };

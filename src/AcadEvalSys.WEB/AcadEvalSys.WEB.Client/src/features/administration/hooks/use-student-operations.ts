@@ -10,6 +10,7 @@ import {
   useOptimisticMutation,
   useStaleQuery,
 } from "@/shared/lib/query-utils";
+import { toast } from "sonner";
 
 // ============================================
 // QUERY KEYS
@@ -54,6 +55,10 @@ export function useStudentOperations() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: studentKeys.lists() });
+      toast.success("Estudiante actualizado exitosamente");
+    },
+    onError: () => {
+      toast.error("Error al actualizar el estudiante");
     },
   });
 

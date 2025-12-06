@@ -132,9 +132,6 @@ export function useOptimisticMutation<TData = unknown, TVariables = void>({
       }
     },
     onError: (error, variables) => {
-      // Log del error
-      console.error(`Mutation error:`, error);
-
       // Mostrar toast de error
       if (showErrorToast) {
         const serverMessage = extractErrorMessage(error);

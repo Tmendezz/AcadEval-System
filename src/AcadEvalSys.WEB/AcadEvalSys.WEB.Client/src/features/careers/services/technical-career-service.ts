@@ -47,10 +47,6 @@ export const technicalCareerService = {
     const payload = {
       name: career.name
     };
-    console.log('🔍 TechnicalCareer Service - Update request:', {
-      url: `${TECHNICAL_CAREERS_API_URL}/${id}`,
-      payload
-    });
     await api.put(`${TECHNICAL_CAREERS_API_URL}/${id}`, payload);
   },
 
@@ -99,14 +95,6 @@ export const technicalCareerService = {
     };
     
     const url = `${TECHNICAL_CAREERS_API_URL}/${careerId}/coordinator`;
-    
-    console.log('🔍 TechnicalCareer - assignCoordinator:', {
-      url,
-      payload,
-      careerId,
-      coordinatorUserId,
-      method: 'PUT'
-    });
     
     // Endpoint correcto: PUT /technical-careers/{id}/coordinator
     await api.put(url, payload);
