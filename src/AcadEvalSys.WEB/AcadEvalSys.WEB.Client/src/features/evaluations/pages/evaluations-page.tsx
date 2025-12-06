@@ -1,3 +1,4 @@
+import { useState, useMemo, useCallback } from "react";
 import {
   PageLayout,
   PageHeader,
@@ -7,10 +8,9 @@ import {
 import { useGetEvaluations, useDeleteEvaluation } from "../hooks";
 import { createEvaluationColumns } from "../components/evaluation-columns";
 import { navigate } from "wouter/use-browser-location";
-import { Plus, PlusCircle } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { DataSection } from "@/shared/components/ui/data-section";
-import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -25,14 +25,39 @@ export default function EvaluationsPage() {
   const { data: evaluations = [], isLoading } = useGetEvaluations();
   const deleteEvaluationMutation = useDeleteEvaluation();
 
-  const filteredEvaluations = evaluations as EvaluationListItem[];
-
   const [evaluationToDelete, setEvaluationToDelete] =
     useState<EvaluationListItem | null>(null);
 
-  const handleNewEvaluation = () => {
+  // Handlers memoizados
+  const handleNewEvaluation = useCallback(() => {
     navigate("/evaluaciones/nueva");
-  };
+  }, []);
+
+  const handleDeleteEvaluation = useCallback((evaluation: EvaluationListItem) => {
+    setEvaluationToDelete(evaluation);
+  }, []);
+
+  const confirmDeleteEvaluation = useCallback(async () => {
+    if (!evaluationToDelete) return;
+    await deleteEvaluationMutation.mutateAsync(evaluationToDelete.id);
+    setEvaluationToDelete(null);
+  }, [evaluationToDelete, deleteEvaluationMutation]);
+
+  const handleCloseDialog = useCallback(() => {
+    setEvaluationToDelete(null);
+  }, []);
+
+  // Memoizar columnas
+  const columns = useMemo(
+    () => createEvaluationColumns({ onDelete: handleDeleteEvaluation }),
+    [handleDeleteEvaluation]
+  );
+
+  // Memoizar datos filtrados
+  const filteredEvaluations = useMemo(
+    () => evaluations as EvaluationListItem[],
+    [evaluations]
+  );
 
   const handleDeleteEvaluation = (evaluation: EvaluationListItem) => {
     setEvaluationToDelete(evaluation);
@@ -76,10 +101,7 @@ export default function EvaluationsPage() {
         </PageSection>
       </PageContent>
 
-      <Dialog
-        open={!!evaluationToDelete}
-        onOpenChange={() => setEvaluationToDelete(null)}
-      >
+      <Dialog open={!!evaluationToDelete} onOpenChange={handleCloseDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Eliminar evaluación</DialogTitle>
@@ -91,7 +113,7 @@ export default function EvaluationsPage() {
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setEvaluationToDelete(null)}
+              onClick={handleCloseDialog}
               disabled={deleteEvaluationMutation.isPending}
             >
               Cancelar
@@ -101,9 +123,7 @@ export default function EvaluationsPage() {
               onClick={confirmDeleteEvaluation}
               disabled={deleteEvaluationMutation.isPending}
             >
-              {deleteEvaluationMutation.isPending
-                ? "Eliminando..."
-                : "Eliminar"}
+              {deleteEvaluationMutation.isPending ? "Eliminando..." : "Eliminar"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -111,3 +131,4 @@ export default function EvaluationsPage() {
     </PageLayout>
   );
 }
+

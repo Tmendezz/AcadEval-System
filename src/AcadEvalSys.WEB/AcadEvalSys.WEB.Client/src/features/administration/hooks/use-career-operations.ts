@@ -1,68 +1,81 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { technicalCareerService } from "../services/technical-career-service";
 import type {
   TechnicalCareer,
   UpdateTechnicalCareerRequest,
 } from "@infrastructure/api/types/technical-career";
 import { navigate } from "wouter/use-browser-location";
-import { toast } from "sonner";
+import {
+  createQueryKeys,
+  useOptimisticMutation,
+  useStaleQuery,
+} from "@/shared/lib/query-utils";
+
+// ============================================
+// QUERY KEYS
+// ============================================
+
+export const careerKeys = createQueryKeys("technical-careers");
+
+// ============================================
+// HOOK PRINCIPAL
+// ============================================
 
 export function useCareerOperations() {
   const queryClient = useQueryClient();
 
   // Query para obtener carreras técnicas
-  const { data: careers = [], isLoading: isLoadingCareers } = useQuery({
-    queryKey: ["technical-careers"],
-    queryFn: () => technicalCareerService.getAll(),
-  });
+  const { data, isLoading: isLoadingCareers } = useStaleQuery(
+    careerKeys.lists(),
+    () => technicalCareerService.getAll(),
+    { staleMinutes: 5 }
+  );
 
-  // Mutation para actualizar carreras
-  const updateCareer = useMutation({
-    mutationFn: async ({
-      id,
-      career,
-    }: {
-      id: string;
-      career: UpdateTechnicalCareerRequest;
-    }) => technicalCareerService.update(id, career),
-    onSuccess: async (_, { id }) => {
-      await queryClient.invalidateQueries({ queryKey: ["technical-careers"] });
+  const careers = useMemo(() => data || [], [data]);
+
+  // Mutations
+  const updateCareer = useOptimisticMutation<
+    void,
+    { id: string; career: UpdateTechnicalCareerRequest }
+  >({
+    mutationFn: ({ id, career }) => technicalCareerService.update(id, career),
+    messages: {
+      success: "Carrera actualizada exitosamente",
+      error: "Error al actualizar la carrera",
+    },
+    invalidateKeys: [careerKeys.lists()],
+    onSuccessCallback: async (_, { id }) => {
       await queryClient.invalidateQueries({
-        queryKey: ["technical-career", id],
+        queryKey: careerKeys.detail(id),
       });
-      toast.success("Carrera actualizada exitosamente");
-    },
-    onError: (error) => {
-      console.error("Error al actualizar carrera:", error);
-      toast.error("Error al actualizar la carrera");
     },
   });
 
-  // Mutation para eliminar carreras
-  const deleteCareer = useMutation({
-    mutationFn: async (id: string) => technicalCareerService.delete(id),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["technical-careers"] });
-      toast.success("Carrera eliminada exitosamente");
+  const deleteCareer = useOptimisticMutation<void, string>({
+    mutationFn: (id) => technicalCareerService.delete(id),
+    messages: {
+      success: "Carrera eliminada exitosamente",
+      error: "Error al eliminar la carrera",
     },
-    onError: (error) => {
-      console.error("Error al eliminar carrera:", error);
-      toast.error("Error al eliminar la carrera");
-    },
+    invalidateKeys: [careerKeys.lists()],
   });
 
-  // Handlers para operaciones de carreras
-  const handleEditCareer = (career: TechnicalCareer) => {
+  // Handlers con useCallback
+  const handleEditCareer = useCallback((career: TechnicalCareer) => {
     navigate(`/carreras/${career.id}/editar`);
-  };
+  }, []);
 
-  const handleViewCareer = (career: TechnicalCareer) => {
+  const handleViewCareer = useCallback((career: TechnicalCareer) => {
     navigate(`/carreras/${career.id}`);
-  };
+  }, []);
 
-  const handleDeleteCareer = (career: TechnicalCareer) => {
-    deleteCareer.mutate(career.id);
-  };
+  const handleDeleteCareer = useCallback(
+    (career: TechnicalCareer) => {
+      deleteCareer.mutate(career.id);
+    },
+    [deleteCareer]
+  );
 
   return {
     // State

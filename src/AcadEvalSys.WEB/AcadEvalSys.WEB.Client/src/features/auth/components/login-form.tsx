@@ -1,3 +1,4 @@
+import { useCallback, memo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -11,14 +12,20 @@ import { FormLabel } from "@/shared/components/ui/form";
 import { FormControl } from "@/shared/components/ui/form";
 import { Input } from "@/shared/components/ui/input";
 
+// Schema de validación mejorado
 const loginSchema = z.object({
-  email: z.string().email("Ingrese un correo académico válido"),
-  password: z.string().min(1, "La contraseña es requerida"),
+  email: z
+    .string()
+    .min(1, "El correo es requerido")
+    .email("Ingrese un correo académico válido"),
+  password: z
+    .string()
+    .min(1, "La contraseña es requerida"),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-export const LoginForm = () => {
+export const LoginForm = memo(function LoginForm() {
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -30,14 +37,18 @@ export const LoginForm = () => {
   const { handleSubmit, control } = form;
 
   const { login, isLoading } = useLogin();
-  const { error: storeError } = useAuthStore();
-  
-  const onSubmit = async (data: LoginFormData) => {
-    await login({
-      email: data.email,
-      password: data.password,
-    });
-  };
+  const storeError = useAuthStore((state) => state.error);
+
+  // Handler memoizado
+  const onSubmit = useCallback(
+    async (data: LoginFormData) => {
+      await login({
+        email: data.email,
+        password: data.password,
+      });
+    },
+    [login]
+  );
 
   return (
     <Form {...form}>
@@ -107,4 +118,4 @@ export const LoginForm = () => {
       </form>
     </Form>
   );
-};
+});

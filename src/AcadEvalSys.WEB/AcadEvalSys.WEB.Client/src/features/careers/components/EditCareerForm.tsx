@@ -76,7 +76,6 @@ export function EditCareerForm() {
         <div className="flex justify-end">
           <Button
             onClick={() => {
-              console.log("[EditCareerForm] Save button clicked");
               saveMutation.mutate();
             }}
             disabled={saveMutation.isPending}

@@ -37,7 +37,6 @@ export const useImportStudentsToCareer = () => {
         });
       },
       onError: (error) => {
-        console.error("❌ Error importing students to career:", error);
         toast.error("❌ Error al importar estudiantes: " + error.message);
       },
     }

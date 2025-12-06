@@ -1,3 +1,4 @@
+import { memo, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,21 +10,27 @@ import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { ScrollArea } from "@/shared/components/ui/scroll-area";
 
+// Constante fuera del componente
+const LEVEL_ORDER = ["Inicial", "Intermedio", "Avanzado", "Excelente"] as const;
+
 interface ViewCompetencyModalProps {
   competency: Competency | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export function ViewCompetencyModal({
+export const ViewCompetencyModal = memo(function ViewCompetencyModal({
   competency,
   isOpen,
   onClose,
 }: ViewCompetencyModalProps) {
-  if (!competency) return null;
+  // Memoizar valores derivados
+  const { typeLabel, typeVariant } = useMemo(() => ({
+    typeLabel: competency?.type === "Soft" ? "Blanda" : "Técnica",
+    typeVariant: competency?.type === "Soft" ? "secondary" : "default",
+  }), [competency?.type]);
 
-  const typeLabel = competency.type === "Soft" ? "Blanda" : "Técnica";
-  const typeVariant = competency.type === "Soft" ? "secondary" : "default";
+  if (!competency) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -71,7 +78,7 @@ export function ViewCompetencyModal({
                   Descripciones por nivel
                 </label>
                 <div className="space-y-3">
-                  {["Inicial", "Intermedio", "Avanzado", "Excelente"].map((nivel) => {
+                  {LEVEL_ORDER.map((nivel) => {
                     const levelData = competency.levels?.find(
                       (l) => l.level === nivel
                     );
@@ -103,5 +110,5 @@ export function ViewCompetencyModal({
       </DialogContent>
     </Dialog>
   );
-}
+});
 

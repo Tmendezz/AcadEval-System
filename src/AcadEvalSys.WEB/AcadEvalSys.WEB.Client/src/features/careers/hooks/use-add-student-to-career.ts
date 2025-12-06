@@ -1,8 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { technicalCareerService } from "../services/technical-career-service";
 import { CreateStudentRequest } from "@/features/careers/models/student";
 import { toast } from "sonner";
-import { getErrorMessage } from "@shared/utils/error-handler";
+import { useOptimisticMutation } from "@/shared/lib/query-utils";
 
 interface AddStudentToCareerParams {
   careerId: string;
@@ -12,30 +12,22 @@ interface AddStudentToCareerParams {
 export const useAddStudentToCareer = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<string, Error, AddStudentToCareerParams>({
-    mutationFn: async ({ careerId, student }) => {
-      return await technicalCareerService.addStudentToCareer(careerId, student);
+  return useOptimisticMutation<string, AddStudentToCareerParams>({
+    mutationFn: ({ careerId, student }) =>
+      technicalCareerService.addStudentToCareer(careerId, student),
+    messages: {
+      // Mensaje personalizado en callback
+      success: "",
+      error: "Error al crear estudiante",
     },
-    onSuccess: (_, variables) => {
-      toast.success(
-        `✅ Estudiante "${variables.student.name}" creado exitosamente`
-      );
+    onSuccessCallback: (_, variables) => {
+      toast.success(`Estudiante "${variables.student.name}" creado exitosamente`);
 
-      // Invalidar cache para refrescar datos
       queryClient.invalidateQueries({
         queryKey: ["technical-career", variables.careerId],
       });
-      queryClient.invalidateQueries({
-        queryKey: ["students"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["available-students"],
-      });
-    },
-    onError: (error) => {
-      console.error("❌ Error adding student to career:", error);
-      const message = getErrorMessage(error as Error);
-      toast.error("❌ Error al crear estudiante: " + message);
+      queryClient.invalidateQueries({ queryKey: ["students"] });
+      queryClient.invalidateQueries({ queryKey: ["available-students"] });
     },
   });
 };

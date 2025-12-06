@@ -19,9 +19,7 @@ export interface PagedProfessorResult {
 
 export const professorService = {
   async getAll(params?: { pageNumber?: number; pageSize?: number; searchTerm?: string; technicalCareerId?: string }) {
-    console.log('🔍 Professor Service - Making request to /professors with params:', params);
     const { data } = await api.get("/professors", { params });
-    console.log('🔍 Professor Service - Response data:', data);
     return data as PagedProfessorResult;
   },
 

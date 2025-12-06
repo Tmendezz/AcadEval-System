@@ -1,3 +1,4 @@
+import { memo, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { useCreateCompetency } from "@/features/competencies/hooks/use-competencies";
 import { CompetencyFormData } from "@/features/competencies/hooks/use-competencies";
 import { createCompetencySchema } from "../schemas/create-competency-schema";
 
@@ -35,7 +35,7 @@ interface CreateCompetencyModalProps {
   isLoading: boolean;
 }
 
-export function CreateCompetencyModal({
+export const CreateCompetencyModal = memo(function CreateCompetencyModal({
   isOpen,
   onClose,
   onSubmit,
@@ -56,15 +56,18 @@ export function CreateCompetencyModal({
     },
   });
 
-  const handleSubmit = (data: CompetencyFormData) => {
-    onSubmit(data);
-    form.reset();
-  };
+  const handleSubmit = useCallback(
+    (data: CompetencyFormData) => {
+      onSubmit(data);
+      form.reset();
+    },
+    [onSubmit, form]
+  );
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     form.reset();
     onClose();
-  };
+  }, [form, onClose]);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -167,4 +170,4 @@ export function CreateCompetencyModal({
       </DialogContent>
     </Dialog>
   );
-}
+});

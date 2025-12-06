@@ -1,40 +1,62 @@
-import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useCallback, useMemo } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { identityAdminService } from "../services/identity-admin-service";
 import { AdminFormValues } from "../components/admin-form-dialog";
 import { Professor } from "@infrastructure/api/types/professor";
+import {
+  createQueryKeys,
+  useOptimisticMutation,
+  useStaleQuery,
+} from "@/shared/lib/query-utils";
+
+// ============================================
+// QUERY KEYS
+// ============================================
+
+export const adminKeys = createQueryKeys("admins");
+
+// ============================================
+// HOOK PRINCIPAL
+// ============================================
 
 export function useAdminOperations() {
   const queryClient = useQueryClient();
+
+  // State
   const [selectedAdmin, setSelectedAdmin] = useState<Professor | null>(null);
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
 
   // Query para obtener administradores
-  const { data: adminsData, isLoading: isLoadingProfessors } = useQuery({
-    queryKey: ["admins"],
-    queryFn: () => identityAdminService.getAdmins(),
-    staleTime: 10_000,
-  });
+  const { data: adminsData, isLoading: isLoadingProfessors } = useStaleQuery(
+    adminKeys.lists(),
+    () => identityAdminService.getAdmins(),
+    { staleMinutes: 2 }
+  );
 
-  const admins: Professor[] = (adminsData?.items || []).map((user) => ({
-    id: user.id,
-    name: user.name,
-    email: user.email,
-  }));
+  const admins = useMemo<Professor[]>(
+    () =>
+      (adminsData?.items || []).map((user) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      })),
+    [adminsData?.items]
+  );
 
-  // Mutations para operaciones CRUD de administradores
-  const createAdmin = useMutation({
-    mutationFn: async (values: AdminFormValues) => {
-      const id = await identityAdminService.createAdmin({
+  // Mutations
+  const createAdmin = useOptimisticMutation<string, AdminFormValues>({
+    mutationFn: (values) =>
+      identityAdminService.createAdmin({
         name: values.name,
         email: values.email,
         password: values.password || "",
-      });
-      return id;
+      }),
+    messages: {
+      success: "Administrador creado exitosamente",
+      error: "Error al crear el administrador",
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["admins"] });
-    },
+    invalidateKeys: [adminKeys.lists()],
   });
 
   const updateAdmin = useMutation({
@@ -48,33 +70,40 @@ export function useAdminOperations() {
       });
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["admins"] });
+      await queryClient.invalidateQueries({ queryKey: adminKeys.lists() });
+      toast.success("Administrador actualizado exitosamente");
+    },
+    onError: () => {
+      toast.error("Error al actualizar el administrador");
     },
   });
 
-  const deleteAdmin = useMutation({
-    mutationFn: async (admin: Professor) => {
-      await identityAdminService.deleteAdmin(admin.id);
+  const deleteAdmin = useOptimisticMutation<void, Professor>({
+    mutationFn: (admin) => identityAdminService.deleteAdmin(admin.id),
+    messages: {
+      success: "Administrador eliminado exitosamente",
+      error: "Error al eliminar el administrador",
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["admins"] });
-    },
+    invalidateKeys: [adminKeys.lists()],
   });
 
-  // Handlers para operaciones de administradores
-  const handleNewAdminClick = () => {
+  // Handlers con useCallback
+  const handleNewAdminClick = useCallback(() => {
     setSelectedAdmin(null);
     setIsAdminDialogOpen(true);
-  };
+  }, []);
 
-  const handleEditAdmin = (admin: Professor) => {
+  const handleEditAdmin = useCallback((admin: Professor) => {
     setSelectedAdmin(admin);
     setIsAdminDialogOpen(true);
-  };
+  }, []);
 
-  const handleDeleteAdmin = (admin: Professor) => {
-    deleteAdmin.mutate(admin);
-  };
+  const handleDeleteAdmin = useCallback(
+    (admin: Professor) => {
+      deleteAdmin.mutate(admin);
+    },
+    [deleteAdmin]
+  );
 
   return {
     // State

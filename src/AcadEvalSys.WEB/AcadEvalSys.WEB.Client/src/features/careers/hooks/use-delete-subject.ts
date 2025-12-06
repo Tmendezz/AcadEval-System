@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { deleteSubject } from "../services/subject-service";
-import { toast } from "sonner";
 import { subjectsKeys } from "./use-subjects-by-year";
+import { useOptimisticMutation } from "@/shared/lib/query-utils";
 
 interface DeleteSubjectParams {
   careerId: string;
@@ -11,18 +11,17 @@ interface DeleteSubjectParams {
 export const useDeleteSubject = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({ careerId, subjectId }: DeleteSubjectParams) =>
-      deleteSubject(careerId, subjectId),
-    onSuccess: (_, variables) => {
-      toast.success("Asignatura eliminada exitosamente");
+  return useOptimisticMutation<void, DeleteSubjectParams>({
+    mutationFn: ({ careerId, subjectId }) => deleteSubject(careerId, subjectId),
+    messages: {
+      success: "Asignatura eliminada exitosamente",
+      error: "Error al eliminar la asignatura. Intente nuevamente.",
+    },
+    // Invalidación dinámica basada en variables
+    onSuccessCallback: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: subjectsKeys.lists(variables.careerId),
       });
-    },
-    onError: (error) => {
-      console.error("Error al eliminar la asignatura:", error);
-      toast.error("Error al eliminar la asignatura. Intente nuevamente.");
     },
   });
 };

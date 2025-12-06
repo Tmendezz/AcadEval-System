@@ -21,8 +21,6 @@ export function FileUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
 
-  console.log("fileInputRef:", fileInputRef.current);
-
   const validateAndSetFile = useCallback(
     (file: File) => {
       const allowedTypes = accept.split(",").map((type) => type.trim());
@@ -45,9 +43,7 @@ export function FileUpload({
 
   const handleFileSelect = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      console.log("Input onChange triggered, files:", e.target.files);
       if (e.target.files && e.target.files[0]) {
-        console.log("File selected:", e.target.files[0].name);
         validateAndSetFile(e.target.files[0]);
         // Permitir re-seleccionar el mismo archivo (onChange no dispara si el nombre es igual)
         e.currentTarget.value = "";

@@ -62,9 +62,8 @@ export const studentReceivedEvaluationColumns: ColumnDef<StudentReceivedEvaluati
               window.URL.revokeObjectURL(url);
               toast.dismiss();
               toast.success("Reporte descargado exitosamente");
-            } catch (error) {
+            } catch {
               toast.dismiss();
-              console.error("Error downloading report:", error);
               toast.error("Error al descargar el reporte");
             }
           }}

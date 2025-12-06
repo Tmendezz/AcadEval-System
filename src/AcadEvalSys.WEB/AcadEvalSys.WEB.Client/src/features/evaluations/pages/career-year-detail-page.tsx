@@ -26,14 +26,7 @@ export default function CareerYearDetailPage() {
   } = useCareerYearData(evaluationId || "", careerId || "", year || "");
 
   useEffect(() => {
-    console.log("CareerYearDetailPage data:", {
-      evaluation,
-      careerData,
-      yearMetrics,
-      competencyGroups,
-      isLoading,
-      error,
-    });
+    // Component mounted with data
   }, [evaluation, careerData, yearMetrics, competencyGroups, isLoading, error]);
 
   if (isLoading) {

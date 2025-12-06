@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getCompetencies,
   getCompetencyById,
@@ -6,6 +6,7 @@ import {
   updateCompetency,
   deleteCompetency,
 } from "@/features/competencies/services/competency-service";
+import { useOptimisticMutation } from "@/shared/lib/query-utils";
 
 // Query Keys - Centralizadas y consistentes
 export const competenciesKeys = {
@@ -42,6 +43,7 @@ export const useCompetencies = () => {
   return useQuery({
     queryKey: competenciesKeys.lists(),
     queryFn: getCompetencies,
+    staleTime: 5 * 60 * 1000, // 5 minutos
   });
 };
 
@@ -54,57 +56,41 @@ export const useCompetencyById = (id: string) => {
   });
 };
 
-// MUTATIONS
+// MUTATIONS - Usando useOptimisticMutation
 export const useCreateCompetency = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: CompetencyFormData) => createCompetency(data),
-    onSuccess: () => {
-      return queryClient.invalidateQueries({
-        queryKey: competenciesKeys.lists(),
-      });
+  return useOptimisticMutation<string | { id: string } | null, CompetencyFormData>({
+    mutationFn: createCompetency,
+    messages: {
+      success: "Competencia creada correctamente",
+      error: "Error al crear la competencia",
     },
-    onError: (error) => {
-      console.error("Error al crear competencia:", error);
-    },
+    invalidateKeys: [competenciesKeys.lists()],
   });
 };
 
 export const useUpdateCompetency = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({ id, data }: UpdateCompetencyParams) =>
-      updateCompetency(id, data),
-    onSuccess: (_, { id }) => {
-      return Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: competenciesKeys.lists(),
-        }),
-        queryClient.invalidateQueries({
-          queryKey: competenciesKeys.detail(id),
-        }),
-      ]);
+  return useOptimisticMutation<void, UpdateCompetencyParams>({
+    mutationFn: ({ id, data }) => updateCompetency(id, data),
+    messages: {
+      success: "Competencia actualizada correctamente",
+      error: "Error al actualizar la competencia",
     },
-    onError: (error) => {
-      console.error("Error al actualizar competencia:", error);
+    invalidateKeys: [competenciesKeys.lists()],
+    onSuccessCallback: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: competenciesKeys.detail(id) });
     },
   });
 };
 
 export const useDeleteCompetency = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: string) => deleteCompetency(id),
-    onSuccess: () => {
-      return queryClient.invalidateQueries({
-        queryKey: competenciesKeys.lists(),
-      });
+  return useOptimisticMutation<void, string>({
+    mutationFn: deleteCompetency,
+    messages: {
+      success: "Competencia eliminada correctamente",
+      error: "Error al eliminar la competencia",
     },
-    onError: (error) => {
-      console.error("Error al eliminar competencia:", error);
-    },
+    invalidateKeys: [competenciesKeys.lists()],
   });
 };

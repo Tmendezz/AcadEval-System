@@ -1,26 +1,24 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { surveyTemplateService } from '../services/survey-template-service';
 import {
   SurveyTemplateForm,
   SurveyTemplateFilters,
 } from '../models/survey-template-types';
-import { toast } from 'sonner';
+import {
+  createQueryKeys,
+  useOptimisticMutation,
+} from '@/shared/lib/query-utils';
 
-// Query keys
-export const surveyTemplateKeys = {
-  all: ['survey-templates'] as const,
-  lists: () => [...surveyTemplateKeys.all, 'list'] as const,
-  list: (filters?: SurveyTemplateFilters) => [...surveyTemplateKeys.lists(), filters] as const,
-  details: () => [...surveyTemplateKeys.all, 'detail'] as const,
-  detail: (id: string) => [...surveyTemplateKeys.details(), id] as const,
-};
+// Query keys usando la factory
+export const surveyTemplateKeys = createQueryKeys('survey-templates');
 
 // Hook para obtener plantillas con filtros
 export function useSurveyTemplates(filters?: SurveyTemplateFilters) {
   return useQuery({
-    queryKey: surveyTemplateKeys.list(filters),
+    queryKey: surveyTemplateKeys.list(filters || {}),
     queryFn: () => surveyTemplateService.getTemplates(filters),
     staleTime: 5 * 60 * 1000, // 5 minutos
+    gcTime: 15 * 60 * 1000, // 15 minutos
   });
 }
 
@@ -31,28 +29,19 @@ export function useSurveyTemplate(id: string, enabled = true) {
     queryFn: () => surveyTemplateService.getTemplateById(id),
     enabled: enabled && !!id,
     staleTime: 10 * 60 * 1000, // 10 minutos
+    gcTime: 30 * 60 * 1000, // 30 minutos
   });
 }
 
 // Hook para crear plantilla
 export function useCreateSurveyTemplate() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: SurveyTemplateForm) => surveyTemplateService.createTemplate(data),
-    onSuccess: (id, variables) => {
-      // Invalidar la lista de plantillas
-      queryClient.invalidateQueries({ queryKey: surveyTemplateKeys.lists() });
-      
-      toast.success('Plantilla creada exitosamente', {
-        description: `La plantilla "${variables.title}" ha sido creada.`,
-      });
+  return useOptimisticMutation<string, SurveyTemplateForm>({
+    mutationFn: surveyTemplateService.createTemplate,
+    messages: {
+      success: 'Plantilla creada exitosamente',
+      error: 'Error al crear plantilla',
     },
-    onError: (error: any) => {
-      toast.error('Error al crear plantilla', {
-        description: error?.message || 'No se pudo crear la plantilla. Inténtalo de nuevo.',
-      });
-    },
+    invalidateKeys: [surveyTemplateKeys.lists()],
   });
 }
 
@@ -60,22 +49,16 @@ export function useCreateSurveyTemplate() {
 export function useUpdateSurveyTemplate() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: SurveyTemplateForm }) =>
-      surveyTemplateService.updateTemplate(id, data),
-    onSuccess: (_, { id, data }) => {
-      // Invalidar la lista y el detalle
-      queryClient.invalidateQueries({ queryKey: surveyTemplateKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: surveyTemplateKeys.detail(id) });
-      
-      toast.success('Plantilla actualizada exitosamente', {
-          description: `La plantilla "${data.title}" ha sido actualizada.`,
-      });
+  return useOptimisticMutation<void, { id: string; data: SurveyTemplateForm }>({
+    mutationFn: ({ id, data }) => surveyTemplateService.updateTemplate(id, data),
+    messages: {
+      success: 'Plantilla actualizada exitosamente',
+      error: 'Error al actualizar plantilla',
     },
-    onError: (error: any) => {
-      toast.error('Error al actualizar plantilla', {
-        description: error?.message || 'No se pudo actualizar la plantilla. Inténtalo de nuevo.',
-      });
+    invalidateKeys: [surveyTemplateKeys.lists()],
+    onSuccessCallback: async (_, { id }) => {
+      // Invalidar el detalle también
+      await queryClient.invalidateQueries({ queryKey: surveyTemplateKeys.detail(id) });
     },
   });
 }
@@ -84,45 +67,29 @@ export function useUpdateSurveyTemplate() {
 export function useDeleteSurveyTemplate() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (id: string) => surveyTemplateService.deleteTemplate(id),
-    onSuccess: (_, id) => {
-      // Invalidar la lista
-      queryClient.invalidateQueries({ queryKey: surveyTemplateKeys.lists() });
-      
+  return useOptimisticMutation<void, string>({
+    mutationFn: surveyTemplateService.deleteTemplate,
+    messages: {
+      success: 'Plantilla eliminada exitosamente',
+      error: 'Error al eliminar plantilla',
+    },
+    invalidateKeys: [surveyTemplateKeys.lists()],
+    onSuccessCallback: (_, id) => {
       // Remover del cache si existe
       queryClient.removeQueries({ queryKey: surveyTemplateKeys.detail(id) });
-      
-      toast.success('Plantilla eliminada exitosamente');
-    },
-    onError: (error: any) => {
-      toast.error('Error al eliminar plantilla', {
-        description: error?.message || 'No se pudo eliminar la plantilla. Inténtalo de nuevo.',
-      });
     },
   });
 }
 
 // Hook para duplicar plantilla
 export function useDuplicateSurveyTemplate() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, newName }: { id: string; newName: string }) =>
-      surveyTemplateService.duplicateTemplate(id, newName),
-    onSuccess: (newId, { newName }) => {
-      // Invalidar la lista
-      queryClient.invalidateQueries({ queryKey: surveyTemplateKeys.lists() });
-      
-      toast.success('Plantilla duplicada exitosamente', {
-        description: `La plantilla "${newName}" ha sido creada.`,
-      });
+  return useOptimisticMutation<string, { id: string; newName: string }>({
+    mutationFn: ({ id, newName }) => surveyTemplateService.duplicateTemplate(id, newName),
+    messages: {
+      success: 'Plantilla duplicada exitosamente',
+      error: 'Error al duplicar plantilla',
     },
-    onError: (error: any) => {
-      toast.error('Error al duplicar plantilla', {
-        description: error?.message || 'No se pudo duplicar la plantilla. Inténtalo de nuevo.',
-      });
-    },
+    invalidateKeys: [surveyTemplateKeys.lists()],
   });
 }
 
@@ -130,21 +97,16 @@ export function useDuplicateSurveyTemplate() {
 export function usePublishSurveyTemplate() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (id: string) => surveyTemplateService.publishTemplate(id),
-    onSuccess: (_, id) => {
-      // Invalidar la lista y el detalle
-      queryClient.invalidateQueries({ queryKey: surveyTemplateKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: surveyTemplateKeys.detail(id) });
-      
-      toast.success('Plantilla publicada exitosamente', {
-        description: 'La plantilla ya no es un borrador y puede ser utilizada.',
-      });
+  return useOptimisticMutation<void, string>({
+    mutationFn: surveyTemplateService.publishTemplate,
+    messages: {
+      success: 'Plantilla publicada exitosamente',
+      error: 'Error al publicar plantilla',
     },
-    onError: (error: any) => {
-      toast.error('Error al publicar plantilla', {
-        description: error?.message || 'No se pudo publicar la plantilla. Inténtalo de nuevo.',
-      });
+    invalidateKeys: [surveyTemplateKeys.lists()],
+    onSuccessCallback: async (_, id) => {
+      // Invalidar el detalle también
+      await queryClient.invalidateQueries({ queryKey: surveyTemplateKeys.detail(id) });
     },
   });
 }

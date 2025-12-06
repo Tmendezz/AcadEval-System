@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -65,17 +65,35 @@ export function ProfessorFormDialog({
     });
   }, [professor, form, open]);
 
-  const handleSubmit = (values: ProfessorFormValues) => {
-    onSubmit(values);
-    onOpenChange(false);
-  };
+  const handleSubmit = useCallback(
+    (values: ProfessorFormValues) => {
+      onSubmit(values);
+      onOpenChange(false);
+    },
+    [onSubmit, onOpenChange]
+  );
 
-  const handleClose = () => {
-    onOpenChange(false);
-  };
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        form.reset();
+        setShowPassword(false);
+      }
+      onOpenChange(open);
+    },
+    [form, onOpenChange]
+  );
+
+  const togglePasswordVisibility = useCallback(() => {
+    setShowPassword((prev) => !prev);
+  }, []);
+
+  const handleClose = useCallback(() => {
+    handleOpenChange(false);
+  }, [handleOpenChange]);
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
@@ -151,7 +169,7 @@ export function ProfessorFormDialog({
                         variant="ghost"
                         size="sm"
                         className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
+                        onClick={togglePasswordVisibility}
                       >
                         {showPassword ? (
                           <EyeOff className="w-4 h-4" />

@@ -17,8 +17,8 @@ export function UserDropdown() {
   const handleLogout = useCallback(async () => {
     try {
       await logout();
-    } catch (error) {
-      console.error("Error al cerrar sesión:", error);
+    } catch {
+      // Silently handle logout errors
     }
   }, [logout]);
 

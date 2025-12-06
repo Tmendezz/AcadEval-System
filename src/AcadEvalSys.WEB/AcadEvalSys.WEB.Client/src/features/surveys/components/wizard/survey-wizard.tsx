@@ -58,15 +58,11 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
 
   const [form, setForm] = useState<SurveyTemplateForm>(() => {
     const questions = fixedQuestions || initialTemplate?.questions || [];
-    console.log('🔍 Debug SurveyWizard - Questions from template:', questions);
-    console.log('🔍 Debug SurveyWizard - fixedQuestions:', fixedQuestions);
-    console.log('🔍 Debug SurveyWizard - initialTemplate?.questions:', initialTemplate?.questions);
     
     return {
       title: initialTemplate?.title || '',
       description: initialTemplate?.description || '',
       questions: questions.map((q, qi) => {
-        console.log('🔍 Debug SurveyWizard - Processing question:', q);
         const processedQuestion = {
           ...q,
           type: normalizeType((q as any).type),
@@ -78,7 +74,6 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
             value: typeof o.value === 'string' ? o.value : String(o.value ?? (o.order ?? oi + 1)),
           })),
         };
-        console.log('🔍 Debug SurveyWizard - Processed question:', processedQuestion);
         return processedQuestion;
       }),
       surveyType: 'Student', // Default to Student

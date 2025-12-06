@@ -1,3 +1,4 @@
+import { memo } from "react";
 import {
   Card,
   CardContent,
@@ -6,15 +7,14 @@ import {
 } from "@/shared/components/ui/card";
 import { Users } from "lucide-react";
 import { CompetencyAssignmentByCareerYearDto } from "../../models";
-
-import { CareerYearCard } from "@/features/evaluations/components/evaluation-detail/career-year-card";
+import { CareerYearCard } from "./career-year-card";
 
 interface CareerAssignmentsSectionProps {
   assignmentsByCareer: CompetencyAssignmentByCareerYearDto[];
   evaluationId: string;
 }
 
-export function CareerAssignmentsSection({
+export const CareerAssignmentsSection = memo(function CareerAssignmentsSection({
   assignmentsByCareer,
   evaluationId,
 }: CareerAssignmentsSectionProps) {
@@ -23,9 +23,7 @@ export function CareerAssignmentsSection({
       <Card>
         <CardContent className="pt-6 text-center">
           <Users className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">
-            No hay asignaciones de carreras
-          </h3>
+          <h3 className="text-lg font-semibold mb-2">No hay asignaciones de carreras</h3>
           <p className="text-sm text-muted-foreground">
             Esta evaluación aún no tiene carreras técnicas asignadas.
           </p>
@@ -42,7 +40,7 @@ export function CareerAssignmentsSection({
       <CardContent>
         <div className="space-y-6">
           {assignmentsByCareer.map((career) => (
-            <div key={career.careerName} className="rounded-lg border bg-card">
+            <div key={career.careerId} className="rounded-lg border bg-card">
               <div className="flex items-center justify-between p-4 border-b">
                 <h3 className="font-semibold text-lg text-foreground">
                   {career.careerName}
@@ -52,18 +50,16 @@ export function CareerAssignmentsSection({
                 </span>
               </div>
               <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-6">
-                {Object.entries(career.assignments).map(
-                  ([yearKey, assignments]) => (
-                    <CareerYearCard
-                      key={yearKey}
-                      year={yearKey}
-                      assignments={assignments}
-                      careerName={career.careerName}
-                      careerId={career.careerId}
-                      evaluationId={evaluationId}
-                    />
-                  )
-                )}
+                {Object.entries(career.assignments).map(([yearKey, assignments]) => (
+                  <CareerYearCard
+                    key={`${career.careerId}-${yearKey}`}
+                    year={yearKey}
+                    assignments={assignments}
+                    careerName={career.careerName}
+                    careerId={career.careerId}
+                    evaluationId={evaluationId}
+                  />
+                ))}
               </div>
             </div>
           ))}
@@ -71,4 +67,4 @@ export function CareerAssignmentsSection({
       </CardContent>
     </Card>
   );
-}
+});

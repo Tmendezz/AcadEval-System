@@ -4,17 +4,17 @@ import { Button } from "@/shared/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import type { ColumnDef } from "@tanstack/react-table";
-import {Professor} from "@features/careers";
+import type { ProfessorDto } from "../services/professor-service";
 
 interface ProfessorColumnHandlers {
-  onEdit?: (prof: Professor) => void;
-  onDelete?: (prof: Professor) => void;
+  onEdit?: (prof: ProfessorDto) => void;
+  onDelete?: (prof: ProfessorDto) => void;
 }
 
 export const professorColumns = ({
   onEdit,
   onDelete,
-}: ProfessorColumnHandlers = {}): ColumnDef<Professor>[] => [
+}: ProfessorColumnHandlers = {}): ColumnDef<ProfessorDto>[] => [
   {
     accessorKey: "name",
     header: "Nombre",

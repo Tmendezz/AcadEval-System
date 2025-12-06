@@ -102,7 +102,6 @@ export default function CreateSurveyPage() {
           onSubmit={async ({ form, settings, scheduling }) => {
               if (!selectedTemplateId) {
                 // TODO: Mostrar un error al usuario
-                console.error("Error: No se ha seleccionado una plantilla.");
                 return;
               }
 
@@ -157,8 +156,6 @@ export default function CreateSurveyPage() {
                 }))
               };
 
-            console.log('🔍 Debug CreateSurvey - Form data:', form);
-            console.log('🔍 Debug CreateSurvey - Survey to create:', surveyToCreate);
             await createSurveyMutation.mutateAsync(surveyToCreate as unknown as CreateAcademicSurveyRequest);
             clearCreateState();
             setLocation('/encuestas');

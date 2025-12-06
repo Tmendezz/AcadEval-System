@@ -1,4 +1,5 @@
 import { useParams, Link } from "wouter";
+import { useMemo, useCallback } from "react";
 import {
   PageLayout,
   PageContent,
@@ -18,32 +19,27 @@ import { Skeleton } from "@/shared/components/ui/skeleton";
 import { ArrowLeft, Users, BookOpen, Save } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/infrastructure/query/queryClient";
+import { toast } from "sonner";
 import { completeStudentAssessment } from "@/features/professor-evaluations/services/professor-evaluations-service";
 import { useProfessorAssignment } from "@/features/professor-evaluations/hooks/use-professor-assignment";
 import { useAssignmentStudents } from "@/features/professor-evaluations/hooks/use-assignment-students";
-import { useMemo } from "react";
 import { StudentCompetencyEvaluation } from "@/features/professor-evaluations/models/professor-evaluation";
 import { useProfessorEvaluationsStore } from "@/features/professor-evaluations/store/use-professor-evaluations-store";
-import type { ProfessorEvaluationsState } from "@/features/professor-evaluations/store/use-professor-evaluations-store";
 import { getNivelBadgeVariant, getNivelColor } from "@/features/professor-evaluations/utils/levels";
+
+// Constante fuera del componente
+const COMPETENCY_LEVELS = ["Inicial", "Intermedio", "Avanzado", "Excelente"] as const;
+const LEVEL_ORDER = ["Inicial", "Intermedio", "Avanzado", "Excelente"] as const;
 
 export function ProfessorEvaluationPage() {
   const { assignmentId } = useParams<{ assignmentId: string }>();
-  const pendingSaves = useProfessorEvaluationsStore(
-    (s: ProfessorEvaluationsState) => s.pendingSaves
-  );
-  const setPendingSave = useProfessorEvaluationsStore(
-    (s: ProfessorEvaluationsState) => s.setPendingSave
-  );
-  const clearPendingSaves = useProfessorEvaluationsStore(
-    (s: ProfessorEvaluationsState) => s.clearPendingSaves
-  );
-  const lastSavedAt = useProfessorEvaluationsStore(
-    (s: ProfessorEvaluationsState) => s.lastSavedAt
-  );
-  const setLastSavedAt = useProfessorEvaluationsStore(
-    (s: ProfessorEvaluationsState) => s.setLastSavedAt
-  );
+
+  // Selectores individuales de Zustand para evitar re-renders innecesarios
+  const pendingSaves = useProfessorEvaluationsStore((s) => s.pendingSaves);
+  const setPendingSave = useProfessorEvaluationsStore((s) => s.setPendingSave);
+  const clearPendingSaves = useProfessorEvaluationsStore((s) => s.clearPendingSaves);
+  const lastSavedAt = useProfessorEvaluationsStore((s) => s.lastSavedAt);
+  const setLastSavedAt = useProfessorEvaluationsStore((s) => s.setLastSavedAt);
 
   const { data: assignment, isLoading: isLoadingAssignment } = useProfessorAssignment(
     assignmentId || ""
@@ -53,18 +49,33 @@ export function ProfessorEvaluationPage() {
     assignmentId || ""
   );
 
-  const students: StudentCompetencyEvaluation[] =
-    studentsData?.studentEvaluations || [];
+  // Memoizar lista de estudiantes
+  const students: StudentCompetencyEvaluation[] = useMemo(
+    () => studentsData?.studentEvaluations || [],
+    [studentsData?.studentEvaluations]
+  );
 
+  // Memoizar cálculo de progreso
   const progress = useMemo(() => {
     if (!studentsData) return 0;
     const value =
-      (studentsData.evaluatedStudentsCount / studentsData.totalStudentsCount) *
-      100;
+      (studentsData.evaluatedStudentsCount / studentsData.totalStudentsCount) * 100;
     return Number.isFinite(value) ? value : 0;
   }, [studentsData]);
 
-  
+  // Memoizar número de evaluaciones pendientes
+  const pendingSavesCount = useMemo(
+    () => Object.keys(pendingSaves).length,
+    [pendingSaves]
+  );
+
+  // Memoizar descripciones de niveles ordenadas
+  const sortedLevelDescriptions = useMemo(() => {
+    if (!assignment?.competencyLevelDescriptions) return [];
+    return Object.entries(assignment.competencyLevelDescriptions).sort(
+      (a, b) => LEVEL_ORDER.indexOf(a[0] as any) - LEVEL_ORDER.indexOf(b[0] as any)
+    );
+  }, [assignment?.competencyLevelDescriptions]);
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -81,6 +92,7 @@ export function ProfessorEvaluationPage() {
     onSuccess: async () => {
       setLastSavedAt(Date.now());
       clearPendingSaves();
+      toast.success("Evaluaciones guardadas exitosamente");
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: ["assignment-students", assignmentId],
@@ -90,16 +102,23 @@ export function ProfessorEvaluationPage() {
         }),
       ]);
     },
+    onError: () => {
+      toast.error("Error al guardar las evaluaciones");
+    },
   });
 
-  const actualizarEvaluacion = (studentId: string, nivel: string) => {
-    setPendingSave(studentId, nivel as any);
-  };
+  // Handlers memoizados
+  const actualizarEvaluacion = useCallback(
+    (studentId: string, nivel: string) => {
+      setPendingSave(studentId, nivel as any);
+    },
+    [setPendingSave]
+  );
 
-  const guardarEvaluaciones = () => {
-    if (Object.keys(pendingSaves).length === 0) return;
+  const guardarEvaluaciones = useCallback(() => {
+    if (pendingSavesCount === 0) return;
     mutation.mutate();
-  };
+  }, [pendingSavesCount, mutation]);
 
   if (isLoadingAssignment || isLoadingStudents) {
     return (
@@ -174,20 +193,15 @@ export function ProfessorEvaluationPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {Object.entries(assignment.competencyLevelDescriptions || {})
-                .sort((a, b) => {
-                  const order = ["Inicial", "Intermedio", "Avanzado", "Excelente"] as const;
-                  return order.indexOf(a[0] as any) - order.indexOf(b[0] as any);
-                })
-                .map(([nivel, descripcion]) => (
-                  <div key={nivel} className="p-3 rounded-lg border bg-card">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className={`w-3 h-3 rounded-full ${getNivelColor(nivel)}`} />
-                      <h4 className="font-semibold capitalize text-sm">{nivel}</h4>
-                    </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{descripcion}</p>
+              {sortedLevelDescriptions.map(([nivel, descripcion]) => (
+                <div key={nivel} className="p-3 rounded-lg border bg-card">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className={`w-3 h-3 rounded-full ${getNivelColor(nivel)}`} />
+                    <h4 className="font-semibold capitalize text-sm">{nivel}</h4>
                   </div>
-                ))}
+                  <p className="text-xs text-muted-foreground leading-relaxed">{descripcion}</p>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -216,35 +230,25 @@ export function ProfessorEvaluationPage() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {["Inicial", "Intermedio", "Avanzado", "Excelente"].map(
-                      (nivel) => (
+                    {COMPETENCY_LEVELS.map((nivel) => {
+                      const isSelected = pendingSaves[student.studentId]
+                        ? pendingSaves[student.studentId] === nivel
+                        : student.competencyLevel === nivel;
+                      return (
                         <Button
                           key={nivel}
-                          title={
-                            assignment.competencyLevelDescriptions?.[nivel] ||
-                            undefined
-                          }
-                          variant={pendingSaves[student.studentId]
-                            ? pendingSaves[student.studentId] === nivel
-                              ? "default"
-                              : "outline"
-                            : student.competencyLevel === nivel
-                            ? "default"
-                            : "outline"}
+                          title={assignment.competencyLevelDescriptions?.[nivel] || undefined}
+                          variant={isSelected ? "default" : "outline"}
                           size="sm"
                           className={`min-w-20 ${
-                            (pendingSaves[student.studentId]
-                              ? pendingSaves[student.studentId] === nivel
-                              : student.competencyLevel === nivel)
-                              ? getNivelColor(nivel) + " text-white hover:opacity-90"
-                              : ""
+                            isSelected ? getNivelColor(nivel) + " text-white hover:opacity-90" : ""
                           }`}
                           onClick={() => actualizarEvaluacion(student.studentId, nivel)}
                         >
                           <span className="capitalize text-xs">{nivel}</span>
                         </Button>
-                      )
-                    )}
+                      );
+                    })}
                     {(pendingSaves[student.studentId] || student.competencyLevel) && (
                       <Badge
                         variant={getNivelBadgeVariant(
@@ -267,12 +271,12 @@ export function ProfessorEvaluationPage() {
             onClick={guardarEvaluaciones}
             size="lg"
             className="min-w-48"
-            disabled={Object.keys(pendingSaves).length === 0 || mutation.isPending}
+            disabled={pendingSavesCount === 0 || mutation.isPending}
           >
             <Save className="h-4 w-4 mr-2" />
             {lastSavedAt
               ? "Evaluaciones Guardadas"
-              : `Guardar ${Object.keys(pendingSaves).length} Evaluaciones`}
+              : `Guardar ${pendingSavesCount} Evaluaciones`}
           </Button>
         </div>
         </PageSection>

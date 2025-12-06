@@ -153,8 +153,6 @@ export default function RespondSurveyPage() {
 
         await submitSurveyResponse.mutateAsync({ surveyId, surveySubjectId: subjectId, subjectAnswers });
       }
-
-      console.log('Respuestas enviadas exitosamente');
       
       // Limpiar el store después de enviar exitosamente
       clearSurvey();
@@ -165,8 +163,7 @@ export default function RespondSurveyPage() {
       // Redirigir a la lista de encuestas
       setLocation('/encuestas/mis-encuestas?completed=true');
       
-    } catch (error) {
-      console.error('Error al enviar todas las encuestas:', error);
+    } catch {
       // No limpiar el store para que el usuario pueda intentar de nuevo
       alert('Error al enviar las respuestas. Por favor, intenta nuevamente.');
     } finally {

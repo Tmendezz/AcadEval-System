@@ -1,3 +1,4 @@
+import { memo, useCallback, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -30,7 +31,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { useCompetencyById, useUpdateCompetency } from "@/features/competencies/hooks/use-competencies";
 
 interface EditCompetencyModalProps {
   competency: Competency;
@@ -40,44 +40,53 @@ interface EditCompetencyModalProps {
   isLoading: boolean;
 }
 
-export function EditCompetencyModal({
+// Helper para extraer descripción de nivel
+const getLevelDescription = (levels: Competency["levels"], level: string): string =>
+  levels?.find((l) => l.level === level)?.description || "";
+
+export const EditCompetencyModal = memo(function EditCompetencyModal({
   competency,
   isOpen,
   onClose,
   onSubmit,
   isLoading,
 }: EditCompetencyModalProps) {
-  const form = useForm<EditCompetencyFormData>({
-    resolver: zodResolver(editCompetencySchema),
-    defaultValues: {
+  // Memoizar valores por defecto
+  const defaultValues = useMemo(
+    () => ({
       name: competency.name,
       description: competency.description,
       type: competency.type,
       levels: {
-        Inicial:
-          (competency.levels || []).find((l) => l.level === "Inicial")?.description || "",
-        Intermedio:
-          (competency.levels || []).find((l) => l.level === "Intermedio")?.description || "",
-        Avanzado:
-          (competency.levels || []).find((l) => l.level === "Avanzado")?.description || "",
-        Excelente:
-          (competency.levels || []).find((l) => l.level === "Excelente")?.description || "",
+        Inicial: getLevelDescription(competency.levels, "Inicial"),
+        Intermedio: getLevelDescription(competency.levels, "Intermedio"),
+        Avanzado: getLevelDescription(competency.levels, "Avanzado"),
+        Excelente: getLevelDescription(competency.levels, "Excelente"),
       },
-    },
+    }),
+    [competency]
+  );
+
+  const form = useForm<EditCompetencyFormData>({
+    resolver: zodResolver(editCompetencySchema),
+    defaultValues,
   });
 
-  const handleSubmit = (data: EditCompetencyFormData) => {
-    onSubmit({
-      ...data,
-      type: data.type as "Technical" | "Soft",
-      levels: data.levels,
-    });
-  };
+  const handleSubmit = useCallback(
+    (data: EditCompetencyFormData) => {
+      onSubmit({
+        ...data,
+        type: data.type as "Technical" | "Soft",
+        levels: data.levels,
+      });
+    },
+    [onSubmit]
+  );
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     form.reset();
     onClose();
-  };
+  }, [form, onClose]);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -180,4 +189,4 @@ export function EditCompetencyModal({
       </DialogContent>
     </Dialog>
   );
-}
+});

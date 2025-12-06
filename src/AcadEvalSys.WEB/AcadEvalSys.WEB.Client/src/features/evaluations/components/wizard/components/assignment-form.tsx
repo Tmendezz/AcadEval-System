@@ -8,7 +8,7 @@ import {
   Assignment,
   Competency,
   Subject,
-} from "../../../types/evaluation-form";
+} from "../../../models/evaluation-form";
 import { SmartSelect } from "@/shared/components/ui/smart-select";
 
 interface AssignmentFormProps {

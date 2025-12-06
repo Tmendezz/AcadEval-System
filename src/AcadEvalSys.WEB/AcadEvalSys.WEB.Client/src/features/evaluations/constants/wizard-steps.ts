@@ -1,4 +1,4 @@
-import { WizardStep } from "../types/evaluation-form";
+import { WizardStep } from "../models/evaluation-form";
 
 export const WIZARD_STEPS: WizardStep[] = [
   {

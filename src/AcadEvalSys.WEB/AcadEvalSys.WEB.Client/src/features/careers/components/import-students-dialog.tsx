@@ -53,12 +53,12 @@ export function ImportStudentsDialog({
   const importMutation = useImportStudents();
 
   const validateAndSetFile = useCallback((file: File) => {
-    const allowedTypes = [".csv", ".xlsx", ".xls"]; // CSV o Excel
+    const allowedTypes = [".xlsx", ".xls"]; // Solo Excel
     const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
 
     if (!allowedTypes.includes(fileExtension)) {
       toast.error(
-        "Tipo de archivo no permitido. Use CSV o Excel (.xlsx, .xls)"
+        "Tipo de archivo no permitido. Use Excel (.xlsx, .xls)"
       );
       return;
     }
@@ -106,8 +106,8 @@ export function ImportStudentsDialog({
         file: selectedFile,
       });
       setImportResult(result);
-    } catch (error) {
-      console.error("Error importing students:", error);
+    } catch {
+      // Silently handle import errors
     }
   };
 
@@ -128,6 +128,7 @@ export function ImportStudentsDialog({
     }.csv`;
     a.click();
     URL.revokeObjectURL(url);
+    toast.success("Archivo CSV descargado exitosamente");
   };
 
   const handleClose = () => {
@@ -172,14 +173,14 @@ export function ImportStudentsDialog({
       <CardContent className="pt-0">
         <div className="space-y-2">
           <p className="text-sm text-gray-600">
-            El archivo CSV debe tener las siguientes columnas:
+            El archivo Excel debe tener las siguientes columnas:
           </p>
           <div className="bg-gray-50 p-3 rounded font-mono text-sm">
-            email,name,password
+            email | name | password
             <br />
-            juan.perez@ejemplo.com,Juan Pérez,
+            juan.perez@ejemplo.com | Juan Pérez | (opcional)
             <br />
-            maria.gonzalez@ejemplo.com,María González,MiPassword123!
+            maria.gonzalez@ejemplo.com | María González | MiPassword123!
           </div>
           <ul className="text-sm text-gray-600 space-y-1">
             <li>
@@ -303,7 +304,7 @@ export function ImportStudentsDialog({
         <DialogHeader>
           <DialogTitle>Inscribir Alumnos</DialogTitle>
           <DialogDescription>
-            Inscribe alumnos desde un archivo CSV o Excel a la materia{" "}
+            Inscribe alumnos desde un archivo Excel a la materia{" "}
             <strong>{subjectName}</strong>
           </DialogDescription>
         </DialogHeader>
@@ -318,13 +319,13 @@ export function ImportStudentsDialog({
                 Arrastra tu archivo aquí o haz clic para seleccionar
               </p>
               <p className="text-sm text-gray-500 mb-4">
-                Formato soportado: CSV - Máximo 5MB
+                Formato soportado: Excel (.xlsx, .xls) - Máximo 5MB
               </p>
 
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".csv,.xlsx,.xls"
+                accept=".xlsx,.xls"
                 onChange={handleFileSelected}
                 className="sr-only"
               />

@@ -1,13 +1,18 @@
+import { useCallback, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { authService } from "../services/auth-service";
 import { useAuthStore } from "../store";
 import { navigate } from "wouter/use-browser-location";
-import { toast } from "sonner";
 import { LoginCredentials } from "../models";
 import { getErrorMessage } from "@/shared/utils/error-handler";
 
+/**
+ * Hook para manejar el login de usuario
+ */
 export const useLogin = () => {
-  const { isLoading, error } = useAuthStore();
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const error = useAuthStore((state) => state.error);
+  const setError = useAuthStore((state) => state.setError);
 
   const loginMutation = useMutation({
     mutationFn: authService.login,
@@ -15,49 +20,55 @@ export const useLogin = () => {
       navigate("/dashboard");
     },
     onError: (error: unknown) => {
-      // Usar el handler centralizado de errores
       const errorMessage = getErrorMessage(error);
-      
-      // Actualizar el store con el error para que se muestre en el formulario
-      const store = useAuthStore.getState();
-      store.setError(errorMessage);
+      setError(errorMessage);
     },
   });
 
-  const login = async (credentials: LoginCredentials) => {
-    return loginMutation.mutateAsync(credentials);
-  };
+  const login = useCallback(
+    async (credentials: LoginCredentials) => {
+      return loginMutation.mutateAsync(credentials);
+    },
+    [loginMutation]
+  );
 
-  return {
-    login,
-    isLoading: isLoading || loginMutation.isPending,
-    error: error || loginMutation.error,
-    isSuccess: loginMutation.isSuccess,
-  };
+  return useMemo(
+    () => ({
+      login,
+      isLoading: isLoading || loginMutation.isPending,
+      error: error || loginMutation.error,
+      isSuccess: loginMutation.isSuccess,
+    }),
+    [login, isLoading, loginMutation.isPending, error, loginMutation.error, loginMutation.isSuccess]
+  );
 };
 
+/**
+ * Hook para manejar el logout de usuario
+ */
 export const useLogout = () => {
-  const { isLoading } = useAuthStore();
+  const isLoading = useAuthStore((state) => state.isLoading);
 
   const logoutMutation = useMutation({
     mutationFn: authService.logout,
     onSuccess: () => {
-      toast.success("Sesión cerrada correctamente");
       navigate("/auth/login");
     },
-    onError: (error: unknown) => {
-      console.error("Error al cerrar sesión:", error);
-      toast.error("Error al cerrar sesión");
+    onError: () => {
+      // Redirigir de todas formas para limpiar el estado
       navigate("/auth/login");
     },
   });
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     return logoutMutation.mutateAsync();
-  };
+  }, [logoutMutation]);
 
-  return {
-    logout,
-    isLoading: isLoading || logoutMutation.isPending,
-  };
+  return useMemo(
+    () => ({
+      logout,
+      isLoading: isLoading || logoutMutation.isPending,
+    }),
+    [logout, isLoading, logoutMutation.isPending]
+  );
 };

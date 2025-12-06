@@ -4,6 +4,13 @@ import { Button } from "@/shared/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
 import { Student } from "../services/student-service";
 
+// Constante fuera de la función para evitar recreación
+const YEAR_LABELS: Record<number, string> = {
+  1: "Primer Año",
+  2: "Segundo Año",
+  3: "Tercer Año",
+};
+
 interface StudentColumnsProps {
   onEdit: (student: Student) => void;
   onDelete: (student: Student) => void;
@@ -51,14 +58,9 @@ export const studentColumns = ({
     header: "Año",
     cell: ({ row }) => {
       const year = row.getValue("currentYear") as number;
-      const yearLabels = {
-        1: "Primer Año",
-        2: "Segundo Año",
-        3: "Tercer Año",
-      };
       return (
         <Badge variant="secondary">
-          {yearLabels[year as keyof typeof yearLabels] || `Año ${year}`}
+          {YEAR_LABELS[year] || `Año ${year}`}
         </Badge>
       );
     },

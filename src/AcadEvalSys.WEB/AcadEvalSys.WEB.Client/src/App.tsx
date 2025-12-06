@@ -2,14 +2,14 @@ import { Suspense } from "react";
 import { Switch, Route } from "wouter";
 import { AppLayout } from "./shared/components/layout";
 import { PageLoader } from "./shared/components/ui/page-loader";
-import { routes, RouteList } from "./shared/routing";
+import { routes, renderRoutes } from "./shared/routing";
 
 export function App() {
   return (
     <AppLayout>
       <Suspense fallback={<PageLoader />}>
         <Switch>
-          <RouteList routes={routes} />
+          {renderRoutes(routes)}
 
           <Route path="/:rest*">
             <div className="flex items-center justify-center min-h-[400px]">

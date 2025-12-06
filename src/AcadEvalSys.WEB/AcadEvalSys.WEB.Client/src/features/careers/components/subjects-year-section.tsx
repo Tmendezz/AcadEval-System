@@ -1,3 +1,4 @@
+import { memo, useMemo, useCallback } from "react";
 import { Input } from "@/shared/components/ui/input";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
@@ -7,6 +8,13 @@ import type { Subject } from "@/features/careers/models/subject";
 import type { Professor } from "@/features/careers/models/professor";
 
 type SubjectRow = Subject & { isNew?: boolean };
+
+// Constante fuera del componente
+const YEAR_LABELS: Record<string, string> = {
+  First: "1° Año",
+  Second: "2° Año",
+  Third: "3° Año",
+};
 
 interface SubjectsYearSectionProps {
   year: "First" | "Second" | "Third";
@@ -22,7 +30,7 @@ interface SubjectsYearSectionProps {
   onSubjectDelete?: (subjectId: string) => void;
 }
 
-export function SubjectsYearSection({
+export const SubjectsYearSection = memo(function SubjectsYearSection({
   year,
   subjects,
   existingProfessors,
@@ -35,28 +43,41 @@ export function SubjectsYearSection({
   onSubjectAdd,
   onSubjectDelete,
 }: SubjectsYearSectionProps) {
-  const yearLabel =
-    year === "First" ? "1° Año" : year === "Second" ? "2° Año" : "3° Año";
-  const yearSubjects = subjects.filter((s) => s.year === year);
+  const yearLabel = YEAR_LABELS[year];
+  
+  // Memoizar filtrado de asignaturas por año
+  const yearSubjects = useMemo(
+    () => subjects.filter((s) => s.year === year),
+    [subjects, year]
+  );
 
-  const getProfessorOptions = (subject: SubjectRow) => {
-    const opts = existingProfessors.map((p) => ({
-      value: p.id,
-      label: `${p.name}`,
-    }));
+  // Memoizar opciones base de profesores
+  const baseOptions = useMemo(
+    () => existingProfessors.map((p) => ({ value: p.id, label: p.name })),
+    [existingProfessors]
+  );
 
-    if (
-      subject.professorId &&
-      !opts.some((o) => o.value === subject.professorId)
-    ) {
-      opts.unshift({
-        value: subject.professorId,
-        label: subject.professorName || "Profesor asignado",
-      });
-    }
+  // Función para obtener opciones con profesor actual si no está en la lista
+  const getProfessorOptions = useCallback(
+    (subject: SubjectRow) => {
+      if (
+        subject.professorId &&
+        !baseOptions.some((o) => o.value === subject.professorId)
+      ) {
+        return [
+          { value: subject.professorId, label: subject.professorName || "Profesor asignado" },
+          ...baseOptions,
+        ];
+      }
+      return baseOptions;
+    },
+    [baseOptions]
+  );
 
-    return opts;
-  };
+  // Handler memoizado para agregar asignatura
+  const handleAddSubject = useCallback(() => {
+    onSubjectAdd?.(year);
+  }, [onSubjectAdd, year]);
 
   return (
     <Card className="p-4 space-y-3">
@@ -66,7 +87,7 @@ export function SubjectsYearSection({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => onSubjectAdd(year)}
+            onClick={handleAddSubject}
           >
             <Plus className="w-4 h-4 mr-2" />
             Agregar asignatura
@@ -161,4 +182,4 @@ export function SubjectsYearSection({
       </div>
     </Card>
   );
-}
+});

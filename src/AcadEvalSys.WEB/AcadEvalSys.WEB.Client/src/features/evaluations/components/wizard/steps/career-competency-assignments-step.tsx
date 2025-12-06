@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { Assignment } from "../../../types/evaluation-form";
+import { useState, useMemo, useCallback } from "react";
+import { Assignment } from "../../../models/evaluation-form";
 import { useTechnicalCareers } from "@/shared/hooks/use-technical-careers";
 import { useSubjectsByCareer } from "@/shared/hooks/use-subjects";
 import { useCompetencies } from "@/features/competencies/hooks/use-competencies";
@@ -46,79 +46,172 @@ export function CareerCompetencyAssignmentsStep({
     [careers, selectedCareers]
   );
 
-  const toggleCareer = (careerId: string) => {
-    const newExpanded = new Set(expandedCareers);
-    if (newExpanded.has(careerId)) {
-      newExpanded.delete(careerId);
-    } else {
-      newExpanded.add(careerId);
-    }
-    setExpandedCareers(newExpanded);
-  };
+  // Memoizar el conteo de asignaciones
+  const assignmentCountText = useMemo(
+    () => formatAssignmentCount(assignments.length),
+    [assignments.length]
+  );
 
-  const addCareer = (careerId: string) => {
-    if (!careerId) return;
-    const newSet = new Set(selectedCareers);
-    newSet.add(careerId);
-    setSelectedCareers(newSet);
-    setCareerToAdd("");
-    // expandir automáticamente
-    const newExpanded = new Set(expandedCareers);
-    newExpanded.add(careerId);
-    setExpandedCareers(newExpanded);
-  };
+  // Memoizar las carreras seleccionadas filtradas
+  const selectedCareersList = useMemo(
+    () => careers.filter((c) => selectedCareers.has(c.id)),
+    [careers, selectedCareers]
+  );
 
-  const removeCareer = (careerId: string) => {
-    const newSelected = new Set(selectedCareers);
-    newSelected.delete(careerId);
-    setSelectedCareers(newSelected);
-    // colapsar
-    const newExpanded = new Set(expandedCareers);
-    newExpanded.delete(careerId);
-    setExpandedCareers(newExpanded);
-    // eliminar asignaciones de esa carrera
-    const filtered = assignments.filter((a) => a.careerId !== careerId);
-    if (filtered.length !== assignments.length) {
-      onAssignmentsChange(filtered);
-    }
-  };
+  const toggleCareer = useCallback((careerId: string) => {
+    setExpandedCareers((prev) => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(careerId)) {
+        newExpanded.delete(careerId);
+      } else {
+        newExpanded.add(careerId);
+      }
+      return newExpanded;
+    });
+  }, []);
 
-  const toggleYear = (careerId: string, year: number) => {
+  const addCareer = useCallback(
+    (careerId: string) => {
+      if (!careerId) return;
+      setSelectedCareers((prev) => {
+        const newSet = new Set(prev);
+        newSet.add(careerId);
+        return newSet;
+      });
+      setCareerToAdd("");
+      // expandir automáticamente
+      setExpandedCareers((prev) => {
+        const newExpanded = new Set(prev);
+        newExpanded.add(careerId);
+        return newExpanded;
+      });
+    },
+    []
+  );
+
+  const removeCareer = useCallback(
+    (careerId: string) => {
+      setSelectedCareers((prev) => {
+        const newSelected = new Set(prev);
+        newSelected.delete(careerId);
+        return newSelected;
+      });
+      // colapsar
+      setExpandedCareers((prev) => {
+        const newExpanded = new Set(prev);
+        newExpanded.delete(careerId);
+        return newExpanded;
+      });
+      // eliminar asignaciones de esa carrera
+      const filtered = assignments.filter((a) => a.careerId !== careerId);
+      if (filtered.length !== assignments.length) {
+        onAssignmentsChange(filtered);
+      }
+    },
+    [assignments, onAssignmentsChange]
+  );
+
+  const toggleYear = useCallback((careerId: string, year: number) => {
     const yearKey = `${careerId}-${year}`;
-    const newExpanded = new Set(expandedYears);
-    if (newExpanded.has(yearKey)) {
-      newExpanded.delete(yearKey);
-    } else {
-      newExpanded.add(yearKey);
-    }
-    setExpandedYears(newExpanded);
-  };
+    setExpandedYears((prev) => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(yearKey)) {
+        newExpanded.delete(yearKey);
+      } else {
+        newExpanded.add(yearKey);
+      }
+      return newExpanded;
+    });
+  }, []);
 
-  const removeAssignment = (index: number) => {
-    const target = assignments[index];
-    if (!target) return;
+  const removeAssignment = useCallback(
+    (index: number) => {
+      const target = assignments[index];
+      if (!target) return;
 
-    const newAssignments = assignments.filter((a, i) =>
-      i === index
-        ? false
-        : !(
-            a.careerId === target.careerId &&
-            a.year === target.year &&
-            a.competencyId === target.competencyId
-          )
-    );
-    onAssignmentsChange(newAssignments);
-  };
+      const newAssignments = assignments.filter((a, i) =>
+        i === index
+          ? false
+          : !(
+              a.careerId === target.careerId &&
+              a.year === target.year &&
+              a.competencyId === target.competencyId
+            )
+      );
+      onAssignmentsChange(newAssignments);
+    },
+    [assignments, onAssignmentsChange]
+  );
 
-  const updateAssignment = (
-    index: number,
-    field: "competencyId" | "subjectId",
-    value: string
-  ) => {
-    const newAssignments = [...assignments];
-    newAssignments[index] = { ...newAssignments[index], [field]: value };
-    onAssignmentsChange(newAssignments);
-  };
+  const updateAssignment = useCallback(
+    (index: number, field: "competencyId" | "subjectId", value: string) => {
+      const newAssignments = [...assignments];
+      newAssignments[index] = { ...newAssignments[index], [field]: value };
+      onAssignmentsChange(newAssignments);
+    },
+    [assignments, onAssignmentsChange]
+  );
+
+  const ensureAssignmentsForSubjects = useCallback(
+    (careerId: string, year: number) => {
+      // Regla: debe existir exactamente una fila por competencia y año; preasignar competencyId.
+      const competencyIds = competencies.map((c) => c.id);
+      const next = [...assignments];
+
+      const indices = next
+        .map((a, idx) => ({ a, idx }))
+        .filter(({ a }) => a.careerId === careerId && a.year === year);
+
+      const usedCompetencyIds = new Set(
+        indices.map(({ a }) => a.competencyId).filter(Boolean) as string[]
+      );
+
+      // 2) Completar competencyId faltantes reutilizando filas vacías
+      const remainingCompetencyIds = competencyIds.filter(
+        (id) => !usedCompetencyIds.has(id)
+      );
+      for (const item of indices) {
+        if (!item.a.competencyId && remainingCompetencyIds.length > 0) {
+          item.a.competencyId = remainingCompetencyIds.shift()!;
+        }
+      }
+
+      // 3) Si aún faltan competencias, crear filas
+      for (const compId of remainingCompetencyIds) {
+        next.push({
+          careerId,
+          year,
+          competencyId: compId,
+          subjectId: "",
+        });
+      }
+
+      // 4) Si sobran filas respecto a competencias, eliminar filas vacías sobrantes
+      const yearRows = next.filter(
+        (a) => a.careerId === careerId && a.year === year
+      );
+      if (yearRows.length > competencyIds.length) {
+        let toRemove = yearRows.length - competencyIds.length;
+        for (let i = next.length - 1; i >= 0 && toRemove > 0; i--) {
+          const a = next[i];
+          if (
+            a.careerId === careerId &&
+            a.year === year &&
+            !a.subjectId &&
+            (!a.competencyId || !competencyIds.includes(a.competencyId))
+          ) {
+            next.splice(i, 1);
+            toRemove--;
+          }
+        }
+      }
+
+      // 5) Persistir si hubo cambios
+      const changed = JSON.stringify(assignments) !== JSON.stringify(next);
+      if (changed) onAssignmentsChange(next);
+    },
+    [assignments, competencies, onAssignmentsChange]
+  );
 
   const ensureAssignmentsForSubjects = (careerId: string, year: number) => {
     // Regla: debe existir exactamente una fila por competencia y año; preasignar competencyId.
@@ -240,7 +333,7 @@ export function CareerCompetencyAssignmentsStep({
         </h3>
         <div className="flex items-center gap-3">
           <div className="text-sm text-muted-foreground">
-            {formatAssignmentCount(assignments.length)}
+            {assignmentCountText}
           </div>
         </div>
       </div>
@@ -279,9 +372,7 @@ export function CareerCompetencyAssignmentsStep({
       )}
 
       <div className="space-y-4">
-        {careers
-          .filter((c) => selectedCareers.has(c.id))
-          .map((career) => {
+        {selectedCareersList.map((career) => {
             const careerAssignments = assignments.filter(
               (a) => a.careerId === career.id
             );

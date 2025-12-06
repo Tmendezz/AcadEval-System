@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,63 +22,41 @@ import {
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { Eye, EyeOff } from "lucide-react";
-import { Professor } from "@infrastructure/api/types/professor";
+import { UserListItem } from "../services/identity-admin-service";
 
-const baseSchema = z.object({
-  name: z.string().min(2, "El nombre es obligatorio"),
-  email: z.string().email("Email inválido"),
-  password: z.string().optional(),
-});
+const passwordValidation = z
+  .string()
+  .min(8, "La contraseña debe tener al menos 8 caracteres")
+  .regex(/[A-Z]/, "La contraseña debe contener al menos una letra mayúscula")
+  .regex(/[a-z]/, "La contraseña debe contener al menos una letra minúscula")
+  .regex(/[0-9]/, "La contraseña debe contener al menos un número")
+  .regex(
+    /[^A-Za-z0-9]/,
+    "La contraseña debe contener al menos un carácter especial"
+  );
 
 const createSchema = z.object({
   name: z.string().min(2, "El nombre es obligatorio"),
   email: z.string().email("Email inválido"),
-  password: z
-    .string()
-    .min(8, "La contraseña debe tener al menos 8 caracteres")
-    .regex(/[A-Z]/, "La contraseña debe contener al menos una letra mayúscula")
-    .regex(/[a-z]/, "La contraseña debe contener al menos una letra minúscula")
-    .regex(/[0-9]/, "La contraseña debe contener al menos un número")
-    .regex(
-      /[^A-Za-z0-9]/,
-      "La contraseña debe contener al menos un carácter especial"
-    ),
+  password: passwordValidation,
 });
 
 const editSchema = z.object({
   name: z.string().min(2, "El nombre es obligatorio"),
   email: z.string().email("Email inválido"),
-  password: z
-    .string()
-    .optional()
-    .refine(
-      (val) => !val || val.length >= 8,
-      "La contraseña debe tener al menos 8 caracteres"
-    )
-    .refine(
-      (val) => !val || /[A-Z]/.test(val),
-      "La contraseña debe contener al menos una letra mayúscula"
-    )
-    .refine(
-      (val) => !val || /[a-z]/.test(val),
-      "La contraseña debe contener al menos una letra minúscula"
-    )
-    .refine(
-      (val) => !val || /[0-9]/.test(val),
-      "La contraseña debe contener al menos un número"
-    )
-    .refine(
-      (val) => !val || /[^A-Za-z0-9]/.test(val),
-      "La contraseña debe contener al menos un carácter especial"
-    ),
+  password: passwordValidation.optional(),
 });
 
-export type AdminFormValues = z.infer<typeof createSchema>;
+export type AdminFormValues = {
+  name: string;
+  email: string;
+  password?: string;
+};
 
 interface AdminFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  administrator?: Professor | null;
+  administrator?: UserListItem | null;
   onSubmit: (values: AdminFormValues) => void;
 }
 
@@ -110,17 +88,35 @@ export function AdminFormDialog({
     });
   }, [administrator, form, open]);
 
-  const handleSubmit = (values: AdminFormValues) => {
-    onSubmit(values);
-    onOpenChange(false);
-  };
+  const handleSubmit = useCallback(
+    (values: AdminFormValues) => {
+      onSubmit(values);
+      onOpenChange(false);
+    },
+    [onSubmit, onOpenChange]
+  );
 
-  const handleClose = () => {
-    onOpenChange(false);
-  };
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        form.reset();
+        setShowPassword(false);
+      }
+      onOpenChange(open);
+    },
+    [form, onOpenChange]
+  );
+
+  const togglePasswordVisibility = useCallback(() => {
+    setShowPassword((prev) => !prev);
+  }, []);
+
+  const handleClose = useCallback(() => {
+    handleOpenChange(false);
+  }, [handleOpenChange]);
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
@@ -196,7 +192,7 @@ export function AdminFormDialog({
                         variant="ghost"
                         size="sm"
                         className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
+                        onClick={togglePasswordVisibility}
                       >
                         {showPassword ? (
                           <EyeOff className="w-4 h-4" />

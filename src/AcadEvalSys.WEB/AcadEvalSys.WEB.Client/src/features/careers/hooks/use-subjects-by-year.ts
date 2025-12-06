@@ -1,8 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { CareerYear } from "../models";
 import { getSubjectsByCareer } from "../services/subject-service";
-import { Subject } from "../models";
 
 interface UseSubjectsByYearOptions {
   includeEnrolledStudents?: boolean;
@@ -10,13 +9,19 @@ interface UseSubjectsByYearOptions {
   initialYear?: CareerYear;
 }
 
-// import { getSubjectsByYear } from "../services";
-
+// Query keys factory
 export const subjectsKeys = {
   all: (careerId: string) => ["subjects", careerId] as const,
   lists: (careerId: string) => [...subjectsKeys.all(careerId), "list"] as const,
   list: (careerId: string, filters: Record<string, unknown>) =>
     [...subjectsKeys.lists(careerId), filters] as const,
+};
+
+// Constante fuera del componente para evitar recreación
+const YEAR_MAP: Record<CareerYear, string> = {
+  [CareerYear.First]: "First",
+  [CareerYear.Second]: "Second",
+  [CareerYear.Third]: "Third",
 };
 
 export const useSubjectsByYear = (
@@ -43,58 +48,50 @@ export const useSubjectsByYear = (
     queryFn: () =>
       getSubjectsByCareer(
         careerId,
-        undefined, // No filtrar por año en el backend
+        undefined,
         includeEnrolledStudents
       ),
     enabled: enabled && !!careerId,
+    staleTime: 3 * 60 * 1000, // 3 minutos
   });
 
   // Filtrar asignaturas por año seleccionado y término de búsqueda
   const filteredSubjects = useMemo(() => {
-    let filtered = allSubjects;
-
-    // Filtrar por año seleccionado
-    filtered = filtered.filter((subject) => {
-      // El tipo Subject tiene year como string ("First", "Second", "Third")
-      // Mapeamos CareerYear (1, 2, 3) a string correspondiente
-      const yearMap = {
-        [CareerYear.First]: "First",
-        [CareerYear.Second]: "Second",
-        [CareerYear.Third]: "Third",
-      };
-      return subject.year === yearMap[selectedYear];
-    });
+    const yearString = YEAR_MAP[selectedYear];
+    let filtered = allSubjects.filter((subject) => subject.year === yearString);
 
     // Filtrar por término de búsqueda
     if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter((subject) =>
-        subject.name.toLowerCase().includes(searchTerm.toLowerCase())
+        subject.name.toLowerCase().includes(searchLower)
       );
     }
 
     return filtered;
   }, [allSubjects, selectedYear, searchTerm]);
 
-  const changeYear = (year: CareerYear) => {
+  // Acciones memoizadas
+  const changeYear = useCallback((year: CareerYear) => {
     setSelectedYear(year);
-  };
+  }, []);
 
-  const resetYear = () => {
+  const resetYear = useCallback(() => {
     setSelectedYear(CareerYear.First);
-  };
+  }, []);
 
-  const setSearch = (term: string) => {
+  const setSearch = useCallback((term: string) => {
     setSearchTerm(term);
-  };
+  }, []);
 
-  const clearSearch = () => {
+  const clearSearch = useCallback(() => {
     setSearchTerm("");
-  };
+  }, []);
 
-  const resetFilters = () => {
+  const resetFilters = useCallback(() => {
     setSelectedYear(CareerYear.First);
     setSearchTerm("");
-  };
+  }, []);
 
   return {
     filteredSubjects,

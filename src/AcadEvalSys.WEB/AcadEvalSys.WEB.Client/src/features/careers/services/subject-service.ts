@@ -104,12 +104,6 @@ export async function updateSubject(
     professorId?: string;
   }
 ): Promise<void> {
-  console.log("[SubjectService] Updating subject:", {
-    careerId,
-    subjectId,
-    updateData
-  });
-  
   // Map string year to enum if needed
   let year: "First" | "Second" | "Third";
   if (updateData.year === "First" || updateData.year === "Second" || updateData.year === "Third") {
@@ -117,7 +111,6 @@ export async function updateSubject(
   } else {
     // Default fallback or throw error
     year = "First";
-    console.warn("[SubjectService] Invalid year value, defaulting to First:", updateData.year);
   }
   
   const payload = {

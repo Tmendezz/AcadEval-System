@@ -1,4 +1,8 @@
-import { api } from "@/infrastructure/query/axios";
+import { createCrudService } from "@/infrastructure/query/axios";
+
+// ============================================
+// TIPOS
+// ============================================
 
 export interface CompetencyDto {
   id: string;
@@ -15,9 +19,7 @@ export interface CreateCompetencyRequest {
   competencyLevelDescriptions?: Record<string, string>;
 }
 
-export interface UpdateCompetencyRequest extends CreateCompetencyRequest {}
-
-type CompetencyFormData = {
+export type CompetencyFormData = {
   name: string;
   description: string;
   type: "Soft" | "Technical";
@@ -28,6 +30,10 @@ type CompetencyFormData = {
     Excelente: string;
   };
 };
+
+// ============================================
+// HELPERS
+// ============================================
 
 function toRequestBody(body: CompetencyFormData): CreateCompetencyRequest {
   const request: CreateCompetencyRequest = {
@@ -46,32 +52,39 @@ function toRequestBody(body: CompetencyFormData): CreateCompetencyRequest {
   return request;
 }
 
-export async function getCompetencies() {
-  const { data } = await api.get<CompetencyDto[]>(`/competencies`);
-  return data;
-}
+// ============================================
+// SERVICIO CRUD BASE
+// ============================================
 
-export async function getCompetencyById(id: string) {
-  const { data } = await api.get<CompetencyDto>(`/competencies/${id}`);
-  return data;
-}
+const baseCrudService = createCrudService<
+  CompetencyDto,
+  CreateCompetencyRequest,
+  CreateCompetencyRequest
+>("/competencies");
 
-export async function createCompetency(body: CompetencyFormData) {
-  const payload = toRequestBody(body);
-  const { data } = await api.post(`/competencies`, payload);
-  return data as { id: string } | null;
-}
+// ============================================
+// SERVICIO EXPORTADO (con transformación de datos)
+// ============================================
 
-export async function updateCompetency(
-  id: string,
-  body: CompetencyFormData
-) {
-  const payload = toRequestBody(body);
-  await api.put(`/competencies/${id}`, payload);
-}
+export const competencyService = {
+  getAll: baseCrudService.getAll,
+  getById: baseCrudService.getById,
+  remove: baseCrudService.remove,
 
-export async function deleteCompetency(id: string) {
-  await api.delete(`/competencies/${id}`);
-}
+  // Create y Update necesitan transformar el FormData
+  async create(body: CompetencyFormData) {
+    return baseCrudService.create(toRequestBody(body));
+  },
 
+  async update(id: string, body: CompetencyFormData) {
+    return baseCrudService.update(id, toRequestBody(body));
+  },
+};
+
+// Exports individuales para compatibilidad
+export const getCompetencies = competencyService.getAll;
+export const getCompetencyById = competencyService.getById;
+export const createCompetency = competencyService.create;
+export const updateCompetency = competencyService.update;
+export const deleteCompetency = competencyService.remove;
 
