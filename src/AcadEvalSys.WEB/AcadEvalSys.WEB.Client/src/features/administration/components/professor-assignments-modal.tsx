@@ -1,4 +1,4 @@
-import React from "react";
+import { memo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,13 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { AlertTriangle, BookOpen, GraduationCap } from "lucide-react";
+
+// Constantes fuera del componente para evitar recreación
+const YEAR_LABELS: Record<number, string> = {
+  1: "Primer Año",
+  2: "Segundo Año",
+  3: "Tercer Año",
+};
 
 interface SubjectAssignment {
   id: string;
@@ -27,7 +34,7 @@ interface ProfessorAssignmentsModalProps {
   onCancel: () => void;
 }
 
-export function ProfessorAssignmentsModal({
+export const ProfessorAssignmentsModal = memo(function ProfessorAssignmentsModal({
   open,
   onOpenChange,
   professorName,
@@ -35,11 +42,6 @@ export function ProfessorAssignmentsModal({
   onConfirm,
   onCancel,
 }: ProfessorAssignmentsModalProps) {
-  const yearLabels = {
-    1: "Primer Año",
-    2: "Segundo Año",
-    3: "Tercer Año",
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -93,9 +95,7 @@ export function ProfessorAssignmentsModal({
                           {subject.careerName}
                         </Badge>
                         <Badge variant="secondary" className="text-xs">
-                          {yearLabels[
-                            subject.year as keyof typeof yearLabels
-                          ] || `Año ${subject.year}`}
+                          {YEAR_LABELS[subject.year] || `Año ${subject.year}`}
                         </Badge>
                       </div>
                     </div>
@@ -121,6 +121,5 @@ export function ProfessorAssignmentsModal({
       </DialogContent>
     </Dialog>
   );
-}
-
+});
 

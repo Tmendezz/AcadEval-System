@@ -1,50 +1,42 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { technicalCareerService } from "../services/technical-career-service";
 import { CreateTechnicalCareerRequest } from "../models/technical-career";
+import {
+  createQueryKeys,
+  useOptimisticMutation,
+  useStaleQuery,
+  useEntityQuery,
+} from "@/shared/lib/query-utils";
 
-// Query keys
-export const technicalCareerKeys = {
-  all: ["technical-careers"] as const,
-  lists: () => [...technicalCareerKeys.all, "list"] as const,
-  list: (filters: string) =>
-    [...technicalCareerKeys.lists(), { filters }] as const,
-  details: () => [...technicalCareerKeys.all, "detail"] as const,
-  detail: (id: string) => [...technicalCareerKeys.details(), id] as const,
-};
+// Query keys generadas con la factory
+export const technicalCareerKeys = createQueryKeys("technical-careers");
 
-// Hooks
+// Hooks de consulta
 export const useGetTechnicalCareers = () => {
-  return useQuery({
-    queryKey: technicalCareerKeys.lists(),
-    queryFn: technicalCareerService.getAll,
-    staleTime: 5 * 60 * 1000, // 5 minutos
-  });
+  return useStaleQuery(
+    technicalCareerKeys.lists(),
+    technicalCareerService.getAll,
+    { staleMinutes: 5 }
+  );
 };
 
 export const useGetTechnicalCareerById = (id: string) => {
-  return useQuery({
-    queryKey: technicalCareerKeys.detail(id),
-    queryFn: () => technicalCareerService.getById(id),
-    enabled: !!id,
-    staleTime: 5 * 60 * 1000, // 5 minutos
-  });
+  return useEntityQuery(
+    technicalCareerKeys.detail(id),
+    () => technicalCareerService.getById(id),
+    id,
+    { staleMinutes: 5 }
+  );
 };
 
+// Hooks de mutación
 export const useCreateTechnicalCareer = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (career: CreateTechnicalCareerRequest) =>
-      technicalCareerService.create(career),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: technicalCareerKeys.lists() });
-      toast.success("Tecnicatura creada exitosamente");
+  return useOptimisticMutation<string, CreateTechnicalCareerRequest>({
+    mutationFn: (career) => technicalCareerService.create(career),
+    messages: {
+      success: "Tecnicatura creada exitosamente",
+      error: "Error al crear la tecnicatura",
     },
-    onError: (error) => {
-      console.error("Error al crear tecnicatura:", error);
-      toast.error("Error al crear la tecnicatura");
-    },
+    invalidateKeys: [technicalCareerKeys.lists()],
   });
 };
 
@@ -52,17 +44,12 @@ export const useCreateTechnicalCareer = () => {
 export { useUpdateTechnicalCareer } from "@/shared/hooks/use-technical-careers";
 
 export const useDeleteTechnicalCareer = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: string) => technicalCareerService.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: technicalCareerKeys.lists() });
-      toast.success("Tecnicatura eliminada exitosamente");
+  return useOptimisticMutation<void, string>({
+    mutationFn: (id) => technicalCareerService.delete(id),
+    messages: {
+      success: "Tecnicatura eliminada exitosamente",
+      error: "Error al eliminar la tecnicatura",
     },
-    onError: (error) => {
-      console.error("Error al eliminar tecnicatura:", error);
-      toast.error("Error al eliminar la tecnicatura");
-    },
+    invalidateKeys: [technicalCareerKeys.lists()],
   });
 };

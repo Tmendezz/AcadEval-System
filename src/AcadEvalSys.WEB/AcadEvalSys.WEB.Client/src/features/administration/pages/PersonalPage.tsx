@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from "react";
 import {
   PageLayout,
   PageContent,
@@ -11,8 +12,8 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { DataSection } from "@/shared/components/ui/data-section";
 import { User, UserPlus, Building2, Plus, GraduationCap } from "lucide-react";
-import { AdminFormDialog } from "../components/admin-form-dialog";
-import { ProfessorFormDialog } from "../components/professor-form-dialog";
+import { AdminFormDialog, AdminFormValues } from "../components/admin-form-dialog";
+import { ProfessorFormDialog, ProfessorFormValues } from "../components/professor-form-dialog";
 import { StudentFormDialog } from "../components/student-form-dialog";
 import { ProfessorAssignmentsModal } from "../components/professor-assignments-modal";
 import { adminColumns } from "../columns/admin-columns";
@@ -23,6 +24,7 @@ import { useAdminOperations } from "../hooks/use-admin-operations";
 import { useProfessorOperations } from "../hooks/use-professor-operations";
 import { useStudentOperations } from "../hooks/use-student-operations";
 import { useCareerOperations } from "../hooks/use-career-operations";
+import { StudentFormValues } from "../services/student-service";
 import { navigate } from "wouter/use-browser-location";
 
 export default function PersonalPage() {
@@ -32,12 +34,84 @@ export default function PersonalPage() {
   const studentOps = useStudentOperations();
   const careerOps = useCareerOperations();
 
-  // Log de depuración para detectar por qué no hay admins
-  if (!adminOps.isLoadingProfessors && adminOps.admins.length === 0) {
-    console.log("[AdminList] Lista de administradores vacía", {
-      userInfo: "Se espera que el usuario actual sea Admin",
-    });
-  }
+  // Memoizar columnas para evitar re-renders innecesarios
+  const memoizedCareerColumns = useMemo(
+    () =>
+      careerColumns({
+        onEdit: careerOps.handleEditCareer,
+        onDelete: careerOps.handleDeleteCareer,
+        onView: careerOps.handleViewCareer,
+      }),
+    [careerOps.handleEditCareer, careerOps.handleDeleteCareer, careerOps.handleViewCareer]
+  );
+
+  const memoizedProfessorColumns = useMemo(
+    () =>
+      professorColumns({
+        onEdit: professorOps.handleEditProfessor,
+        onDelete: professorOps.handleDeleteProfessor,
+      }),
+    [professorOps.handleEditProfessor, professorOps.handleDeleteProfessor]
+  );
+
+  const memoizedStudentColumns = useMemo(
+    () =>
+      studentColumns({
+        onEdit: studentOps.handleEditStudent,
+        onDelete: studentOps.handleDeleteStudent,
+      }),
+    [studentOps.handleEditStudent, studentOps.handleDeleteStudent]
+  );
+
+  const memoizedAdminColumns = useMemo(
+    () =>
+      adminColumns({
+        onEdit: adminOps.handleEditAdmin,
+        onDelete: adminOps.handleDeleteAdmin,
+      }),
+    [adminOps.handleEditAdmin, adminOps.handleDeleteAdmin]
+  );
+
+  // Handlers memoizados para formularios
+  const handleNavigateToNewCareer = useCallback(() => {
+    navigate("/carreras/nueva");
+  }, []);
+
+  const handleAdminSubmit = useCallback(
+    async (values: AdminFormValues) => {
+      if (adminOps.selectedAdmin) {
+        await adminOps.updateAdmin.mutateAsync(values);
+      } else {
+        await adminOps.createAdmin.mutateAsync(values);
+      }
+      adminOps.setIsAdminDialogOpen(false);
+    },
+    [adminOps.selectedAdmin, adminOps.updateAdmin, adminOps.createAdmin, adminOps.setIsAdminDialogOpen]
+  );
+
+  const handleProfessorSubmit = useCallback(
+    async (values: ProfessorFormValues) => {
+      if (professorOps.selectedProfessor) {
+        await professorOps.updateProfessor.mutateAsync(values);
+      } else {
+        await professorOps.createProfessor.mutateAsync(values);
+      }
+      professorOps.setIsProfessorDialogOpen(false);
+    },
+    [professorOps.selectedProfessor, professorOps.updateProfessor, professorOps.createProfessor, professorOps.setIsProfessorDialogOpen]
+  );
+
+  const handleStudentSubmit = useCallback(
+    async (values: StudentFormValues) => {
+      if (studentOps.selectedStudent) {
+        await studentOps.updateStudent.mutateAsync(values);
+      } else {
+        await studentOps.createStudent.mutateAsync(values);
+      }
+      studentOps.setIsStudentDialogOpen(false);
+    },
+    [studentOps.selectedStudent, studentOps.updateStudent, studentOps.createStudent, studentOps.setIsStudentDialogOpen]
+  );
 
   return (
     <PageLayout>
@@ -66,17 +140,13 @@ export default function PersonalPage() {
               title="Carreras Técnicas"
               description="Crear, editar y eliminar carreras técnicas"
               data={careerOps.careers}
-              columns={careerColumns({
-                onEdit: careerOps.handleEditCareer,
-                onDelete: careerOps.handleDeleteCareer,
-                onView: careerOps.handleViewCareer,
-              })}
+              columns={memoizedCareerColumns}
               isLoading={careerOps.isLoadingCareers}
               emptyMessage="No se encontraron carreras"
               emptyIcon={<Building2 className="w-8 h-8" />}
               className="mb-6"
               headerActions={
-                <Button onClick={() => navigate("/carreras/nueva")}>
+                <Button onClick={handleNavigateToNewCareer}>
                   <Plus className="w-4 h-4 mr-2" />
                   Nueva carrera
                 </Button>
@@ -89,10 +159,7 @@ export default function PersonalPage() {
               title="Gestión de Profesores"
               description="Crear, editar y eliminar profesores"
               data={professorOps.professors}
-              columns={professorColumns({
-                onEdit: professorOps.handleEditProfessor,
-                onDelete: professorOps.handleDeleteProfessor,
-              })}
+              columns={memoizedProfessorColumns}
               isLoading={professorOps.isLoadingProfessorList}
               emptyMessage="No se encontraron profesores"
               emptyIcon={<User className="w-8 h-8" />}
@@ -111,10 +178,7 @@ export default function PersonalPage() {
               title="Gestión de Estudiantes"
               description="Crear, editar y eliminar estudiantes"
               data={studentOps.students}
-              columns={studentColumns({
-                onEdit: studentOps.handleEditStudent,
-                onDelete: studentOps.handleDeleteStudent,
-              })}
+              columns={memoizedStudentColumns}
               isLoading={studentOps.isLoadingStudents}
               emptyMessage="No se encontraron estudiantes"
               emptyIcon={<GraduationCap className="w-8 h-8" />}
@@ -133,10 +197,7 @@ export default function PersonalPage() {
               title="Administradores del Sistema"
               description="Gestión de usuarios administradores"
               data={adminOps.admins}
-              columns={adminColumns({
-                onEdit: adminOps.handleEditAdmin,
-                onDelete: adminOps.handleDeleteAdmin,
-              })}
+              columns={memoizedAdminColumns}
               isLoading={adminOps.isLoadingProfessors}
               emptyMessage="No se encontraron administradores"
               emptyIcon={<UserPlus className="w-8 h-8" />}
@@ -156,42 +217,21 @@ export default function PersonalPage() {
         open={adminOps.isAdminDialogOpen}
         onOpenChange={adminOps.setIsAdminDialogOpen}
         administrator={adminOps.selectedAdmin}
-        onSubmit={async (values) => {
-          if (adminOps.selectedAdmin) {
-            await adminOps.updateAdmin.mutateAsync(values);
-          } else {
-            await adminOps.createAdmin.mutateAsync(values);
-          }
-          adminOps.setIsAdminDialogOpen(false);
-        }}
+        onSubmit={handleAdminSubmit}
       />
 
       <ProfessorFormDialog
         open={professorOps.isProfessorDialogOpen}
         onOpenChange={professorOps.setIsProfessorDialogOpen}
         professor={professorOps.selectedProfessor}
-        onSubmit={async (values) => {
-          if (professorOps.selectedProfessor) {
-            await professorOps.updateProfessor.mutateAsync(values);
-          } else {
-            await professorOps.createProfessor.mutateAsync(values);
-          }
-          professorOps.setIsProfessorDialogOpen(false);
-        }}
+        onSubmit={handleProfessorSubmit}
       />
 
       <StudentFormDialog
         open={studentOps.isStudentDialogOpen}
         onOpenChange={studentOps.setIsStudentDialogOpen}
         student={studentOps.selectedStudent}
-        onSubmit={async (values) => {
-          if (studentOps.selectedStudent) {
-            await studentOps.updateStudent.mutateAsync(values);
-          } else {
-            await studentOps.createStudent.mutateAsync(values);
-          }
-          studentOps.setIsStudentDialogOpen(false);
-        }}
+        onSubmit={handleStudentSubmit}
         onChangePassword={studentOps.handleChangeStudentPassword}
       />
 

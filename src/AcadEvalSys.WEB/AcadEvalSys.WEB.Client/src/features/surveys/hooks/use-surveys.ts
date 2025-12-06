@@ -1,34 +1,33 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { surveyService } from '../services/survey-service';
 import { userSurveysService, UserSurveyDto, UserSurveyFilters } from '../services/user-surveys-service';
 import { CreateAcademicSurveyRequest, SurveyFilters } from '../models/survey-types';
 import { api } from '@/infrastructure/query/axios';
+import {
+  createQueryKeys,
+  useOptimisticMutation,
+  useStaleQuery,
+  useEntityQuery,
+} from '@/shared/lib/query-utils';
 
 export interface TechnicalCareer {
   id: string;
   name: string;
 }
 
-// Query keys
-export const surveyKeys = {
-  all: ['surveys'] as const,
-  lists: () => [...surveyKeys.all, 'list'] as const,
-  list: (filters?: SurveyFilters) => [...surveyKeys.lists(), { filters }] as const,
-  details: () => [...surveyKeys.all, 'detail'] as const,
-  detail: (id: string) => [...surveyKeys.details(), id] as const,
-};
+// Query keys usando la factory
+export const surveyKeys = createQueryKeys('surveys');
 
 // Query keys para encuestas de usuario
-export const userSurveysKeys = {
-  all: ['user-surveys'] as const,
-  lists: () => [...userSurveysKeys.all, 'list'] as const,
-  list: (filters?: UserSurveyFilters) => [...userSurveysKeys.lists(), { filters }] as const,
-};
+export const userSurveysKeys = createQueryKeys('user-surveys');
 
-// Hooks para obtener datos
+// ============================================
+// HOOKS DE CONSULTA
+// ============================================
+
 export function useSurveys(filters?: SurveyFilters) {
   return useQuery({
-    queryKey: surveyKeys.list(filters),
+    queryKey: [...surveyKeys.lists(), { filters }],
     queryFn: () => surveyService.getSurveys(filters),
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -36,72 +35,81 @@ export function useSurveys(filters?: SurveyFilters) {
 }
 
 export function useSurvey(id: string) {
-  return useQuery({
-    queryKey: surveyKeys.detail(id),
-    queryFn: () => surveyService.getSurveyById(id),
-    enabled: !!id,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 20 * 60 * 1000,
-  });
+  return useEntityQuery(
+    surveyKeys.detail(id),
+    () => surveyService.getSurveyById(id),
+    id,
+    { staleMinutes: 5 }
+  );
 }
 
-// Hooks para mutaciones
-export function useCreateSurvey() {
-  const queryClient = useQueryClient();
+// ============================================
+// HOOKS DE MUTACIÓN
+// ============================================
 
-  return useMutation({
-    mutationFn: (survey: CreateAcademicSurveyRequest) => surveyService.createSurvey(survey),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: surveyKeys.lists() });
+export function useCreateSurvey() {
+  return useOptimisticMutation<string, CreateAcademicSurveyRequest>({
+    mutationFn: surveyService.createSurvey,
+    messages: {
+      success: 'Encuesta creada exitosamente',
+      error: 'Error al crear la encuesta',
     },
+    invalidateKeys: [surveyKeys.lists()],
+    showSuccessToast: false, // Silencioso para permitir lógica custom
   });
 }
 
 export function useUpdateSurvey() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({ id, survey }: { id: string; survey: CreateAcademicSurveyRequest }) =>
-      surveyService.updateSurvey(id, survey),
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: surveyKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: surveyKeys.detail(variables.id) });
+  return useOptimisticMutation<void, { id: string; survey: CreateAcademicSurveyRequest }>({
+    mutationFn: ({ id, survey }) => surveyService.updateSurvey(id, survey),
+    messages: {
+      success: 'Encuesta actualizada exitosamente',
+      error: 'Error al actualizar la encuesta',
     },
+    invalidateKeys: [surveyKeys.lists()],
+    onSuccessCallback: async (_, { id }) => {
+      await queryClient.invalidateQueries({ queryKey: surveyKeys.detail(id) });
+    },
+    showSuccessToast: false,
   });
 }
 
 export function useDeleteSurvey() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: string) => surveyService.deleteSurvey(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: surveyKeys.lists() });
+  return useOptimisticMutation<void, string>({
+    mutationFn: surveyService.deleteSurvey,
+    messages: {
+      success: 'Encuesta eliminada exitosamente',
+      error: 'Error al eliminar la encuesta',
     },
+    invalidateKeys: [surveyKeys.lists()],
   });
 }
 
 export function useDuplicateSurvey() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, newTitle }: { id: string; newTitle: string }) =>
-      surveyService.duplicateSurvey(id, newTitle),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: surveyKeys.lists() });
+  return useOptimisticMutation<string, { id: string; newTitle: string }>({
+    mutationFn: ({ id, newTitle }) => surveyService.duplicateSurvey(id, newTitle),
+    messages: {
+      success: 'Encuesta duplicada exitosamente',
+      error: 'Error al duplicar la encuesta',
     },
+    invalidateKeys: [surveyKeys.lists()],
   });
 }
 
 export function usePublishSurvey() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({ id, command }: { id: string; command?: { closeAt?: string; reopen?: boolean } }) => 
-      surveyService.publishSurvey(id, command),
-    onSuccess: (_data, { id }) => {
-      queryClient.invalidateQueries({ queryKey: surveyKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: surveyKeys.detail(id) });
+  return useOptimisticMutation<void, { id: string; command?: { closeAt?: string; reopen?: boolean } }>({
+    mutationFn: ({ id, command }) => surveyService.publishSurvey(id, command),
+    messages: {
+      success: 'Encuesta publicada exitosamente',
+      error: 'Error al publicar la encuesta',
+    },
+    invalidateKeys: [surveyKeys.lists()],
+    onSuccessCallback: async (_, { id }) => {
+      await queryClient.invalidateQueries({ queryKey: surveyKeys.detail(id) });
     },
   });
 }
@@ -109,12 +117,15 @@ export function usePublishSurvey() {
 export function useCloseSurvey() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({ id, force }: { id: string; force?: boolean }) => 
-      surveyService.closeSurvey(id, force),
-    onSuccess: (_data, { id }) => {
-      queryClient.invalidateQueries({ queryKey: surveyKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: surveyKeys.detail(id) });
+  return useOptimisticMutation<void, { id: string; force?: boolean }>({
+    mutationFn: ({ id, force }) => surveyService.closeSurvey(id, force),
+    messages: {
+      success: 'Encuesta cerrada exitosamente',
+      error: 'Error al cerrar la encuesta',
+    },
+    invalidateKeys: [surveyKeys.lists()],
+    onSuccessCallback: async (_, { id }) => {
+      await queryClient.invalidateQueries({ queryKey: surveyKeys.detail(id) });
     },
   });
 }
@@ -122,11 +133,15 @@ export function useCloseSurvey() {
 export function useArchiveSurvey() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (id: string) => surveyService.archiveSurvey(id),
-    onSuccess: (_data, id) => {
-      queryClient.invalidateQueries({ queryKey: surveyKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: surveyKeys.detail(id) });
+  return useOptimisticMutation<void, string>({
+    mutationFn: surveyService.archiveSurvey,
+    messages: {
+      success: 'Encuesta archivada exitosamente',
+      error: 'Error al archivar la encuesta',
+    },
+    invalidateKeys: [surveyKeys.lists()],
+    onSuccessCallback: async (_, id) => {
+      await queryClient.invalidateQueries({ queryKey: surveyKeys.detail(id) });
     },
   });
 }

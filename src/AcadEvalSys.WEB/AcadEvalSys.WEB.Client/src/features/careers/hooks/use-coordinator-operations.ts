@@ -1,47 +1,52 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { coordinatorService, CoordinatorDto } from "../services/coordinator-service";
-import { toast } from "sonner";
+import { coordinatorService } from "../services/coordinator-service";
+import {
+  createQueryKeys,
+  useOptimisticMutation,
+  useEntityQuery,
+} from "@/shared/lib/query-utils";
 
+// Query keys para coordinadores
+export const coordinatorKeys = createQueryKeys("career-coordinator");
+
+/**
+ * Hook para obtener el coordinador de una carrera
+ */
 export function useCareerCoordinator(careerId: string) {
-  return useQuery({
-    queryKey: ["career-coordinator", careerId],
-    queryFn: () => coordinatorService.getCareerCoordinator(careerId),
-    enabled: !!careerId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  return useEntityQuery(
+    coordinatorKeys.detail(careerId),
+    () => coordinatorService.getCareerCoordinator(careerId),
+    careerId,
+    { staleMinutes: 5 }
+  );
 }
 
+/**
+ * Hook para operaciones de coordinador (asignar/remover)
+ */
 export function useCoordinatorOperations(careerId: string) {
-  const queryClient = useQueryClient();
-
-  const assignCoordinator = useMutation({
-    mutationFn: async (userId: string) => {
-      await coordinatorService.assignCoordinator(careerId, userId);
+  const assignCoordinator = useOptimisticMutation({
+    mutationFn: (userId: string) =>
+      coordinatorService.assignCoordinator(careerId, userId),
+    messages: {
+      success: "Coordinador asignado exitosamente",
+      error: "Error al asignar coordinador",
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["career-coordinator", careerId] });
-      queryClient.invalidateQueries({ queryKey: ["careers"] });
-      toast.success("Coordinador asignado exitosamente");
-    },
-    onError: (error: any) => {
-      console.error("Error assigning coordinator:", error);
-      toast.error("Error al asignar coordinador");
-    },
+    invalidateKeys: [
+      coordinatorKeys.detail(careerId),
+      ["careers"],
+    ],
   });
 
-  const removeCoordinator = useMutation({
-    mutationFn: async () => {
-      await coordinatorService.removeCoordinator(careerId);
+  const removeCoordinator = useOptimisticMutation({
+    mutationFn: () => coordinatorService.removeCoordinator(careerId),
+    messages: {
+      success: "Coordinador removido exitosamente",
+      error: "Error al remover coordinador",
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["career-coordinator", careerId] });
-      queryClient.invalidateQueries({ queryKey: ["careers"] });
-      toast.success("Coordinador removido exitosamente");
-    },
-    onError: (error: any) => {
-      console.error("Error removing coordinator:", error);
-      toast.error("Error al remover coordinador");
-    },
+    invalidateKeys: [
+      coordinatorKeys.detail(careerId),
+      ["careers"],
+    ],
   });
 
   return {

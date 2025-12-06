@@ -1,4 +1,4 @@
-import { Assignment } from "../types/evaluation-form";
+import { Assignment } from "../models/evaluation-form";
 
 export const getYearName = (year: number): string => {
   switch (year) {

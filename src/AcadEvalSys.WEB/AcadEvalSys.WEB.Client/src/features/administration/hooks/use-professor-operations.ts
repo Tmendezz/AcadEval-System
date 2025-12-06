@@ -1,130 +1,138 @@
-import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { professorService } from "../services/professor-service";
-type Professor = { userId: string; name: string; email: string; phone?: string };
-import { ProfessorFormValues } from "../components/professor-form-dialog";
+import { useState, useCallback, useMemo } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { professorService, ProfessorDto } from "../services/professor-service";
+import { ProfessorFormValues } from "../components/professor-form-dialog";
+import {
+  createQueryKeys,
+  useOptimisticMutation,
+  useStaleQuery,
+} from "@/shared/lib/query-utils";
+
+// ============================================
+// TIPOS
+// ============================================
+
+type ProfessorAssignment = {
+  id: string;
+  name: string;
+  careerName: string;
+  year: number;
+};
+
+// ============================================
+// QUERY KEYS
+// ============================================
+
+export const professorKeys = createQueryKeys("professors");
+
+// ============================================
+// HOOK PRINCIPAL
+// ============================================
 
 export function useProfessorOperations() {
   const queryClient = useQueryClient();
-  const [selectedProfessor, setSelectedProfessor] = useState<Professor | null>(
-    null
-  );
+
+  // State
+  const [selectedProfessor, setSelectedProfessor] = useState<ProfessorDto | null>(null);
   const [isProfessorDialogOpen, setIsProfessorDialogOpen] = useState(false);
   const [isAssignmentsModalOpen, setIsAssignmentsModalOpen] = useState(false);
-  const [professorAssignments, setProfessorAssignments] = useState<
-    Array<{
-      id: string;
-      name: string;
-      careerName: string;
-      year: number;
-    }>
-  >([]);
+  const [professorAssignments, setProfessorAssignments] = useState<ProfessorAssignment[]>([]);
 
   // Query para obtener profesores
-  const { data: professorList, isLoading: isLoadingProfessorList } = useQuery({
-    queryKey: ["professors"],
-    queryFn: async () => {
+  const { data: professorList, isLoading: isLoadingProfessorList } = useStaleQuery(
+    professorKeys.lists(),
+    async () => {
       const result = await professorService.getAll({ pageNumber: 1, pageSize: 50 });
       return result.items;
     },
-    staleTime: 10_000,
-  });
+    { staleMinutes: 2 }
+  );
 
-  const professors = professorList || [];
+  const professors = useMemo(() => professorList || [], [professorList]);
 
-  // Mutations para operaciones CRUD de profesores
-  const createProfessor = useMutation({
-    mutationFn: async (values: ProfessorFormValues) => {
-      const id = await professorService.create({
+  // Mutations
+  const createProfessor = useOptimisticMutation<string, ProfessorFormValues>({
+    mutationFn: (values) =>
+      professorService.create({
         ...values,
         password: values.password || "",
-      });
-      return id;
+      }),
+    messages: {
+      success: "Profesor creado exitosamente",
+      error: "Error al crear el profesor",
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["professors"] });
-      toast.success("Profesor creado exitosamente");
-    },
-    onError: (error: any) => {
-      console.error("Error creating professor:", error);
-      toast.error("Error al crear el profesor");
-    },
+    invalidateKeys: [professorKeys.lists()],
   });
 
   const updateProfessor = useMutation({
     mutationFn: async (values: ProfessorFormValues) => {
       if (!selectedProfessor) throw new Error("No professor selected");
-      
-      // 1. Actualizar datos básicos del profesor (nombre, email, teléfono)
-      const id = await professorService.update(selectedProfessor.userId, {
+
+      await professorService.update(selectedProfessor.userId, {
         name: values.name,
         email: values.email,
         phone: values.phone,
       });
-      
-      // 2. Si hay contraseña, cambiarla en un endpoint separado
-      if (values.password && values.password.trim()) {
-        console.log("🔑 Cambiando contraseña del profesor...");
+
+      if (values.password?.trim()) {
         await professorService.changePassword(selectedProfessor.userId, values.password);
       }
-      
-      return id;
+
+      return selectedProfessor.userId;
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["professors"] });
+      await queryClient.invalidateQueries({ queryKey: professorKeys.lists() });
       toast.success("Profesor actualizado exitosamente");
     },
-    onError: (error: any) => {
-      console.error("Error updating professor:", error);
+    onError: () => {
       toast.error("Error al actualizar el profesor");
     },
   });
 
   const deleteProfessor = useMutation({
-    mutationFn: async (professor: Professor) => {
+    mutationFn: async (professor: ProfessorDto) => {
       const response = await professorService.delete(professor.userId);
       return { professor, response };
     },
-    onSuccess: async (data) => {
-      const { professor, response } = data;
-
+    onSuccess: async ({ response }) => {
       if (response.success) {
         toast.success("Profesor eliminado exitosamente");
-        await queryClient.invalidateQueries({ queryKey: ["professors"] });
+        await queryClient.invalidateQueries({ queryKey: professorKeys.lists() });
       } else if (response.hasAssignments) {
-        // Mostrar modal con las asignaturas asignadas
         setProfessorAssignments(response.assignedSubjects || []);
         setIsAssignmentsModalOpen(true);
       } else {
         toast.error(response.message || "Error al eliminar el profesor");
       }
     },
-    onError: (error) => {
-      console.error("Error al eliminar profesor:", error);
+    onError: () => {
       toast.error("Error al eliminar el profesor. Intente nuevamente.");
     },
   });
 
-  // Handlers para operaciones de profesores
-  const handleNewProfessorClick = () => {
+  // Handlers con useCallback para estabilidad referencial
+  const handleNewProfessorClick = useCallback(() => {
     setSelectedProfessor(null);
     setIsProfessorDialogOpen(true);
-  };
+  }, []);
 
-  const handleEditProfessor = (professor: Professor) => {
+  const handleEditProfessor = useCallback((professor: ProfessorDto) => {
     setSelectedProfessor(professor);
     setIsProfessorDialogOpen(true);
-  };
+  }, []);
 
-  const handleDeleteProfessor = (professor: Professor) => {
-    deleteProfessor.mutate(professor);
-  };
+  const handleDeleteProfessor = useCallback(
+    (professor: ProfessorDto) => {
+      deleteProfessor.mutate(professor);
+    },
+    [deleteProfessor]
+  );
 
-  const handleCloseAssignmentsModal = () => {
+  const handleCloseAssignmentsModal = useCallback(() => {
     setIsAssignmentsModalOpen(false);
     setProfessorAssignments([]);
-  };
+  }, []);
 
   return {
     // State

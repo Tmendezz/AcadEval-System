@@ -1,23 +1,14 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { deleteEvaluation } from "@/features/evaluations/services/evaluation-service";
 import { evaluationsKeys } from "../queries/use-get-evaluations";
+import { useOptimisticMutation } from "@/shared/lib/query-utils";
 
 export const useDeleteEvaluation = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: string) => {
-      await deleteEvaluation(id);
+  return useOptimisticMutation<void, string>({
+    mutationFn: (id) => deleteEvaluation(id),
+    messages: {
+      success: "Evaluación eliminada correctamente",
+      error: "Error al eliminar la evaluación",
     },
-    onSuccess: () => {
-      // Invalidar las queries relacionadas
-      queryClient.invalidateQueries({ queryKey: evaluationsKeys.lists() });
-      toast.success("Evaluación eliminada correctamente");
-    },
-    onError: (error) => {
-      console.error("Error al eliminar evaluación:", error);
-      toast.error("Error al eliminar la evaluación");
-    },
+    invalidateKeys: [evaluationsKeys.lists()],
   });
 };

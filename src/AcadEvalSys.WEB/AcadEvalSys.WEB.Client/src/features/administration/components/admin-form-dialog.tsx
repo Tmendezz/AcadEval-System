@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -110,14 +110,21 @@ export function AdminFormDialog({
     });
   }, [administrator, form, open]);
 
-  const handleSubmit = (values: AdminFormValues) => {
-    onSubmit(values);
-    onOpenChange(false);
-  };
+  const handleSubmit = useCallback(
+    (values: AdminFormValues) => {
+      onSubmit(values);
+      onOpenChange(false);
+    },
+    [onSubmit, onOpenChange]
+  );
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     onOpenChange(false);
-  };
+  }, [onOpenChange]);
+
+  const togglePasswordVisibility = useCallback(() => {
+    setShowPassword((prev) => !prev);
+  }, []);
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -196,7 +203,7 @@ export function AdminFormDialog({
                         variant="ghost"
                         size="sm"
                         className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
+                        onClick={togglePasswordVisibility}
                       >
                         {showPassword ? (
                           <EyeOff className="w-4 h-4" />

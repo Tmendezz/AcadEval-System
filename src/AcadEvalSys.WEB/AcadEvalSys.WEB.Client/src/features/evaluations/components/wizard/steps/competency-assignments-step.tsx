@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from "react";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Label } from "@/shared/components/ui/label";
@@ -10,7 +11,7 @@ import {
 } from "@/shared/components/ui/select";
 import { Badge } from "@/shared/components/ui/badge";
 import { Plus, Trash2 } from "lucide-react";
-import { Assignment } from "../../../types/evaluation-form";
+import { Assignment } from "../../../models/evaluation-form";
 import {
   useCompetencies,
   useSubjectsByCareer,
@@ -29,32 +30,44 @@ export function CompetencyAssignmentsStep({
   assignments,
   onAssignmentsChange,
 }: CompetencyAssignmentsStepProps) {
-  const addAssignment = () => {
-    onAssignmentsChange([...assignments, { competencyId: "", subjectId: "" }]);
-  };
-
-  const removeAssignment = (index: number) => {
-    onAssignmentsChange(assignments.filter((_, i) => i !== index));
-  };
-
-  const updateAssignment = (
-    index: number,
-    field: "competencyId" | "subjectId",
-    value: string
-  ) => {
-    const newAssignments = [...assignments];
-    newAssignments[index][field] = value;
-    onAssignmentsChange(newAssignments);
-  };
-
   const { data: competencies = [] } = useCompetencies();
   const { data: subjects = [] } = useSubjectsByCareer("", undefined, true);
 
-  // Excluir competencias ya usadas en la lista completa
-  const usedCompetencyIds = buildExclusionSet(
-    assignments,
-    (a) => a.competencyId || undefined,
-    (a) => !a.competencyId
+  const addAssignment = useCallback(() => {
+    onAssignmentsChange([...assignments, { competencyId: "", subjectId: "" }]);
+  }, [assignments, onAssignmentsChange]);
+
+  const removeAssignment = useCallback(
+    (index: number) => {
+      onAssignmentsChange(assignments.filter((_, i) => i !== index));
+    },
+    [assignments, onAssignmentsChange]
+  );
+
+  const updateAssignment = useCallback(
+    (index: number, field: "competencyId" | "subjectId", value: string) => {
+      const newAssignments = [...assignments];
+      newAssignments[index] = { ...newAssignments[index], [field]: value };
+      onAssignmentsChange(newAssignments);
+    },
+    [assignments, onAssignmentsChange]
+  );
+
+  // Memoizar el cálculo de exclusión de competencias
+  const usedCompetencyIds = useMemo(
+    () =>
+      buildExclusionSet(
+        assignments,
+        (a) => a.competencyId || undefined,
+        (a) => !a.competencyId
+      ),
+    [assignments]
+  );
+
+  // Memoizar la verificación de si el botón debe estar deshabilitado
+  const isAddDisabled = useMemo(
+    () => assignments.length >= competencies.length,
+    [assignments.length, competencies.length]
   );
 
   return (
@@ -67,7 +80,7 @@ export function CompetencyAssignmentsStep({
           variant="outline"
           size="sm"
           type="button"
-          disabled={assignments.length >= competencies.length}
+          disabled={isAddDisabled}
         >
           <Plus className="w-4 h-4 mr-2" />
           Agregar Asignación

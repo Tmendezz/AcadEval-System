@@ -1,149 +1,108 @@
-import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { studentService, Student, StudentFormValues } from "@/features/administration/services/student-service";
-import { toast } from "sonner";
-import { AxiosError } from "axios";
+import { useState, useCallback, useMemo } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  studentService,
+  Student,
+  StudentFormValues,
+} from "@/features/administration/services/student-service";
+import {
+  createQueryKeys,
+  useOptimisticMutation,
+  useStaleQuery,
+} from "@/shared/lib/query-utils";
+
+// ============================================
+// QUERY KEYS
+// ============================================
+
+export const studentKeys = createQueryKeys("students");
+
+// ============================================
+// HOOK PRINCIPAL
+// ============================================
 
 export function useStudentOperations() {
   const queryClient = useQueryClient();
+
+  // State
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isStudentDialogOpen, setIsStudentDialogOpen] = useState(false);
 
   // Query para obtener estudiantes
-  const { data: studentsData, isLoading: isLoadingStudents } = useQuery({
-    queryKey: ["students"],
-    queryFn: () => studentService.getAll(),
-    staleTime: 10_000,
-  });
+  const { data: studentsData, isLoading: isLoadingStudents } = useStaleQuery(
+    studentKeys.lists(),
+    () => studentService.getAll(),
+    { staleMinutes: 2 }
+  );
 
-  const students = studentsData?.items || [];
+  const students = useMemo(() => studentsData?.items || [], [studentsData?.items]);
 
-  // Mutations para operaciones CRUD de estudiantes
-  const createStudent = useMutation({
-    mutationFn: async (values: StudentFormValues) => {
-      const id = await studentService.create(values);
-      return id;
+  // Mutations con useOptimisticMutation
+  const createStudent = useOptimisticMutation<string, StudentFormValues>({
+    mutationFn: (values) => studentService.create(values),
+    messages: {
+      success: "Estudiante creado exitosamente",
+      error: "Error al crear el estudiante",
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["students"] });
-      toast.success("Estudiante creado exitosamente");
-    },
-    onError: (error) => {
-      console.error("Error creating student:", error);
-      const axiosError = error as AxiosError<{ Message?: string; message?: string }>;
-      
-      // Intentar diferentes formas de obtener el mensaje de error
-      let errorMessage = "Error al crear el estudiante";
-      
-      if (axiosError.response?.data?.Message) {
-        errorMessage = axiosError.response.data.Message;
-      } else if (axiosError.response?.data?.message) {
-        errorMessage = axiosError.response.data.message;
-      } else if (axiosError.message) {
-        errorMessage = axiosError.message;
-      }
-      
-      toast.error(errorMessage);
-    },
+    invalidateKeys: [studentKeys.lists()],
   });
 
   const updateStudent = useMutation({
     mutationFn: async (values: StudentFormValues) => {
       if (!selectedStudent) throw new Error("No student selected");
-      const id = await studentService.update(selectedStudent.id, values);
-      return id;
+      return studentService.update(selectedStudent.id, values);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["students"] });
-      toast.success("Estudiante actualizado exitosamente");
-    },
-    onError: (error) => {
-      console.error("Error updating student:", error);
-      const axiosError = error as AxiosError<{ Message?: string; message?: string }>;
-      
-      let errorMessage = "Error al actualizar el estudiante";
-      if (axiosError.response?.data?.Message) {
-        errorMessage = axiosError.response.data.Message;
-      } else if (axiosError.response?.data?.message) {
-        errorMessage = axiosError.response.data.message;
-      } else if (axiosError.message) {
-        errorMessage = axiosError.message;
-      }
-      
-      toast.error(errorMessage);
+      await queryClient.invalidateQueries({ queryKey: studentKeys.lists() });
     },
   });
 
-  const deleteStudent = useMutation({
-    mutationFn: async (student: Student) => {
-      await studentService.delete(student.id);
-      return student.id;
+  const deleteStudent = useOptimisticMutation<void, Student>({
+    mutationFn: (student) => studentService.delete(student.id),
+    messages: {
+      success: "Estudiante eliminado exitosamente",
+      error: "Error al eliminar el estudiante",
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["students"] });
-      toast.success("Estudiante eliminado exitosamente");
-    },
-    onError: (error) => {
-      console.error("Error deleting student:", error);
-      const axiosError = error as AxiosError<{ Message?: string; message?: string }>;
-      
-      let errorMessage = "Error al eliminar el estudiante";
-      if (axiosError.response?.data?.Message) {
-        errorMessage = axiosError.response.data.Message;
-      } else if (axiosError.response?.data?.message) {
-        errorMessage = axiosError.response.data.message;
-      } else if (axiosError.message) {
-        errorMessage = axiosError.message;
-      }
-      
-      toast.error(errorMessage);
-    },
+    invalidateKeys: [studentKeys.lists()],
   });
 
-  const changeStudentPassword = useMutation({
-    mutationFn: async ({
-      student,
-      newPassword,
-    }: {
-      student: Student;
-      newPassword: string;
-    }) => {
-      await studentService.changePassword(student.id, newPassword);
+  const changeStudentPassword = useOptimisticMutation<
+    void,
+    { student: Student; newPassword: string }
+  >({
+    mutationFn: ({ student, newPassword }) =>
+      studentService.changePassword(student.id, newPassword),
+    messages: {
+      success: "Contraseña actualizada exitosamente",
+      error: "Error al cambiar la contraseña",
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["students"] });
-      toast.success("Contraseña actualizada exitosamente");
-    },
-    onError: (error) => {
-      const axiosError = error as AxiosError<{ Message?: string }>;
-      const errorMessage = axiosError.response?.data?.Message || "Error al cambiar la contraseña";
-      toast.error(errorMessage);
-      console.error("Error changing password:", error);
-    },
+    invalidateKeys: [studentKeys.lists()],
   });
 
-  // Handlers para operaciones de estudiantes
-  const handleNewStudentClick = () => {
+  // Handlers con useCallback
+  const handleNewStudentClick = useCallback(() => {
     setSelectedStudent(null);
     setIsStudentDialogOpen(true);
-  };
+  }, []);
 
-  const handleEditStudent = (student: Student) => {
-    console.log("[useStudentOperations] Opening student for editing:", student);
+  const handleEditStudent = useCallback((student: Student) => {
     setSelectedStudent(student);
     setIsStudentDialogOpen(true);
-  };
+  }, []);
 
-  const handleDeleteStudent = (student: Student) => {
-    deleteStudent.mutate(student);
-  };
+  const handleDeleteStudent = useCallback(
+    (student: Student) => {
+      deleteStudent.mutate(student);
+    },
+    [deleteStudent]
+  );
 
-  const handleChangeStudentPassword = async (
-    student: Student,
-    newPassword: string
-  ) => {
-    await changeStudentPassword.mutateAsync({ student, newPassword });
-  };
+  const handleChangeStudentPassword = useCallback(
+    async (student: Student, newPassword: string) => {
+      await changeStudentPassword.mutateAsync({ student, newPassword });
+    },
+    [changeStudentPassword]
+  );
 
   return {
     // State
@@ -152,13 +111,13 @@ export function useStudentOperations() {
     setIsStudentDialogOpen,
     students,
     isLoadingStudents,
-    
+
     // Mutations
     createStudent,
     updateStudent,
     deleteStudent,
     changeStudentPassword,
-    
+
     // Handlers
     handleNewStudentClick,
     handleEditStudent,
@@ -166,5 +125,4 @@ export function useStudentOperations() {
     handleChangeStudentPassword,
   };
 }
-
 

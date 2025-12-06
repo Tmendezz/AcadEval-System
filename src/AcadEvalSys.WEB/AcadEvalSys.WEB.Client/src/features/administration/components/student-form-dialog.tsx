@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -31,8 +31,8 @@ import { Separator } from "@/shared/components/ui/separator";
 import { toast } from "sonner";
 import { Student, StudentFormValues } from "../services/student-service";
 import { technicalCareerService } from "@/features/careers/services/technical-career-service";
-import { useQuery } from "@tanstack/react-query";
 import type { TechnicalCareer } from "@/features/careers/models";
+import { useStaleQuery } from "@/shared/lib/query-utils";
 
 const studentFormSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -62,10 +62,12 @@ export function StudentFormDialog({
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
 
-  const { data: careers = [] } = useQuery<TechnicalCareer[]>({
-    queryKey: ["technical-careers"],
-    queryFn: () => technicalCareerService.getAll(),
-  });
+  // Query con staleTime optimizado
+  const { data: careers = [] } = useStaleQuery<TechnicalCareer[]>(
+    ["technical-careers"],
+    technicalCareerService.getAll,
+    { staleMinutes: 10 }
+  );
 
   const form = useForm<StudentFormData>({
     resolver: zodResolver(studentFormSchema),
@@ -81,7 +83,6 @@ export function StudentFormDialog({
   // Reset form when student prop changes
   useEffect(() => {
     if (student) {
-      console.log("[StudentFormDialog] Loading student data:", student);
       form.reset({
         name: student.name || "",
         email: student.email || "",
@@ -90,7 +91,6 @@ export function StudentFormDialog({
         technicalCareerId: student.technicalCareerId || "",
       });
     } else {
-      console.log("[StudentFormDialog] Resetting form for new student");
       form.reset({
         name: "",
         email: "",
@@ -101,17 +101,21 @@ export function StudentFormDialog({
     }
   }, [student, form]);
 
-  const handleSubmit = async (values: StudentFormData) => {
-    try {
-      await onSubmit(values);
-      form.reset();
-      onOpenChange(false);
-    } catch {
-      toast.error("Error al guardar el estudiante");
-    }
-  };
+  // Handlers memoizados
+  const handleSubmit = useCallback(
+    async (values: StudentFormData) => {
+      try {
+        await onSubmit(values);
+        form.reset();
+        onOpenChange(false);
+      } catch {
+        toast.error("Error al guardar el estudiante");
+      }
+    },
+    [onSubmit, form, onOpenChange]
+  );
 
-  const handleChangePassword = async () => {
+  const handleChangePassword = useCallback(async () => {
     if (!student || !newPassword.trim()) {
       toast.error("Debe ingresar una nueva contraseña");
       return;
@@ -125,16 +129,28 @@ export function StudentFormDialog({
     } catch {
       toast.error("Error al cambiar la contraseña");
     }
-  };
+  }, [student, newPassword, onChangePassword]);
 
-  const handleOpenChange = (open: boolean) => {
-    if (!open) {
-      form.reset();
-      setNewPassword("");
-      setIsChangingPassword(false);
-    }
-    onOpenChange(open);
-  };
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        form.reset();
+        setNewPassword("");
+        setIsChangingPassword(false);
+      }
+      onOpenChange(open);
+    },
+    [form, onOpenChange]
+  );
+
+  const handleCancelPasswordChange = useCallback(() => {
+    setIsChangingPassword(false);
+    setNewPassword("");
+  }, []);
+
+  const handleStartPasswordChange = useCallback(() => {
+    setIsChangingPassword(true);
+  }, []);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -271,7 +287,7 @@ export function StudentFormDialog({
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => setIsChangingPassword(true)}
+                      onClick={handleStartPasswordChange}
                       className="w-full"
                     >
                       Cambiar Contraseña
@@ -288,10 +304,7 @@ export function StudentFormDialog({
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => {
-                            setIsChangingPassword(false);
-                            setNewPassword("");
-                          }}
+                          onClick={handleCancelPasswordChange}
                           className="flex-1"
                         >
                           Cancelar

@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Button } from "@/shared/components/ui/button";
 import {
   PageLayout,
@@ -47,11 +48,11 @@ type SubjectDraft = {
 
 export function CreateCareerForm() {
   const queryClient = useQueryClient();
+  const [, navigate] = useLocation();
   const [careerName, setCareerName] = useState("");
-  const [subjects, setSubjects] = useState<SubjectDraft[]>([
-    { name: "", description: "", year: "First" },
-  ]);
+  const [subjects, setSubjects] = useState<SubjectDraft[]>([]);
   const [coordinatorToken, setCoordinatorToken] = useState<string>("");
+  const [errors, setErrors] = useState<string[]>([]);
 
   const [search, setSearch] = useState("");
   const { data: professorsData, isFetching: isSearching } = useProfessors(
@@ -59,12 +60,16 @@ export function CreateCareerForm() {
     1000,
     search || undefined
   );
-  const existingProfessors: Professor[] = professorsData?.items?.map(p => ({
-    id: p.userId,
-    name: p.name,
-    email: p.email,
-    phone: p.phone
-  })) ?? [];
+  const existingProfessors: Professor[] = useMemo(
+    () =>
+      professorsData?.items?.map((p) => ({
+        id: p.userId,
+        name: p.name,
+        email: p.email,
+        phone: p.phone,
+      })) ?? [],
+    [professorsData?.items]
+  );
 
   // Mini diálogo para crear profesor
   const [newProfOpen, setNewProfOpen] = useState(false);
@@ -102,14 +107,61 @@ export function CreateCareerForm() {
     return list;
   }, [subjects, existingProfessors]);
 
+  // Función de validación
+  const validateForm = useCallback((): string[] => {
+    const validationErrors: string[] = [];
+
+    // Validar nombre de carrera
+    const trimmedName = careerName.trim();
+    if (!trimmedName) {
+      validationErrors.push("El nombre de la tecnicatura es obligatorio.");
+    } else if (trimmedName.length < 3) {
+      validationErrors.push("El nombre debe tener al menos 3 caracteres.");
+    } else if (trimmedName.length > 100) {
+      validationErrors.push("El nombre no debe exceder 100 caracteres.");
+    }
+
+    // Validar asignaturas (las que tienen nombre)
+    const subjectsWithName = subjects.filter((s) => s.name.trim() !== "");
+    for (const subject of subjectsWithName) {
+      if (subject.name.trim().length > 50) {
+        validationErrors.push(
+          `La asignatura "${subject.name.substring(0, 20)}..." excede 50 caracteres.`
+        );
+      }
+    }
+
+    // Validar profesores nuevos
+    for (const subject of subjects) {
+      if (subject.newProfessor) {
+        if (!subject.newProfessor.name.trim()) {
+          validationErrors.push("El nombre del profesor es obligatorio.");
+        }
+        if (!subject.newProfessor.email.trim()) {
+          validationErrors.push("El email del profesor es obligatorio.");
+        }
+        if (!subject.newProfessor.password.trim()) {
+          validationErrors.push("La contraseña del profesor es obligatoria.");
+        }
+      }
+    }
+
+    return validationErrors;
+  }, [careerName, subjects]);
+
   const createCareerMutation = useMutation({
     mutationFn: async () => {
-      const careerId = await technicalCareerService.create({ name: careerName });
+      const careerId = await technicalCareerService.create({ name: careerName.trim() });
 
       const newProfessorIdByIndex = new Map<number, string>();
 
-      for (let i = 0; i < subjects.length; i++) {
-        const s = subjects[i];
+      // Filtrar asignaturas válidas (con nombre)
+      const validSubjects = subjects.filter((s) => s.name.trim() !== "");
+
+      for (let i = 0; i < validSubjects.length; i++) {
+        const s = validSubjects[i];
+        const originalIndex = subjects.indexOf(s);
+        
         let professorId = s.professorId;
         if (!professorId && s.newProfessor) {
           professorId = await professorService.create({
@@ -117,12 +169,15 @@ export function CreateCareerForm() {
             email: s.newProfessor.email,
             password: s.newProfessor.password,
           });
-          newProfessorIdByIndex.set(i, professorId);
+          newProfessorIdByIndex.set(originalIndex, professorId);
         }
 
+        // Usar descripción por defecto si está vacía
+        const description = s.description.trim() || `Asignatura de ${s.name}`;
+
         const subjectId = await subjectService.createSubject(careerId, {
-          name: s.name,
-          description: s.description,
+          name: s.name.trim(),
+          description,
           year: s.year,
           professorId: undefined,
         });
@@ -152,15 +207,32 @@ export function CreateCareerForm() {
 
       return careerId;
     },
-    onSuccess: async () => {
+    onSuccess: async (careerId) => {
       await queryClient.invalidateQueries({ queryKey: ["technical-careers"] });
-      toast.success("Tecnicatura creada correctamente.");
+      toast.success("¡Tecnicatura creada exitosamente!", {
+        description: "Redirigiendo al detalle de la tecnicatura...",
+        duration: 2000,
+      });
+      // Redirigir al detalle de la tecnicatura después de un breve delay
+      setTimeout(() => {
+        navigate(`/carreras/${careerId}`);
+      }, 1500);
     },
     onError: (err: unknown) => {
       const axiosErr = err as AxiosError<{
         Message?: string;
         message?: string;
+        errors?: Record<string, string[]>;
       }>;
+      
+      // Intentar extraer errores de validación del servidor
+      const serverErrors = axiosErr.response?.data?.errors;
+      if (serverErrors) {
+        const errorMessages = Object.values(serverErrors).flat();
+        errorMessages.forEach((msg) => toast.error(msg));
+        return;
+      }
+      
       const serverMsg =
         axiosErr.response?.data?.Message ||
         axiosErr.response?.data?.message ||
@@ -170,70 +242,123 @@ export function CreateCareerForm() {
     },
   });
 
-  const addSubject = (year: "First" | "Second" | "Third") =>
-    setSubjects((arr) => [...arr, { name: "", description: "", year }]);
+  // Handler para crear la tecnicatura con validación
+  const handleCreateCareer = useCallback(() => {
+    // Limpiar errores anteriores
+    setErrors([]);
 
-  const renderYearSection = (
-    title: string,
-    year: "First" | "Second" | "Third"
-  ) => (
-    <Card className="p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <span className="font-semibold">{title}</span>
-        <Button onClick={() => addSubject(year)}>Agregar asignatura</Button>
-      </div>
-      <div className="space-y-4">
-        {subjects
-          .filter((s) => s.year === year)
-          .map((s, idx) => (
-            <div
-              key={`${year}-${idx}`}
-              className="grid grid-cols-1 md:grid-cols-3 gap-3"
-            >
-              <Input
-                placeholder="Nombre"
-                value={s.name}
-                onChange={(e) => (
-                  (s.name = e.target.value), setSubjects([...subjects])
-                )}
-              />
-              <ProfessorCombobox
-                value={s.newProfessor ? `new:${idx}` : s.professorId}
-                onChange={(v) => {
-                  if (!v || v.startsWith("new:")) return;
-                  s.professorId = v;
-                  s.newProfessor = undefined;
-                  setSubjects([...subjects]);
-                }}
-                options={(() => {
-                  const opts = existingProfessors.map((p) => ({
-                    value: p.id,
-                    label: `${p.name}`,
-                  }));
-                  if (s.newProfessor) {
-                    opts.unshift({
-                      value: `new:${idx}`,
-                      label: `${s.newProfessor.name} (nuevo)`,
-                    });
-                  }
-                  return opts;
-                })()}
-                onRequestCreate={() => {
-                  setNewProfIndex(idx);
-                  setNewProfName("");
-                  setNewProfEmail("");
-                  setNewProfPassword("");
-                  setNewProfOpen(true);
-                }}
-                placeholder="Profesor"
-                onSearch={setSearch}
-                isLoading={isSearching}
-                searchTerm={search}
-              />
-            </div>
-          ))}
-      </div>
-    </Card>
+    // Validar
+    const validationErrors = validateForm();
+    if (validationErrors.length > 0) {
+      setErrors(validationErrors);
+      validationErrors.forEach((error) => toast.error(error));
+      return;
+    }
+
+    // Si no hay errores, crear la tecnicatura
+    createCareerMutation.mutate();
+  }, [validateForm, createCareerMutation]);
+
+  const addSubject = useCallback(
+    (year: "First" | "Second" | "Third") =>
+      setSubjects((arr) => [...arr, { name: "", description: "", year }]),
+    []
+  );
+
+  // Handlers para actualización inmutable del estado
+  const updateSubjectName = useCallback((year: string, idx: number, name: string) => {
+    setSubjects((prev) => {
+      const yearSubjects = prev.filter((s) => s.year === year);
+      const globalIndex = prev.findIndex((s) => s === yearSubjects[idx]);
+      if (globalIndex === -1) return prev;
+      
+      return prev.map((s, i) => (i === globalIndex ? { ...s, name } : s));
+    });
+  }, []);
+
+  const updateSubjectProfessor = useCallback((year: string, idx: number, professorId: string) => {
+    setSubjects((prev) => {
+      const yearSubjects = prev.filter((s) => s.year === year);
+      const globalIndex = prev.findIndex((s) => s === yearSubjects[idx]);
+      if (globalIndex === -1) return prev;
+      
+      return prev.map((s, i) =>
+        i === globalIndex ? { ...s, professorId, newProfessor: undefined } : s
+      );
+    });
+  }, []);
+
+  const openNewProfessorDialog = useCallback((idx: number) => {
+    setNewProfIndex(idx);
+    setNewProfName("");
+    setNewProfEmail("");
+    setNewProfPassword("");
+    setNewProfOpen(true);
+  }, []);
+
+  // Opciones de profesores memoizadas
+  const professorOptions = useMemo(
+    () =>
+      existingProfessors.map((p) => ({
+        value: p.id,
+        label: p.name,
+      })),
+    [existingProfessors]
+  );
+
+  // Función para obtener opciones de un subject específico
+  const getSubjectProfessorOptions = useCallback(
+    (subject: SubjectDraft, idx: number) => {
+      if (!subject.newProfessor) return professorOptions;
+      return [
+        { value: `new:${idx}`, label: `${subject.newProfessor.name} (nuevo)` },
+        ...professorOptions,
+      ];
+    },
+    [professorOptions]
+  );
+
+  const renderYearSection = useCallback(
+    (title: string, year: "First" | "Second" | "Third") => {
+      const yearSubjects = subjects.filter((s) => s.year === year);
+
+      return (
+        <Card className="p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="font-semibold">{title}</span>
+            <Button onClick={() => addSubject(year)}>Agregar asignatura</Button>
+          </div>
+          <div className="space-y-4">
+            {yearSubjects.map((s, idx) => (
+              <div
+                key={`${year}-${idx}`}
+                className="grid grid-cols-1 md:grid-cols-3 gap-3"
+              >
+                <Input
+                  placeholder="Nombre"
+                  value={s.name}
+                  onChange={(e) => updateSubjectName(year, idx, e.target.value)}
+                />
+                <ProfessorCombobox
+                  value={s.newProfessor ? `new:${idx}` : s.professorId}
+                  onChange={(v) => {
+                    if (!v || v.startsWith("new:")) return;
+                    updateSubjectProfessor(year, idx, v);
+                  }}
+                  options={getSubjectProfessorOptions(s, idx)}
+                  onRequestCreate={() => openNewProfessorDialog(idx)}
+                  placeholder="Profesor"
+                  onSearch={setSearch}
+                  isLoading={isSearching}
+                  searchTerm={search}
+                />
+              </div>
+            ))}
+          </div>
+        </Card>
+      );
+    },
+    [subjects, addSubject, updateSubjectName, updateSubjectProfessor, getSubjectProfessorOptions, openNewProfessorDialog, isSearching, search]
   );
 
   return (
@@ -284,12 +409,28 @@ export function CreateCareerForm() {
           )}
         </Card>
 
+        {/* Mostrar errores de validación si existen */}
+        {errors.length > 0 && (
+          <Card className="p-4 border-destructive bg-destructive/10">
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-destructive">
+                Por favor corrige los siguientes errores:
+              </p>
+              <ul className="list-disc list-inside text-sm text-destructive">
+                {errors.map((error, idx) => (
+                  <li key={idx}>{error}</li>
+                ))}
+              </ul>
+            </div>
+          </Card>
+        )}
+
         <div className="flex justify-end">
           <Button
-            onClick={() => createCareerMutation.mutate()}
-            disabled={!careerName || createCareerMutation.isPending}
+            onClick={handleCreateCareer}
+            disabled={createCareerMutation.isPending}
           >
-            Crear tecnicatura
+            {createCareerMutation.isPending ? "Creando..." : "Crear tecnicatura"}
           </Button>
         </div>
       </PageContent>
@@ -328,13 +469,21 @@ export function CreateCareerForm() {
             <Button
               onClick={() => {
                 if (newProfIndex == null) return;
-                subjects[newProfIndex].newProfessor = {
-                  name: newProfName,
-                  email: newProfEmail,
-                  password: newProfPassword,
-                };
-                subjects[newProfIndex].professorId = undefined;
-                setSubjects([...subjects]);
+                setSubjects((prev) =>
+                  prev.map((s, i) =>
+                    i === newProfIndex
+                      ? {
+                          ...s,
+                          newProfessor: {
+                            name: newProfName,
+                            email: newProfEmail,
+                            password: newProfPassword,
+                          },
+                          professorId: undefined,
+                        }
+                      : s
+                  )
+                );
                 setNewProfOpen(false);
               }}
             >

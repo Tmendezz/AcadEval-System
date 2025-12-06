@@ -49,3 +49,32 @@ export const RouteList: React.FC<RouteListProps> = ({ routes, userRole }) => {
     </>
   );
 };
+
+// Función helper para renderizar rutas directamente (para usar con Switch de wouter)
+export const renderRoutes = (routes: RouteConfig[], userRole?: UserRole) => {
+  return routes.map((route) => {
+    const { path, component: Component, requiredRoles, isAdminOnly } = route;
+
+    if (isAdminOnly) {
+      return (
+        <Route key={path} path={path}>
+          <AdminRoute>
+            <Component />
+          </AdminRoute>
+        </Route>
+      );
+    }
+
+    if (requiredRoles && requiredRoles.length > 0) {
+      return (
+        <Route key={path} path={path}>
+          <ProtectedRoute requiredRoles={requiredRoles}>
+            <Component />
+          </ProtectedRoute>
+        </Route>
+      );
+    }
+
+    return <Route key={path} path={path} component={Component} />;
+  });
+};
