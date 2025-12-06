@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { authService } from "../services/auth-service";
 import { useAuthStore } from "../store";
 
@@ -10,34 +10,32 @@ export const useSessionCheck = () => {
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const hasChecked = useRef(false);
 
-  // Obtener funciones del store de forma estable
-  const setUser = useAuthStore((state) => state.setUser);
-  const logout = useAuthStore((state) => state.logout);
-
-  const checkSession = useCallback(async () => {
-    // Prevenir múltiples llamadas
+  useEffect(() => {
+    // Prevenir múltiples llamadas - el ref persiste entre renders pero se resetea si el componente se desmonta y remonta
     if (hasChecked.current) return;
     hasChecked.current = true;
 
-    try {
-      const sessionStatus = await authService.checkSession();
+    const checkSession = async () => {
+      try {
+        const sessionStatus = await authService.checkSession();
+        const { setUser, logout } = useAuthStore.getState();
 
-      if (sessionStatus.isAuthenticated && sessionStatus.user) {
-        setUser(sessionStatus.user);
-      } else {
+        if (sessionStatus.isAuthenticated && sessionStatus.user) {
+          setUser(sessionStatus.user);
+        } else {
+          logout();
+        }
+      } catch {
+        // En caso de error de red, cerrar sesión silenciosamente
+        const { logout } = useAuthStore.getState();
         logout();
+      } finally {
+        setIsCheckingSession(false);
       }
-    } catch {
-      // En caso de error de red, cerrar sesión silenciosamente
-      logout();
-    } finally {
-      setIsCheckingSession(false);
-    }
-  }, [setUser, logout]);
+    };
 
-  useEffect(() => {
     checkSession();
-  }, [checkSession]);
+  }, []); 
 
   return { isCheckingSession };
 };
