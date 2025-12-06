@@ -58,14 +58,16 @@ public class GetSurveyAnalyticsByIdQueryHandler(
         // Audience: expected respondents
         if (survey.SurveyType == SurveyType.Student)
         {
-            var totalStudents = survey.Subjects.Sum(ss => ss.Subject!.StudentSubjects?.Count ?? 0);
+            var totalStudents = survey.Subjects
+                .Where(ss => ss.Subject != null)
+                .Sum(ss => ss.Subject!.StudentSubjects?.Count ?? 0);
             dto.TotalAudiences = totalStudents;
             dto.ResponseRate = totalStudents > 0 ? Math.Round((double)dto.TotalResponses / totalStudents * 100, 2) : 0;
         }
         else // SurveyType.Professor
         {
             var totalDistinctProfessors = survey.Subjects
-                .Where(ss => !string.IsNullOrEmpty(ss.Subject!.ProfessorId))
+                .Where(ss => ss.Subject != null && !string.IsNullOrEmpty(ss.Subject!.ProfessorId))
                 .Select(ss => ss.Subject!.ProfessorId)
                 .Distinct()
                 .Count();
