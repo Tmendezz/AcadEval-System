@@ -1,14 +1,14 @@
+import { memo, useMemo } from "react";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { Badge, badgeVariants } from "@/shared/components/ui/badge";
-import { Separator } from "@/shared/components/ui/separator";
-import { EvaluationFormData, Assignment } from "../../../types/evaluation-form";
+import { Badge } from "@/shared/components/ui/badge";
+import type { EvaluationFormData, Assignment } from "@/features/evaluations/models/evaluation-form";
 import { useTechnicalCareers } from "@/shared/hooks/use-technical-careers";
-import { useCompetencies } from "@/shared/hooks/use-competencies";
+import { useCompetencies } from "@/features/competencies/hooks/use-competencies";
 import {
   getYearName,
   groupAssignmentsByCareer,
@@ -19,11 +19,33 @@ interface ReviewStepProps {
   assignments: Assignment[];
 }
 
-export function ReviewStep({ formData, assignments }: ReviewStepProps) {
+export const ReviewStep = memo(function ReviewStep({
+  formData,
+  assignments,
+}: ReviewStepProps) {
   const { data: careers = [] } = useTechnicalCareers();
   const { data: competencies = [] } = useCompetencies();
 
-  const groupedAssignments = groupAssignmentsByCareer(assignments);
+  // Memoizar agrupamiento de asignaciones
+  const groupedAssignments = useMemo(
+    () => groupAssignmentsByCareer(assignments),
+    [assignments]
+  );
+
+  // Memoizar mapeo de competencias por ID para búsqueda rápida
+  const competencyMap = useMemo(
+    () => new Map(competencies.map((c) => [c.id, c])),
+    [competencies]
+  );
+
+  // Memoizar formateo de fechas
+  const formattedDates = useMemo(
+    () => ({
+      periodFrom: new Date(formData.periodFrom).toLocaleDateString(),
+      periodTo: new Date(formData.periodTo).toLocaleDateString(),
+    }),
+    [formData.periodFrom, formData.periodTo]
+  );
 
   return (
     <div className="space-y-6">
@@ -59,17 +81,13 @@ export function ReviewStep({ formData, assignments }: ReviewStepProps) {
               <h4 className="font-medium text-sm text-muted-foreground">
                 Fecha de Inicio
               </h4>
-              <p className="text-sm">
-                {new Date(formData.periodFrom).toLocaleDateString()}
-              </p>
+              <p className="text-sm">{formattedDates.periodFrom}</p>
             </div>
             <div>
               <h4 className="font-medium text-sm text-muted-foreground">
                 Fecha de Fin
               </h4>
-              <p className="text-sm">
-                {new Date(formData.periodTo).toLocaleDateString()}
-              </p>
+              <p className="text-sm">{formattedDates.periodTo}</p>
             </div>
           </div>
         </CardContent>
@@ -110,22 +128,17 @@ export function ReviewStep({ formData, assignments }: ReviewStepProps) {
                               </div>
                               <div className="space-y-2 ml-4">
                                 {yearAssignments.map((assignment, index) => {
-                                  const competency = competencies.find(
-                                    (c) => c.id === assignment.competencyId
-                                  );
+                                  const competency = competencyMap.get(assignment.competencyId);
                                   return (
                                     <div
-                                      key={index}
+                                      key={`${assignment.competencyId}-${assignment.subjectId}-${index}`}
                                       className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
                                     >
                                       <div className="flex items-center gap-3">
-                                        <Badge variant="outline">
-                                          #{index + 1}
-                                        </Badge>
+                                        <Badge variant="outline">#{index + 1}</Badge>
                                         <div>
                                           <p className="font-medium">
-                                            {competency?.name ||
-                                              "Competencia no seleccionada"}
+                                            {competency?.name || "Competencia no seleccionada"}
                                           </p>
                                           <p className="text-sm text-muted-foreground">
                                             Asignatura: {assignment.subjectId}
@@ -133,15 +146,9 @@ export function ReviewStep({ formData, assignments }: ReviewStepProps) {
                                         </div>
                                       </div>
                                       <Badge
-                                        variant={
-                                          competency?.type === "Soft"
-                                            ? "secondary"
-                                            : "default"
-                                        }
+                                        variant={competency?.type === "Soft" ? "secondary" : "default"}
                                       >
-                                        {competency?.type === "Soft"
-                                          ? "Blanda"
-                                          : "Técnica"}
+                                        {competency?.type === "Soft" ? "Blanda" : "Técnica"}
                                       </Badge>
                                     </div>
                                   );
@@ -161,4 +168,4 @@ export function ReviewStep({ formData, assignments }: ReviewStepProps) {
       </Card>
     </div>
   );
-}
+});

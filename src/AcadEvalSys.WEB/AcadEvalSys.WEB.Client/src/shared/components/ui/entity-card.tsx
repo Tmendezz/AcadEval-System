@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
-import { cn } from "@/shared/lib/cn";
+import { cn } from "@infrastructure/lib/cn";
 
 interface EntityCardProps {
   title: string;

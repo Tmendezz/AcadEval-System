@@ -1,3 +1,4 @@
+import { memo, useMemo, useCallback } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
@@ -9,13 +10,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
+import { Alert, AlertDescription } from "@/shared/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 import { EvaluationFormSchema } from "../../../schemas/evaluation-form";
 
 interface BasicInfoStepProps {
   form: UseFormReturn<EvaluationFormSchema>;
 }
 
-export function BasicInfoStep({ form }: BasicInfoStepProps) {
+export const BasicInfoStep = memo(function BasicInfoStep({ form }: BasicInfoStepProps) {
   const {
     register,
     setValue,
@@ -23,6 +26,24 @@ export function BasicInfoStep({ form }: BasicInfoStepProps) {
     formState: { errors },
   } = form;
   const watchedValues = watch();
+
+  // Validar fechas en tiempo real
+  const dateError = useMemo(() => {
+    if (watchedValues.periodFrom && watchedValues.periodTo) {
+      const from = new Date(watchedValues.periodFrom);
+      const to = new Date(watchedValues.periodTo);
+      if (to <= from) {
+        return "La fecha de fin debe ser posterior a la fecha de inicio";
+      }
+    }
+    return null;
+  }, [watchedValues.periodFrom, watchedValues.periodTo]);
+
+  // Handler memoizado para cambio de semestre
+  const handleSemesterChange = useCallback(
+    (value: string) => setValue("semester", value as "First" | "Second"),
+    [setValue]
+  );
 
   return (
     <div className="space-y-6">
@@ -57,9 +78,7 @@ export function BasicInfoStep({ form }: BasicInfoStepProps) {
         <Label htmlFor="semester">Semestre</Label>
         <Select
           value={watchedValues.semester}
-          onValueChange={(value) =>
-            setValue("semester", value as "First" | "Second")
-          }
+          onValueChange={handleSemesterChange}
         >
           <SelectTrigger>
             <SelectValue placeholder="Seleccionar semestre" />
@@ -78,7 +97,7 @@ export function BasicInfoStep({ form }: BasicInfoStepProps) {
             id="periodFrom"
             type="date"
             {...register("periodFrom")}
-            className={errors.periodFrom ? "border-red-500" : ""}
+            className={errors.periodFrom || dateError ? "border-red-500" : ""}
           />
           {errors.periodFrom && (
             <p className="text-sm text-red-500">{errors.periodFrom.message}</p>
@@ -91,13 +110,20 @@ export function BasicInfoStep({ form }: BasicInfoStepProps) {
             id="periodTo"
             type="date"
             {...register("periodTo")}
-            className={errors.periodTo ? "border-red-500" : ""}
+            className={errors.periodTo || dateError ? "border-red-500" : ""}
           />
           {errors.periodTo && (
             <p className="text-sm text-red-500">{errors.periodTo.message}</p>
           )}
         </div>
       </div>
+
+      {dateError && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{dateError}</AlertDescription>
+        </Alert>
+      )}
     </div>
   );
-}
+});

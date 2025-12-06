@@ -1,5 +1,3 @@
-import { Search } from "lucide-react";
-import { Input } from "@/shared/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -7,43 +5,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
+import { useTechnicalCareers } from "@/shared/hooks/use-technical-careers";
 
 interface EvaluationFiltersProps {
-  searchTerm: string;
-  onSearchChange: (value: string) => void;
   statusFilter: string;
   onStatusFilterChange: (value: string) => void;
   careerFilter: string;
   onCareerFilterChange: (value: string) => void;
+  sortBy: string;
+  onSortByChange: (value: string) => void;
   className?: string;
 }
 
 export const EvaluationFilters = ({
-  searchTerm,
-  onSearchChange,
   statusFilter,
   onStatusFilterChange,
   careerFilter,
   onCareerFilterChange,
+  sortBy,
+  onSortByChange,
   className,
 }: EvaluationFiltersProps) => {
+  const { data: careers = [], isLoading: isLoadingCareers } =
+    useTechnicalCareers();
+
   return (
     <div
       className={`flex flex-col sm:flex-row gap-4 items-start sm:items-center ${className}`}
     >
-      <div className="relative w-full">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          type="search"
-          placeholder="Buscar evaluación..."
-          className="pl-8"
-          value={searchTerm}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onSearchChange(e.target.value)
-          }
-        />
-      </div>
-
       <Select value={statusFilter} onValueChange={onStatusFilterChange}>
         <SelectTrigger className="w-full sm:w-[180px]">
           <SelectValue placeholder="Filtrar por estado" />
@@ -62,15 +51,31 @@ export const EvaluationFilters = ({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">Todas las carreras</SelectItem>
-          <SelectItem value="computer-science">
-            Ingeniería en Computación
-          </SelectItem>
-          <SelectItem value="information-systems">
-            Ingeniería en Sistemas
-          </SelectItem>
-          <SelectItem value="software-engineering">
-            Ingeniería de Software
-          </SelectItem>
+          {isLoadingCareers ? (
+            <SelectItem value="loading" disabled>
+              Cargando carreras...
+            </SelectItem>
+          ) : (
+            careers.map((career) => (
+              <SelectItem key={career.id} value={career.id}>
+                {career.name}
+              </SelectItem>
+            ))
+          )}
+        </SelectContent>
+      </Select>
+
+      <Select value={sortBy} onValueChange={onSortByChange}>
+        <SelectTrigger className="w-full sm:w-[180px]">
+          <SelectValue placeholder="Ordenar por" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="none">Sin ordenar</SelectItem>
+          <SelectItem value="createdAtDesc">Más recientes primero</SelectItem>
+          <SelectItem value="createdAt">Más antiguas primero</SelectItem>
+          <SelectItem value="title">Por título</SelectItem>
+          <SelectItem value="periodFrom">Por fecha de inicio</SelectItem>
+          <SelectItem value="periodTo">Por fecha de fin</SelectItem>
         </SelectContent>
       </Select>
     </div>

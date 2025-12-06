@@ -1,10 +1,17 @@
+import React from "react";
 import { Button } from "@/shared/components/ui/button";
-import { Badge } from "@/shared/components/ui/badge";
 import { Edit, Trash2, Eye } from "lucide-react";
-import { TechnicalCareer } from "../types/technical-career";
+import type { TechnicalCareer } from "@infrastructure/api/types/technical-career";
+import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { ColumnDef } from "@tanstack/react-table";
 
-export const careerColumns: ColumnDef<TechnicalCareer>[] = [
+export const careerColumns = (
+  handlers: {
+    onEdit?: (career: TechnicalCareer) => void;
+    onDelete?: (career: TechnicalCareer) => void;
+    onView?: (career: TechnicalCareer) => void;
+  } = {}
+): ColumnDef<TechnicalCareer>[] => [
   {
     accessorKey: "name",
     header: "Nombre de la Carrera",
@@ -21,50 +28,53 @@ export const careerColumns: ColumnDef<TechnicalCareer>[] = [
     id: "actions",
     header: "Acciones",
     cell: ({ row }) => {
+      const { onEdit, onDelete, onView } = handlers;
       const handleEdit = (e: React.MouseEvent) => {
         e.stopPropagation();
-        // TODO: Implementar lógica de edición
-        console.log("Editar carrera:", row.original.id);
+        onEdit?.(row.original);
       };
 
-      const handleDelete = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        // TODO: Implementar lógica de eliminación
-        console.log("Eliminar carrera:", row.original.id);
-      };
+      const handleDelete = () => onDelete?.(row.original);
 
       const handleView = (e: React.MouseEvent) => {
         e.stopPropagation();
-        // TODO: Implementar lógica de ver detalle
-        console.log("Ver detalle carrera:", row.original.id);
+        onView?.(row.original);
       };
 
       return (
-        <div className="flex gap-1">
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={handleView}
-            className="h-7 w-7 p-0"
           >
-            <Eye className="w-3 h-3" />
+            <Eye className="h-4 w-4" />
+            Ver
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={handleEdit}
-            className="h-7 w-7 p-0"
           >
-            <Edit className="w-3 h-3" />
+            <Edit className="h-4 w-4" />
+            Editar
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleDelete}
-            className="h-7 w-7 p-0"
-          >
-            <Trash2 className="w-3 h-3" />
-          </Button>
+          <ConfirmDialog
+            title="Eliminar carrera técnica"
+            description={`Esta acción no se puede deshacer. ¿Desea eliminar ${row.original.name}?`}
+            confirmText="Confirmar"
+            cancelText="Cancelar"
+            onConfirm={handleDelete}
+            trigger={
+              <Button
+                variant="destructive"
+                size="sm"
+              >
+                <Trash2 className="h-4 w-4" />
+                Eliminar
+              </Button>
+            }
+          />
         </div>
       );
     },

@@ -1,34 +1,31 @@
-import { BadgeCheck, LogOut, User } from "lucide-react";
-import { useCurrentUser } from "@/shared/auth/hooks/use-current-user";
+import { LogOut, User } from "lucide-react";
 import { AvatarDropdown } from "./avatar-dropdown";
 import {
   DropdownMenuItem,
   DropdownMenuGroup,
   DropdownMenuSeparator,
 } from "@/shared/components/ui/dropdown-menu";
-import { useCallback, useState } from "react";
-import { authService } from "@/shared/auth/services/auth-service";
+import { useCallback } from "react";
+import { useAuthStore } from "@/features/auth/store";
+import { useLogout } from "@/features/auth/hooks/use-login";
 
 export function UserDropdown() {
-  const { user, initials, role } = useCurrentUser();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { user } = useAuthStore();
+  const { logout, isLoading } = useLogout();
 
-  const userInfo = {
-    name: user?.name,
-    email: user?.email,
-    role: role,
-    initials: initials,
-    avatarUrl: undefined,
-  };
-
+  // Mantén el logout existente o usa el nuevo
   const handleLogout = useCallback(async () => {
-    setIsLoggingOut(true);
-    await authService.logout();
-    setIsLoggingOut(false);
-  }, []);
+    try {
+      await logout();
+    } catch {
+      // Silently handle logout errors
+    }
+  }, [logout]);
+
+  if (!user) return null;
 
   return (
-    <AvatarDropdown user={userInfo}>
+    <AvatarDropdown user={user}>
       <DropdownMenuGroup>
         <DropdownMenuItem className="cursor-pointer">
           <User className="mr-2 h-4 w-4 flex-shrink-0" />
@@ -39,7 +36,7 @@ export function UserDropdown() {
       <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
         <LogOut className="mr-2 h-4 w-4 flex-shrink-0" />
         <span className="truncate">
-          {isLoggingOut ? "Cerrando..." : "Cerrar Sesión"}
+          {isLoading ? "Cerrando..." : "Cerrar Sesión"}
         </span>
       </DropdownMenuItem>
     </AvatarDropdown>

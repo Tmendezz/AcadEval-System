@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { cn } from "@/shared/lib/cn";
+import { cn } from "@infrastructure/lib/cn";
 
 interface PageLayoutProps {
   children: ReactNode;

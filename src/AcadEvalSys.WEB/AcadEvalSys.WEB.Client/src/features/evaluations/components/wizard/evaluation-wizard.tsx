@@ -1,10 +1,10 @@
+import { useCallback, useMemo, memo } from "react";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { WIZARD_STEPS } from "../../constants/wizard-steps";
-import { EvaluationFormData } from "../../types/evaluation-form";
+import { EvaluationFormData } from "../../models/evaluation-form";
 import { useEvaluationWizard } from "../../hooks/use-evaluation-wizard";
-import { WizardStepIndicator } from "./wizard-step-indicator";
-import { WizardStepTitle } from "./wizard-step-title";
-import { WizardNavigation } from "./wizard-navigation";
+import { WizardStepIndicator } from "@/shared/components/wizard/WizardStepIndicator";
+import { WizardNavigation } from "@/shared/components/wizard/WizardNavigation";
 import { BasicInfoStep } from "./steps/basic-info-step";
 import { CareerCompetencyAssignmentsStep } from "./steps/career-competency-assignments-step";
 import { ReviewStep } from "./steps/review-step";
@@ -14,7 +14,7 @@ interface EvaluationWizardProps {
   isSubmitting?: boolean;
 }
 
-export function EvaluationWizard({
+export const EvaluationWizard = memo(function EvaluationWizard({
   onSubmit,
   isSubmitting = false,
 }: EvaluationWizardProps) {
@@ -29,11 +29,18 @@ export function EvaluationWizard({
     updateAssignments,
   } = useEvaluationWizard();
 
-  const handleFormSubmit = (data: any) => {
-    onSubmit(data);
-  };
+  const handleFinalSubmit = useCallback(() => {
+    onSubmit(watchedValues);
+  }, [onSubmit, watchedValues]);
 
-  const renderStepContent = () => {
+  // Memoizar el handler de siguiente paso
+  const handleNext = useMemo(
+    () => (currentStep < WIZARD_STEPS.length ? nextStep : handleFinalSubmit),
+    [currentStep, nextStep, handleFinalSubmit]
+  );
+
+  // Renderizar contenido del paso actual
+  const stepContent = useMemo(() => {
     switch (currentStep) {
       case 1:
         return <BasicInfoStep form={form} />;
@@ -45,13 +52,11 @@ export function EvaluationWizard({
           />
         );
       case 3:
-        return (
-          <ReviewStep formData={watchedValues} assignments={assignments} />
-        );
+        return <ReviewStep formData={watchedValues} assignments={assignments} />;
       default:
         return null;
     }
-  };
+  }, [currentStep, form, assignments, updateAssignments, watchedValues]);
 
   return (
     <div className="px-4 mx-auto">
@@ -59,20 +64,18 @@ export function EvaluationWizard({
 
       <Card>
         <CardContent className="pt-6">
-          <form onSubmit={form.handleSubmit(handleFormSubmit)}>
-            {renderStepContent()}
-
-            <WizardNavigation
-              currentStep={currentStep}
-              totalSteps={WIZARD_STEPS.length}
-              canProceed={canProceed()}
-              onPrevious={prevStep}
-              onNext={nextStep}
-              isSubmitting={isSubmitting}
-            />
-          </form>
+          {stepContent}
+          <WizardNavigation
+            currentStep={currentStep}
+            totalSteps={WIZARD_STEPS.length}
+            canProceed={canProceed()}
+            onPrevious={prevStep}
+            onNext={handleNext}
+            isSubmitting={isSubmitting}
+            finishLabel="Crear Evaluación"
+          />
         </CardContent>
       </Card>
     </div>
   );
-}
+});

@@ -1,9 +1,11 @@
-import { api } from "@/shared/config/axios";
+import { api } from "@infrastructure/query/axios";
 import {
   TechnicalCareer,
   CreateTechnicalCareerRequest,
   UpdateTechnicalCareerRequest,
-} from "../types/technical-career";
+} from "../models/technical-career";
+import { ImportStudentsResult } from "../models/import";
+import { CreateStudentRequest } from "../models/student";
 
 const TECHNICAL_CAREERS_API_URL = "/technical-careers";
 
@@ -22,6 +24,13 @@ export const technicalCareerService = {
     return data;
   },
 
+  async getCareerCoordinator(careerId: string) {
+    const { data } = await api.get(
+      `${TECHNICAL_CAREERS_API_URL}/${careerId}/coordinator`
+    );
+    return data;
+  },
+
   async create(career: CreateTechnicalCareerRequest): Promise<string> {
     const { data } = await api.post<{ id: string }>(
       TECHNICAL_CAREERS_API_URL,
@@ -34,10 +43,64 @@ export const technicalCareerService = {
     id: string,
     career: UpdateTechnicalCareerRequest
   ): Promise<void> {
-    await api.put(`${TECHNICAL_CAREERS_API_URL}/${id}`, career);
+    // El backend espera solo { name } en el payload, no incluir id
+    const payload = {
+      name: career.name
+    };
+    await api.put(`${TECHNICAL_CAREERS_API_URL}/${id}`, payload);
   },
 
   async delete(id: string): Promise<void> {
     await api.delete(`${TECHNICAL_CAREERS_API_URL}/${id}`);
+  },
+
+  async importStudents(
+    careerId: string,
+    file: File
+  ): Promise<ImportStudentsResult> {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const { data } = await api.post<ImportStudentsResult>(
+        `${TECHNICAL_CAREERS_API_URL}/${careerId}/import-students`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+    
+      return data;
+    
+  },
+
+  async addStudentToCareer(
+    careerId: string,
+    student: CreateStudentRequest
+  ): Promise<string> {
+      const { data } = await api.post<{ id: string }>(
+        `${TECHNICAL_CAREERS_API_URL}/${careerId}/students`,
+        { ...student, technicalCareerId: careerId }
+      );
+      return data.id;
+  },
+
+  async assignCoordinator(careerId: string, coordinatorUserId: string): Promise<void> {
+    // El backend espera AssignCoordinatorCommand: { technicalCareerId, userId }
+    const payload = {
+      technicalCareerId: careerId,
+      userId: coordinatorUserId
+    };
+    
+    const url = `${TECHNICAL_CAREERS_API_URL}/${careerId}/coordinator`;
+    
+    // Endpoint correcto: PUT /technical-careers/{id}/coordinator
+    await api.put(url, payload);
+  },
+
+  async removeCoordinator(careerId: string): Promise<void> {
+    await api.delete(`${TECHNICAL_CAREERS_API_URL}/${careerId}/coordinator`);
   },
 };

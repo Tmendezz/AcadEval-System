@@ -1,3 +1,5 @@
-// Servicios del módulo de administration
-export * from "./technical-career-service";
-export * from "./professor-service";
+export { studentService } from "./student-service";
+export { professorService } from "./professor-service";
+export { technicalCareerService } from "./technical-career-service";
+export { identityAdminService } from "./identity-admin-service";
+export { userManagementService } from "./user-management-service";

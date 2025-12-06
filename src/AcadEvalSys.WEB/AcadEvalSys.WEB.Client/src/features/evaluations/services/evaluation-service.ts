@@ -1,52 +1,54 @@
-import { api } from "@/shared/config/axios";
+import { api } from "@/infrastructure/query/axios";
 
-const EVALUATIONS_API_URL = "/evaluation-instances";
-
-export const getEvaluations = async () => {
-  const { data } = await api.get(EVALUATIONS_API_URL);
-  return data;
-};
-
-export const getEvaluationById = async (id: string) => {
-  const { data } = await api.get(`${EVALUATIONS_API_URL}/${id}`);
-  return data;
-};
-
-export const createEvaluation = async (evaluation: {
+export type EvaluationListItem = {
+  id: string;
   title: string;
-  description: string;
-  periodFrom: string;
-  periodTo: string;
-  semester: "First" | "Second";
-  competencyAssignments: Array<{
-    competencyId: string;
-    subjectId: string;
-  }>;
-}) => {
-  const { data } = await api.post(EVALUATIONS_API_URL, evaluation);
+  status: "Draft" | "Published" | "Completed" | "Archived" | "Pending";
+  createdAt: string;
+  updatedAt?: string;
+  periodFrom?: string;
+  periodTo?: string;
+};
+
+export async function getEvaluations(): Promise<EvaluationListItem[]> {
+  const { data } = await api.get<EvaluationListItem[]>(`/evaluation-instances`);
   return data;
-};
+}
 
-export const updateEvaluation = async (
-  id: string,
-  evaluation: {
-    id: string;
-    title: string;
-    description: string;
-    periodFrom: string;
-    periodTo: string;
-  }
-) => {
-  await api.put(`${EVALUATIONS_API_URL}/${id}`, evaluation);
-};
+export async function getEvaluationById(id: string) {
+  const { data } = await api.get(`/evaluation-instances/${id}`);
+  return data;
+}
 
-export const deleteEvaluation = async (id: string) => {
-  await api.delete(`${EVALUATIONS_API_URL}/${id}`);
-};
+export async function createEvaluation(body: any) {
+  const { data } = await api.post<{ id: string }>(`/evaluation-instances`, body);
+  return data.id;
+}
 
-export const finalizeEvaluation = async (id: string, forceClose = false) => {
-  const { data } = await api.post(
-    `${EVALUATIONS_API_URL}/${id}/finalize?forceClose=${forceClose}`
+export async function deleteEvaluation(id: string) {
+  await api.delete(`/evaluation-instances/${id}`);
+}
+
+export async function finalizeEvaluation(id: string, forceClose: boolean = false) {
+  const { data } = await api.post(`/evaluation-instances/${id}/finalize?forceClose=${forceClose}`, {});
+  return data;
+}
+
+export async function getCareerYearAssignmentDetails(
+  evaluationId: string,
+  careerId: string,
+  year: number
+) {
+  const { data } = await api.get(
+    `/evaluation-instances/${evaluationId}/career-assignments`,
+    { params: { careerId, year: String(year) } }
   );
   return data;
-};
+}
+
+export async function getAssignmentStudents(assignmentId: string) {
+  const { data } = await api.get(`/evaluation-instances/assignments/${assignmentId}/students`);
+  return data;
+}
+
+

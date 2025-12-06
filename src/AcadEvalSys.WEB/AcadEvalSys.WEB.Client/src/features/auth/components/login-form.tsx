@@ -1,7 +1,9 @@
+import { useCallback, memo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useLoginMutation } from "@/shared/auth/hooks/use-login-mutation";
+import { useLogin } from "@/features/auth/hooks/use-login";
+import { useAuthStore } from "@/features/auth/store";
 import { Link } from "wouter";
 import { AuthButton } from "./auth-button";
 import { Form, FormField, FormMessage } from "@/shared/components/ui/form";
@@ -9,16 +11,21 @@ import { FormItem } from "@/shared/components/ui/form";
 import { FormLabel } from "@/shared/components/ui/form";
 import { FormControl } from "@/shared/components/ui/form";
 import { Input } from "@/shared/components/ui/input";
-import { getErrorMessage } from "@/shared/lib/error-handler";
 
+// Schema de validación mejorado
 const loginSchema = z.object({
-  email: z.string().email("Ingrese un correo académico válido"),
-  password: z.string().min(1, "La contraseña es requerida"),
+  email: z
+    .string()
+    .min(1, "El correo es requerido")
+    .email("Ingrese un correo académico válido"),
+  password: z
+    .string()
+    .min(1, "La contraseña es requerida"),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-export const LoginForm = () => {
+export const LoginForm = memo(function LoginForm() {
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -29,22 +36,19 @@ export const LoginForm = () => {
 
   const { handleSubmit, control } = form;
 
-  const {
-    mutate: login,
-    isPending: isLoading,
-    error: loginError,
-  } = useLoginMutation();
+  const { login, isLoading } = useLogin();
+  const storeError = useAuthStore((state) => state.error);
 
-  const onSubmit = async (data: LoginFormData) => {
-    try {
+  // Handler memoizado
+  const onSubmit = useCallback(
+    async (data: LoginFormData) => {
       await login({
         email: data.email,
         password: data.password,
       });
-    } catch (error) {
-      console.error("Error en submit:", error);
-    }
-  };
+    },
+    [login]
+  );
 
   return (
     <Form {...form}>
@@ -93,9 +97,9 @@ export const LoginForm = () => {
           )}
         />
 
-        {loginError && (
+        {storeError && (
           <div className="text-red-700 text-sm text-center p-3 bg-red-50 border border-red-200 rounded-lg">
-            {getErrorMessage(loginError)}
+            {storeError}
           </div>
         )}
 
@@ -114,4 +118,4 @@ export const LoginForm = () => {
       </form>
     </Form>
   );
-};
+});

@@ -1,9 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import {
-  getTechnicalCareers,
-  getTechnicalCareerById,
-} from "../services/technical-career-service";
-import { TechnicalCareer } from "@/shared/types";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { technicalCareerService } from "@/features/careers/services/technical-career-service";
+import type { UpdateTechnicalCareerRequest } from "@/features/careers/models";
+import { toast } from "sonner";
 
 export const technicalCareersKeys = {
   all: ["technical-careers"] as const,
@@ -17,14 +15,38 @@ export const technicalCareersKeys = {
 export const useTechnicalCareers = () => {
   return useQuery({
     queryKey: technicalCareersKeys.lists(),
-    queryFn: getTechnicalCareers,
+    queryFn: () => technicalCareerService.getAll(),
   });
 };
 
 export const useTechnicalCareerById = (id: string) => {
   return useQuery({
     queryKey: technicalCareersKeys.detail(id),
-    queryFn: () => getTechnicalCareerById(id),
+    queryFn: () => technicalCareerService.getById(id),
     enabled: !!id,
+  });
+};
+
+export const useUpdateTechnicalCareer = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      career,
+    }: {
+      id: string;
+      career: UpdateTechnicalCareerRequest;
+    }) => technicalCareerService.update(id, career),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: technicalCareersKeys.lists() });
+      queryClient.invalidateQueries({
+        queryKey: technicalCareersKeys.detail(id),
+      });
+      toast.success("Tecnicatura actualizada exitosamente");
+    },
+    onError: () => {
+      toast.error("Error al actualizar la tecnicatura");
+    },
   });
 };

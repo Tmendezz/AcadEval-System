@@ -4,6 +4,8 @@ using AcadEvalSys.Application.Evaluations.Commands.FinalizeEvaluationInstance;
 using AcadEvalSys.Application.Evaluations.Commands.UpdateEvaluationInfoInstance;
 using AcadEvalSys.Application.Evaluations.Queries.GetAllEvaluationInstanceById;
 using AcadEvalSys.Application.Evaluations.Queries.GetAllEvaluationInstances;
+using AcadEvalSys.Application.Evaluations.Queries.GetCareerYearAssignmentDetails;
+using AcadEvalSys.Application.Evaluations.Queries.GetAssignmentStudents;
 using AcadEvalSys.Domain.Constants.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -122,5 +124,46 @@ public class EvaluationInstanceController(IMediator mediator) : ControllerBase
                 ? "Evaluation instance finalized successfully"
                 : "Failed to finalize evaluation instance"
         });
+    }
+
+    /// <summary>
+    /// Obtiene los detalles de asignaciones para un año específico de una carrera técnica en una evaluación.
+    /// </summary>
+    /// <param name="id">ID de la instancia de evaluación.</param>
+    /// <param name="careerId">ID de la carrera técnica.</param>
+    /// <param name="year">Año académico (First, Second, Third).</param>
+    /// <returns>Lista de detalles de asignaciones con información de estudiantes.</returns>
+    [HttpGet("{id}/career-assignments")]
+    [AllowAnonymous] // Permitir acceso a profesores, coordinadores y administradores
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Produces("application/json")]
+    public async Task<IActionResult> GetCareerYearAssignmentDetails(
+        [FromRoute] Guid id,
+        [FromQuery] Guid careerId,
+        [FromQuery] string year)
+    {
+        var query = new GetCareerYearAssignmentDetailsQuery(id, careerId, year);
+        var assignmentDetails = await mediator.Send(query);
+        return Ok(assignmentDetails);
+    }
+
+    /// <summary>
+    /// Obtiene la lista de estudiantes de una asignación específica con su estado de evaluación.
+    /// </summary>
+    /// <param name="assignmentId">ID de la asignación de competencia del profesor.</param>
+    /// <returns>Lista de estudiantes con su estado de evaluación.</returns>
+    [HttpGet("assignments/{assignmentId}/students")]
+    [AllowAnonymous] // Allow access for professors, coordinators, and admins
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Produces("application/json")]
+    public async Task<IActionResult> GetAssignmentStudents(
+        [FromRoute] Guid assignmentId)
+    {
+        var query = new GetAssignmentStudentsQuery(assignmentId);
+        var students = await mediator.Send(query);
+        return Ok(students);
     }
 }

@@ -23,6 +23,13 @@ public class GetAllStudentCompetencyAssessmentQueryHandler(
         logger.LogInformation("Retrieved {Count} student competency assessments for assignment ID: {AssignmentId}",
             assessmentsList.Count, request.AssignmentId);
 
+        // Debug: Log detallado de cada assessment (solo si hay datos)
+        if (assessmentsList.Any())
+        {
+            logger.LogInformation("Found {Count} assessments for assignment {AssignmentId}", 
+                assessmentsList.Count, request.AssignmentId);
+        }
+
         var assessmentsDto = mapper.Map<CompetencyAssessmentGroupDto>(assessmentsList);
 
         logger.LogInformation("Assignment progress: {EvaluatedCount}/{TotalCount} students evaluated ({ProgressPercentage}%)",

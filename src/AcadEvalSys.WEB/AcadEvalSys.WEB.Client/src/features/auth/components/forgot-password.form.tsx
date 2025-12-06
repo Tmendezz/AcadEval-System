@@ -28,7 +28,6 @@ export const ForgotPasswordForm = () => {
   const { handleSubmit, control } = form;
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
     // TODO: Implementar lógica de recuperación
   };
 

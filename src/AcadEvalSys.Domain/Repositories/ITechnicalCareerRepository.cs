@@ -5,7 +5,7 @@ namespace AcadEvalSys.Domain.Repositories;
 public interface ITechnicalCareerRepository
 {
     Task<Guid> Create(TechnicalCareer entity);
-    Task Update();
+    Task Update(TechnicalCareer entity);
     Task Delete(TechnicalCareer entity);
 
     Task<IEnumerable<TechnicalCareer>> GetAllCareersAsync();

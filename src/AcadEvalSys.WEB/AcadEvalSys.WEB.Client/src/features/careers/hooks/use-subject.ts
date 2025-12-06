@@ -1,14 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
-import { subjectService } from "../services/subject-service";
+import { getSubjectById } from "../services/subject-service";
+
+// Query keys para subjects
+export const subjectKeys = {
+  all: () => ["subject"] as const,
+  detail: (subjectId: string, careerId: string) => ["subject", subjectId, careerId] as const,
+};
 
 export const useSubject = (subjectId: string, careerId: string) => {
   const { data: subject, isLoading: isLoadingSubject } = useQuery({
-    queryKey: ["subject", subjectId, careerId],
-    queryFn: async () => {
-      if (!subjectId || !careerId) return null;
-      return await subjectService.getSubjectById(careerId, subjectId, true);
-    },
+    queryKey: subjectKeys.detail(subjectId, careerId),
+    queryFn: () => getSubjectById(careerId, subjectId, true),
     enabled: !!subjectId && !!careerId,
+    staleTime: 3 * 60 * 1000, // 3 minutos
   });
 
   return { subject, isLoadingSubject };

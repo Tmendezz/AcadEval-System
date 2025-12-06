@@ -6,6 +6,7 @@ using AcadEvalSys.Application.Professors.Commands.UpdateProfessor;
 using AcadEvalSys.Application.Professors.Queries.GetAllProfessors;
 using AcadEvalSys.Application.Professors.Queries.GetProfessor;
 using AcadEvalSys.Application.StudentCompetencyAssessments.Commands.CompleteStudentAssessment;
+
 using AcadEvalSys.Application.StudentCompetencyAssessments.Queries.GetAllStudentCompetencyAssessment;
 using AcadEvalSys.Domain.Constants.Constants;
 using MediatR;
@@ -78,64 +79,36 @@ public class ProfessorController(IMediator mediator) : ControllerBase
 
     /// <summary>
     /// Elimina un profesor. Solo los administradores pueden eliminar profesores.
+    /// Si el profesor tiene asignaturas asignadas, devuelve información sobre las asignaciones.
     /// </summary>
     [HttpDelete("{id}")]
     [Authorize(Roles = UserRoles.Admin)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Produces("application/json")]
     public async Task<IActionResult> DeleteProfessor(string id)
     {
         var command = new RemoveProfessorCommand(id);
         var result = await mediator.Send(command);
-        return result ? NoContent() : NotFound();
+        
+        if (result.Success)
+        {
+            return NoContent();
+        }
+        
+        // Si tiene asignaturas asignadas, devolver BadRequest con el mensaje
+        if (result.HasAssignments)
+        {
+            return BadRequest(new { 
+                message = result.Message,
+                hasAssignments = result.HasAssignments,
+                assignedSubjects = result.AssignedSubjects
+            });
+        }
+        
+        // Si no se encontró el profesor/usuario, devolver NotFound
+        return NotFound(new { message = result.Message });
     }
 
-    /// <summary>
-    /// Obtiene las asignaciones de un profesor, opcionalmente filtradas por instancia de evaluación.
-    /// </summary>
-    /// <param name="professorId">ID del profesor.</param>
-    /// <param name="evaluationInstanceId">ID de la instancia de evaluación (opcional).</param>
-    /// <returns>Lista de asignaciones.</returns>
-    [HttpGet("{professorId}/assignments")]
-    public async Task<IActionResult> GetProfessorAssignments(
-        string professorId,
-        [FromQuery] Guid? evaluationInstanceId = null)
-    {
-        var query = new GetProfessorAssignmentsQuery(professorId, evaluationInstanceId);
-        var result = await mediator.Send(query);
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Obtiene los estudiantes asignados a una asignación de profesor.
-    /// </summary>
-    /// <param name="assignmentId">ID de la asignación.</param>
-    /// <returns>Lista de estudiantes.</returns>
-    [HttpGet("assignments/{assignmentId}/students")]
-    public async Task<IActionResult> GetAssignmentStudents(Guid assignmentId)
-    {
-        var query = new GetAllStudentCompetencyAssessmentQuery(assignmentId);
-        var result = await mediator.Send(query);
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Evalúa la competencia de un estudiante en una asignación.
-    /// </summary>
-    /// <param name="assignmentId">ID de la asignación.</param>
-    /// <param name="studentId">ID del estudiante.</param>
-    /// <param name="request">Datos de la evaluación.</param>
-    /// <returns>ID de la evaluación realizada.</returns>
-    [HttpPost("assignments/{assignmentId}/students/{studentId}/evaluate")]
-    public async Task<IActionResult> EvaluateStudentCompetency(
-        Guid assignmentId,
-        string studentId,
-        [FromBody] CompleteStudentAssessmentCommand request)
-    {
-        request.ProfessorCompetencyAssignmentId = assignmentId;
-        request.StudentId = studentId;
-
-        var result = await mediator.Send(request);
-        return Ok(new { AssessmentId = result });
-    }
 }

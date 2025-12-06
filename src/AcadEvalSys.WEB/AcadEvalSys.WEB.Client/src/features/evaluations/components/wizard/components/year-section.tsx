@@ -1,25 +1,23 @@
+import React from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
-import { ChevronDown, ChevronRight, Plus } from "lucide-react";
-import {
-  getYearName,
-  getYearKey,
-  formatSubjectCount,
-} from "../../../utils/wizard-utils";
+import { ChevronDown, ChevronRight, Plus, CheckCircle2 } from "lucide-react";
+import { getYearName, formatSubjectCount } from "../../../utils/wizard-utils";
 
 interface YearSectionProps {
-  careerId: string;
+  // careerId retained previously, remove to avoid unused param warnings
   year: number;
   subjectCount: number;
   assignmentCount: number;
   isExpanded: boolean;
   onToggle: () => void;
-  onAddAssignment: () => void;
+  onAddAssignment?: () => void;
   children: React.ReactNode;
+  isCompleted?: boolean;
+  showAddButton?: boolean;
 }
 
 export function YearSection({
-  careerId,
   year,
   subjectCount,
   assignmentCount,
@@ -27,9 +25,9 @@ export function YearSection({
   onToggle,
   onAddAssignment,
   children,
+  isCompleted = false,
+  showAddButton = true,
 }: YearSectionProps) {
-  const yearKey = getYearKey(careerId, year);
-
   return (
     <div className="border rounded-lg">
       <div
@@ -41,6 +39,11 @@ export function YearSection({
           <span className="text-sm text-muted-foreground">
             {formatSubjectCount(subjectCount)}
           </span>
+          {isCompleted && (
+            <span className="inline-flex items-center gap-1 text-xs text-green-600">
+              <CheckCircle2 className="w-4 h-4" /> Listo
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {assignmentCount > 0 && (
@@ -60,10 +63,17 @@ export function YearSection({
         <div className="p-4 pt-0 space-y-4">
           <div className="flex justify-between items-center">
             <h4 className="font-medium">Asignaturas del {getYearName(year)}</h4>
-            <Button onClick={onAddAssignment} variant="outline" size="sm">
-              <Plus className="w-4 h-4 mr-2" />
-              Agregar Asignación
-            </Button>
+            {showAddButton && onAddAssignment && (
+              <Button
+                onClick={onAddAssignment}
+                variant="outline"
+                size="sm"
+                type="button"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Agregar Asignación
+              </Button>
+            )}
           </div>
           {children}
         </div>

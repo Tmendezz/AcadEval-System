@@ -1,3 +1,4 @@
+using AcadEvalSys.Application.Users;
 using AcadEvalSys.Domain.Entities;
 using AcadEvalSys.Domain.Exceptions;
 using AcadEvalSys.Domain.Repositories;
@@ -9,7 +10,8 @@ namespace AcadEvalSys.Application.Subjects.Commands.EnrollStudent;
 public class EnrollStudentInSubjectCommandHandler(
     ILogger<EnrollStudentInSubjectCommandHandler> logger,
     ISubjectRepository subjectRepository,
-    IStudentRepository studentRepository) : IRequestHandler<EnrollStudentInSubjectCommand, bool>
+    IStudentRepository studentRepository,
+    IUserContext userContext) : IRequestHandler<EnrollStudentInSubjectCommand, bool>
 {
     public async Task<bool> Handle(EnrollStudentInSubjectCommand request, CancellationToken cancellationToken)
     {
@@ -38,13 +40,33 @@ public class EnrollStudentInSubjectCommandHandler(
         if (await studentRepository.IsEnrolledInSubjectAsync(request.StudentId, request.SubjectId))
             throw new InvalidOperationException("El estudiante ya está inscrito en esta materia.");
 
+        var currentUser = userContext.GetCurrentUser();
+        if (currentUser == null)
+        {
+            throw new UnauthorizedAccessException("User must be authenticated");
+        }
+
         try
         {
-            await studentRepository.EnrollInSubjectAsync(request.StudentId, request.SubjectId);
+            // Guardar el año actual del estudiante ANTES de actualizar
+            var previousYear = student.CurrentYear;
+            
+            await studentRepository.EnrollInSubjectAsync(request.StudentId, request.SubjectId, currentUser.Id!);
+            
+            // Actualizar automáticamente el año del estudiante si la asignatura es de un año superior
+            // Esto permite que estudiantes avancen de año cuando se inscriben en materias de años superiores
+            await studentRepository.UpdateStudentYearIfNeededAsync(request.StudentId, subject.Year);
+            
+            if ((int)subject.Year > (int)previousYear)
+            {
+                logger.LogInformation("Student {StudentId} year automatically updated from {PreviousYear} to {NewYear} when enrolled in subject {SubjectName} ({SubjectId})", 
+                    request.StudentId, previousYear, subject.Year, subject.Name, request.SubjectId);
+            }
+            
             logger.LogInformation("Student {StudentId} enrolled in subject {SubjectId} of career {CareerId} successfully", request.StudentId, request.SubjectId, request.TechnicalCareerId);
             return true;
         }
-        catch (InvalidOperationException ex)
+        catch (Exception ex)
         {
             logger.LogError(ex, "Error enrolling student {StudentId} in subject {SubjectId} of career {CareerId}", request.StudentId, request.SubjectId, request.TechnicalCareerId);
             return false;

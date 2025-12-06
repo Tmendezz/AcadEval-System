@@ -1,0 +1,10 @@
+Page para ver evaluaciones del profesor (lista)
+Page detalle para ver evaluacion a compeltar
+Implementar modal para evaluar alumno
+Modal para que profesor evaluae a cada alumno en una competencia
+UI para alumnos con validaciones para visualizar pdfs de evaluaciones
+Validar en el front formularios
+Testear CRUD de competencias, profesores, carreras, inscripciones, descargas 
+Error de UI: 3 step de review muestra en campo de asignatura los ids y no el nombre de la asignatura
+Necesito ordenar por fecha de creacion las evaluaciones creadas
+Mejorar performance con use callbacks para evitar llamadas en toda la app

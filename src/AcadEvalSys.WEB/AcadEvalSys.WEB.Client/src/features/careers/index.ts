@@ -1,7 +1,8 @@
+// Main container component - follows Screaming Architecture
+export { default as Careers } from "./careers.tsx";
+
 // Exportaciones del módulo de careers
 export * from "./hooks";
-export * from "./pages";
-export * from "./columns";
 export * from "./services";
-export * from "./types";
+export * from "./models";
 export * from "./components";

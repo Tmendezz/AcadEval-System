@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from "react";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Label } from "@/shared/components/ui/label";
@@ -10,11 +11,15 @@ import {
 } from "@/shared/components/ui/select";
 import { Badge } from "@/shared/components/ui/badge";
 import { Plus, Trash2 } from "lucide-react";
-import { Assignment } from "../../../types/evaluation-form";
+import { Assignment } from "../../../models/evaluation-form";
 import {
   useCompetencies,
   useSubjectsByCareer,
 } from "@/features/evaluations/hooks";
+import {
+  buildExclusionSet,
+  filterOptionsById,
+} from "@shared/utils/unique-options";
 
 interface CompetencyAssignmentsStepProps {
   assignments: Assignment[];
@@ -25,32 +30,58 @@ export function CompetencyAssignmentsStep({
   assignments,
   onAssignmentsChange,
 }: CompetencyAssignmentsStepProps) {
-  const addAssignment = () => {
-    onAssignmentsChange([...assignments, { competencyId: "", subjectId: "" }]);
-  };
-
-  const removeAssignment = (index: number) => {
-    onAssignmentsChange(assignments.filter((_, i) => i !== index));
-  };
-
-  const updateAssignment = (
-    index: number,
-    field: "competencyId" | "subjectId",
-    value: string
-  ) => {
-    const newAssignments = [...assignments];
-    newAssignments[index][field] = value;
-    onAssignmentsChange(newAssignments);
-  };
-
   const { data: competencies = [] } = useCompetencies();
   const { data: subjects = [] } = useSubjectsByCareer("", undefined, true);
+
+  const addAssignment = useCallback(() => {
+    onAssignmentsChange([...assignments, { competencyId: "", subjectId: "" }]);
+  }, [assignments, onAssignmentsChange]);
+
+  const removeAssignment = useCallback(
+    (index: number) => {
+      onAssignmentsChange(assignments.filter((_, i) => i !== index));
+    },
+    [assignments, onAssignmentsChange]
+  );
+
+  const updateAssignment = useCallback(
+    (index: number, field: "competencyId" | "subjectId", value: string) => {
+      const newAssignments = [...assignments];
+      newAssignments[index] = { ...newAssignments[index], [field]: value };
+      onAssignmentsChange(newAssignments);
+    },
+    [assignments, onAssignmentsChange]
+  );
+
+  // Memoizar el cálculo de exclusión de competencias
+  const usedCompetencyIds = useMemo(
+    () =>
+      buildExclusionSet(
+        assignments,
+        (a) => a.competencyId || undefined,
+        (a) => !a.competencyId
+      ),
+    [assignments]
+  );
+
+  // Memoizar la verificación de si el botón debe estar deshabilitado
+  const isAddDisabled = useMemo(
+    () => assignments.length >= competencies.length,
+    [assignments.length, competencies.length]
+  );
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Asignaciones de Competencias</h3>
-        <Button onClick={addAssignment} variant="outline" size="sm">
+        {/* Botón deshabilitado si ya alcanzó el número de competencias */}
+        <Button
+          onClick={addAssignment}
+          variant="outline"
+          size="sm"
+          type="button"
+          disabled={isAddDisabled}
+        >
           <Plus className="w-4 h-4 mr-2" />
           Agregar Asignación
         </Button>
@@ -81,7 +112,11 @@ export function CompetencyAssignmentsStep({
                         <SelectValue placeholder="Seleccionar competencia" />
                       </SelectTrigger>
                       <SelectContent>
-                        {competencies.map((competency) => (
+                        {filterOptionsById(
+                          competencies,
+                          usedCompetencyIds,
+                          assignment.competencyId
+                        ).map((competency) => (
                           <SelectItem key={competency.id} value={competency.id}>
                             <div className="flex items-center gap-2">
                               <span>{competency.name}</span>
@@ -138,6 +173,7 @@ export function CompetencyAssignmentsStep({
                       variant="outline"
                       size="sm"
                       className="w-full"
+                      type="button"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Eliminar

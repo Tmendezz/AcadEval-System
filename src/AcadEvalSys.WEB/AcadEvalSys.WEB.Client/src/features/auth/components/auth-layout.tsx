@@ -1,3 +1,4 @@
+import React from "react";
 import fondo_login_MOL from "@/assets/fondo_login_MOL.jpg";
 
 interface AuthLayoutProps {

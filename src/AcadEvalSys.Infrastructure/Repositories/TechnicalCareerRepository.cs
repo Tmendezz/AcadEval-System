@@ -14,8 +14,11 @@ public class TechnicalCareerRepository(ApplicationDbContext dbContext) : ITechni
         return entity.Id;
     }
 
-    public Task Update()
-    => dbContext.SaveChangesAsync();
+    public async Task Update(TechnicalCareer entity)
+    {
+        dbContext.TechnicalCareers.Update(entity);
+        await dbContext.SaveChangesAsync();
+    }
 
     public async Task Delete(TechnicalCareer entity)
     {

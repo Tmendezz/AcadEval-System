@@ -29,9 +29,12 @@ public class AddStudentCommandHandler(
 
         if (existingUser != null)
         {
-            logger.LogWarning("User with email {Email} already exists", request.Email);
+            logger.LogWarning("User with email {Email} already exists. User ID: {UserId}, Name: {Name}, EmailConfirmed: {EmailConfirmed}", 
+                request.Email, existingUser.Id, existingUser.Name, existingUser.EmailConfirmed);
             throw new DuplicateResourceException(nameof(Student), request.Email);
         }
+        
+        logger.LogInformation("No existing user found for email {Email}, proceeding with creation", request.Email);
 
         var userResult = await userManager.CreateAsync(user, request.Password);
         if (!userResult.Succeeded)

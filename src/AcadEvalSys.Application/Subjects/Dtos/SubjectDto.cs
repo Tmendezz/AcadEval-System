@@ -22,4 +22,6 @@ public record EnrolledStudentDto
     public string StudentId { get; set; } = string.Empty;
     public string StudentName { get; set; } = string.Empty;
     public string StudentEmail { get; set; } = string.Empty;
+    public CareerYear CurrentYear { get; set; }
+    public string TechnicalCareerName { get; set; } = string.Empty;
 }

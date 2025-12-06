@@ -490,3 +490,5 @@ $RECYCLE.BIN/
 
 # Vite build artifacts and cache
 .vite/
+# Google Cloud Service Account credentials (sensitive)
+sapee-itec-*.json

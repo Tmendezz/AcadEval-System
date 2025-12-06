@@ -1,0 +1,3263 @@
+{
+    "openapi": "3.0.4",
+    "info": {
+      "title": "AcadEval ITEC API",
+      "version": "v1"
+    },
+    "paths": {
+      "/competencies": {
+        "get": {
+          "tags": [
+            "Competency"
+          ],
+          "summary": "Obtiene todas las competencias.",
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        },
+        "post": {
+          "tags": [
+            "Competency"
+          ],
+          "summary": "Crea una nueva competencia.",
+          "requestBody": {
+            "description": "Datos de la competencia a crear.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateCompetencyCommand"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateCompetencyCommand"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateCompetencyCommand"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Created"
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/competencies/{id}": {
+        "get": {
+          "tags": [
+            "Competency"
+          ],
+          "summary": "Obtiene una competencia específica por su ID.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID de la competencia.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "put": {
+          "tags": [
+            "Competency"
+          ],
+          "summary": "Actualiza una competencia existente.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID de la competencia a actualizar.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "requestBody": {
+            "description": "Datos actualizados de la competencia.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateCompetencyCommand"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateCompetencyCommand"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateCompetencyCommand"
+                }
+              }
+            }
+          },
+          "responses": {
+            "204": {
+              "description": "No Content"
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "delete": {
+          "tags": [
+            "Competency"
+          ],
+          "summary": "Elimina una competencia por su ID.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID de la competencia a eliminar.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "No Content"
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/evaluation-instances": {
+        "get": {
+          "tags": [
+            "EvaluationInstance"
+          ],
+          "summary": "Obtiene todas las instancias de evaluación.",
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        },
+        "post": {
+          "tags": [
+            "EvaluationInstance"
+          ],
+          "summary": "Crea una nueva instancia de evaluación.",
+          "requestBody": {
+            "description": "Datos de la instancia a crear.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateEvaluationInstanceCommand"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateEvaluationInstanceCommand"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateEvaluationInstanceCommand"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Created"
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/evaluation-instances/{id}": {
+        "get": {
+          "tags": [
+            "EvaluationInstance"
+          ],
+          "summary": "Obtiene una instancia de evaluación por su ID.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID de la instancia de evaluación.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "delete": {
+          "tags": [
+            "EvaluationInstance"
+          ],
+          "summary": "Elimina una instancia de evaluación por su ID.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID de la instancia a eliminar.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "No Content"
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "put": {
+          "tags": [
+            "EvaluationInstance"
+          ],
+          "summary": "Actualiza una instancia de evaluación existente.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID de la instancia a actualizar.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "requestBody": {
+            "description": "Datos actualizados de la instancia.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateEvaluationInstanceCommand"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateEvaluationInstanceCommand"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateEvaluationInstanceCommand"
+                }
+              }
+            }
+          },
+          "responses": {
+            "204": {
+              "description": "No Content"
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/evaluation-instances/{id}/finalize": {
+        "post": {
+          "tags": [
+            "EvaluationInstance"
+          ],
+          "summary": "Finaliza una instancia de evaluación.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID de la instancia a finalizar.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            {
+              "name": "forceClose",
+              "in": "query",
+              "description": "Forzar cierre aunque existan evaluaciones pendientes.",
+              "schema": {
+                "type": "boolean",
+                "default": false
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/identity/register": {
+        "post": {
+          "tags": [
+            "Identity"
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/identity/login": {
+        "post": {
+          "tags": [
+            "Identity"
+          ],
+          "parameters": [
+            {
+              "name": "useCookies",
+              "in": "query",
+              "schema": {
+                "type": "boolean"
+              }
+            },
+            {
+              "name": "useSessionCookies",
+              "in": "query",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/AccessTokenResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/identity/refresh": {
+        "post": {
+          "tags": [
+            "Identity"
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefreshRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/AccessTokenResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/identity/confirmEmail": {
+        "get": {
+          "tags": [
+            "Identity"
+          ],
+          "operationId": "MapIdentityApi-identity/confirmEmail",
+          "parameters": [
+            {
+              "name": "userId",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "code",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "changedEmail",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/identity/resendConfirmationEmail": {
+        "post": {
+          "tags": [
+            "Identity"
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResendConfirmationEmailRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/identity/forgotPassword": {
+        "post": {
+          "tags": [
+            "Identity"
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForgotPasswordRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/identity/resetPassword": {
+        "post": {
+          "tags": [
+            "Identity"
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResetPasswordRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/identity/manage/2fa": {
+        "post": {
+          "tags": [
+            "Identity"
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwoFactorRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/TwoFactorResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          }
+        }
+      },
+      "/identity/manage/info": {
+        "get": {
+          "tags": [
+            "Identity"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/InfoResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          }
+        },
+        "post": {
+          "tags": [
+            "Identity"
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfoRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/InfoResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          }
+        }
+      },
+      "/identity/logout": {
+        "post": {
+          "tags": [
+            "Identity"
+          ],
+          "summary": "Cierra la sesión del usuario actual.",
+          "responses": {
+            "204": {
+              "description": "No Content"
+            }
+          }
+        }
+      },
+      "/identity/userRole": {
+        "post": {
+          "tags": [
+            "Identity"
+          ],
+          "summary": "Asigna un rol a un usuario. Solo administradores.",
+          "requestBody": {
+            "description": "Datos del usuario y rol a asignar.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignUserRoleCommand"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignUserRoleCommand"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignUserRoleCommand"
+                }
+              }
+            }
+          },
+          "responses": {
+            "204": {
+              "description": "No Content"
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "delete": {
+          "tags": [
+            "Identity"
+          ],
+          "summary": "Quita un rol a un usuario. Solo administradores.",
+          "requestBody": {
+            "description": "Datos del usuario y rol a quitar.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnassingUserRoleCommand"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnassingUserRoleCommand"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnassingUserRoleCommand"
+                }
+              }
+            }
+          },
+          "responses": {
+            "204": {
+              "description": "No Content"
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/identity/info": {
+        "get": {
+          "tags": [
+            "Identity"
+          ],
+          "summary": "Obtiene la información del usuario actual.",
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/identity/session-check": {
+        "get": {
+          "tags": [
+            "Identity"
+          ],
+          "summary": "Verifica el estado de la sesión actual.",
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/SessionStatusDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/professors": {
+        "post": {
+          "tags": [
+            "Professor"
+          ],
+          "summary": "Crea un nuevo profesor. Solo los administradores pueden crear profesores.",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddProfessorCommand"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddProfessorCommand"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddProfessorCommand"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Created"
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "get": {
+          "tags": [
+            "Professor"
+          ],
+          "summary": "Obtiene todos los profesores con paginación y filtrado.",
+          "parameters": [
+            {
+              "name": "TechnicalCareerId",
+              "in": "query",
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            {
+              "name": "PageNumber",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            {
+              "name": "PageSize",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            {
+              "name": "SearchTerm",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/professors/{id}": {
+        "get": {
+          "tags": [
+            "Professor"
+          ],
+          "summary": "Obtiene un profesor específico por su ID.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "put": {
+          "tags": [
+            "Professor"
+          ],
+          "summary": "Actualiza la información de un profesor. Solo los administradores pueden actualizar profesores.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateProfessorCommand"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateProfessorCommand"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateProfessorCommand"
+                }
+              }
+            }
+          },
+          "responses": {
+            "204": {
+              "description": "No Content"
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "delete": {
+          "tags": [
+            "Professor"
+          ],
+          "summary": "Elimina un profesor. Solo los administradores pueden eliminar profesores.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "No Content"
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/professors/{professorId}/assignments": {
+        "get": {
+          "tags": [
+            "Professor"
+          ],
+          "summary": "Obtiene las asignaciones de un profesor, opcionalmente filtradas por instancia de evaluación.",
+          "parameters": [
+            {
+              "name": "professorId",
+              "in": "path",
+              "description": "ID del profesor.",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "evaluationInstanceId",
+              "in": "query",
+              "description": "ID de la instancia de evaluación (opcional).",
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/professors/assignments/{assignmentId}/students": {
+        "get": {
+          "tags": [
+            "Professor"
+          ],
+          "summary": "Obtiene los estudiantes asignados a una asignación de profesor.",
+          "parameters": [
+            {
+              "name": "assignmentId",
+              "in": "path",
+              "description": "ID de la asignación.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/professors/assignments/{assignmentId}/students/{studentId}/evaluate": {
+        "post": {
+          "tags": [
+            "Professor"
+          ],
+          "summary": "Evalúa la competencia de un estudiante en una asignación.",
+          "parameters": [
+            {
+              "name": "assignmentId",
+              "in": "path",
+              "description": "ID de la asignación.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            {
+              "name": "studentId",
+              "in": "path",
+              "description": "ID del estudiante.",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "description": "Datos de la evaluación.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompleteStudentAssessmentCommand"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompleteStudentAssessmentCommand"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompleteStudentAssessmentCommand"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/evaluation-reports/{reportId}/download": {
+        "get": {
+          "tags": [
+            "Reports"
+          ],
+          "summary": "Obtiene URL temporal para descargar un reporte específico",
+          "parameters": [
+            {
+              "name": "reportId",
+              "in": "path",
+              "description": "El ID del reporte a descargar.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/evaluation-reports/student/{studentId}": {
+        "get": {
+          "tags": [
+            "Reports"
+          ],
+          "summary": "Obtiene todos los reportes de un estudiante",
+          "parameters": [
+            {
+              "name": "studentId",
+              "in": "path",
+              "description": "El ID del estudiante para el cual se buscan los reportes.",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/evaluation-reports/evaluation-instance/{evaluationInstanceId}": {
+        "get": {
+          "tags": [
+            "Reports"
+          ],
+          "summary": "Obtiene todos los reportes de una instancia de evaluación",
+          "parameters": [
+            {
+              "name": "evaluationInstanceId",
+              "in": "path",
+              "description": "El ID de la instancia de evaluación para la cual se buscan los reportes.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/evaluation-reports/{reportId}/observation": {
+        "put": {
+          "tags": [
+            "Reports"
+          ],
+          "summary": "Actualiza la observación de un reporte (solo coordinadores/admins)",
+          "parameters": [
+            {
+              "name": "reportId",
+              "in": "path",
+              "description": "El ID del reporte a actualizar.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "requestBody": {
+            "description": "Los datos de la observación a actualizar.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateObservationRequest"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateObservationRequest"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateObservationRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/evaluation-reports/{reportId}": {
+        "delete": {
+          "tags": [
+            "Reports"
+          ],
+          "summary": "Elimina un reporte y su archivo asociado",
+          "parameters": [
+            {
+              "name": "reportId",
+              "in": "path",
+              "description": "El ID del reporte a eliminar.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "No Content"
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/students": {
+        "post": {
+          "tags": [
+            "Student"
+          ],
+          "summary": "Crea un nuevo estudiante. Solo los administradores pueden crear estudiantes.",
+          "description": "Solo los administradores pueden crear nuevos estudiantes.",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddStudentCommand"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddStudentCommand"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddStudentCommand"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Created"
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "get": {
+          "tags": [
+            "Student"
+          ],
+          "summary": "Obtiene todos los estudiantes con paginación y filtrado.",
+          "description": "Permite obtener la lista completa de estudiantes con paginación y filtrado.\nSolo los administradores y profesores tienen acceso.",
+          "parameters": [
+            {
+              "name": "TechnicalCareerId",
+              "in": "query",
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            {
+              "name": "CurrentYear",
+              "in": "query",
+              "schema": {
+                "enum": [
+                  "First",
+                  "Second",
+                  "Third"
+                ],
+                "type": "string"
+              }
+            },
+            {
+              "name": "PageNumber",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            {
+              "name": "PageSize",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            {
+              "name": "SearchTerm",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/students/{id}": {
+        "get": {
+          "tags": [
+            "Student"
+          ],
+          "summary": "Obtiene un estudiante específico por su ID.",
+          "description": "Permite obtener los detalles de un estudiante específico por su ID.\nSolo los administradores, profesores y estudiantes tienen acceso.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "put": {
+          "tags": [
+            "Student"
+          ],
+          "summary": "Actualiza la información de un estudiante. Solo los administradores pueden actualizar estudiantes.",
+          "description": "Permite actualizar la información de un estudiante existente.\nSolo los administradores tienen acceso.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateStudentCommand"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateStudentCommand"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateStudentCommand"
+                }
+              }
+            }
+          },
+          "responses": {
+            "204": {
+              "description": "No Content"
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "delete": {
+          "tags": [
+            "Student"
+          ],
+          "summary": "Elimina un estudiante. Solo los administradores pueden eliminar estudiantes.",
+          "description": "Permite eliminar un estudiante existente.\nSolo los administradores tienen acceso.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "No Content"
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/technical-careers/{careerId}/subjects": {
+        "post": {
+          "tags": [
+            "Subject"
+          ],
+          "summary": "Crea una nueva asignatura en una carrera técnica específica.",
+          "parameters": [
+            {
+              "name": "careerId",
+              "in": "path",
+              "description": "ID de la carrera técnica.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "requestBody": {
+            "description": "Datos de la asignatura a crear.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSubjectCommand"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSubjectCommand"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSubjectCommand"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Created"
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "get": {
+          "tags": [
+            "Subject"
+          ],
+          "summary": "Obtiene todas las asignaturas de una carrera técnica específica.",
+          "parameters": [
+            {
+              "name": "careerId",
+              "in": "path",
+              "description": "ID de la carrera técnica.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            {
+              "name": "year",
+              "in": "query",
+              "description": "Año de la asignatura.",
+              "schema": {
+                "enum": [
+                  "First",
+                  "Second",
+                  "Third"
+                ],
+                "type": "string"
+              }
+            },
+            {
+              "name": "includeEnrolledStudents",
+              "in": "query",
+              "description": "Incluir estudiantes inscritos en la respuesta.",
+              "schema": {
+                "type": "boolean",
+                "default": false
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/technical-careers/{careerId}/subjects/{subjectId}": {
+        "get": {
+          "tags": [
+            "Subject"
+          ],
+          "summary": "Obtiene una asignatura específica de una carrera técnica.",
+          "parameters": [
+            {
+              "name": "careerId",
+              "in": "path",
+              "description": "ID de la carrera técnica.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            {
+              "name": "subjectId",
+              "in": "path",
+              "description": "ID de la asignatura.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            {
+              "name": "includeEnrolledStudents",
+              "in": "query",
+              "description": "Incluir estudiantes inscritos en la respuesta.",
+              "schema": {
+                "type": "boolean",
+                "default": false
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "put": {
+          "tags": [
+            "Subject"
+          ],
+          "summary": "Actualiza una asignatura existente en una carrera técnica.",
+          "parameters": [
+            {
+              "name": "careerId",
+              "in": "path",
+              "description": "ID de la carrera técnica.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            {
+              "name": "subjectId",
+              "in": "path",
+              "description": "ID de la asignatura a actualizar.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "requestBody": {
+            "description": "Datos actualizados de la asignatura.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateSubjectCommand"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateSubjectCommand"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateSubjectCommand"
+                }
+              }
+            }
+          },
+          "responses": {
+            "204": {
+              "description": "No Content"
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "delete": {
+          "tags": [
+            "Subject"
+          ],
+          "summary": "Elimina una asignatura de una carrera técnica.",
+          "parameters": [
+            {
+              "name": "careerId",
+              "in": "path",
+              "description": "ID de la carrera técnica.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            {
+              "name": "subjectId",
+              "in": "path",
+              "description": "ID de la asignatura a eliminar.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "No Content"
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/technical-careers/{careerId}/subjects/{subjectId}/enroll-student": {
+        "post": {
+          "tags": [
+            "Subject"
+          ],
+          "summary": "Inscribe un estudiante en una asignatura de una carrera técnica.",
+          "parameters": [
+            {
+              "name": "careerId",
+              "in": "path",
+              "description": "ID de la carrera técnica.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            {
+              "name": "subjectId",
+              "in": "path",
+              "description": "ID de la asignatura.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "requestBody": {
+            "description": "Datos del estudiante a inscribir.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrollStudentInSubjectCommand"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrollStudentInSubjectCommand"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrollStudentInSubjectCommand"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/technical-careers/{careerId}/subjects/{subjectId}/assign-professor": {
+        "put": {
+          "tags": [
+            "Subject"
+          ],
+          "summary": "Asigna un profesor a una asignatura de una carrera técnica.",
+          "parameters": [
+            {
+              "name": "careerId",
+              "in": "path",
+              "description": "ID de la carrera técnica.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            {
+              "name": "subjectId",
+              "in": "path",
+              "description": "ID de la asignatura.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "requestBody": {
+            "description": "Datos del profesor a asignar.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignProfessorToSubjectCommand"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignProfessorToSubjectCommand"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignProfessorToSubjectCommand"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/technical-careers": {
+        "get": {
+          "tags": [
+            "TechnicalCareer"
+          ],
+          "summary": "Obtiene todas las carreras técnicas.",
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/TechnicalCareerDto"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "post": {
+          "tags": [
+            "TechnicalCareer"
+          ],
+          "summary": "Crea una nueva carrera técnica.",
+          "requestBody": {
+            "description": "Datos de la carrera técnica a crear.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTechnicalCareerCommand"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTechnicalCareerCommand"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTechnicalCareerCommand"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Created"
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/technical-careers/{id}": {
+        "get": {
+          "tags": [
+            "TechnicalCareer"
+          ],
+          "summary": "Obtiene una carrera técnica por su ID.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID de la carrera técnica.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/TechnicalCareerDto"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "put": {
+          "tags": [
+            "TechnicalCareer"
+          ],
+          "summary": "Actualiza una carrera técnica existente.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID de la carrera técnica a actualizar.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "requestBody": {
+            "description": "Datos actualizados de la carrera técnica.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateTechnicalCareerCommand"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateTechnicalCareerCommand"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateTechnicalCareerCommand"
+                }
+              }
+            }
+          },
+          "responses": {
+            "204": {
+              "description": "No Content"
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "delete": {
+          "tags": [
+            "TechnicalCareer"
+          ],
+          "summary": "Elimina una carrera técnica por su ID.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID de la carrera técnica a eliminar.",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "No Content"
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "AccessTokenResponse": {
+          "required": [
+            "accessToken",
+            "expiresIn",
+            "refreshToken"
+          ],
+          "type": "object",
+          "properties": {
+            "tokenType": {
+              "type": "string",
+              "nullable": true,
+              "readOnly": true
+            },
+            "accessToken": {
+              "type": "string",
+              "nullable": true
+            },
+            "expiresIn": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "refreshToken": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "AddProfessorCommand": {
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string",
+              "nullable": true
+            },
+            "password": {
+              "type": "string",
+              "nullable": true
+            },
+            "name": {
+              "type": "string",
+              "nullable": true
+            },
+            "phone": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "AddStudentCommand": {
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string",
+              "nullable": true
+            },
+            "password": {
+              "type": "string",
+              "nullable": true
+            },
+            "name": {
+              "type": "string",
+              "nullable": true
+            },
+            "carreraId": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "additionalProperties": false
+        },
+        "AssignProfessorToSubjectCommand": {
+          "type": "object",
+          "properties": {
+            "professorId": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "AssignUserRoleCommand": {
+          "type": "object",
+          "properties": {
+            "userEmail": {
+              "type": "string",
+              "nullable": true
+            },
+            "roleName": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "CompleteStudentAssessmentCommand": {
+          "type": "object",
+          "properties": {
+            "competencyLevel": {
+              "enum": [
+                "Inicial",
+                "Intermedio",
+                "Avanzado",
+                "Excelente"
+              ],
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "CreateCompetencyAssignmentDto": {
+          "type": "object",
+          "properties": {
+            "competencyId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "subjectId": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "additionalProperties": false
+        },
+        "CreateCompetencyCommand": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "nullable": true
+            },
+            "description": {
+              "type": "string",
+              "nullable": true
+            },
+            "type": {
+              "enum": [
+                "Technical",
+                "Soft"
+              ],
+              "type": "string"
+            },
+            "competencyLevelDescriptions": {
+              "type": "object",
+              "properties": {
+                "Inicial": {
+                  "type": "string"
+                },
+                "Intermedio": {
+                  "type": "string"
+                },
+                "Avanzado": {
+                  "type": "string"
+                },
+                "Excelente": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "CreateEvaluationInstanceCommand": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "nullable": true
+            },
+            "description": {
+              "type": "string",
+              "nullable": true
+            },
+            "periodFrom": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "periodTo": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "semester": {
+              "enum": [
+                "First",
+                "Second"
+              ],
+              "type": "string"
+            },
+            "competencyAssignments": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/CreateCompetencyAssignmentDto"
+              },
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "CreateSubjectCommand": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "nullable": true
+            },
+            "description": {
+              "type": "string",
+              "nullable": true
+            },
+            "year": {
+              "enum": [
+                "First",
+                "Second",
+                "Third"
+              ],
+              "type": "string"
+            },
+            "professorId": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "CreateTechnicalCareerCommand": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "CurrentUserDto": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "nullable": true
+            },
+            "email": {
+              "type": "string",
+              "nullable": true
+            },
+            "userName": {
+              "type": "string",
+              "nullable": true
+            },
+            "name": {
+              "type": "string",
+              "nullable": true
+            },
+            "roles": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "EnrollStudentInSubjectCommand": {
+          "type": "object",
+          "properties": {
+            "studentId": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "ForgotPasswordRequest": {
+          "required": [
+            "email"
+          ],
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "HttpValidationProblemDetails": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "nullable": true
+            },
+            "title": {
+              "type": "string",
+              "nullable": true
+            },
+            "status": {
+              "type": "integer",
+              "format": "int32",
+              "nullable": true
+            },
+            "detail": {
+              "type": "string",
+              "nullable": true
+            },
+            "instance": {
+              "type": "string",
+              "nullable": true
+            },
+            "errors": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "nullable": true
+            }
+          },
+          "additionalProperties": { }
+        },
+        "InfoRequest": {
+          "type": "object",
+          "properties": {
+            "newEmail": {
+              "type": "string",
+              "nullable": true
+            },
+            "newPassword": {
+              "type": "string",
+              "nullable": true
+            },
+            "oldPassword": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "InfoResponse": {
+          "required": [
+            "email",
+            "isEmailConfirmed"
+          ],
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string",
+              "nullable": true
+            },
+            "isEmailConfirmed": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "LoginRequest": {
+          "required": [
+            "email",
+            "password"
+          ],
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string",
+              "nullable": true
+            },
+            "password": {
+              "type": "string",
+              "nullable": true
+            },
+            "twoFactorCode": {
+              "type": "string",
+              "nullable": true
+            },
+            "twoFactorRecoveryCode": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "ProblemDetails": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "nullable": true
+            },
+            "title": {
+              "type": "string",
+              "nullable": true
+            },
+            "status": {
+              "type": "integer",
+              "format": "int32",
+              "nullable": true
+            },
+            "detail": {
+              "type": "string",
+              "nullable": true
+            },
+            "instance": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": { }
+        },
+        "RefreshRequest": {
+          "required": [
+            "refreshToken"
+          ],
+          "type": "object",
+          "properties": {
+            "refreshToken": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "RegisterRequest": {
+          "required": [
+            "email",
+            "password"
+          ],
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string",
+              "nullable": true
+            },
+            "password": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "ResendConfirmationEmailRequest": {
+          "required": [
+            "email"
+          ],
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "ResetPasswordRequest": {
+          "required": [
+            "email",
+            "newPassword",
+            "resetCode"
+          ],
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string",
+              "nullable": true
+            },
+            "resetCode": {
+              "type": "string",
+              "nullable": true
+            },
+            "newPassword": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "SessionStatusDto": {
+          "type": "object",
+          "properties": {
+            "isAuthenticated": {
+              "type": "boolean"
+            },
+            "user": {
+              "$ref": "#/components/schemas/CurrentUserDto"
+            },
+            "expiresAt": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "minutesRemaining": {
+              "type": "integer",
+              "format": "int32",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "TechnicalCareerDto": {
+          "required": [
+            "id",
+            "name"
+          ],
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "name": {
+              "type": "string",
+              "nullable": true
+            },
+            "totalStudents": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "totalProfessors": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "additionalProperties": false
+        },
+        "TwoFactorRequest": {
+          "type": "object",
+          "properties": {
+            "enable": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "twoFactorCode": {
+              "type": "string",
+              "nullable": true
+            },
+            "resetSharedKey": {
+              "type": "boolean"
+            },
+            "resetRecoveryCodes": {
+              "type": "boolean"
+            },
+            "forgetMachine": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "TwoFactorResponse": {
+          "required": [
+            "isMachineRemembered",
+            "isTwoFactorEnabled",
+            "recoveryCodesLeft",
+            "sharedKey"
+          ],
+          "type": "object",
+          "properties": {
+            "sharedKey": {
+              "type": "string",
+              "nullable": true
+            },
+            "recoveryCodesLeft": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "recoveryCodes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "nullable": true
+            },
+            "isTwoFactorEnabled": {
+              "type": "boolean"
+            },
+            "isMachineRemembered": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "UnassingUserRoleCommand": {
+          "type": "object",
+          "properties": {
+            "userEmail": {
+              "type": "string",
+              "nullable": true
+            },
+            "roleName": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "UpdateCompetencyCommand": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "nullable": true
+            },
+            "description": {
+              "type": "string",
+              "nullable": true
+            },
+            "type": {
+              "enum": [
+                "Technical",
+                "Soft"
+              ],
+              "type": "string"
+            },
+            "competencyLevelDescriptions": {
+              "type": "object",
+              "properties": {
+                "Inicial": {
+                  "type": "string"
+                },
+                "Intermedio": {
+                  "type": "string"
+                },
+                "Avanzado": {
+                  "type": "string"
+                },
+                "Excelente": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "UpdateEvaluationInstanceCommand": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "title": {
+              "type": "string",
+              "nullable": true
+            },
+            "description": {
+              "type": "string",
+              "nullable": true
+            },
+            "periodFrom": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "periodTo": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false
+        },
+        "UpdateObservationRequest": {
+          "type": "object",
+          "properties": {
+            "observation": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "UpdateProfessorCommand": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "nullable": true
+            },
+            "email": {
+              "type": "string",
+              "nullable": true
+            },
+            "phone": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "UpdateStudentCommand": {
+          "type": "object",
+          "properties": {
+            "userId": {
+              "type": "string",
+              "nullable": true
+            },
+            "name": {
+              "type": "string",
+              "nullable": true
+            },
+            "email": {
+              "type": "string",
+              "nullable": true
+            },
+            "technicalCareerId": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            },
+            "currentYear": {
+              "enum": [
+                "First",
+                "Second",
+                "Third"
+              ],
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "UpdateSubjectCommand": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "nullable": true
+            },
+            "description": {
+              "type": "string",
+              "nullable": true
+            },
+            "year": {
+              "enum": [
+                "First",
+                "Second",
+                "Third"
+              ],
+              "type": "string"
+            },
+            "professorId": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "UpdateTechnicalCareerCommand": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "name": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "securitySchemes": {
+        "bearerAuth": {
+          "type": "http",
+          "scheme": "Bearer"
+        }
+      }
+    },
+    "security": [
+      {
+        "bearerAuth": [ ]
+      }
+    ]
+  }

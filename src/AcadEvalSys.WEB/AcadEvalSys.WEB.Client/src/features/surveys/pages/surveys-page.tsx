@@ -1,27 +1,139 @@
-import {
-  PageLayout,
-  PageHeader,
-  PageContent,
-} from "@/shared/components/layout/page-layout";
+import { useState, useCallback, useMemo } from 'react';
+import { useLocation } from 'wouter';
+import { Button } from '@/shared/components/ui/button';
+import { Plus } from 'lucide-react';
+import { PageContent, PageHeader, PageLayout } from '@/shared/components/layout/page-layout';
+
+// Componentes
+import { SurveyList } from '../components/SurveyList';
+import { useSurveys, useDeleteSurvey } from '../hooks/use-surveys';
+import { SurveyStatus } from '../models/survey-types';
+import { useSurveysStore } from '../store/use-surveys-store';
+import { SurveyListItem } from '../services/survey-service';
+import { createSurveyColumns } from '../components/columns/survey-columns';
+import { DataSection } from '@/shared/components/ui/data-section';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@radix-ui/react-dialog';
+import { DialogFooter, DialogHeader } from '@/shared/components/ui/dialog';
 
 export default function SurveysPage() {
+  const [filters] = useState({
+    status: undefined as SurveyStatus | undefined,
+    search: '',
+  });
+
+  const [, setLocation] = useLocation();
+  const { data: surveys = [], isLoading, error } = useSurveys(filters);
+  const deleteSurveyMutation = useDeleteSurvey();
+  
+  const [surveyToDelete, setSurveyToDelete] = useState<SurveyListItem | null>(null);
+
+  const handleEditSurvey = useCallback((survey: SurveyListItem) => {
+    setLocation(`/encuestas/editar/${survey.id}`);
+  }, [setLocation]);
+
+  const handleViewProgress = useCallback((survey: SurveyListItem) => {
+    setLocation(`/encuestas/progreso/${survey.id}`);
+  }, [setLocation]);
+
+  const handleViewResults = useCallback((survey: SurveyListItem) => {
+    setLocation(`/encuestas/resultados/${survey.id}`);
+  }, [setLocation]);
+
+  const handleDeleteSurvey = useCallback((survey: SurveyListItem) => {
+    setSurveyToDelete(survey);
+  }, []);
+
+  const confirmDeleteSurvey = useCallback(async () => {
+    if (!surveyToDelete) return;
+
+    try {
+      await deleteSurveyMutation.mutateAsync(surveyToDelete.id);
+      setSurveyToDelete(null);
+    } catch {
+      // Silently handle delete errors
+    }
+  }, [surveyToDelete, deleteSurveyMutation]);
+
+  const handleCreateSurvey = useCallback(() => {
+    // Limpiar cualquier template previamente seleccionada antes de navegar
+    const { clearCreateState } = useSurveysStore.getState();
+    clearCreateState();
+    setLocation('/encuestas/crear');
+  }, [setLocation]);
+
+  const handleRowClick = useCallback((id: string) => {
+    const survey = surveys.find((s) => s.id === id);
+    if (survey) {
+      handleViewProgress(survey);
+    }
+  }, [surveys, handleViewProgress]);
+
+  const columns = useMemo(
+    () =>
+      createSurveyColumns({
+        onEdit: handleEditSurvey,
+        onViewProgress: handleViewProgress,
+        onViewResults: handleViewResults,
+        onDelete: handleDeleteSurvey,
+      }),
+    [handleEditSurvey, handleViewProgress, handleViewResults, handleDeleteSurvey]
+  );
+
   return (
     <PageLayout>
       <PageHeader
-        title="Encuestas"
-        description="Gestión de encuestas académicas"
-      />
-
+        title="Gestión de Encuestas"
+        description="Administra todas las encuestas académicas del sistema"
+      >
+        <Button onClick={handleCreateSurvey} className="gap-2">
+          <Plus className="h-4 w-4" />
+          Nueva Encuesta
+        </Button>
+      </PageHeader>
       <PageContent>
-        <div className="text-center py-12">
-          <h2 className="text-2xl font-semibold text-muted-foreground">
-            Funcionalidad en desarrollo
-          </h2>
-          <p className="text-muted-foreground mt-2">
-            El módulo de encuestas estará disponible próximamente
-          </p>
-        </div>
+        <DataSection
+          data={surveys}
+          columns={columns}
+          isLoading={isLoading}
+          emptyMessage="No se encontraron encuestas"
+          emptyIcon="FileBarChart"
+          className="py-6"
+          onRowClick={handleRowClick}
+        />
       </PageContent>
+
+      <Dialog
+        open={!!surveyToDelete}
+        onOpenChange={() => setSurveyToDelete(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Eliminar encuesta</DialogTitle>
+            <DialogDescription>
+              ¿Estás seguro de que quieres eliminar la encuesta "
+              {surveyToDelete?.title}"? Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setSurveyToDelete(null)}
+              disabled={deleteSurveyMutation.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDeleteSurvey}
+              disabled={deleteSurveyMutation.isPending}
+            >
+              {deleteSurveyMutation.isPending
+                ? "Eliminando..."
+                : "Eliminar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageLayout>
   );
 }

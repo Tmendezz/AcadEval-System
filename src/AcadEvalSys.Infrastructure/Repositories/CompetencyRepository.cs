@@ -11,15 +11,17 @@ public class CompetencyRepository(ApplicationDbContext dbContext) : ICompetencyR
     {
         return await dbContext.Competencies
             .Where(c => c.IsActive)
-            .Include(c => c.LevelDescriptions!.OrderBy(ld => ld.Level))
+            .Include(c => c.LevelDescriptions!.Where(ld => ld.IsActive).OrderBy(ld => ld.Level))
             .ToListAsync();
     }
 
     public async Task<Competency?> GetByIdAsync(Guid id)
     {
-        return await dbContext.Competencies
-            .Include(c => c.LevelDescriptions!.OrderBy(ld => ld.Level))
+        var competency = await dbContext.Competencies
+            .Include(c => c.LevelDescriptions!.Where(ld => ld.IsActive).OrderBy(ld => ld.Level))
             .FirstOrDefaultAsync(c => c.Id == id && c.IsActive);
+        
+        return competency;
     }
 
     public async Task<Guid> CreateAsync(Competency competency)

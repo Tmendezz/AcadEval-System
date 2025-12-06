@@ -1,5 +1,5 @@
 import { Progress } from "@/shared/components/ui/progress";
-import { cn } from "@/shared/lib/cn";
+import { cn } from "@infrastructure/lib/cn";
 
 interface ProgressIndicatorProps {
   value: number;

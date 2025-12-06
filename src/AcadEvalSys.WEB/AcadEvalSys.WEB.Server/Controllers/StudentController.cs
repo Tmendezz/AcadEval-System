@@ -1,6 +1,7 @@
 using AcadEvalSys.Application.Students.Commands.AddStudent;
 using AcadEvalSys.Application.Students.Commands.RemoveStudent;
 using AcadEvalSys.Application.Students.Commands.UpdateStudent;
+using AcadEvalSys.Application.Users.Commands.ChangePassword;
 using AcadEvalSys.Application.Students.Queries.GetAllStudents;
 using AcadEvalSys.Application.Students.Queries.GetStudent;
 using AcadEvalSys.Domain.Constants.Constants;
@@ -103,5 +104,29 @@ public class StudentController(IMediator mediator) : ControllerBase
         var command = new RemoveStudentCommand(id);
         var result = await mediator.Send(command);
         return result ? NoContent() : NotFound();
+    }
+
+    /// <summary>
+    /// Cambia la contraseña de un estudiante. Solo los administradores pueden cambiar contraseñas.
+    /// </summary>
+    /// <remarks>
+    /// Permite cambiar la contraseña de un estudiante existente.
+    /// Solo los administradores tienen acceso.
+    /// </remarks>
+    [HttpPost("{id}/change-password")]
+    [Authorize(Roles = UserRoles.Admin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ChangePassword(string id, [FromBody] ChangePasswordRequest request)
+    {
+        var command = new ChangePasswordCommand(id, request.NewPassword);
+        var result = await mediator.Send(command);
+        return result ? NoContent() : NotFound();
+    }
+
+    public class ChangePasswordRequest
+    {
+        public string NewPassword { get; set; } = string.Empty;
     }
 }

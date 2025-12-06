@@ -1,7 +1,7 @@
 namespace AcadEvalSys.Domain.Exceptions;
 
 public class DuplicateResourceException(string resourceType, string resourceIdentifier) : 
-    Exception($"{resourceType} with name '{resourceIdentifier}' already exists")
+    Exception($"Ya existe un {resourceType.ToLower()} con el identificador '{resourceIdentifier}'")
 {
     
 }

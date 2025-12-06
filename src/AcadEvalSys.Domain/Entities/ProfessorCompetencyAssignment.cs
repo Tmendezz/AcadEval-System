@@ -11,7 +11,7 @@ namespace AcadEvalSys.Domain.Entities
         public ProfessorAssignmentStatus Status { get; set; } = ProfessorAssignmentStatus.Pending;
         
         // Progress tracking properties
-        public int TotalStudentsCount => Subject?.StudentSubjects?.Count() ?? 0;
+        public int TotalStudentsCount => Subject?.StudentSubjects?.Count(ss => ss.IsActive) ?? 0;
         public int EvaluatedStudentsCount => StudentCompetencyAssessments?.Count(sca => sca.Status == AssessmentStatus.Completed) ?? 0;
         public decimal ProgressPercentage => TotalStudentsCount > 0 ? (decimal)EvaluatedStudentsCount / TotalStudentsCount * 100 : 0;
 

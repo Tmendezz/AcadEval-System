@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getProfessors, getProfessorById } from "../services/professor-service";
-import { Professor } from "@/shared/types";
+import { professorService } from "@/features/administration/services/professor-service";
 
 export const professorsKeys = {
   all: ["professors"] as const,
@@ -33,14 +32,30 @@ export const useProfessors = (
       technicalCareerId
     ),
     queryFn: () =>
-      getProfessors(pageNumber, pageSize, searchTerm, technicalCareerId),
+      professorService.getAll({
+        pageNumber,
+        pageSize,
+        searchTerm,
+        technicalCareerId,
+      }),
   });
 };
 
 export const useProfessorById = (id: string) => {
   return useQuery({
     queryKey: professorsKeys.detail(id),
-    queryFn: () => getProfessorById(id),
+    queryFn: async () => {
+      const result = await professorService.getAll();
+      return result.items.find((p) => p.userId === id);
+    },
     enabled: !!id,
   });
+};
+
+// Convenience: evita pasar "undefined" para searchTerm cuando solo se filtra por tecnicatura
+export const useCareerProfessors = (
+  technicalCareerId?: string,
+  pageSize = 100
+) => {
+  return useProfessors(1, pageSize, undefined, technicalCareerId);
 };
