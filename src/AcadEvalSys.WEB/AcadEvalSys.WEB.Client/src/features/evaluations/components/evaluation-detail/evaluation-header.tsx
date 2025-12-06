@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Link } from "wouter";
 import { Button } from "@/shared/components/ui/button";
 import { ChevronLeft } from "lucide-react";
@@ -7,7 +8,9 @@ interface EvaluationHeaderProps {
   evaluation: Evaluation;
 }
 
-export function EvaluationHeader({ evaluation }: EvaluationHeaderProps) {
+export const EvaluationHeader = memo(function EvaluationHeader({
+  evaluation,
+}: EvaluationHeaderProps) {
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between">
@@ -32,4 +35,4 @@ export function EvaluationHeader({ evaluation }: EvaluationHeaderProps) {
       </div>
     </div>
   );
-}
+});

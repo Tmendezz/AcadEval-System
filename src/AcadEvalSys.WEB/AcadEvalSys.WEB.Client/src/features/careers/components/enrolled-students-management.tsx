@@ -1,6 +1,7 @@
 import {
   useState,
   useMemo,
+  useCallback,
   forwardRef,
   useImperativeHandle,
   useEffect,
@@ -85,37 +86,43 @@ export const EnrolledStudentsManagement = forwardRef<
     return filtered;
   }, [enrolledStudents, searchTerm, yearFilter]);
 
-  const handleStudentToggle = (studentId: string) => {
-    const newSelected = new Set(selectedStudents);
-    if (newSelected.has(studentId)) {
-      newSelected.delete(studentId);
-    } else {
-      newSelected.add(studentId);
-    }
-    setSelectedStudents(newSelected);
-  };
+  const handleStudentToggle = useCallback((studentId: string) => {
+    setSelectedStudents((prev) => {
+      const newSelected = new Set(prev);
+      if (newSelected.has(studentId)) {
+        newSelected.delete(studentId);
+      } else {
+        newSelected.add(studentId);
+      }
+      return newSelected;
+    });
+  }, []);
 
-  const handleSelectAll = () => {
-    if (selectedStudents.size === filteredStudents.length) {
-      setSelectedStudents(new Set());
-    } else {
-      setSelectedStudents(new Set(filteredStudents.map((s) => s.id)));
-    }
-  };
+  const handleSelectAll = useCallback(() => {
+    setSelectedStudents((prev) => {
+      if (prev.size === filteredStudents.length) {
+        return new Set();
+      }
+      return new Set(filteredStudents.map((s) => s.id));
+    });
+  }, [filteredStudents]);
 
-  const handleUnenrollSingle = async (studentId: string) => {
-    try {
-      await unenrollStudentMutation.mutateAsync({
-        careerId,
-        subjectId,
-        studentId,
-      });
-    } catch {
-      // Error ya manejado en el hook
-    }
-  };
+  const handleUnenrollSingle = useCallback(
+    async (studentId: string) => {
+      try {
+        await unenrollStudentMutation.mutateAsync({
+          careerId,
+          subjectId,
+          studentId,
+        });
+      } catch {
+        // Error ya manejado en el hook
+      }
+    },
+    [unenrollStudentMutation, careerId, subjectId]
+  );
 
-  const handleUnenrollSelected = async () => {
+  const handleUnenrollSelected = useCallback(async () => {
     if (selectedStudents.size === 0) return;
 
     try {
@@ -128,7 +135,7 @@ export const EnrolledStudentsManagement = forwardRef<
     } catch {
       // Error ya manejado en el hook
     }
-  };
+  }, [selectedStudents, unenrollStudentsMutation, careerId, subjectId]);
 
   // Exponer API al padre
   useImperativeHandle(
@@ -169,50 +176,52 @@ export const EnrolledStudentsManagement = forwardRef<
     unenrollStudentsMutation.isPending,
   ]);
 
-  // Filtros por año disponibles si se requiere UI dedicada
+  // Render de tarjeta de estudiante memoizado
+  const renderStudentCard = useCallback(
+    (student: Student) => {
+      const isSelected = selectedStudents.has(student.id);
 
-  const renderStudentCard = (student: Student) => {
-    const isSelected = selectedStudents.has(student.id);
-
-    return (
-      <Card key={student.id} className="relative">
-        <CardContent className="p-4">
-          <div className="flex items-center space-x-3">
-            <Checkbox
-              checked={isSelected}
-              onCheckedChange={() => handleStudentToggle(student.id)}
-            />
-            <div className="flex-1">
-              <div className="flex items-center justify-between">
-                <p className="font-medium">{student.name}</p>
-                <Badge variant="outline">
-                  {getCareerYearLabel(student.currentYear as any)}
-                </Badge>
+      return (
+        <Card key={student.id} className="relative">
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-3">
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={() => handleStudentToggle(student.id)}
+              />
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <p className="font-medium">{student.name}</p>
+                  <Badge variant="outline">
+                    {getCareerYearLabel(student.currentYear as CareerYear)}
+                  </Badge>
+                </div>
+                <p className="text-sm text-gray-500">{student.email}</p>
               </div>
-              <p className="text-sm text-gray-500">{student.email}</p>
+              <ConfirmDialog
+                title="Confirmar Desinscripción"
+                description={`¿Estás seguro que deseas desinscribir a ${student.name} de ${subjectName}? Esta acción se puede revertir.`}
+                confirmText="Desinscribir"
+                cancelText="Cancelar"
+                onConfirm={() => handleUnenrollSingle(student.id)}
+                trigger={
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    disabled={unenrollStudentMutation.isPending}
+                  >
+                    <UserMinus className="h-4 w-4" />
+                  </Button>
+                }
+              />
             </div>
-            <ConfirmDialog
-              title="Confirmar Desinscripción"
-              description={`¿Estás seguro que deseas desinscribir a ${student.name} de ${subjectName}? Esta acción se puede revertir.`}
-              confirmText="Desinscribir"
-              cancelText="Cancelar"
-              onConfirm={() => handleUnenrollSingle(student.id)}
-              trigger={
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  disabled={unenrollStudentMutation.isPending}
-                >
-                  <UserMinus className="h-4 w-4" />
-                </Button>
-              }
-            />
-          </div>
-        </CardContent>
-      </Card>
-    );
-  };
+          </CardContent>
+        </Card>
+      );
+    },
+    [selectedStudents, handleStudentToggle, subjectName, handleUnenrollSingle, unenrollStudentMutation.isPending]
+  );
 
   if (isLoading) {
     return (

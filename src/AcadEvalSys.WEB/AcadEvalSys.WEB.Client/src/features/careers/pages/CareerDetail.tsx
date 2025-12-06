@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useParams } from "wouter";
 import { useSubjectsByYear } from "../hooks/use-subjects-by-year";
 import { createSubjectColumns } from "../components/subject-columns";
@@ -28,6 +29,12 @@ export function CareerDetail() {
       includeEnrolledStudents: true,
       enabled: !!careerId,
     });
+
+  // Memoizar columnas para evitar recreación en cada render
+  const columns = useMemo(
+    () => createSubjectColumns(careerId, deleteSubjectMutation),
+    [careerId, deleteSubjectMutation]
+  );
 
   if (isLoadingCareer) {
     return (
@@ -73,7 +80,7 @@ export function CareerDetail() {
                 : "Todas las asignaturas del sistema"
             }
             data={filteredSubjects}
-            columns={createSubjectColumns(careerId, deleteSubjectMutation)}
+            columns={columns}
             isLoading={isLoading}
             emptyMessage="No se encontraron asignaturas"
             className="mb-6"

@@ -1,3 +1,4 @@
+import { memo, useMemo } from "react";
 import { Users, ChevronRight } from "lucide-react";
 import { CompetencyAssignmentDto } from "../../models";
 import { Link } from "wouter";
@@ -11,7 +12,7 @@ interface CareerYearCardProps {
   showDetailsButton?: boolean;
 }
 
-export function CareerYearCard({
+export const CareerYearCard = memo(function CareerYearCard({
   year,
   assignments,
   careerName,
@@ -19,19 +20,24 @@ export function CareerYearCard({
   evaluationId,
   showDetailsButton = true,
 }: CareerYearCardProps) {
-  const completed = assignments.filter((a) => a.status === "Completed");
+  // Memoizar cálculos de progreso
+  const { completedCount, totalCount, pct } = useMemo(() => {
+    const completed = assignments.filter((a) => a.status === "Completed");
+    return {
+      completedCount: completed.length,
+      totalCount: assignments.length,
+      pct: Math.round((completed.length / Math.max(assignments.length, 1)) * 100),
+    };
+  }, [assignments]);
 
-  const pct = Math.round(
-    (completed.length / Math.max(assignments.length, 1)) * 100
+  // Memoizar URL para evitar recreación
+  const detailUrl = useMemo(
+    () => `/evaluaciones/${evaluationId}/carrera/${careerId}/año/${year.replace("°", "")}`,
+    [evaluationId, careerId, year]
   );
 
   return (
-    <Link
-      href={`/evaluaciones/${evaluationId}/carrera/${careerId}/año/${year.replace(
-        "°",
-        ""
-      )}`}
-    >
+    <Link href={detailUrl}>
       <div className="rounded-xl p-4 transition-all duration-200 cursor-pointer border bg-card hover:shadow-md hover:border-primary/30">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -39,9 +45,7 @@ export function CareerYearCard({
               <Users className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h3 className="font-semibold text-lg text-foreground">
-                {year} Año
-              </h3>
+              <h3 className="font-semibold text-lg text-foreground">{year} Año</h3>
               <p className="text-xs text-muted-foreground">{careerName}</p>
             </div>
           </div>
@@ -55,16 +59,13 @@ export function CareerYearCard({
 
         <div>
           <div className="h-2 w-full rounded-full bg-muted">
-            <div
-              className="h-2 rounded-full bg-primary"
-              style={{ width: `${pct}%` }}
-            />
+            <div className="h-2 rounded-full bg-primary" style={{ width: `${pct}%` }} />
           </div>
           <div className="mt-2 text-sm text-foreground font-medium">
-            {completed.length}/{assignments.length} completadas ({pct}%)
+            {completedCount}/{totalCount} completadas ({pct}%)
           </div>
         </div>
       </div>
     </Link>
   );
-}
+});

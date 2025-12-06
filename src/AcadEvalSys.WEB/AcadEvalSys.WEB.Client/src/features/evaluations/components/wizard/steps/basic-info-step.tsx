@@ -1,3 +1,4 @@
+import { memo, useMemo, useCallback } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
@@ -12,13 +13,12 @@ import {
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { EvaluationFormSchema } from "../../../schemas/evaluation-form";
-import { useMemo } from "react";
 
 interface BasicInfoStepProps {
   form: UseFormReturn<EvaluationFormSchema>;
 }
 
-export function BasicInfoStep({ form }: BasicInfoStepProps) {
+export const BasicInfoStep = memo(function BasicInfoStep({ form }: BasicInfoStepProps) {
   const {
     register,
     setValue,
@@ -38,6 +38,12 @@ export function BasicInfoStep({ form }: BasicInfoStepProps) {
     }
     return null;
   }, [watchedValues.periodFrom, watchedValues.periodTo]);
+
+  // Handler memoizado para cambio de semestre
+  const handleSemesterChange = useCallback(
+    (value: string) => setValue("semester", value as "First" | "Second"),
+    [setValue]
+  );
 
   return (
     <div className="space-y-6">
@@ -72,9 +78,7 @@ export function BasicInfoStep({ form }: BasicInfoStepProps) {
         <Label htmlFor="semester">Semestre</Label>
         <Select
           value={watchedValues.semester}
-          onValueChange={(value) =>
-            setValue("semester", value as "First" | "Second")
-          }
+          onValueChange={handleSemesterChange}
         >
           <SelectTrigger>
             <SelectValue placeholder="Seleccionar semestre" />
@@ -122,4 +126,4 @@ export function BasicInfoStep({ form }: BasicInfoStepProps) {
       )}
     </div>
   );
-}
+});

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -7,6 +7,38 @@ import {
 } from "../schemas/evaluation-form";
 import { Assignment } from "../models/evaluation-form";
 import { WIZARD_STEPS } from "../constants/wizard-steps";
+
+// Helper para validar el paso 1
+const validateStep1 = (
+  values: EvaluationFormSchema,
+  errors: Record<string, unknown>
+): boolean => {
+  const hasAllFields = !!(
+    values.title &&
+    values.description &&
+    values.semester &&
+    values.periodFrom &&
+    values.periodTo
+  );
+
+  const hasNoErrors =
+    !errors.title && !errors.description && !errors.periodFrom && !errors.periodTo;
+
+  let datesValid = true;
+  if (values.periodFrom && values.periodTo) {
+    datesValid = new Date(values.periodTo) > new Date(values.periodFrom);
+  }
+
+  return hasAllFields && hasNoErrors && datesValid;
+};
+
+// Helper para validar el paso 2
+const validateStep2 = (assignments: Assignment[]): boolean => {
+  return (
+    assignments.length > 0 &&
+    assignments.every((a) => a.competencyId && a.subjectId)
+  );
+};
 
 export function useEvaluationWizard() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -24,137 +56,78 @@ export function useEvaluationWizard() {
     },
   });
 
-  const {
-    handleSubmit: _handleSubmit,
-    setValue,
-    watch,
-    formState: { errors },
-  } = form;
+  const { setValue, watch, formState: { errors } } = form;
   const watchedValues = watch();
 
-  const nextStep = () => {
-    console.log("useEvaluationWizard - nextStep llamado:", {
-      currentStep,
-      totalSteps: WIZARD_STEPS.length,
-      canProceed: canProceed(),
-    });
-
+  const nextStep = useCallback(() => {
     if (currentStep < WIZARD_STEPS.length) {
-      const newStep = currentStep + 1;
-      console.log("useEvaluationWizard - Cambiando al paso:", newStep);
-      setCurrentStep(newStep);
-    } else {
-      console.log("useEvaluationWizard - Ya estamos en el último paso");
+      setCurrentStep((prev) => prev + 1);
     }
-  };
+  }, [currentStep]);
 
-  const prevStep = () => {
-    console.log("useEvaluationWizard - prevStep llamado:", {
-      currentStep,
-    });
-
+  const prevStep = useCallback(() => {
     if (currentStep > 1) {
-      const newStep = currentStep - 1;
-      console.log("useEvaluationWizard - Cambiando al paso:", newStep);
-      setCurrentStep(newStep);
-    } else {
-      console.log("useEvaluationWizard - Ya estamos en el primer paso");
+      setCurrentStep((prev) => prev - 1);
     }
-  };
+  }, [currentStep]);
 
-  const goToStep = (step: number) => {
+  const goToStep = useCallback((step: number) => {
     if (step >= 1 && step <= WIZARD_STEPS.length) {
       setCurrentStep(step);
     }
-  };
+  }, []);
 
-  const updateAssignments = (newAssignments: Assignment[]) => {
-    console.log("Assignments actualizados:", newAssignments);
-    setAssignments(newAssignments);
-    // Convertir las asignaciones al formato esperado por el backend
-    const backendAssignments = newAssignments.map(
-      ({ competencyId, subjectId }) => ({
-        competencyId,
-        subjectId,
-      })
-    );
-    console.log("Formato backend:", backendAssignments);
-    setValue("competencyAssignments", backendAssignments);
-  };
+  const updateAssignments = useCallback(
+    (newAssignments: Assignment[]) => {
+      setAssignments(newAssignments);
+      const backendAssignments = newAssignments.map(
+        ({ competencyId, subjectId }) => ({ competencyId, subjectId })
+      );
+      setValue("competencyAssignments", backendAssignments);
+    },
+    [setValue]
+  );
 
-  const canProceed = (): boolean => {
+  const canProceed = useCallback((): boolean => {
     switch (currentStep) {
       case 1:
-        // Verificar que todos los campos estén llenos
-        const hasAllFields = !!(
-          watchedValues.title &&
-          watchedValues.description &&
-          watchedValues.semester &&
-          watchedValues.periodFrom &&
-          watchedValues.periodTo
-        );
-        
-        // Verificar que no haya errores de validación
-        const hasNoErrors = !errors.title && !errors.description && !errors.periodFrom && !errors.periodTo;
-        
-        // Verificar que la fecha de fin sea posterior a la de inicio
-        let datesValid = true;
-        if (watchedValues.periodFrom && watchedValues.periodTo) {
-          const from = new Date(watchedValues.periodFrom);
-          const to = new Date(watchedValues.periodTo);
-          datesValid = to > from;
-        }
-        
-        return hasAllFields && hasNoErrors && datesValid;
+        return validateStep1(watchedValues, errors);
       case 2:
-        return !!(
-          assignments.length > 0 &&
-          assignments.every((a) => a.competencyId && a.subjectId)
-        );
+        return validateStep2(assignments);
       default:
         return true;
     }
-  };
+  }, [currentStep, watchedValues, errors, assignments]);
 
-  const isStepCompleted = (step: number): boolean => {
-    switch (step) {
-      case 1:
-        // Verificar que todos los campos estén llenos
-        const hasAllFields = !!(
-          watchedValues.title &&
-          watchedValues.description &&
-          watchedValues.semester &&
-          watchedValues.periodFrom &&
-          watchedValues.periodTo
-        );
-        
-        // Verificar que no haya errores de validación
-        const hasNoErrors = !errors.title && !errors.description && !errors.periodFrom && !errors.periodTo;
-        
-        // Verificar que la fecha de fin sea posterior a la de inicio
-        let datesValid = true;
-        if (watchedValues.periodFrom && watchedValues.periodTo) {
-          const from = new Date(watchedValues.periodFrom);
-          const to = new Date(watchedValues.periodTo);
-          datesValid = to > from;
-        }
-        
-        return hasAllFields && hasNoErrors && datesValid;
-      case 2:
-        return !!(
-          assignments.length > 0 &&
-          assignments.every((a) => a.competencyId && a.subjectId)
-        );
-      default:
-        return false;
-    }
-  };
+  const isStepCompleted = useCallback(
+    (step: number): boolean => {
+      switch (step) {
+        case 1:
+          return validateStep1(watchedValues, errors);
+        case 2:
+          return validateStep2(assignments);
+        default:
+          return false;
+      }
+    },
+    [watchedValues, errors, assignments]
+  );
 
-  const resetWizard = () => {
+  const resetWizard = useCallback(() => {
     setCurrentStep(1);
     setAssignments([]);
     form.reset();
-  };
+  }, [form]);
+
+  // Valores derivados memoizados
+  const derivedState = useMemo(
+    () => ({
+      totalSteps: WIZARD_STEPS.length,
+      isFirstStep: currentStep === 1,
+      isLastStep: currentStep === WIZARD_STEPS.length,
+    }),
+    [currentStep]
+  );
 
   return {
     // Estado
@@ -176,8 +149,6 @@ export function useEvaluationWizard() {
     isStepCompleted,
 
     // Utilidades
-    totalSteps: WIZARD_STEPS.length,
-    isFirstStep: currentStep === 1,
-    isLastStep: currentStep === WIZARD_STEPS.length,
+    ...derivedState,
   };
 }

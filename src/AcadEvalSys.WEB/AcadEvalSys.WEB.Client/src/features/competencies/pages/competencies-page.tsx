@@ -1,6 +1,4 @@
-import { useMemo } from "react";
-    
-import { toast } from "sonner";
+import { useMemo, useCallback } from "react";
 import {
   PageLayout,
   PageHeader,
@@ -14,89 +12,80 @@ import {
   CompetencyFormData,
 } from "@/features/competencies/hooks/use-competencies";
 import { useCompetenciesStore } from "@/shared/stores/use-competencies-store";
-
 import { CreateCompetencyModal } from "../components/CreateCompetencyModal";
 import { EditCompetencyModal } from "../components/EditCompetencyModal";
 import { ViewCompetencyModal } from "../components/ViewCompetencyModal";
-import {Competency} from "@features/competencies";
-  import { DataSection } from "@/shared/components/ui/data-section";
+import { Competency } from "@features/competencies";
+import { DataSection } from "@/shared/components/ui/data-section";
 import { createCompetencyColumns } from "../components/competency-columns";
 import { Button } from "@/shared/components/ui/button";
 import { Plus } from "lucide-react";
-// Filtros removidos temporalmente
 
 export function CompetenciesPage() {
- 
-
   // Hooks de datos
   const { data: competencies = [], isLoading, error } = useCompetencies();
-  const createCompetency = useCreateCompetency();
-  const updateCompetency = useUpdateCompetency();
-  const deleteCompetency = useDeleteCompetency();
+  const createCompetencyMutation = useCreateCompetency();
+  const updateCompetencyMutation = useUpdateCompetency();
+  const deleteCompetencyMutation = useDeleteCompetency();
 
-  // Store de estado
-  const {
-    isCreateModalOpen,
-    isEditModalOpen,
-    isViewModalOpen,
-    selectedCompetency,
-    openCreateModal,
-    closeCreateModal,
-    openEditModal,
-    closeEditModal,
-    openViewModal,
-    closeViewModal,
-  } = useCompetenciesStore();
+  // Store de estado - selectores individuales para evitar re-renders
+  const isCreateModalOpen = useCompetenciesStore((s) => s.isCreateModalOpen);
+  const isEditModalOpen = useCompetenciesStore((s) => s.isEditModalOpen);
+  const isViewModalOpen = useCompetenciesStore((s) => s.isViewModalOpen);
+  const selectedCompetency = useCompetenciesStore((s) => s.selectedCompetency);
+  const openCreateModal = useCompetenciesStore((s) => s.openCreateModal);
+  const closeCreateModal = useCompetenciesStore((s) => s.closeCreateModal);
+  const openEditModal = useCompetenciesStore((s) => s.openEditModal);
+  const closeEditModal = useCompetenciesStore((s) => s.closeEditModal);
+  const openViewModal = useCompetenciesStore((s) => s.openViewModal);
+  const closeViewModal = useCompetenciesStore((s) => s.closeViewModal);
 
-  // Lógica de filtrado
-  const filteredCompetencies = useMemo(() => {
-    return competencies as Competency[];
-  }, [competencies]);
+  // Lógica de filtrado memoizada
+  const filteredCompetencies = useMemo(
+    () => competencies as Competency[],
+    [competencies]
+  );
 
-  // Handlers de acciones
-  const handleCreateCompetency = (data: CompetencyFormData) => {
-    createCompetency.mutate(data, {
-      onSuccess: () => {
-        toast.success("Competencia creada correctamente.");
-        closeCreateModal();
-      },
-      onError: () => {
-        toast.error("Error al crear la competencia.");
-      },
-    });
-  };
+  // Handlers memoizados
+  const handleCreateCompetency = useCallback(
+    (data: CompetencyFormData) => {
+      createCompetencyMutation.mutate(data, {
+        onSuccess: () => closeCreateModal(),
+      });
+    },
+    [createCompetencyMutation, closeCreateModal]
+  );
 
-  const handleUpdateCompetency = (data: CompetencyFormData) => {
-    if (!selectedCompetency) return;
+  const handleUpdateCompetency = useCallback(
+    (data: CompetencyFormData) => {
+      if (!selectedCompetency) return;
+      updateCompetencyMutation.mutate(
+        { id: selectedCompetency.id, data },
+        { onSuccess: () => closeEditModal() }
+      );
+    },
+    [selectedCompetency, updateCompetencyMutation, closeEditModal]
+  );
 
-    updateCompetency.mutate(
-      { id: selectedCompetency.id, data },
-      {
-        onSuccess: () => {
-          toast.success("Competencia actualizada correctamente.");
-          closeEditModal();
-        },
-        onError: () => {
-          toast.error("Error al actualizar la competencia.");
-        },
-      }
-    );
-  };
+  const handleDeleteCompetency = useCallback(
+    (competencyId: string) => {
+      deleteCompetencyMutation.mutate(competencyId);
+    },
+    [deleteCompetencyMutation]
+  );
 
-  const handleDeleteCompetency = (competencyId: string) => {
-    deleteCompetency.mutate(competencyId, {
-      onSuccess: () => {
-        toast.success("Competencia eliminada correctamente.");
-      },
-      onError: () => {
-        toast.error("Error al eliminar la competencia.");
-      },
-    });
-  };
+  // Columnas memoizadas
+  const columns = useMemo(
+    () =>
+      createCompetencyColumns({
+        onViewClick: openViewModal,
+        onEditClick: openEditModal,
+        onDeleteClick: handleDeleteCompetency,
+      }),
+    [openViewModal, openEditModal, handleDeleteCompetency]
+  );
 
- 
 
- 
 
   if (error) {
     return (
@@ -132,11 +121,7 @@ export function CompetenciesPage() {
       <PageContent>
         <DataSection
           data={filteredCompetencies}
-          columns={createCompetencyColumns({
-            onViewClick: openViewModal,
-            onEditClick: openEditModal,
-            onDeleteClick: handleDeleteCompetency,
-          })}
+          columns={columns}
           isLoading={isLoading}
           emptyMessage="No se encontraron competencias"
           className="py-6"
@@ -147,7 +132,7 @@ export function CompetenciesPage() {
           isOpen={isCreateModalOpen}
           onClose={closeCreateModal}
           onSubmit={handleCreateCompetency}
-          isLoading={createCompetency.isPending}
+          isLoading={createCompetencyMutation.isPending}
         />
 
         {selectedCompetency && (
@@ -163,7 +148,7 @@ export function CompetenciesPage() {
               isOpen={isEditModalOpen}
               onClose={closeEditModal}
               onSubmit={handleUpdateCompetency}
-              isLoading={updateCompetency.isPending}
+              isLoading={updateCompetencyMutation.isPending}
             />
           </>
         )}

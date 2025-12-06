@@ -7,57 +7,56 @@ import { TruncatedText } from "../../../shared/components/ui/truncated-text";
 import { Eye, Trash2 } from "lucide-react";
 import { navigate } from "wouter/use-browser-location";
 
+// Constantes fuera de la función para evitar recreación
+const STATUS_TRANSLATIONS = {
+  Published: "Publicada",
+  Completed: "Completada",
+  Draft: "Borrador",
+  Archived: "Archivada",
+  Pending: "Pendiente",
+} as const;
+
+const STATUS_VARIANTS = {
+  Published: "default",
+  Completed: "default",
+  Draft: "secondary",
+  Archived: "outline",
+  Pending: "secondary",
+} as const;
+
+type EvaluationStatus = keyof typeof STATUS_TRANSLATIONS;
+
 export const createEvaluationColumns = (handlers: {
   onDelete?: (evaluation: EvaluationListItem) => void;
-}) => [
-	{
-		accessorKey: "title",
-		header: "Título",
-		size: 180,	
-		minSize: 150,
-		cell: ({ row }) => (
-			<TruncatedText 
-				text={row.original.title} 
-				maxLength={30}
-				className="text-sm font-medium"
-			/>
-		),
-	},
-	{
-		accessorKey: "status",
-		header: "Estado",
-		cell: ({ row }) => {
-			const status = row.original.status as keyof typeof statusTranslations;
-			const statusTranslations = {
-				Published: "Publicada",
-				Completed: "Completada",
-				Draft: "Borrador",
-				Archived: "Archivada",
-				Pending: "Pendiente",
-			} as const;
+}): ColumnDef<EvaluationListItem>[] => [
+  {
+    accessorKey: "title",
+    header: "Título",
+    size: 180,
+    minSize: 150,
+    cell: ({ row }) => (
+      <TruncatedText
+        text={row.original.title}
+        maxLength={30}
+        className="text-sm font-medium"
+      />
+    ),
+  },
+  {
+    accessorKey: "status",
+    header: "Estado",
+    cell: ({ row }) => {
+      const status = row.original.status as EvaluationStatus;
+      const variant = STATUS_VARIANTS[status] || "secondary";
+      const translatedStatus = STATUS_TRANSLATIONS[status] || status;
 
-			const variantMap = {
-				Published: "default",
-				Completed: "default",
-				Draft: "secondary",
-				Archived: "outline",
-				Pending: "secondary",
-			} as const;
-
-			const variant = variantMap[status];
-			const translatedStatus = statusTranslations[status] || status;
-
-			return (
-				<Badge
-					variant={
-						variant as "default" | "secondary" | "destructive" | "outline"
-					}
-				>
-					{translatedStatus}
-				</Badge>
-			);
-		},
-	},
+      return (
+        <Badge variant={variant as "default" | "secondary" | "destructive" | "outline"}>
+          {translatedStatus}
+        </Badge>
+      );
+    },
+  },
 	{
 		accessorKey: "periodFrom",
 		header: "Fecha de Inicio",

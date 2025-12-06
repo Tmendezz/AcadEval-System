@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo, memo } from "react";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -21,7 +21,7 @@ interface FinalizeEvaluationButtonProps {
   isCompleted?: boolean;
 }
 
-export function FinalizeEvaluationButton({
+export const FinalizeEvaluationButton = memo(function FinalizeEvaluationButton({
   evaluationId,
   evaluationTitle,
   completedAssignments,
@@ -32,25 +32,36 @@ export function FinalizeEvaluationButton({
   const [forceClose, setForceClose] = useState(false);
   const finalizeEvaluationMutation = useFinalizeEvaluation();
 
-  const isFullyCompleted = completedAssignments === totalAssignments;
-  const progressPercentage =
-    totalAssignments > 0
-      ? Math.round((completedAssignments / totalAssignments) * 100)
-      : 0;
+  // Valores derivados memoizados
+  const { isFullyCompleted, progressPercentage, pendingCount } = useMemo(
+    () => ({
+      isFullyCompleted: completedAssignments === totalAssignments,
+      progressPercentage:
+        totalAssignments > 0
+          ? Math.round((completedAssignments / totalAssignments) * 100)
+          : 0,
+      pendingCount: totalAssignments - completedAssignments,
+    }),
+    [completedAssignments, totalAssignments]
+  );
 
-  const handleFinalize = () => {
+  const handleFinalize = useCallback(() => {
     finalizeEvaluationMutation.mutate(
       { evaluationId, forceClose: isCompleted ? true : forceClose },
-      {
-        onSuccess: () => {
-          setIsOpen(false);
-        },
-      }
+      { onSuccess: () => setIsOpen(false) }
     );
-  };
+  }, [evaluationId, forceClose, isCompleted, finalizeEvaluationMutation]);
+
+  const handleOpenChange = useCallback((open: boolean) => {
+    setIsOpen(open);
+  }, []);
+
+  const handleForceCloseChange = useCallback((checked: boolean | "indeterminate") => {
+    setForceClose(checked === true);
+  }, []);
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button
           variant={isCompleted ? "outline" : isFullyCompleted ? "default" : "destructive"}
@@ -85,8 +96,7 @@ export function FinalizeEvaluationButton({
             Finalizar Evaluación
           </DialogTitle>
           <DialogDescription>
-            ¿Estás seguro de que deseas finalizar la evaluación "
-            {evaluationTitle}"?
+            ¿Estás seguro de que deseas finalizar la evaluación "{evaluationTitle}"?
           </DialogDescription>
         </DialogHeader>
 
@@ -97,8 +107,7 @@ export function FinalizeEvaluationButton({
             <div className="flex items-center justify-between text-sm">
               <span>Progreso completado:</span>
               <span className="font-medium">
-                {completedAssignments}/{totalAssignments} ({progressPercentage}
-                %)
+                {completedAssignments}/{totalAssignments} ({progressPercentage}%)
               </span>
             </div>
           </div>
@@ -113,9 +122,8 @@ export function FinalizeEvaluationButton({
                     La evaluación no está completamente finalizada
                   </h4>
                   <p className="text-sm text-orange-700">
-                    Aún hay {totalAssignments - completedAssignments}{" "}
-                    asignaciones pendientes. Si finalizas ahora, los profesores
-                    ya no podrán evaluar a sus estudiantes.
+                    Aún hay {pendingCount} asignaciones pendientes. Si finalizas
+                    ahora, los profesores ya no podrán evaluar a sus estudiantes.
                   </p>
                 </div>
               </div>
@@ -128,14 +136,10 @@ export function FinalizeEvaluationButton({
               <Checkbox
                 id="forceClose"
                 checked={forceClose}
-                onCheckedChange={(checked) => setForceClose(checked as boolean)}
+                onCheckedChange={handleForceCloseChange}
               />
-              <label
-                htmlFor="forceClose"
-                className="text-sm leading-5 cursor-pointer"
-              >
-                Entiendo que quedan evaluaciones pendientes y deseo finalizar de
-                todas formas
+              <label htmlFor="forceClose" className="text-sm leading-5 cursor-pointer">
+                Entiendo que quedan evaluaciones pendientes y deseo finalizar de todas formas
               </label>
             </div>
           )}
@@ -143,8 +147,8 @@ export function FinalizeEvaluationButton({
           {/* Información adicional */}
           <div className="text-xs text-muted-foreground">
             <p>
-              Una vez finalizada, la evaluación no se podrá reabrir y se
-              generarán automáticamente los reportes correspondientes.
+              Una vez finalizada, la evaluación no se podrá reabrir y se generarán
+              automáticamente los reportes correspondientes.
             </p>
           </div>
         </div>
@@ -152,17 +156,14 @@ export function FinalizeEvaluationButton({
         <DialogFooter>
           <Button
             variant="outline"
-            onClick={() => setIsOpen(false)}
+            onClick={() => handleOpenChange(false)}
             disabled={finalizeEvaluationMutation.isPending}
           >
             Cancelar
           </Button>
           <Button
             onClick={handleFinalize}
-            disabled={
-              finalizeEvaluationMutation.isPending ||
-              (!isFullyCompleted && !forceClose)
-            }
+            disabled={finalizeEvaluationMutation.isPending || (!isFullyCompleted && !forceClose)}
             variant={isFullyCompleted ? "default" : "destructive"}
           >
             {finalizeEvaluationMutation.isPending ? (
@@ -178,4 +179,4 @@ export function FinalizeEvaluationButton({
       </DialogContent>
     </Dialog>
   );
-}
+});

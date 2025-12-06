@@ -1,7 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import * as subjectService from "../services/subject-service";
 import type { UnenrollStudentsResult as UnenrollStudentsApiResult } from "../models";
+import { useOptimisticMutation } from "@/shared/lib/query-utils";
 
 interface UnenrollStudentParams {
   careerId: string;
@@ -18,32 +19,20 @@ interface UnenrollStudentsParams {
 export const useUnenrollStudent = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<boolean, Error, UnenrollStudentParams>({
-    mutationFn: async ({ careerId, subjectId, studentId }) => {
-      return await subjectService.unenrollStudent(
-        careerId,
-        subjectId,
-        studentId
-      );
+  return useOptimisticMutation<boolean, UnenrollStudentParams>({
+    mutationFn: ({ careerId, subjectId, studentId }) =>
+      subjectService.unenrollStudent(careerId, subjectId, studentId),
+    messages: {
+      success: "Estudiante desinscrito exitosamente",
+      error: "Error al desinscribir estudiante",
     },
-    onSuccess: (_, variables) => {
-      toast.success("✅ Estudiante desinscrito exitosamente");
-
-      // Invalidar cache
+    onSuccessCallback: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["subject", variables.subjectId, variables.careerId],
       });
       queryClient.invalidateQueries({
-        queryKey: [
-          "available-students",
-          variables.careerId,
-          variables.subjectId,
-        ],
+        queryKey: ["available-students", variables.careerId, variables.subjectId],
       });
-    },
-    onError: (error) => {
-      console.error("❌ Error unenrolling student:", error);
-      toast.error("❌ Error al desinscribir estudiante: " + error.message);
     },
   });
 };
@@ -51,42 +40,32 @@ export const useUnenrollStudent = () => {
 export const useUnenrollStudents = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<UnenrollStudentsApiResult, Error, UnenrollStudentsParams>({
-    mutationFn: async ({ careerId, subjectId, studentIds }) => {
-      return await subjectService.unenrollStudents(
-        careerId,
-        subjectId,
-        studentIds
-      );
+  return useOptimisticMutation<UnenrollStudentsApiResult, UnenrollStudentsParams>({
+    mutationFn: ({ careerId, subjectId, studentIds }) =>
+      subjectService.unenrollStudents(careerId, subjectId, studentIds),
+    messages: {
+      // Se maneja en onSuccessCallback con lógica personalizada
+      success: "",
+      error: "Error al desinscribir estudiantes",
     },
-    onSuccess: (data, variables) => {
+    onSuccessCallback: (data, variables) => {
       const { studentsUnenrolled, errors } = data;
 
+      // Mensaje personalizado basado en resultados
       if (errors.length === 0) {
-        toast.success(
-          `✅ ${studentsUnenrolled} estudiante desinscrito exitosamente`
-        );
+        toast.success(`${studentsUnenrolled} estudiante(s) desinscrito(s) exitosamente`);
       } else {
         toast.warning(
-          `⚠️ ${studentsUnenrolled} estudiantes desinscritos, ${errors.length} errores`
+          `${studentsUnenrolled} estudiantes desinscritos, ${errors.length} errores`
         );
       }
 
-      // Invalidar cache
       queryClient.invalidateQueries({
         queryKey: ["subject", variables.subjectId, variables.careerId],
       });
       queryClient.invalidateQueries({
-        queryKey: [
-          "available-students",
-          variables.careerId,
-          variables.subjectId,
-        ],
+        queryKey: ["available-students", variables.careerId, variables.subjectId],
       });
-    },
-    onError: (error) => {
-      console.error("❌ Error bulk unenrolling students:", error);
-      toast.error("❌ Error al desinscribir estudiantes: " + error.message);
     },
   });
 };

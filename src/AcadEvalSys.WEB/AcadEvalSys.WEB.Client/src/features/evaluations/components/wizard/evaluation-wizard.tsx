@@ -1,3 +1,4 @@
+import { useCallback, useMemo, memo } from "react";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { WIZARD_STEPS } from "../../constants/wizard-steps";
 import { EvaluationFormData } from "../../models/evaluation-form";
@@ -13,7 +14,7 @@ interface EvaluationWizardProps {
   isSubmitting?: boolean;
 }
 
-export function EvaluationWizard({
+export const EvaluationWizard = memo(function EvaluationWizard({
   onSubmit,
   isSubmitting = false,
 }: EvaluationWizardProps) {
@@ -28,11 +29,18 @@ export function EvaluationWizard({
     updateAssignments,
   } = useEvaluationWizard();
 
-  const handleFinalSubmit = () => {
+  const handleFinalSubmit = useCallback(() => {
     onSubmit(watchedValues);
-  };
+  }, [onSubmit, watchedValues]);
 
-  const renderStepContent = () => {
+  // Memoizar el handler de siguiente paso
+  const handleNext = useMemo(
+    () => (currentStep < WIZARD_STEPS.length ? nextStep : handleFinalSubmit),
+    [currentStep, nextStep, handleFinalSubmit]
+  );
+
+  // Renderizar contenido del paso actual
+  const stepContent = useMemo(() => {
     switch (currentStep) {
       case 1:
         return <BasicInfoStep form={form} />;
@@ -44,14 +52,11 @@ export function EvaluationWizard({
           />
         );
       case 3:
-        return (
-          <ReviewStep formData={watchedValues} assignments={assignments} />
-        );
+        return <ReviewStep formData={watchedValues} assignments={assignments} />;
       default:
-        console.log("EvaluationWizard - Paso no reconocido:", currentStep);
         return null;
     }
-  };
+  }, [currentStep, form, assignments, updateAssignments, watchedValues]);
 
   return (
     <div className="px-4 mx-auto">
@@ -59,13 +64,13 @@ export function EvaluationWizard({
 
       <Card>
         <CardContent className="pt-6">
-          {renderStepContent()}
+          {stepContent}
           <WizardNavigation
             currentStep={currentStep}
             totalSteps={WIZARD_STEPS.length}
             canProceed={canProceed()}
             onPrevious={prevStep}
-            onNext={currentStep < WIZARD_STEPS.length ? nextStep : handleFinalSubmit}
+            onNext={handleNext}
             isSubmitting={isSubmitting}
             finishLabel="Crear Evaluación"
           />
@@ -73,4 +78,4 @@ export function EvaluationWizard({
       </Card>
     </div>
   );
-}
+});

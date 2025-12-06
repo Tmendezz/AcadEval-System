@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   PageLayout,
   PageContent,
@@ -9,10 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui
 import ProfessorAssignmentsTable from "@/features/professor-evaluations/components/professor-assignments-table";
 
 export default function ProfessorAllEvaluationsPage() {
-  const { data: assignments = [], isLoading } = useProfessorAssignments();
+  const { data: assignments = [] } = useProfessorAssignments();
 
-  const pending = assignments.filter((a) => a.status !== "Completed");
-  const completed = assignments.filter((a) => a.status === "Completed");
+  // Memoizar filtrado de asignaciones
+  const { pending, completed } = useMemo(() => ({
+    pending: assignments.filter((a) => a.status !== "Completed"),
+    completed: assignments.filter((a) => a.status === "Completed"),
+  }), [assignments]);
 
   return (
     <PageLayout>

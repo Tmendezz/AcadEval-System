@@ -15,5 +15,6 @@ export const useGetAssignmentStudents = (
     queryKey: assignmentStudentsKeys.byAssignment(assignmentId),
     queryFn: () => getAssignmentStudents(assignmentId),
     enabled: enabled && !!assignmentId,
+    staleTime: 2 * 60 * 1000, // 2 minutos
   });
 };

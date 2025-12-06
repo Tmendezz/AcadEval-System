@@ -1,3 +1,4 @@
+import { memo, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -12,11 +13,27 @@ interface EvaluationProgressProps {
   evaluation: Evaluation;
 }
 
-export function EvaluationProgress({ evaluation }: EvaluationProgressProps) {
-  const completed = evaluation.completedProfessorAssignmentsCount;
-  const total = evaluation.totalProfessorAssignmentsCount;
-  const pending = Math.max(total - completed, 0);
-  const pct = Math.round(evaluation.overallProgressPercentage || 0);
+export const EvaluationProgress = memo(function EvaluationProgress({
+  evaluation,
+}: EvaluationProgressProps) {
+  // Memoizar cálculos de progreso
+  const { completed, total, pending, pct } = useMemo(
+    () => ({
+      completed: evaluation.completedProfessorAssignmentsCount,
+      total: evaluation.totalProfessorAssignmentsCount,
+      pending: Math.max(
+        evaluation.totalProfessorAssignmentsCount -
+          evaluation.completedProfessorAssignmentsCount,
+        0
+      ),
+      pct: Math.round(evaluation.overallProgressPercentage || 0),
+    }),
+    [
+      evaluation.completedProfessorAssignmentsCount,
+      evaluation.totalProfessorAssignmentsCount,
+      evaluation.overallProgressPercentage,
+    ]
+  );
 
   return (
     <Card className="mb-6">
@@ -50,4 +67,4 @@ export function EvaluationProgress({ evaluation }: EvaluationProgressProps) {
       </CardContent>
     </Card>
   );
-}
+});

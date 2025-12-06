@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import { DataSection } from "@/shared/components/ui/data-section";
 import { createCompetencyColumns } from "./competency-columns";
 import { Competency } from "@infrastructure/api/types/competency";
@@ -11,10 +11,9 @@ interface CompetencyListProps {
   onDeleteClick?: (competencyId: string) => void;
 }
 
-export function CompetencyList({
+export const CompetencyList = memo(function CompetencyList({
   competencies,
   isLoading,
-  onRowClick,
   onEditClick,
   onDeleteClick,
 }: CompetencyListProps) {
@@ -31,7 +30,6 @@ export function CompetencyList({
       columns={columns}
       isLoading={isLoading}
       emptyMessage="No se encontraron competencias."
-      // Sin redirección por click en fila; usar acciones de columna
     />
   );
-}
+});
