@@ -1,52 +1,63 @@
+import { useMemo, useCallback } from "react";
 import { useAuthStore } from "../store";
 import { UserRole, hasAnyRole } from "../models";
 
-// Hook simple para verificar permisos
+/**
+ * Hook para verificar permisos del usuario autenticado
+ * Memoiza los valores para evitar re-renders innecesarios
+ */
 export function usePermissions() {
-  const { user, isAuthenticated } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
-  const can = (requiredRoles: UserRole[] | UserRole): boolean => {
-    if (!isAuthenticated || !user) return false;
+  // Memoizar función can para estabilidad referencial
+  const can = useCallback(
+    (requiredRoles: UserRole[] | UserRole): boolean => {
+      if (!isAuthenticated || !user) return false;
 
-    if (Array.isArray(requiredRoles)) {
-      return hasAnyRole(user, requiredRoles);
-    }
+      if (Array.isArray(requiredRoles)) {
+        return hasAnyRole(user, requiredRoles);
+      }
 
-    return user.roles.includes(requiredRoles);
-  };
+      return user.roles.includes(requiredRoles);
+    },
+    [isAuthenticated, user]
+  );
 
-  const isRole = (role: UserRole): boolean => {
-    return isAuthenticated && user ? user.roles.includes(role) : false;
-  };
+  // Memoizar roles como valores booleanos (no funciones)
+  const permissions = useMemo(() => {
+    const userRoles = user?.roles ?? [];
+
+    return {
+      isAdmin: userRoles.includes(UserRole.Admin),
+      isCoordinator: userRoles.includes(UserRole.Coordinator),
+      isProfessor: userRoles.includes(UserRole.Professor),
+      isStudent: userRoles.includes(UserRole.Student),
+    };
+  }, [user?.roles]);
 
   return {
     can,
-    isRole,
-    isAdmin: () => isRole(UserRole.Admin),
-    isCoordinator: () => isRole(UserRole.Coordinator),
-    isProfessor: () => isRole(UserRole.Professor),
-    isStudent: () => isRole(UserRole.Student),
+    ...permissions,
     user,
     isAuthenticated,
   };
 }
 
-// Hook específico para evaluaciones
+/**
+ * Hook específico para permisos de evaluaciones
+ * Memoiza todos los permisos para evitar recálculos
+ */
 export function useCanEvaluate() {
-  const { can } = usePermissions();
+  const { isAdmin, isCoordinator, isProfessor, isStudent, isAuthenticated } =
+    usePermissions();
 
-  return {
-    canEvaluate: can([
-      UserRole.Admin,
-      UserRole.Coordinator,
-      UserRole.Professor,
-    ]),
-    canViewEvaluations: can([
-      UserRole.Admin,
-      UserRole.Coordinator,
-      UserRole.Professor,
-      UserRole.Student,
-    ]),
-    canManageEvaluations: can([UserRole.Admin, UserRole.Coordinator]),
-  };
+  return useMemo(
+    () => ({
+      canEvaluate: isAdmin || isCoordinator || isProfessor,
+      canViewEvaluations: isAdmin || isCoordinator || isProfessor || isStudent,
+      canManageEvaluations: isAdmin || isCoordinator,
+    }),
+    [isAdmin, isCoordinator, isProfessor, isStudent]
+  );
 }

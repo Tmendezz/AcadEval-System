@@ -288,13 +288,21 @@ export function CreateCareerForm() {
     });
   }, []);
 
-  const openNewProfessorDialog = useCallback((idx: number) => {
-    setNewProfIndex(idx);
+  // Recibe year + índice local y calcula el índice global
+  const openNewProfessorDialog = useCallback((year: string, localIdx: number) => {
+    // Calcular el índice global basado en el año y el índice local
+    const yearSubjects = subjects.filter((s) => s.year === year);
+    const targetSubject = yearSubjects[localIdx];
+    const globalIndex = subjects.findIndex((s) => s === targetSubject);
+    
+    if (globalIndex === -1) return;
+    
+    setNewProfIndex(globalIndex);
     setNewProfName("");
     setNewProfEmail("");
     setNewProfPassword("");
     setNewProfOpen(true);
-  }, []);
+  }, [subjects]);
 
   // Opciones de profesores memoizadas
   const professorOptions = useMemo(
@@ -307,11 +315,12 @@ export function CreateCareerForm() {
   );
 
   // Función para obtener opciones de un subject específico
+  // globalIdx es el índice en el array completo de subjects
   const getSubjectProfessorOptions = useCallback(
-    (subject: SubjectDraft, idx: number) => {
+    (subject: SubjectDraft, globalIdx: number) => {
       if (!subject.newProfessor) return professorOptions;
       return [
-        { value: `new:${idx}`, label: `${subject.newProfessor.name} (nuevo)` },
+        { value: `new:${globalIdx}`, label: `${subject.newProfessor.name} (nuevo)` },
         ...professorOptions,
       ];
     },
@@ -322,6 +331,9 @@ export function CreateCareerForm() {
     (title: string, year: "First" | "Second" | "Third") => {
       const yearSubjects = subjects.filter((s) => s.year === year);
 
+      // Calcular índices globales para cada subject del año
+      const globalIndices = yearSubjects.map((s) => subjects.indexOf(s));
+
       return (
         <Card className="p-4 space-y-3">
           <div className="flex items-center justify-between">
@@ -329,31 +341,34 @@ export function CreateCareerForm() {
             <Button onClick={() => addSubject(year)}>Agregar asignatura</Button>
           </div>
           <div className="space-y-4">
-            {yearSubjects.map((s, idx) => (
-              <div
-                key={`${year}-${idx}`}
-                className="grid grid-cols-1 md:grid-cols-3 gap-3"
-              >
-                <Input
-                  placeholder="Nombre"
-                  value={s.name}
-                  onChange={(e) => updateSubjectName(year, idx, e.target.value)}
-                />
-                <ProfessorCombobox
-                  value={s.newProfessor ? `new:${idx}` : s.professorId}
-                  onChange={(v) => {
-                    if (!v || v.startsWith("new:")) return;
-                    updateSubjectProfessor(year, idx, v);
-                  }}
-                  options={getSubjectProfessorOptions(s, idx)}
-                  onRequestCreate={() => openNewProfessorDialog(idx)}
-                  placeholder="Profesor"
-                  onSearch={setSearch}
-                  isLoading={isSearching}
-                  searchTerm={search}
-                />
-              </div>
-            ))}
+            {yearSubjects.map((s, localIdx) => {
+              const globalIdx = globalIndices[localIdx];
+              return (
+                <div
+                  key={`${year}-${localIdx}`}
+                  className="grid grid-cols-1 md:grid-cols-3 gap-3"
+                >
+                  <Input
+                    placeholder="Nombre"
+                    value={s.name}
+                    onChange={(e) => updateSubjectName(year, localIdx, e.target.value)}
+                  />
+                  <ProfessorCombobox
+                    value={s.newProfessor ? `new:${globalIdx}` : s.professorId}
+                    onChange={(v) => {
+                      if (!v || v.startsWith("new:")) return;
+                      updateSubjectProfessor(year, localIdx, v);
+                    }}
+                    options={getSubjectProfessorOptions(s, globalIdx)}
+                    onRequestCreate={() => openNewProfessorDialog(year, localIdx)}
+                    placeholder="Profesor"
+                    onSearch={setSearch}
+                    isLoading={isSearching}
+                    searchTerm={search}
+                  />
+                </div>
+              );
+            })}
           </div>
         </Card>
       );

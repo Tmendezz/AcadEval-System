@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { finalizeEvaluation } from "@/features/evaluations/services/evaluation-service";
 import { useOptimisticMutation } from "@/shared/lib/query-utils";
+import { evaluationsKeys } from "../queries/use-get-evaluations";
 
 interface FinalizeEvaluationParams {
   evaluationId: string;
@@ -17,10 +18,10 @@ export function useFinalizeEvaluation() {
       success: "Evaluación finalizada exitosamente. Los reportes se están generando en segundo plano.",
       error: "Error al finalizar la evaluación. Por favor, intenta nuevamente.",
     },
-    invalidateKeys: [["evaluations"]],
+    invalidateKeys: [evaluationsKeys.lists()],
     onSuccessCallback: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["evaluation", variables.evaluationId],
+        queryKey: evaluationsKeys.detail(variables.evaluationId),
       });
     },
   });
