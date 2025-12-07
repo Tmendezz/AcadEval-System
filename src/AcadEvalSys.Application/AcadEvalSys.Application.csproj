@@ -9,8 +9,8 @@
     <ItemGroup>
       <PackageReference Include="AutoMapper" Version="14.0.0" />
       <PackageReference Include="CsvHelper" Version="33.0.1" />
-      <PackageReference Include="ExcelDataReader" Version="3.8.0-develop00498" />
-      <PackageReference Include="ExcelDataReader.DataSet" Version="3.8.0-develop00498" />
+      <PackageReference Include="ExcelDataReader" Version="3.8.0" />
+      <PackageReference Include="ExcelDataReader.DataSet" Version="3.8.0" />
       <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.1" />
       <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
       <PackageReference Include="Handlebars.Net" Version="2.1.6" />
