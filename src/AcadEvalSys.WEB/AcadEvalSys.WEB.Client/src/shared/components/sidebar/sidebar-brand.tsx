@@ -5,7 +5,7 @@ export function SidebarBrand() {
   return (
     <SidebarHeader className="border-b border-border">
       <Link
-        href="/dashboard"
+        href="/"
         className="flex items-center gap-2 font-semibold px-2 py-3"
       >
         <div className="h-6 w-6 text-red-500 flex-shrink-0 flex items-center justify-center">

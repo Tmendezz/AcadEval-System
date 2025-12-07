@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { completeStudentAssessment } from "@/features/professor-evaluations/services/professor-evaluations-service";
 import { useProfessorAssignment } from "@/features/professor-evaluations/hooks/use-professor-assignment";
 import { useAssignmentStudents } from "@/features/professor-evaluations/hooks/use-assignment-students";
+import { professorAssignmentsKeys } from "@/features/professor-evaluations/hooks/use-professor-assignments";
 import { StudentCompetencyEvaluation } from "@/features/professor-evaluations/models/professor-evaluation";
 import { useProfessorEvaluationsStore } from "@/features/professor-evaluations/store/use-professor-evaluations-store";
 import { getNivelBadgeVariant, getNivelColor } from "@/features/professor-evaluations/utils/levels";
@@ -38,7 +39,6 @@ export function ProfessorEvaluationPage() {
   const pendingSaves = useProfessorEvaluationsStore((s) => s.pendingSaves);
   const setPendingSave = useProfessorEvaluationsStore((s) => s.setPendingSave);
   const clearPendingSaves = useProfessorEvaluationsStore((s) => s.clearPendingSaves);
-  const lastSavedAt = useProfessorEvaluationsStore((s) => s.lastSavedAt);
   const setLastSavedAt = useProfessorEvaluationsStore((s) => s.setLastSavedAt);
 
   const { data: assignment, isLoading: isLoadingAssignment } = useProfessorAssignment(
@@ -93,6 +93,7 @@ export function ProfessorEvaluationPage() {
       setLastSavedAt(Date.now());
       clearPendingSaves();
       toast.success("Evaluaciones guardadas exitosamente");
+      // Invalidar y refetch todas las queries relacionadas
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: ["assignment-students", assignmentId],
@@ -100,7 +101,15 @@ export function ProfessorEvaluationPage() {
         queryClient.invalidateQueries({
           queryKey: ["professor-assignment", assignmentId],
         }),
+        queryClient.invalidateQueries({
+          queryKey: professorAssignmentsKeys.all,
+        }),
       ]);
+      // Forzar refetch de la lista de asignaciones para actualizar el estado inmediatamente
+      // Usamos la misma key que se usa en professor-all-evaluations-page (sin evaluationInstanceId)
+      await queryClient.refetchQueries({
+        queryKey: professorAssignmentsKeys.list(),
+      });
     },
     onError: () => {
       toast.error("Error al guardar las evaluaciones");
@@ -274,9 +283,7 @@ export function ProfessorEvaluationPage() {
             disabled={pendingSavesCount === 0 || mutation.isPending}
           >
             <Save className="h-4 w-4 mr-2" />
-            {lastSavedAt
-              ? "Evaluaciones Guardadas"
-              : `Guardar ${pendingSavesCount} Evaluaciones`}
+            "Completar Evaluaciones"
           </Button>
         </div>
         </PageSection>

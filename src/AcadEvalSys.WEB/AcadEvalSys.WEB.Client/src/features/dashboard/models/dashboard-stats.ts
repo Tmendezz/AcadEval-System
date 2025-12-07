@@ -5,6 +5,7 @@ export interface DashboardStats {
   evaluationsInProgressCount: number;
   totalEvaluations: number;
   completedEvaluations: number;
+  surveysInProgressCount: number;
   recentActivity: ActivityItem[];
 }
 

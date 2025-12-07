@@ -17,7 +17,7 @@ export const useLogin = () => {
   const loginMutation = useMutation({
     mutationFn: authService.login,
     onSuccess: () => {
-      navigate("/dashboard");
+      navigate("/");
     },
     onError: (error: unknown) => {
       const errorMessage = getErrorMessage(error);

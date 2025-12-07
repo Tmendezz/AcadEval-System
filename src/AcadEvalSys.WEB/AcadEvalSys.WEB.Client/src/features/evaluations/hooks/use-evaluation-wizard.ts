@@ -81,20 +81,6 @@ export function useEvaluationWizard(options?: UseEvaluationWizardOptions) {
   
   const [assignments, setAssignments] = useState<Assignment[]>(initialAssignments);
   
-  // Actualizar assignments cuando cambian los datos iniciales
-  useEffect(() => {
-    if (initialData?.competencyAssignments) {
-      const newAssignments = initialData.competencyAssignments.map(a => ({
-        competencyId: a.competencyId,
-        subjectId: a.subjectId,
-      }));
-      setAssignments(newAssignments);
-      const backendAssignments = newAssignments.map(
-        ({ competencyId, subjectId }) => ({ competencyId, subjectId })
-      );
-      setValue("competencyAssignments", backendAssignments);
-    }
-  }, [initialData?.competencyAssignments, setValue]);
   // Persistir carreras seleccionadas y estados expandidos entre pasos
   const [selectedCareers, setSelectedCareers] = useState<Set<string>>(new Set());
   const [expandedCareers, setExpandedCareers] = useState<Set<string>>(new Set());
@@ -112,7 +98,22 @@ export function useEvaluationWizard(options?: UseEvaluationWizardOptions) {
     },
   });
 
-  const { setValue, watch, formState: { errors, isValid } } = form;
+  const { setValue, watch, formState: { errors } } = form;
+  
+  // Actualizar assignments cuando cambian los datos iniciales
+  useEffect(() => {
+    if (initialData?.competencyAssignments) {
+      const newAssignments = initialData.competencyAssignments.map(a => ({
+        competencyId: a.competencyId,
+        subjectId: a.subjectId,
+      }));
+      setAssignments(newAssignments);
+      const backendAssignments = newAssignments.map(
+        ({ competencyId, subjectId }) => ({ competencyId, subjectId })
+      );
+      setValue("competencyAssignments", backendAssignments);
+    }
+  }, [initialData?.competencyAssignments, setValue]);
   const watchedValues = watch();
 
   const nextStep = useCallback(async () => {
