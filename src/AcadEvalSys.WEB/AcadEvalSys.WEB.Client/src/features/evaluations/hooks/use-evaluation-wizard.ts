@@ -1,6 +1,7 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   evaluationFormSchema,
   EvaluationFormSchema,
@@ -8,28 +9,50 @@ import {
 import { Assignment } from "../models/evaluation-form";
 import { WIZARD_STEPS } from "../constants/wizard-steps";
 
-// Helper para validar el paso 1
-const validateStep1 = (
-  values: EvaluationFormSchema,
-  errors: Record<string, unknown>
-): boolean => {
-  const hasAllFields = !!(
-    values.title &&
-    values.description &&
-    values.semester &&
-    values.periodFrom &&
-    values.periodTo
-  );
-
-  const hasNoErrors =
-    !errors.title && !errors.description && !errors.periodFrom && !errors.periodTo;
-
-  let datesValid = true;
-  if (values.periodFrom && values.periodTo) {
-    datesValid = new Date(values.periodTo) > new Date(values.periodFrom);
+// Helper para validar el paso 1 usando Zod directamente
+// Crear un schema específico para el paso 1 que incluya todas las validaciones
+const step1Schema = z.object({
+  title: z
+    .string()
+    .min(1, "El título es requerido")
+    .min(3, "El título debe tener al menos 3 caracteres"),
+  description: z
+    .string()
+    .min(1, "La descripción es requerida")
+    .min(10, "La descripción debe tener al menos 10 caracteres"),
+  semester: z.enum(["First", "Second"]),
+  periodFrom: z.string().min(1, "La fecha de inicio es requerida"),
+  periodTo: z.string().min(1, "La fecha de fin es requerida"),
+}).refine(
+  (data) => {
+    // Validar que la fecha de fin sea posterior a la de inicio
+    if (data.periodFrom && data.periodTo) {
+      const from = new Date(data.periodFrom);
+      const to = new Date(data.periodTo);
+      return to > from;
+    }
+    return true;
+  },
+  {
+    message: "La fecha de fin debe ser posterior a la fecha de inicio",
+    path: ["periodTo"],
   }
+);
 
-  return hasAllFields && hasNoErrors && datesValid;
+const validateStep1 = (values: EvaluationFormSchema): boolean => {
+  try {
+    const result = step1Schema.safeParse({
+      title: values.title,
+      description: values.description,
+      semester: values.semester,
+      periodFrom: values.periodFrom,
+      periodTo: values.periodTo,
+    });
+    
+    return result.success;
+  } catch {
+    return false;
+  }
 };
 
 // Helper para validar el paso 2
@@ -40,9 +63,38 @@ const validateStep2 = (assignments: Assignment[]): boolean => {
   );
 };
 
-export function useEvaluationWizard() {
+interface UseEvaluationWizardOptions {
+  initialData?: Partial<EvaluationFormSchema> & {
+    competencyAssignments?: Array<{ competencyId: string; subjectId: string }>;
+  };
+}
+
+export function useEvaluationWizard(options?: UseEvaluationWizardOptions) {
+  const { initialData } = options || {};
   const [currentStep, setCurrentStep] = useState(1);
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  
+  // Convertir assignments iniciales al formato esperado
+  const initialAssignments: Assignment[] = initialData?.competencyAssignments?.map(a => ({
+    competencyId: a.competencyId,
+    subjectId: a.subjectId,
+  })) || [];
+  
+  const [assignments, setAssignments] = useState<Assignment[]>(initialAssignments);
+  
+  // Actualizar assignments cuando cambian los datos iniciales
+  useEffect(() => {
+    if (initialData?.competencyAssignments) {
+      const newAssignments = initialData.competencyAssignments.map(a => ({
+        competencyId: a.competencyId,
+        subjectId: a.subjectId,
+      }));
+      setAssignments(newAssignments);
+      const backendAssignments = newAssignments.map(
+        ({ competencyId, subjectId }) => ({ competencyId, subjectId })
+      );
+      setValue("competencyAssignments", backendAssignments);
+    }
+  }, [initialData?.competencyAssignments, setValue]);
   // Persistir carreras seleccionadas y estados expandidos entre pasos
   const [selectedCareers, setSelectedCareers] = useState<Set<string>>(new Set());
   const [expandedCareers, setExpandedCareers] = useState<Set<string>>(new Set());
@@ -51,23 +103,35 @@ export function useEvaluationWizard() {
   const form = useForm<EvaluationFormSchema>({
     resolver: zodResolver(evaluationFormSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      semester: "First",
-      periodFrom: "",
-      periodTo: "",
-      competencyAssignments: [],
+      title: initialData?.title || "",
+      description: initialData?.description || "",
+      semester: initialData?.semester || "First",
+      periodFrom: initialData?.periodFrom || "",
+      periodTo: initialData?.periodTo || "",
+      competencyAssignments: initialData?.competencyAssignments || [],
     },
   });
 
-  const { setValue, watch, formState: { errors } } = form;
+  const { setValue, watch, formState: { errors, isValid } } = form;
   const watchedValues = watch();
 
-  const nextStep = useCallback(() => {
+  const nextStep = useCallback(async () => {
+    // Si estamos en el paso 1, validar antes de avanzar
+    if (currentStep === 1) {
+      // Validar con Zod directamente (mismo método que canProceed)
+      const isValid = validateStep1(watchedValues);
+      if (!isValid) {
+        // También trigger la validación de react-hook-form para mostrar errores
+        await form.trigger(["title", "description", "semester", "periodFrom", "periodTo"]);
+        // No avanzar si hay errores de validación
+        return;
+      }
+    }
+    
     if (currentStep < WIZARD_STEPS.length) {
       setCurrentStep((prev) => prev + 1);
     }
-  }, [currentStep]);
+  }, [currentStep, form, watchedValues]);
 
   const prevStep = useCallback(() => {
     if (currentStep > 1) {
@@ -95,26 +159,27 @@ export function useEvaluationWizard() {
   const canProceed = useCallback((): boolean => {
     switch (currentStep) {
       case 1:
-        return validateStep1(watchedValues, errors);
+        // Validar directamente con Zod para obtener resultado actualizado
+        return validateStep1(watchedValues);
       case 2:
         return validateStep2(assignments);
       default:
         return true;
     }
-  }, [currentStep, watchedValues, errors, assignments]);
+  }, [currentStep, watchedValues, assignments]);
 
   const isStepCompleted = useCallback(
     (step: number): boolean => {
       switch (step) {
         case 1:
-          return validateStep1(watchedValues, errors);
+          return validateStep1(watchedValues);
         case 2:
           return validateStep2(assignments);
         default:
           return false;
       }
     },
-    [watchedValues, errors, assignments]
+    [watchedValues, assignments]
   );
 
   const resetWizard = useCallback(() => {

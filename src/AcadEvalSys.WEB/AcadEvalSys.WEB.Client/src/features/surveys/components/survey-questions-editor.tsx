@@ -123,11 +123,11 @@ function SortableQuestionItem({
                 onUpdate(questionIndex, { text: e.target.value })
               }
               placeholder="¿Cuál es tu pregunta?"
-              className={`${errors[`question_${questionIndex}_text`] ? 'border-red-500' : ''}`}
+              className={`${errors[`question_${questionIndex}_text`] ? 'border-destructive' : ''}`}
               disabled={isReadOnly}
             />
             {errors[`question_${questionIndex}_text`] && (
-              <p className="text-sm text-red-500 mt-1">
+              <p className="text-sm text-destructive mt-1">
                 {errors[`question_${questionIndex}_text`]}
               </p>
             )}
@@ -220,7 +220,7 @@ function SortableQuestionItem({
               )}
 
               {errors[`question_${questionIndex}_options`] && (
-                <p className="text-sm text-red-500 mt-1">
+                <p className="text-sm text-destructive mt-1">
                   {errors[`question_${questionIndex}_options`]}
                 </p>
               )}
@@ -396,7 +396,7 @@ export function SurveyQuestionsEditor({
         )}
 
         {errors.questions && (
-          <p className="text-sm text-red-500 mt-2">{errors.questions}</p>
+          <p className="text-sm text-destructive mt-2">{errors.questions}</p>
         )}
       </CardContent>
     </Card>

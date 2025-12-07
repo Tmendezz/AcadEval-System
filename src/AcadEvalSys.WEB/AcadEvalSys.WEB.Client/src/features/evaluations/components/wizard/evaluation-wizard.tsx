@@ -12,11 +12,13 @@ import { ReviewStep } from "./steps/review-step";
 interface EvaluationWizardProps {
   onSubmit: (data: EvaluationFormData) => void;
   isSubmitting?: boolean;
+  initialData?: Partial<EvaluationFormData>;
 }
 
 export const EvaluationWizard = memo(function EvaluationWizard({
   onSubmit,
   isSubmitting = false,
+  initialData,
 }: EvaluationWizardProps) {
   const {
     currentStep,
@@ -33,7 +35,7 @@ export const EvaluationWizard = memo(function EvaluationWizard({
     setSelectedCareers,
     setExpandedCareers,
     setExpandedYears,
-  } = useEvaluationWizard();
+  } = useEvaluationWizard({ initialData });
 
   const handleFinalSubmit = useCallback(() => {
     onSubmit(watchedValues);

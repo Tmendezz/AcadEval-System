@@ -55,10 +55,10 @@ export const BasicInfoStep = memo(function BasicInfoStep({ form }: BasicInfoStep
           id="title"
           placeholder="Ej: Evaluación de Competencias 2025 - Primer Semestre"
           {...register("title")}
-          className={errors.title ? "border-red-500" : ""}
+          className={errors.title ? "border-destructive" : ""}
         />
         {errors.title && (
-          <p className="text-sm text-red-500">{errors.title.message}</p>
+          <p className="text-sm text-destructive mt-1">{errors.title.message}</p>
         )}
       </div>
 
@@ -68,11 +68,11 @@ export const BasicInfoStep = memo(function BasicInfoStep({ form }: BasicInfoStep
           id="description"
           placeholder="Describe el propósito y alcance de esta evaluación..."
           {...register("description")}
-          className={errors.description ? "border-red-500" : ""}
+          className={errors.description ? "border-destructive" : ""}
           rows={4}
         />
         {errors.description && (
-          <p className="text-sm text-red-500">{errors.description.message}</p>
+          <p className="text-sm text-destructive mt-1">{errors.description.message}</p>
         )}
       </div>
 
@@ -119,7 +119,7 @@ export const BasicInfoStep = memo(function BasicInfoStep({ form }: BasicInfoStep
                 }}
                 placeholder="Seleccionar fecha de inicio"
                 showTime={false}
-                error={errors.periodFrom?.message || (dateError ? dateError : undefined)}
+                error={errors.periodFrom?.message}
               />
             );
           }}
@@ -157,14 +157,14 @@ export const BasicInfoStep = memo(function BasicInfoStep({ form }: BasicInfoStep
                 placeholder="Seleccionar fecha de fin"
                 showTime={false}
                 min={minDate}
-                error={errors.periodTo?.message || (dateError ? dateError : undefined)}
+                error={errors.periodTo?.message || (dateError && errors.periodTo ? dateError : undefined)}
               />
             );
           }}
         />
       </div>
 
-      {dateError && (
+      {dateError && (errors.periodFrom || errors.periodTo) && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{dateError}</AlertDescription>
