@@ -17,7 +17,7 @@
       <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.17" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.8" />
       <PackageReference Include="QuestPDF" Version="2024.12.3" />
-        <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.9-preview.2.2" />
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.1" />
     </ItemGroup>
 
     <ItemGroup>
