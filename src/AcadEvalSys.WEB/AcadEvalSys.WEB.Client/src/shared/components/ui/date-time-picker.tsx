@@ -183,8 +183,21 @@ export function DateTimePicker({
               selected={selectedDate}
               onSelect={handleDateSelect}
               disabled={(date) => {
-                if (minDate && date < minDate) return true;
-                if (maxDate && date > maxDate) return true;
+                // Comparar solo las fechas (sin hora) para permitir seleccionar el mismo día
+                if (minDate) {
+                  const minDateOnly = new Date(minDate);
+                  minDateOnly.setHours(0, 0, 0, 0);
+                  const dateOnly = new Date(date);
+                  dateOnly.setHours(0, 0, 0, 0);
+                  if (dateOnly < minDateOnly) return true;
+                }
+                if (maxDate) {
+                  const maxDateOnly = new Date(maxDate);
+                  maxDateOnly.setHours(0, 0, 0, 0);
+                  const dateOnly = new Date(date);
+                  dateOnly.setHours(0, 0, 0, 0);
+                  if (dateOnly > maxDateOnly) return true;
+                }
                 return false;
               }}
               initialFocus

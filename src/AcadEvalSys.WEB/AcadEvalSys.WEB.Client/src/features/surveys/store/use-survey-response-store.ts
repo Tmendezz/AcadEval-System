@@ -295,13 +295,15 @@ export const useSurveyResponseStore = create<SurveyResponseState>()(
         const result: Record<string, any> = {};
         
         Object.values(state.subjectResponses).forEach(subject => {
-          if (subject.responses.length > 0) {
+          // Asegurar que responses es un array válido
+          const responses = Array.isArray(subject.responses) ? subject.responses : [];
+          if (responses.length > 0) {
             result[subject.subjectId] = {
               subjectName: subject.subjectName,
               professorName: subject.professorName,
               isCompleted: subject.isCompleted,
               completedAt: subject.completedAt,
-              responses: subject.responses.map(r => ({
+              responses: responses.map(r => ({
                 questionId: r.questionId,
                 answer: r.answer,
                 answeredAt: r.answeredAt instanceof Date ? r.answeredAt.toISOString() : new Date(r.answeredAt).toISOString(),
@@ -354,6 +356,10 @@ export const useSurveyResponseStore = create<SurveyResponseState>()(
             }
             if (subject.completedAt && typeof subject.completedAt === 'string') {
               subject.completedAt = new Date(subject.completedAt);
+            }
+            // Asegurar que responses es un array válido
+            if (!Array.isArray(subject.responses)) {
+              subject.responses = [];
             }
             subject.responses.forEach(response => {
               if (response.answeredAt && typeof response.answeredAt === 'string') {

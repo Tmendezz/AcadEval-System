@@ -25,9 +25,47 @@ El archivo `sapee-itec-938589ee077d.json` es necesario para que la aplicación s
    - Selecciona "JSON" como formato
    - Descarga el archivo JSON
 
-5. **Renombrar el archivo**
-   - Renombra el archivo descargado a: `sapee-itec-938589ee077d.json`
-   - Colócalo en la raíz del proyecto (donde está el `.gitignore`)
+5. **Configurar la ruta del archivo**
+
+   Tienes tres opciones para especificar la ubicación del archivo de credenciales (en orden de prioridad):
+
+   **Opción A: Archivo .env (Recomendado para desarrollo)**
+   - Crea un archivo `.env` en la raíz del proyecto (donde está el `.gitignore`)
+   - Agrega la siguiente línea:
+   ```bash
+   GOOGLE_DRIVE_CREDENTIALS_PATH=../../../../sapee-itec-75283532858a.json
+   ```
+   - O con ruta absoluta:
+   ```bash
+   GOOGLE_DRIVE_CREDENTIALS_PATH=/home/tomiban/Code/EVAC-ITEC/sapee-itec-75283532858a.json
+   ```
+   - El archivo `.env` se carga automáticamente al iniciar la aplicación
+   - ⚠️ El archivo `.env` ya está en `.gitignore`, así que no se subirá al repositorio
+
+   **Opción B: Variable de entorno del sistema (Recomendado para producción)**
+   ```bash
+   export GOOGLE_DRIVE_CREDENTIALS_PATH="/ruta/completa/al/archivo.json"
+   ```
+   
+   O en Windows:
+   ```cmd
+   set GOOGLE_DRIVE_CREDENTIALS_PATH=C:\ruta\completa\al\archivo.json
+   ```
+
+   **Opción C: Configuración en appsettings.json**
+   - Coloca el archivo en la raíz del proyecto (donde está el `.gitignore`)
+   - Configura la ruta en `appsettings.json`:
+   ```json
+   {
+     "Storage": {
+       "Google": {
+         "ServiceAccountCredentialsPath": "../../../../nombre-del-archivo.json"
+       }
+     }
+   }
+   ```
+
+   **Nota**: El orden de prioridad es: `.env` > Variable de entorno del sistema > `appsettings.json`
 
 6. **Compartir la carpeta de Google Drive**
    - Ve a Google Drive
@@ -60,4 +98,6 @@ El archivo debe tener esta estructura (ver `sapee-itec-938589ee077d.json.templat
 - ⚠️ **NUNCA** subas este archivo a Git (ya está en `.gitignore`)
 - ⚠️ Mantén este archivo seguro y no lo compartas públicamente
 - ⚠️ Si pierdes el archivo, tendrás que crear un nuevo Service Account
+- ✅ **Usa variables de entorno en producción** para mayor seguridad
+- ✅ La variable de entorno `GOOGLE_DRIVE_CREDENTIALS_PATH` tiene prioridad sobre la configuración en `appsettings.json`
 

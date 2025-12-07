@@ -18,8 +18,9 @@ export function SurveySchedulingForm({
   errors = {},
 }: SurveySchedulingFormProps) {
   
-  // Obtener fecha/hora actual para el mínimo
-  const now = new Date();
+  // Obtener inicio del día de hoy para permitir seleccionar hoy
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   return (
     <Card>
@@ -42,7 +43,7 @@ export function SurveySchedulingForm({
               value={publishAt || null}
               onChange={(value) => onChange({ publishAt: value || undefined })}
               placeholder="Seleccionar fecha y hora de publicación"
-              min={now}
+              min={today}
               showTime={true}
               error={errors?.publishAt}
             />
@@ -58,7 +59,11 @@ export function SurveySchedulingForm({
               value={closeAt || null}
               onChange={(value) => onChange({ closeAt: value || undefined })}
               placeholder="Seleccionar fecha y hora de cierre"
-              min={publishAt ? new Date(publishAt) : now}
+              min={publishAt ? (() => {
+                const publishDate = new Date(publishAt);
+                publishDate.setHours(0, 0, 0, 0);
+                return publishDate;
+              })() : today}
               showTime={true}
               error={errors?.closeAt}
             />

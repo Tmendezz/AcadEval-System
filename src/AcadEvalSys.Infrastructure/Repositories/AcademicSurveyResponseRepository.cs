@@ -122,6 +122,54 @@ public class AcademicSurveyResponseRepository(ApplicationDbContext db) : IAcadem
         return response.Id;
     }
 
+    public async Task<AcademicSurveyResponse?> GetResponseBySurveySubjectAndUserAsync(Guid surveySubjectId, string userId, CancellationToken ct = default)
+    {
+        return await db.AcademicSurveyResponses
+            .Include(r => r.QuestionResponses)
+            .FirstOrDefaultAsync(r => r.AcademicSurveySubjectId == surveySubjectId && r.UserId == userId, ct);
+    }
+
+    public async Task UpdateResponseAsync(AcademicSurveyResponse response, CancellationToken ct = default)
+    {
+        // Eliminar las respuestas de preguntas existentes
+        var existingQuestionResponses = await db.SurveyQuestionResponses
+            .Where(qr => qr.AcademicSurveyResponseId == response.Id)
+            .ToListAsync(ct);
+        
+        if (existingQuestionResponses.Any())
+        {
+            db.SurveyQuestionResponses.RemoveRange(existingQuestionResponses);
+        }
+
+        // Actualizar la respuesta principal
+        response.UpdatedAt = DateTime.UtcNow;
+        response.SubmittedAt = DateTime.UtcNow;
+        
+        // Preparar las nuevas respuestas de preguntas desde la colección de QuestionResponses
+        var newQuestionResponses = response.QuestionResponses.Select(qr => new SurveyQuestionResponse
+        {
+            AcademicSurveyResponseId = response.Id,
+            SurveyQuestionId = qr.SurveyQuestionId,
+            SelectedValue = qr.SelectedValue,
+            Text = qr.Text,
+            CreatedAt = DateTime.UtcNow,
+            IsActive = true
+        }).ToList();
+
+        // Agregar las nuevas respuestas de preguntas
+        if (newQuestionResponses.Any())
+        {
+            await db.SurveyQuestionResponses.AddRangeAsync(newQuestionResponses, ct);
+        }
+
+        // Actualizar solo los campos necesarios de la respuesta principal
+        var entry = db.Entry(response);
+        entry.Property(x => x.UpdatedAt).IsModified = true;
+        entry.Property(x => x.SubmittedAt).IsModified = true;
+        
+        await db.SaveChangesAsync(ct);
+    }
+
     public async Task<bool> HasUserRespondedToSurveyAsync(Guid surveyId, string userId, CancellationToken ct = default)
     {
         return await db.AcademicSurveyResponses

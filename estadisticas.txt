@@ -1,0 +1,20 @@
+multiple choice de enunciados: (teoria de estadistica)
+-   
+- 
+
+sacar media, mediana, calcular varianza, hipotesis (grado de confianza) unilateral / bilateral
+
+diagrama de venn
+
+probabilidad 
+
+REDES
+te da una ip -> hacer subredes
+diferencia ip publica vs privada
+capa 1,2,3 y 7 que ahcen para que sirven
+que vlan, como se dividide, 
+que es https, que es tls, 
+hay un man in the middle que se puede hacer
+tengo una vlan como las puedo separar
+que hace uyn switch en capa 2, como distribuye las ips, que apsa si hay colision 
+

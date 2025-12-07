@@ -74,6 +74,9 @@ export function StudentSurveyRunner({ assignments, fixedQuestions, onSubmitAll, 
       
       // Notificar al store sobre la materia actual
       setCurrentSubject(subjectId);
+      
+      // Hacer scroll al top cuando cambia la materia
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [currentIdx]); // Solo cuando cambie el índice
 
@@ -108,6 +111,9 @@ export function StudentSurveyRunner({ assignments, fixedQuestions, onSubmitAll, 
   const canProceed = true; // se puede reforzar validación requerida
 
   const handleNext = async () => {
+    // Prevenir múltiples llamadas si ya se está enviando
+    if (isSubmitting) return;
+    
     // Validar que todas las preguntas requeridas estén respondidas
     const hasRequiredAnswers = fixedQuestions.every(q => {
       const answer = currentAnswers[q.id];
@@ -127,7 +133,10 @@ export function StudentSurveyRunner({ assignments, fixedQuestions, onSubmitAll, 
       setCurrentSubject(assignments[nextIndex].subjectId);
     } else {
       // Cuando se completa la última materia, activar el modal de confirmación
-      void onSubmitAll();
+      // Solo llamar si no se está enviando ya
+      if (!isSubmitting) {
+        void onSubmitAll();
+      }
     }
   };
 

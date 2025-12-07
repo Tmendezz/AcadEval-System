@@ -131,7 +131,6 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
     { id: 2, title: 'Revisión', description: 'Verifica la información antes de crear la encuesta' },
   ];
 
-  const goNext = () => setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
   const goPrev = () => setCurrentStep((s) => Math.max(s - 1, 0));
 
   // En este wizard mostramos descripción para encuestas, así que validamos normalmente (no como plantilla)
@@ -140,23 +139,37 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
 
   // Validar el paso actual - validar en tiempo real cuando cambian los datos
   const validateCurrentStep = useCallback((): boolean => {
-    const validationResult = validateStep(currentStep, form, usingTemplateBasicInfo, false);
+    const validationResult = validateStep(currentStep, form, usingTemplateBasicInfo, false, scheduling, settings);
     setValidationErrors(validationResult.errors);
     return validationResult.isValid;
-  }, [currentStep, form, usingTemplateBasicInfo]);
+  }, [currentStep, form, usingTemplateBasicInfo, scheduling, settings]);
 
-  // Validar en tiempo real cuando cambia el formulario
+  // Función para avanzar al siguiente paso con validación
+  const goNext = useCallback(() => {
+    // Validar antes de avanzar
+    const validationResult = validateStep(currentStep, form, usingTemplateBasicInfo, false, scheduling, settings);
+    setValidationErrors(validationResult.errors);
+    
+    if (validationResult.isValid) {
+      setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
+    }
+  }, [currentStep, form, usingTemplateBasicInfo, scheduling, settings, steps.length]);
+
+  // Validar en tiempo real cuando cambia el formulario o scheduling
   useEffect(() => {
     if (currentStep === 0) {
-      const validationResult = validateStep(currentStep, form, usingTemplateBasicInfo, false);
+      const validationResult = validateStep(currentStep, form, usingTemplateBasicInfo, false, scheduling, settings);
+      setValidationErrors(validationResult.errors);
+    } else if (currentStep === 1) {
+      const validationResult = validateStep(currentStep, form, usingTemplateBasicInfo, false, scheduling, settings);
       setValidationErrors(validationResult.errors);
     }
-  }, [form, currentStep, usingTemplateBasicInfo]);
+  }, [form, scheduling, settings, currentStep, usingTemplateBasicInfo]);
 
   const canProceed = useMemo((): boolean => {
-    const validationResult = validateStep(currentStep, form, usingTemplateBasicInfo, false);
+    const validationResult = validateStep(currentStep, form, usingTemplateBasicInfo, false, scheduling, settings);
     return validationResult.isValid;
-  }, [currentStep, form, usingTemplateBasicInfo]);
+  }, [currentStep, form, usingTemplateBasicInfo, scheduling, settings]);
 
   const handleSubmit = async () => {
     // Validar todo antes de enviar
@@ -209,7 +222,24 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
             <SurveySchedulingForm
               publishAt={scheduling.publishAt}
               closeAt={scheduling.closeAt}
-              onChange={(u) => setScheduling(prev => ({ ...prev, ...u }))}
+              onChange={(u) => {
+                setScheduling(prev => ({ ...prev, ...u }));
+                // Limpiar errores del campo cuando se modifica
+                if (u.publishAt !== undefined) {
+                  setValidationErrors((prev) => {
+                    const newErrors = { ...prev };
+                    delete newErrors.publishAt;
+                    return newErrors;
+                  });
+                }
+                if (u.closeAt !== undefined) {
+                  setValidationErrors((prev) => {
+                    const newErrors = { ...prev };
+                    delete newErrors.closeAt;
+                    return newErrors;
+                  });
+                }
+              }}
               errors={validationErrors}
             />
             <SurveySettingsForm
@@ -251,12 +281,14 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
           onPrevious={goPrev}
           onNext={async () => {
             if (currentStep < steps.length - 1) {
-              if (canProceed) {
-                return goNext();
-              }
+              // Validar antes de avanzar
+              goNext();
               return;
             }
-            await handleSubmit();
+            // En el último paso, validar antes de enviar
+            if (validateCurrentStep()) {
+              await handleSubmit();
+            }
           }}
           isSubmitting={isSubmitting}
           finishLabel="Crear Encuesta"

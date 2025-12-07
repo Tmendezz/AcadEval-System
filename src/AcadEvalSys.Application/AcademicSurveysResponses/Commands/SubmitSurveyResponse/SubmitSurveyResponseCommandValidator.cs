@@ -39,9 +39,11 @@ public class SubmitSurveyAnswerValidator : AbstractValidator<SubmitSurveyAnswerD
             .MaximumLength(1000)
             .WithMessage("El texto no puede exceder los 1000 caracteres.");
 
-        // Debe proveer texto o seleccionar una opción
+        // Debe proveer texto, seleccionar una opción, o seleccionar múltiples opciones
         RuleFor(x => x)
-            .Must(a => a.SelectedValue.HasValue || !string.IsNullOrWhiteSpace(a.Text))
-            .WithMessage("Debe proporcionar texto o seleccionar una opción");
+            .Must(a => a.SelectedValue.HasValue || 
+                      (a.SelectedValues != null && a.SelectedValues.Any()) || 
+                      !string.IsNullOrWhiteSpace(a.Text))
+            .WithMessage("Debe proporcionar texto o seleccionar al menos una opción");
     }
 }

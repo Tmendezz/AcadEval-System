@@ -24,6 +24,15 @@ public interface IAcademicSurveyResponseRepository
             AcademicSurveyResponse response,
             CancellationToken ct = default);
 
+        Task<AcademicSurveyResponse?> GetResponseBySurveySubjectAndUserAsync(
+            Guid surveySubjectId,
+            string userId,
+            CancellationToken ct = default);
+
+        Task UpdateResponseAsync(
+            AcademicSurveyResponse response,
+            CancellationToken ct = default);
+
         Task<bool> HasUserRespondedToSurveyAsync(
             Guid surveyId,
             string userId,

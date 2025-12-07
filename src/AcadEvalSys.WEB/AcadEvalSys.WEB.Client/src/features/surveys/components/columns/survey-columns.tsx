@@ -103,7 +103,7 @@ export function createSurveyColumns({
     },
     {
       accessorKey: 'publishAt',
-      header: 'Publicada',
+      header: 'Visible desde',
       size: 100,
       cell: ({ row }) => (
         <span className="text-xs">
@@ -143,7 +143,11 @@ export function createSurveyColumns({
                       variant="default"
                       size="sm"
                       className="h-7 w-7 p-0"
-                      onClick={() => onPublish(survey)}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onPublish(survey);
+                      }}
                     >
                       <Send className="h-3.5 w-3.5" />
                     </Button>
@@ -162,7 +166,11 @@ export function createSurveyColumns({
                       variant="outline"
                       size="sm"
                       className="h-7 w-7 p-0"
-                      onClick={() => onEdit(survey)}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit(survey);
+                      }}
                     >
                       <Edit className="h-3.5 w-3.5" />
                     </Button>
@@ -181,7 +189,11 @@ export function createSurveyColumns({
                       variant="outline"
                       size="sm"
                       className="h-7 w-7 p-0"
-                      onClick={() => onViewProgress(survey)}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onViewProgress(survey);
+                      }}
                     >
                       <BarChart className="h-3.5 w-3.5" />
                     </Button>
@@ -200,7 +212,11 @@ export function createSurveyColumns({
                       variant="outline"
                       size="sm"
                       className="h-7 w-7 p-0"
-                      onClick={() => onViewResults(survey)}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onViewResults(survey);
+                      }}
                     >
                       <BarChart className="h-3.5 w-3.5" />
                     </Button>

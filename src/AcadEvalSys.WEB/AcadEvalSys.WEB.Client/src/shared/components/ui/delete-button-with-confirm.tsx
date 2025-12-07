@@ -78,6 +78,9 @@ export function DeleteButtonWithConfirm({
               className={className}
               disabled={disabled}
               type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
             >
               <Icon className="h-3.5 w-3.5" />
             </Button>

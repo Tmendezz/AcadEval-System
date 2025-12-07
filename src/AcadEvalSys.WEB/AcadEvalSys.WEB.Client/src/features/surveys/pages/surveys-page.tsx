@@ -73,13 +73,6 @@ export default function SurveysPage() {
     setLocation('/encuestas/crear');
   }, [setLocation]);
 
-  const handleRowClick = useCallback((id: string) => {
-    const survey = surveys.find((s) => s.id === id);
-    if (survey) {
-      handleViewProgress(survey);
-    }
-  }, [surveys, handleViewProgress]);
-
   const columns = useMemo(
     () =>
       createSurveyColumns({
@@ -111,7 +104,6 @@ export default function SurveysPage() {
           emptyMessage="No se encontraron encuestas"
           emptyIcon="FileBarChart"
           className="py-6"
-          onRowClick={handleRowClick}
         />
       </PageContent>
 

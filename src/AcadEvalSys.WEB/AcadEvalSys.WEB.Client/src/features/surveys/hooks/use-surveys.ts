@@ -248,11 +248,15 @@ export function useCompletedSurveys() {
 /**
  * Hook para obtener una encuesta específica para responder
  */
-export function useSurveyForResponse(surveyId: string, readOnly: boolean = false) {
+export function useSurveyForResponse(
+  surveyId: string, 
+  readOnly: boolean = false,
+  options?: { enabled?: boolean }
+) {
   return useQuery({
     queryKey: [...userSurveysKeys.all, 'survey-for-response', surveyId, readOnly],
     queryFn: () => userSurveysService.getSurveyForResponse(surveyId, readOnly),
-    enabled: !!surveyId,
+    enabled: options?.enabled !== undefined ? options.enabled : !!surveyId,
     staleTime: readOnly ? 10 * 60 * 1000 : 30 * 1000,
     gcTime: readOnly ? 30 * 60 * 1000 : 5 * 60 * 1000,
   });
@@ -277,25 +281,23 @@ export function useSubmitSurveyResponse() {
       error: 'Error al enviar la respuesta',
     },
     invalidateKeys: [userSurveysKeys.all],
-    onSuccessCallback: async (_, { surveyId }) => {
-      const { useQueryClient } = await import('@tanstack/react-query');
-      const queryClient = useQueryClient();
-      await queryClient.invalidateQueries({
-        queryKey: [...userSurveysKeys.all, 'survey-for-response', surveyId],
-      });
-    },
+    // Removido onSuccessCallback para evitar problemas con hooks después del desmontaje
     showSuccessToast: false, // Silencioso para permitir lógica custom
+    showErrorToast: false, // Silencioso para permitir manejo de errores custom
   });
 }
 
 /**
  * Hook para obtener todos los survey subjects de una encuesta específica para el usuario actual
  */
-export function useSurveySubjectsForUser(surveyId: string) {
+export function useSurveySubjectsForUser(
+  surveyId: string,
+  options?: { enabled?: boolean }
+) {
   return useQuery({
     queryKey: [...userSurveysKeys.all, 'survey-subjects', surveyId],
     queryFn: () => userSurveysService.getSurveySubjectsForUser(surveyId),
-    enabled: !!surveyId,
+    enabled: options?.enabled !== undefined ? options.enabled : !!surveyId,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });

@@ -45,13 +45,6 @@ namespace AcadEvalSys.Application.AcademicSurveysResponses.Commands.SubmitSurvey
                 throw new InvalidOperationException("La encuesta no está disponible para responder");
             }
 
-            // Verificar que el usuario no haya respondido ya (a nivel de subject)
-            var hasResponded = await responseRepository.GetResponsesBySurveySubjectsAsync(new [] { request.SurveySubjectId }, ct);
-            if (hasResponded.Any(r => r.UserId == user.Id))
-            {
-                throw new InvalidOperationException("Esta asignatura ya ha sido respondida y no puede modificarse");
-            }
-
             // Validar que el subject pertenezca a la encuesta
             var surveySubject = survey.Subjects.FirstOrDefault(s => s.Id == request.SurveySubjectId);
             if (surveySubject == null)
@@ -59,24 +52,68 @@ namespace AcadEvalSys.Application.AcademicSurveysResponses.Commands.SubmitSurvey
                 throw new InvalidOperationException("El surveySubject no pertenece a la encuesta");
             }
 
+            // Procesar SelectedValues antes de validar y mapear
+            // Para preguntas de opción múltiple, convertir SelectedValues a Text (JSON) y SelectedValue (primer valor)
+            if (request.SubjectAnswers != null)
+            {
+                foreach (var answer in request.SubjectAnswers)
+                {
+                    // Si hay SelectedValues, procesarlos para preguntas de opción múltiple
+                    if (answer.SelectedValues != null && answer.SelectedValues.Any())
+                    {
+                        var question = survey.Questions.FirstOrDefault(q => q.Id == answer.QuestionId);
+                        if (question != null && question.Type == QuestionType.MultipleChoice)
+                        {
+                            // Almacenar los valores múltiples como JSON en Text
+                            answer.Text = System.Text.Json.JsonSerializer.Serialize(answer.SelectedValues);
+                            // Establecer SelectedValue con el primer valor para compatibilidad
+                            answer.SelectedValue = answer.SelectedValues.First();
+                        }
+                    }
+                }
+            }
+
             // Validar respuestas
             ValidateResponses(survey, request.SubjectAnswers ?? new List<SubmitSurveyAnswerDto>());
 
-            // Crear la respuesta
+            // Verificar si ya existe una respuesta para este subject
+            var existingResponse = await responseRepository.GetResponseBySurveySubjectAndUserAsync(
+                request.SurveySubjectId, 
+                user.Id, 
+                ct);
+
             var mappedResponses = mapper.Map<List<SurveyQuestionResponse>>(request.SubjectAnswers);
 
-      
-            var response = new AcademicSurveyResponse
+            if (existingResponse != null)
             {
-                AcademicSurveySubjectId = request.SurveySubjectId,
-                UserId = user.Id,
-                SubmittedAt = DateTime.UtcNow,
-                CreatedAt = DateTime.UtcNow,
-                IsActive = true,
-                QuestionResponses = mappedResponses
-            };
+                // Actualizar respuesta existente
+                logger.LogInformation("Actualizando respuesta existente {ResponseId} para surveySubject {SurveySubjectId}", 
+                    existingResponse.Id, request.SurveySubjectId);
+                
+                existingResponse.QuestionResponses = mappedResponses;
+                existingResponse.SubmittedAt = DateTime.UtcNow;
+                existingResponse.UpdatedAt = DateTime.UtcNow;
+                
+                await responseRepository.UpdateResponseAsync(existingResponse, ct);
+                return existingResponse.Id;
+            }
+            else
+            {
+                // Crear nueva respuesta
+                logger.LogInformation("Creando nueva respuesta para surveySubject {SurveySubjectId}", request.SurveySubjectId);
+                
+                var response = new AcademicSurveyResponse
+                {
+                    AcademicSurveySubjectId = request.SurveySubjectId,
+                    UserId = user.Id,
+                    SubmittedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.UtcNow,
+                    IsActive = true,
+                    QuestionResponses = mappedResponses
+                };
 
-            return await responseRepository.CreateResponseAsync(response, ct);
+                return await responseRepository.CreateResponseAsync(response, ct);
+            }
         }
 
         private void ValidateResponses(AcademicSurvey survey, IList<SubmitSurveyAnswerDto> answers)
@@ -112,7 +149,94 @@ namespace AcadEvalSys.Application.AcademicSurveysResponses.Commands.SubmitSurvey
                         }
                         break;
                     case QuestionType.MultipleChoice:
+                        // Para preguntas de opción múltiple, aceptar SelectedValues o SelectedValue
+                        if (question.IsRequired)
+                        {
+                            var hasSelectedValues = answer.SelectedValues != null && answer.SelectedValues.Any();
+                            var hasSelectedValue = answer.SelectedValue.HasValue;
+                            
+                            if (!hasSelectedValues && !hasSelectedValue)
+                            {
+                                throw new InvalidOperationException($"La pregunta obligatoria '{question.Text}' requiere seleccionar al menos una opción");
+                            }
+                        }
+                        
+                        // Validar SelectedValues si se proporciona
+                        if (answer.SelectedValues != null && answer.SelectedValues.Any())
+                        {
+                            foreach (var value in answer.SelectedValues)
+                            {
+                                if (!question.Options.Any(o => o.Value == value))
+                                {
+                                    throw new InvalidOperationException($"La opción seleccionada {value} no es válida para la pregunta '{question.Text}'");
+                                }
+                            }
+                        }
+                        
+                        // Validar SelectedValue si se proporciona (compatibilidad con respuestas antiguas)
+                        if (answer.SelectedValue.HasValue && !question.Options.Any(o => o.Value == answer.SelectedValue.Value))
+                        {
+                            throw new InvalidOperationException($"La opción seleccionada no es válida para la pregunta '{question.Text}'");
+                        }
+
+                        // Validar comentario/texto adicional solo si está permitido en la pregunta
+                        // NO validar si el Text es JSON de SelectedValues (almacenamiento interno)
+                        if (!string.IsNullOrWhiteSpace(answer.Text))
+                        {
+                            // Verificar si el Text es JSON de SelectedValues
+                            // Si hay SelectedValues y el Text es un JSON array válido, es almacenamiento interno
+                            var isJsonArrayOfValues = false;
+                            if (answer.SelectedValues != null && answer.SelectedValues.Any())
+                            {
+                                try
+                                {
+                                    var textTrimmed = answer.Text.Trim();
+                                    if (textTrimmed.StartsWith("[") && textTrimmed.EndsWith("]"))
+                                    {
+                                    var deserialized = System.Text.Json.JsonSerializer.Deserialize<List<int>>(textTrimmed);
+                                    if (deserialized != null && 
+                                        deserialized.Count == answer.SelectedValues.Count &&
+                                        deserialized.OrderBy(x => x).SequenceEqual(answer.SelectedValues.OrderBy(x => x)))
+                                    {
+                                        isJsonArrayOfValues = true;
+                                    }
+                                    }
+                                }
+                                catch
+                                {
+                                    // Si no se puede deserializar, no es JSON de SelectedValues
+                                    isJsonArrayOfValues = false;
+                                }
+                            }
+                            
+                            // Si es JSON de SelectedValues, no validar como comentario
+                            if (!isJsonArrayOfValues)
+                            {
+                                var allowsComment = question.AllowComment;
+                                // O si alguna de las opciones seleccionadas permite texto abierto
+                                if (!allowsComment)
+                                {
+                                    var selectedValues = answer.SelectedValues ?? (answer.SelectedValue.HasValue ? new List<int> { answer.SelectedValue.Value } : new List<int>());
+                                    foreach (var value in selectedValues)
+                                    {
+                                        var opt = question.Options.FirstOrDefault(o => o.Value == value);
+                                        if (opt != null && opt.AllowOpenText)
+                                        {
+                                            allowsComment = true;
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if (!allowsComment)
+                                {
+                                    throw new InvalidOperationException($"No se permite texto adicional para la pregunta '{question.Text}'");
+                                }
+                            }
+                        }
+                        break;
                     case QuestionType.SingleChoice:
+                        // Para preguntas de opción única, solo aceptar SelectedValue
                         if (question.IsRequired && !answer.SelectedValue.HasValue)
                         {
                             throw new InvalidOperationException($"La pregunta obligatoria '{question.Text}' requiere seleccionar una opción");
@@ -125,9 +249,7 @@ namespace AcadEvalSys.Application.AcademicSurveysResponses.Commands.SubmitSurvey
                         // Validar comentario/texto adicional solo si está permitido en la pregunta
                         if (!string.IsNullOrWhiteSpace(answer.Text))
                         {
-                            var allowsComment = question.IsRequired == false || question.IsRequired == true; // dummy, will be overwritten
-                            // Permitido si la pregunta lo permite explícitamente
-                            allowsComment = question.AllowComment;
+                            var allowsComment = question.AllowComment;
                             // O si la opción seleccionada permite texto abierto
                             if (!allowsComment && answer.SelectedValue.HasValue)
                             {

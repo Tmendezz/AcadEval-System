@@ -45,6 +45,7 @@ export interface SubmitSurveyResponseRequest {
   subjectAnswers: Array<{
     questionId: string;
     selectedValue?: number;
+    selectedValues?: number[];
     text?: string;
   }>;
 }

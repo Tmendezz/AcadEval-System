@@ -135,9 +135,12 @@ export default function SurveyProgressPage() {
                     {years.map((year) => (
                       <Button
                         key={year}
+                        type="button"
                         size="sm"
                         variant="outline"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           setSelectedCareerId(career.id);
                           setSelectedYear(year);
                         }}
