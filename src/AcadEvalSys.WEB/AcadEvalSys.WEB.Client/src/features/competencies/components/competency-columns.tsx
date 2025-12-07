@@ -2,10 +2,16 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import { Eye, Edit, Trash } from "lucide-react";
+import { Eye, Edit } from "lucide-react";
 import { TruncatedText } from "../../../shared/components/ui/truncated-text";
-import { ConfirmationModal } from "@/shared/components/ui/confirmation-modal";
+import { DeleteButtonWithConfirm } from "@/shared/components/ui/delete-button-with-confirm";
 import { Competency } from "../models";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared/components/ui/tooltip";
 
 interface CompetencyColumnsProps {
   onViewClick?: (competency: Competency) => void;
@@ -21,10 +27,15 @@ export const createCompetencyColumns = ({
   {
     accessorKey: "name",
     header: "Nombre",
+    size: 180,
+    cell: ({ row }) => (
+      <TruncatedText text={row.original.name} maxLength={25} className="text-xs font-medium" />
+    ),
   },
   {
     accessorKey: "type",
     header: "Tipo",
+    size: 100,
     cell: ({ row }) => {
       const type = row.original.type;
       const variant = type === "Soft" ? "secondary" : "default";
@@ -34,6 +45,7 @@ export const createCompetencyColumns = ({
           variant={
             variant as "default" | "secondary" | "destructive" | "outline"
           }
+          className="text-xs"
         >
           {typeLabel}
         </Badge>
@@ -43,59 +55,71 @@ export const createCompetencyColumns = ({
   {
     accessorKey: "description",
     header: "Descripción",
+    size: 250,
     cell: ({ row }) => (
       <TruncatedText 
         text={row.original.description} 
-        maxLength={40}
-        className="text-sm text-muted-foreground"
+        maxLength={35}
+        className="text-xs text-muted-foreground"
       />
     ),
   },
   {
     id: "actions",
     header: "Acciones",
+    size: 120,
     cell: ({ row }) => {
       const competency = row.original;
 
       return (
-        <div className="flex items-center gap-2">
-          {onViewClick && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onViewClick(competency)}
-            >
-              <Eye className="h-4 w-4" />
-              Ver
-            </Button>
-          )}
+        <div className="flex items-center gap-1">
+          <TooltipProvider>
+            {onViewClick && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    onClick={() => onViewClick(competency)}
+                  >
+                    <Eye className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Ver</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
 
-          {onEditClick && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onEditClick(competency)}
-            >
-              <Edit className="h-4 w-4" />
-              Editar
-            </Button>
-          )}
+            {onEditClick && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    onClick={() => onEditClick(competency)}
+                  >
+                    <Edit className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Editar</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
 
-          {onDeleteClick && (
-            <ConfirmationModal
-              title="¿Estás seguro?"
-              description="Esta acción no se puede deshacer. Esto eliminará permanentemente la competencia."
-              onConfirm={() => onDeleteClick(competency.id)}
-            >
-              <Button
-                variant="destructive"
-                size="sm"
-              >
-                <Trash className="h-4 w-4" />
-                Eliminar
-              </Button>
-            </ConfirmationModal>
-          )}
+            {onDeleteClick && (
+              <DeleteButtonWithConfirm
+                title="¿Estás seguro?"
+                description="Esta acción no se puede deshacer. Esto eliminará permanentemente la competencia."
+                confirmText="Confirmar"
+                cancelText="Cancelar"
+                onConfirm={() => onDeleteClick(competency.id)}
+              />
+            )}
+          </TooltipProvider>
         </div>
       );
     },

@@ -1,10 +1,18 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
-import { Trash2, Eye, Users } from "lucide-react";
+import { Eye, Users } from "lucide-react";
 import { Subject } from "../models/subject";
 import { UseMutationResult } from "@tanstack/react-query";
 import { Link } from "wouter";
+import { TruncatedText } from "@/shared/components/ui/truncated-text";
+import { DeleteButtonWithConfirm } from "@/shared/components/ui/delete-button-with-confirm";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared/components/ui/tooltip";
 
 export function createSubjectColumns(
   careerId?: string,
@@ -13,24 +21,19 @@ export function createSubjectColumns(
   return [
     {
       accessorKey: "name",
-      header: "Nombre de la Asignatura",
+      header: "Asignatura",
+      size: 200,
       cell: ({ row }) => {
         const subject = row.original;
         return (
-          <div className="flex flex-col">
-            <span className="font-medium">{subject.name}</span>
-            {subject.description && (
-              <span className="text-sm text-muted-foreground">
-                {subject.description}
-              </span>
-            )}
-          </div>
+          <TruncatedText text={subject.name} maxLength={25} className="font-medium text-sm" />
         );
       },
     },
     {
       accessorKey: "year",
       header: "Año",
+      size: 80,
       cell: ({ row }) => {
         const year = row.original.year;
         const yearLabels = {
@@ -40,7 +43,7 @@ export function createSubjectColumns(
         };
         
         return (
-          <Badge variant="outline">
+          <Badge variant="outline" className="text-xs">
             {yearLabels[year as keyof typeof yearLabels] || year}
           </Badge>
         );
@@ -48,25 +51,27 @@ export function createSubjectColumns(
     },
     {
       accessorKey: "professorName",
-      header: "Profesor Asignado",
+      header: "Profesor",
+      size: 150,
       cell: ({ row }) => {
         const professor = row.original.professorName;
         return professor ? (
-          <span className="text-sm">{professor}</span>
+          <TruncatedText text={professor} maxLength={20} className="text-xs" />
         ) : (
-          <span className="text-sm text-muted-foreground">Sin asignar</span>
+          <span className="text-xs text-muted-foreground">Sin asignar</span>
         );
       },
     },
     {
       accessorKey: "enrolledStudents",
       header: "Estudiantes",
+      size: 100,
       cell: ({ row }) => {
         const studentsCount = row.original.enrolledStudents?.length || 0;
         return (
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">{studentsCount}</span>
+          <div className="flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-xs">{studentsCount}</span>
           </div>
         );
       },
@@ -74,32 +79,41 @@ export function createSubjectColumns(
     {
       id: "actions",
       header: "Acciones",
+      size: 100,
       cell: ({ row }) => {
         const subject = row.original;
         
         return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              asChild
-            >
-              <Link href={`/carreras/${careerId}/asignaturas/${subject.id}`}>
-                <Eye className="h-4 w-4" />
-                Ver
-              </Link>
-            </Button>
+          <div className="flex items-center gap-1">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    asChild
+                  >
+                    <Link href={`/carreras/${careerId}/asignaturas/${subject.id}`}>
+                      <Eye className="h-3.5 w-3.5" />
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Ver</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             
             {deleteSubjectMutation && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => deleteSubjectMutation.mutate(subject.id)}
+              <DeleteButtonWithConfirm
+                title="¿Estás seguro?"
+                description={`Esta acción no se puede deshacer. ¿Desea eliminar la asignatura "${subject.name}"?`}
+                confirmText="Confirmar"
+                cancelText="Cancelar"
+                onConfirm={() => deleteSubjectMutation.mutate(subject.id)}
                 disabled={deleteSubjectMutation.isPending}
-              >
-                <Trash2 className="h-4 w-4" />
-                Eliminar
-              </Button>
+              />
             )}
           </div>
         );

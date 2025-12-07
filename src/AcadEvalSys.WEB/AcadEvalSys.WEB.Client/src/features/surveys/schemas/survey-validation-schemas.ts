@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { formatZodErrors, DEFAULT_ZOD_ERROR_MAPPINGS } from '@/shared/utils/zod-error-formatter';
+import { ZodErrorMappings } from '@/shared/utils/zod-validation';
 // Definir QuestionType localmente
 type QuestionType = 'SingleChoice' | 'MultipleChoice' | 'OpenText';
 
@@ -95,24 +97,19 @@ export const SurveyTemplateFormSchema = z.object({
     .max(50, 'No puede haber más de 50 preguntas'),
 });
 
-// Función helper para convertir errores de Zod a formato de UI
-export function formatZodErrors(error: z.ZodError): Record<string, string> {
-  const errors: Record<string, string> = {};
-  
-  error.errors.forEach((err) => {
-    const path = err.path.join('.');
-    errors[path] = err.message;
-  });
-  
-  return errors;
-}
+// Re-exportar el formateador de errores para mantener compatibilidad
+// Ahora usa el sistema escalable de formateo de errores
+export { formatZodErrors };
 
 // Función helper para validar paso por paso
-export function validateStep(step: number, data: any, isUsingTemplate: boolean = false): { isValid: boolean; errors: Record<string, string> } {
+export function validateStep(step: number, data: any, isUsingTemplate: boolean = false, hasFixedQuestions: boolean = false): { isValid: boolean; errors: Record<string, string> } {
   try {
     switch (step) {
       case 0: // Información básica y preguntas
         const errors: Record<string, string> = {};
+        
+        // Usar mapeos para formatear errores correctamente
+        const mappings = [ZodErrorMappings.questions];
         
         if (isUsingTemplate) {
           // Cuando se usa una plantilla, validar solo el título
@@ -120,7 +117,7 @@ export function validateStep(step: number, data: any, isUsingTemplate: boolean =
             title: data.title,
           });
           if (!basicInfoResult.success) {
-            Object.assign(errors, formatZodErrors(basicInfoResult.error));
+            Object.assign(errors, formatZodErrors(basicInfoResult.error, mappings));
           }
         } else {
           // Cuando no se usa plantilla, validar título y descripción
@@ -129,16 +126,16 @@ export function validateStep(step: number, data: any, isUsingTemplate: boolean =
             description: data.description,
           });
           if (!basicInfoResult.success) {
-            Object.assign(errors, formatZodErrors(basicInfoResult.error));
+            Object.assign(errors, formatZodErrors(basicInfoResult.error, mappings));
           }
         }
         
-        // Siempre validar preguntas, independientemente de si se usa plantilla o no
+        // Siempre validar preguntas, ya que ahora son editables incluso cuando vienen de un template
         const questionsResult = SurveyQuestionsSchema.safeParse({
           questions: data.questions || [],
         });
         if (!questionsResult.success) {
-          Object.assign(errors, formatZodErrors(questionsResult.error));
+          Object.assign(errors, formatZodErrors(questionsResult.error, mappings));
         }
         
         return {

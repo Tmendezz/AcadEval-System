@@ -61,7 +61,7 @@ export function DataTable<TData, TValue>({
     <div className="space-y-4 w-full">
       <div className="rounded-md border">
         <div className="overflow-auto">
-          <Table className="w-full table-fixed">
+          <Table className="w-full">
             <TableHeader className="bg-muted/50">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow
@@ -69,10 +69,12 @@ export function DataTable<TData, TValue>({
                   className="border-b border-border"
                 >
                   {headerGroup.headers.map((header) => {
+                    const size = header.column.columnDef.size;
                     return (
                       <TableHead
                         key={header.id}
-                        className="h-12 font-medium text-muted-foreground"
+                        className="h-10 font-medium text-muted-foreground text-xs"
+                        style={size ? { width: size, minWidth: size, maxWidth: size } : undefined}
                       >
                         {header.isPlaceholder
                           ? null
@@ -97,14 +99,21 @@ export function DataTable<TData, TValue>({
                       onRowClick ? "cursor-pointer hover:bg-muted/50" : ""
                     }
                   >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="p-3 truncate">
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
+                    {row.getVisibleCells().map((cell) => {
+                      const size = cell.column.columnDef.size;
+                      return (
+                        <TableCell 
+                          key={cell.id} 
+                          className="p-2 text-xs"
+                          style={size ? { width: size, minWidth: size, maxWidth: size } : undefined}
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      );
+                    })}
                   </TableRow>
                 ))
               ) : (

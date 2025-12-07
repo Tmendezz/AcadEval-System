@@ -1,8 +1,16 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit } from "lucide-react";
 import { Student } from "../services/student-service";
+import { TruncatedText } from "@/shared/components/ui/truncated-text";
+import { DeleteButtonWithConfirm } from "@/shared/components/ui/delete-button-with-confirm";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared/components/ui/tooltip";
 
 // Constante fuera de la función para evitar recreación
 const YEAR_LABELS: Record<number, string> = {
@@ -24,42 +32,52 @@ export const studentColumns = ({
   {
     accessorKey: "name",
     header: "Nombre",
+    size: 180,
     cell: ({ row }) => {
       const student = row.original;
       return (
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-            <span className="text-sm font-medium text-primary">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <span className="text-xs font-medium text-primary">
               {student.name.charAt(0).toUpperCase()}
             </span>
           </div>
-          <div>
-            <div className="font-medium">{student.name}</div>
-            <div className="text-sm text-muted-foreground">{student.email}</div>
-          </div>
+          <TruncatedText text={student.name} maxLength={20} className="font-medium text-xs" />
         </div>
       );
     },
   },
   {
+    accessorKey: "email",
+    header: "Email",
+    size: 200,
+    cell: ({ row }) => (
+      <TruncatedText text={row.original.email} maxLength={30} className="text-xs" />
+    ),
+  },
+  {
     accessorKey: "technicalCareerName",
     header: "Carrera",
+    size: 150,
     cell: ({ row }) => {
       const career = row.getValue("technicalCareerName") as string;
       return (
-        <Badge variant="outline">
-          {career}
-        </Badge>
+        <TruncatedText text={career} maxLength={20}>
+          <Badge variant="outline" className="text-xs">
+            {career}
+          </Badge>
+        </TruncatedText>
       );
     },
   },
   {
     accessorKey: "currentYear",
     header: "Año",
+    size: 100,
     cell: ({ row }) => {
       const year = row.getValue("currentYear") as number;
       return (
-        <Badge variant="secondary">
+        <Badge variant="secondary" className="text-xs">
           {YEAR_LABELS[year] || `Año ${year}`}
         </Badge>
       );
@@ -68,10 +86,11 @@ export const studentColumns = ({
   {
     accessorKey: "isActive",
     header: "Estado",
+    size: 80,
     cell: ({ row }) => {
       const isActive = row.getValue("isActive") as boolean;
       return (
-        <Badge variant={isActive ? "default" : "secondary"}>
+        <Badge variant={isActive ? "default" : "secondary"} className="text-xs">
           {isActive ? "Activo" : "Inactivo"}
         </Badge>
       );
@@ -80,28 +99,36 @@ export const studentColumns = ({
   {
     id: "actions",
     header: "Acciones",
+    size: 100,
     cell: ({ row }) => {
       const student = row.original;
 
       return (
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onEdit(student)}
-          >
-            <Edit className="h-4 w-4" />
-            Editar
-          </Button>
-
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => onDelete(student)}
-          >
-            <Trash2 className="h-4 w-4" />
-            Eliminar
-          </Button>
+        <div className="flex items-center gap-1">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  onClick={() => onEdit(student)}
+                >
+                  <Edit className="h-3.5 w-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Editar</p>
+              </TooltipContent>
+            </Tooltip>
+            <DeleteButtonWithConfirm
+              title="¿Estás seguro?"
+              description={`Esta acción no se puede deshacer. ¿Desea eliminar al estudiante ${student.name}?`}
+              confirmText="Confirmar"
+              cancelText="Cancelar"
+              onConfirm={() => onDelete(student)}
+            />
+          </TooltipProvider>
         </div>
       );
     },

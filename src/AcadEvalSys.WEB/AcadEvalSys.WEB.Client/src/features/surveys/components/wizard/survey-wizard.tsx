@@ -101,7 +101,8 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
   });
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  // Actualizar el formulario cuando lleguen los datos de la plantilla
+  // Actualizar solo las preguntas cuando lleguen los datos de la plantilla
+  // El título y descripción se pueden editar libremente y no se sobrescriben
   useEffect(() => {
     const templateQuestions = fixedQuestions || initialTemplate?.questions;
     if (templateQuestions) {
@@ -117,8 +118,8 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
       }));
       setForm(prevForm => ({
         ...prevForm,
-        title: initialTemplate?.title || prevForm.title,
-        description: initialTemplate?.description || prevForm.description,
+        // Solo actualizamos las preguntas, no el título ni la descripción
+        // para permitir que el usuario los edite libremente
         questions: normalized,
       }));
     }
@@ -135,18 +136,27 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
 
   // En este wizard mostramos descripción para encuestas, así que validamos normalmente (no como plantilla)
   const usingTemplateBasicInfo = false;
+  // Ahora todas las preguntas son editables, así que siempre validamos normalmente
 
-  // Validar el paso actual
+  // Validar el paso actual - validar en tiempo real cuando cambian los datos
   const validateCurrentStep = useCallback((): boolean => {
-    const validationResult = validateStep(currentStep, form, usingTemplateBasicInfo);
+    const validationResult = validateStep(currentStep, form, usingTemplateBasicInfo, false);
     setValidationErrors(validationResult.errors);
     return validationResult.isValid;
-  }, [currentStep, form]);
+  }, [currentStep, form, usingTemplateBasicInfo]);
+
+  // Validar en tiempo real cuando cambia el formulario
+  useEffect(() => {
+    if (currentStep === 0) {
+      const validationResult = validateStep(currentStep, form, usingTemplateBasicInfo, false);
+      setValidationErrors(validationResult.errors);
+    }
+  }, [form, currentStep, usingTemplateBasicInfo]);
 
   const canProceed = useMemo((): boolean => {
-    const validationResult = validateStep(currentStep, form, usingTemplateBasicInfo);
+    const validationResult = validateStep(currentStep, form, usingTemplateBasicInfo, false);
     return validationResult.isValid;
-  }, [currentStep, form]);
+  }, [currentStep, form, usingTemplateBasicInfo]);
 
   const handleSubmit = async () => {
     // Validar todo antes de enviar
@@ -165,8 +175,13 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
         {currentStep === 0 && (
           <div className="space-y-6">
             <WizardStepTitle currentStep={currentStep} steps={steps} />
-            <div className="rounded-md border border-amber-300 bg-amber-50 text-amber-900 p-3 text-sm">
-              Las preguntas de la encuesta son fijas y se aplican automáticamente a todos los docentes del año de cursado de la tecnicatura correspondiente. No es necesario duplicarlas manualmente, el sistema generará un bloque de preguntas para cada docente.
+            <div className="rounded-md border border-blue-300 bg-blue-50 text-blue-900 p-3 text-sm">
+              Las preguntas de la encuesta se aplican automáticamente a todos los docentes del año de cursado de la tecnicatura correspondiente. No es necesario duplicarlas manualmente, el sistema generará un bloque de preguntas para cada docente.
+              {fixedQuestions && (
+                <div className="mt-2 pt-2 border-t border-blue-400">
+                  <strong>Plantilla seleccionada:</strong> Los campos han sido prellenados desde la plantilla, pero puedes editarlos libremente para personalizar esta encuesta específica.
+                </div>
+              )}
             </div>
             <SurveyBasicInfoForm
               title={form.title}
@@ -175,13 +190,15 @@ export function SurveyWizard({ onSubmit, onCancel: _onCancel, isSubmitting = fal
               errors={validationErrors}
               isTemplate={false}
               showDescription={true}
+              isTitleDisabled={false}
+              isDescriptionDisabled={false}
             />
             <SurveyQuestionsEditor
               questions={form.questions}
               onChange={(q: SurveyTemplateQuestion[]) => setForm((prev) => ({ ...prev, questions: q }))}
-              showAddButton={!fixedQuestions}
+              showAddButton={true}
               errors={validationErrors}
-              isReadOnly={!!fixedQuestions}
+              isReadOnly={false}
             />
           </div>
         )}

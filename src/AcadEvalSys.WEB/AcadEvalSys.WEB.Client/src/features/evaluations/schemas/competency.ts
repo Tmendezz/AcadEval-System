@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { createZodValidator } from "@/shared/utils/zod-validation";
 
 export const competencyFormSchema = z.object({
   name: z
@@ -17,3 +18,8 @@ export const competencyFormSchema = z.object({
 });
 
 export type CompetencyFormData = z.infer<typeof competencyFormSchema>;
+
+/**
+ * Validador con formateo de errores escalable
+ */
+export const validateCompetencyForm = createZodValidator(competencyFormSchema);

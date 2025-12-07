@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { createZodValidator, ZodErrorMappings } from "@/shared/utils/zod-validation";
 
 export const createCompetencySchema = z.object({
   name: z
@@ -23,3 +24,12 @@ export const createCompetencySchema = z.object({
 });
 
 export type CreateCompetencyFormData = z.infer<typeof createCompetencySchema>;
+
+/**
+ * Validador con formateo de errores escalable
+ * Usa mapeos para convertir paths de Zod a formatos de UI
+ */
+export const validateCreateCompetency = createZodValidator(
+  createCompetencySchema,
+  [ZodErrorMappings.levels]
+);

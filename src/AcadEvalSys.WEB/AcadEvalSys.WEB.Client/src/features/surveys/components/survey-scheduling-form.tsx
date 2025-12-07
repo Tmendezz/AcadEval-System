@@ -1,9 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Label } from '@/shared/components/ui/label';
-import { Input } from '@/shared/components/ui/input';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 import { InfoIcon } from 'lucide-react';
 import { formatDateForDisplay } from '@/shared/utils/date-utils';
+import { DateTimePicker } from '@/shared/components/ui/date-time-picker';
 
 export interface SurveySchedulingFormProps {
   publishAt?: string;
@@ -19,17 +18,8 @@ export function SurveySchedulingForm({
   errors = {},
 }: SurveySchedulingFormProps) {
   
-  const handlePublishAtChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange({ publishAt: e.target.value });
-  };
-
-  const handleCloseAtChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange({ closeAt: e.target.value });
-  };
-
   // Obtener fecha/hora actual para el mínimo
   const now = new Date();
-  const currentDateTime = now.toISOString().slice(0, 16); // formato YYYY-MM-DDTHH:mm
 
   return (
     <Card>
@@ -46,43 +36,35 @@ export function SurveySchedulingForm({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="publishAt" className="mb-1 block">
-              Fecha de Publicación
-            </Label>
-            <Input
+            <DateTimePicker
               id="publishAt"
-              type="datetime-local"
-              value={publishAt}
-              onChange={handlePublishAtChange}
-              min={currentDateTime}
-              className={`${errors?.publishAt ? 'border-destructive' : ''}`}
+              label="Fecha de Publicación"
+              value={publishAt || null}
+              onChange={(value) => onChange({ publishAt: value || undefined })}
+              placeholder="Seleccionar fecha y hora de publicación"
+              min={now}
+              showTime={true}
+              error={errors?.publishAt}
             />
             <p className="text-xs text-muted-foreground">
               La encuesta será visible para los usuarios a partir de esta fecha
             </p>
-            {errors?.publishAt && (
-              <p className="text-sm text-destructive">{errors.publishAt}</p>
-            )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="closeAt" className="mb-1 block">
-              Fecha de Cierre
-            </Label>
-            <Input
+            <DateTimePicker
               id="closeAt"
-              type="datetime-local"
-              value={closeAt}
-              onChange={handleCloseAtChange}
-              min={publishAt || currentDateTime}
-              className={`${errors?.closeAt ? 'border-destructive' : ''}`}
+              label="Fecha de Cierre"
+              value={closeAt || null}
+              onChange={(value) => onChange({ closeAt: value || undefined })}
+              placeholder="Seleccionar fecha y hora de cierre"
+              min={publishAt ? new Date(publishAt) : now}
+              showTime={true}
+              error={errors?.closeAt}
             />
             <p className="text-xs text-muted-foreground">
               Los usuarios no podrán responder después de esta fecha
             </p>
-            {errors?.closeAt && (
-              <p className="text-sm text-destructive">{errors.closeAt}</p>
-            )}
           </div>
         </div>
 

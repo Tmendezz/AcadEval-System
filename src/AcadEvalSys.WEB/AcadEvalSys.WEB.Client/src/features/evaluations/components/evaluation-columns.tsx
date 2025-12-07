@@ -4,8 +4,15 @@ import { EvaluationListItem } from "@/features/evaluations/services";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { TruncatedText } from "../../../shared/components/ui/truncated-text";
-import { Eye, Trash2 } from "lucide-react";
+import { Eye } from "lucide-react";
 import { navigate } from "wouter/use-browser-location";
+import { DeleteButtonWithConfirm } from "@/shared/components/ui/delete-button-with-confirm";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared/components/ui/tooltip";
 
 // Constantes fuera de la función para evitar recreación
 const STATUS_TRANSLATIONS = {
@@ -32,26 +39,26 @@ export const createEvaluationColumns = (handlers: {
   {
     accessorKey: "title",
     header: "Título",
-    size: 180,
-    minSize: 150,
+    size: 200,
     cell: ({ row }) => (
       <TruncatedText
         text={row.original.title}
         maxLength={30}
-        className="text-sm font-medium"
+        className="text-xs font-medium"
       />
     ),
   },
   {
     accessorKey: "status",
     header: "Estado",
+    size: 100,
     cell: ({ row }) => {
       const status = row.original.status as EvaluationStatus;
       const variant = STATUS_VARIANTS[status] || "secondary";
       const translatedStatus = STATUS_TRANSLATIONS[status] || status;
 
       return (
-        <Badge variant={variant as "default" | "secondary" | "destructive" | "outline"}>
+        <Badge variant={variant as "default" | "secondary" | "destructive" | "outline"} className="text-xs">
           {translatedStatus}
         </Badge>
       );
@@ -59,44 +66,54 @@ export const createEvaluationColumns = (handlers: {
   },
 	{
 		accessorKey: "periodFrom",
-		header: "Fecha de Inicio",
+		header: "Inicio",
+		size: 100,
 		cell: ({ row }) => {
 			const date = row.original.periodFrom;
-			return date ? new Date(date).toLocaleDateString() : "N/A";
+			return <span className="text-xs">{date ? new Date(date).toLocaleDateString() : "N/A"}</span>;
 		},
 	},
 	{
 		accessorKey: "periodTo",
-		header: "Fecha de Fin",
+		header: "Fin",
+		size: 100,
 		cell: ({ row }) => {
 			const date = row.original.periodTo;
-			return date ? new Date(date).toLocaleDateString() : "N/A";
+			return <span className="text-xs">{date ? new Date(date).toLocaleDateString() : "N/A"}</span>;
 		},
 	},
 	{
 		id: "actions",
 		header: "Acciones",
+		size: 100,
 		cell: ({ row }) => (
-			<div className="flex items-center gap-2">
-				<Button 
-					variant="outline" 
-					size="sm" 
-					onClick={() => navigate(`/evaluaciones/${row.original.id}`)}
-				>
-					<Eye className="h-4 w-4" />
-					Ver
-				</Button>
-				{handlers.onDelete && (
-					<Button 
-						variant="outline" 
-						size="sm" 
-						onClick={() => handlers.onDelete?.(row.original)}
-						className="text-red-600 hover:text-red-700 hover:bg-red-50"
-					>
-						<Trash2 className="h-4 w-4" />
-						Eliminar
-					</Button>
-				)}
+			<div className="flex items-center gap-1">
+				<TooltipProvider>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button 
+								variant="outline" 
+								size="sm"
+								className="h-7 w-7 p-0"
+								onClick={() => navigate(`/evaluaciones/${row.original.id}`)}
+							>
+								<Eye className="h-3.5 w-3.5" />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>
+							<p>Ver</p>
+						</TooltipContent>
+					</Tooltip>
+					{handlers.onDelete && (
+						<DeleteButtonWithConfirm
+							title="¿Estás seguro?"
+							description={`Esta acción no se puede deshacer. ¿Desea eliminar la evaluación "${row.original.title}"?`}
+							confirmText="Confirmar"
+							cancelText="Cancelar"
+							onConfirm={() => handlers.onDelete?.(row.original)}
+						/>
+					)}
+				</TooltipProvider>
 			</div>
 		),
 	},

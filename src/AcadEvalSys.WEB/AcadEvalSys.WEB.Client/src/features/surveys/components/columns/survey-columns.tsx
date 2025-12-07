@@ -1,9 +1,17 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
-import { Edit, Trash2, BarChart } from 'lucide-react';
+import { Edit, BarChart } from 'lucide-react';
 import { SurveyListItem } from '../../models/survey-types';
 import { getSurveyStatusLabel } from '../../utils/survey-formatters';
+import { TruncatedText } from '@/shared/components/ui/truncated-text';
+import { DeleteButtonWithConfirm } from '@/shared/components/ui/delete-button-with-confirm';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/shared/components/ui/tooltip';
 
 function getStatusVariant(status: number | string) {
   // Convertir string a número si es necesario
@@ -76,13 +84,17 @@ export function createSurveyColumns({
     {
       accessorKey: 'title',
       header: 'Título',
-      cell: ({ row }) => <span className="font-medium line-clamp-2">{row.original.title}</span>,
+      size: 200,
+      cell: ({ row }) => (
+        <TruncatedText text={row.original.title} maxLength={30} className="font-medium text-xs" />
+      ),
     },
     {
       accessorKey: 'status',
       header: 'Estado',
+      size: 100,
       cell: ({ row }) => (
-        <Badge variant={getStatusVariant(row.original.status)}>
+        <Badge variant={getStatusVariant(row.original.status)} className="text-xs">
           {getSurveyStatusLabel(row.original.status)}
         </Badge>
       ),
@@ -90,11 +102,17 @@ export function createSurveyColumns({
     {
       accessorKey: 'publishAt',
       header: 'Publicada',
-      cell: ({ row }) => (row.original.publishAt ? formatDate(row.original.publishAt) : '—'),
+      size: 100,
+      cell: ({ row }) => (
+        <span className="text-xs">
+          {row.original.publishAt ? formatDate(row.original.publishAt) : '—'}
+        </span>
+      ),
     },
     {
       id: 'actions',
       header: 'Acciones',
+      size: 120,
       cell: ({ row }) => {
         const survey = row.original;
         const statusNum = getStatusNumber(survey.status);
@@ -111,54 +129,76 @@ export function createSurveyColumns({
         const canViewProgress = isPublished || isClosed;
         
         return (
-          <div className="flex items-center gap-2">
-            {/* Botón Editar - solo si se puede editar */}
-            {canEdit && onEdit && (
-              <Button 
-                variant="outline"
-                size="sm"
-                onClick={() => onEdit(survey)}
-              >
-                <Edit className="h-4 w-4" />
-                Editar
-              </Button>
-            )}
-            
-            {/* Botón Ver Progreso - solo si está publicada */}
-            {isPublished && onViewProgress && (
-              <Button 
-                variant="outline"
-                size="sm"
-                onClick={() => onViewProgress(survey)}
-              >
-                <BarChart className="h-4 w-4" />
-                Progreso
-              </Button>
-            )}
-            
-            {/* Botón Ver Resultados - solo si está cerrada */}
-            {isClosed && onViewResults && (
-              <Button 
-                variant="outline"
-                size="sm"
-                onClick={() => onViewResults(survey)}
-              >
-                <BarChart className="h-4 w-4" />
-                Resultados
-              </Button>
-            )}
-            
-            {/* Botón Eliminar - solo si se puede eliminar */}
-            {canDelete && onDelete && (
-              <Button 
-                variant="destructive"
-                size="sm"
-                onClick={() => onDelete(survey)}
-              >
-                <Trash2 className="h-4 w-4" />
-                Eliminar
-              </Button>
-            )}
+          <div className="flex items-center gap-1">
+            <TooltipProvider>
+              {/* Botón Editar - solo si se puede editar */}
+              {canEdit && onEdit && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={() => onEdit(survey)}
+                    >
+                      <Edit className="h-3.5 w-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Editar</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              
+              {/* Botón Ver Progreso - solo si está publicada */}
+              {isPublished && onViewProgress && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={() => onViewProgress(survey)}
+                    >
+                      <BarChart className="h-3.5 w-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Progreso</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              
+              {/* Botón Ver Resultados - solo si está cerrada */}
+              {isClosed && onViewResults && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={() => onViewResults(survey)}
+                    >
+                      <BarChart className="h-3.5 w-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Resultados</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              
+              {/* Botón Eliminar - solo si se puede eliminar */}
+              {canDelete && onDelete && (
+                <DeleteButtonWithConfirm
+                  title="¿Estás seguro?"
+                  description={`Esta acción no se puede deshacer. ¿Desea eliminar la encuesta "${survey.title}"?`}
+                  confirmText="Confirmar"
+                  cancelText="Cancelar"
+                  onConfirm={() => onDelete(survey)}
+                />
+              )}
+            </TooltipProvider>
           </div>
         );
       },

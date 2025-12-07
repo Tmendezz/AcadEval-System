@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { createZodValidator, ZodErrorMappings } from "@/shared/utils/zod-validation";
 
 export const evaluationFormSchema = z.object({
   title: z
@@ -37,3 +38,12 @@ export const evaluationFormSchema = z.object({
 );
 
 export type EvaluationFormSchema = z.infer<typeof evaluationFormSchema>;
+
+/**
+ * Validador con formateo de errores escalable
+ * Usa mapeos para convertir paths de Zod a formatos de UI
+ */
+export const validateEvaluationForm = createZodValidator(
+  evaluationFormSchema,
+  [ZodErrorMappings.competencyAssignments]
+);

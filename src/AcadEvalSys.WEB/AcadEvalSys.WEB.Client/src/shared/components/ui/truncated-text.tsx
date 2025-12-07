@@ -1,33 +1,49 @@
-import React from "react";
-import { GenericTooltip } from "./generic-tooltip";
+import * as React from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared/components/ui/tooltip";
 
 interface TruncatedTextProps {
   text: string;
   maxLength?: number;
   className?: string;
-  showTooltip?: boolean;
-  side?: "top" | "right" | "bottom" | "left";
-  align?: "start" | "center" | "end";
+  children?: React.ReactNode;
 }
 
+/**
+ * Componente que trunca texto y muestra tooltip con el texto completo
+ */
 export function TruncatedText({
   text,
-  maxLength = 50,
+  maxLength = 30,
   className = "",
-  showTooltip = true,
-  side = "top",
-  align = "center",
+  children,
 }: TruncatedTextProps) {
-  const shouldTruncate = text.length > maxLength;
-  const displayText = shouldTruncate ? `${text.substring(0, maxLength)}...` : text;
+  // Si hay children, usarlos como contenido, sino usar text
+  const content = children || text;
+  const contentString = typeof content === 'string' ? content : String(content);
+  const shouldTruncate = contentString.length > maxLength;
+  const truncatedText = shouldTruncate 
+    ? contentString.slice(0, maxLength) + '...'
+    : contentString;
 
-  if (!shouldTruncate || !showTooltip) {
-    return <span className={className}>{displayText}</span>;
+  if (!shouldTruncate) {
+    return <span className={className}>{content}</span>;
   }
 
   return (
-    <GenericTooltip content={text} side={side} align={align}>
-      <span className={`cursor-help ${className}`}>{displayText}</span>
-    </GenericTooltip>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className={`${className} cursor-help`}>{truncatedText}</span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="max-w-xs break-words">{text || contentString}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
