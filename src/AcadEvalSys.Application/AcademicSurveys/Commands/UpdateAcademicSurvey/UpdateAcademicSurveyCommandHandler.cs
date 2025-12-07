@@ -15,7 +15,6 @@ public class UpdateAcademicSurveyCommandHandler(
     IAcademicSurveyRepository repository,
     IUnitOfWork unitOfWork,
     IUserContext userContext,
-    IMapper mapper,
     ILogger<UpdateAcademicSurveyCommandHandler> logger)
     : IRequestHandler<UpdateAcademicSurveyCommand>
 {
@@ -28,6 +27,11 @@ public class UpdateAcademicSurveyCommandHandler(
             
         var user = userContext.GetCurrentUser();
         
+        if (user == null || string.IsNullOrEmpty(user.Id))
+        {
+            throw new InvalidOperationException("User context not found");
+        }
+        
         existing.Title = request.Title?.Trim() ?? existing.Title;
         existing.Description = request.Description?.Trim() ?? existing.Description;
         existing.PublishAt = request.PublishAt;
@@ -35,10 +39,14 @@ public class UpdateAcademicSurveyCommandHandler(
         existing.UpdatedAt = DateTime.UtcNow;
         existing.UpdatedByUserId = user.Id;
         
-        var now = DateTime.UtcNow;
-        var isWindowOpen = (existing.PublishAt.HasValue && existing.PublishAt <= now)
-                        && (!existing.CloseAt.HasValue || existing.CloseAt > now);
-        existing.Status = isWindowOpen ? SurveyStatus.Published : SurveyStatus.Draft;
+        // Las encuestas se mantienen como Published si tienen PublishAt (a menos que estén cerradas)
+        // Los usuarios solo las verán cuando PublishAt <= DateTime.UtcNow
+        if (existing.Status != SurveyStatus.Closed)
+        {
+            existing.Status = existing.PublishAt.HasValue
+                ? SurveyStatus.Published
+                : SurveyStatus.Draft;
+        }
         
         // Actualizar la información básica de la encuesta
         await repository.UpdateAsync(existing, cancellationToken);

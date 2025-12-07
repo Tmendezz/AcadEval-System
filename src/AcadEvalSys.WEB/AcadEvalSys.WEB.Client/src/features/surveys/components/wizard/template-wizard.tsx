@@ -8,7 +8,6 @@ import { SurveyQuestionsEditor } from '../survey-questions-editor';
 import { SurveyBasicInfoForm } from '../survey-basic-info-form';
 import { Label } from '@/shared/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
-import { SurveyTemplateFormSchema } from '../../schemas/survey-validation-schemas';
 import { z } from 'zod';
 
 interface TemplateWizardProps {
@@ -39,11 +38,11 @@ export function TemplateWizard({ onSubmit, isSubmitting = false, initialData }: 
     }
   }, [initialData]);
 
-  const steps = [
+  const steps = useMemo(() => [
     { id: 0, title: initialData ? 'Editar información básica' : 'Información básica' },
     { id: 1, title: 'Configuración' },
     { id: 2, title: 'Revisión' },
-  ];
+  ], [initialData]);
 
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
@@ -62,8 +61,8 @@ export function TemplateWizard({ onSubmit, isSubmitting = false, initialData }: 
       .max(50, 'No puede haber más de 50 preguntas'),
   });
 
-  // Validar paso 0
-  const validateStep0 = useCallback((data: SurveyTemplateForm): boolean => {
+  // Validar paso 0 - versión que NO actualiza el estado (solo valida)
+  const validateStep0 = useCallback((data: SurveyTemplateForm): { isValid: boolean; errors: Record<string, string> } => {
     try {
       const result = step0Schema.safeParse({
         title: data.title,
@@ -71,47 +70,50 @@ export function TemplateWizard({ onSubmit, isSubmitting = false, initialData }: 
         questions: data.questions || [],
       });
       
+      const errors: Record<string, string> = {};
+      
       if (!result.success) {
-        const errors: Record<string, string> = {};
         result.error.errors.forEach((err) => {
           const path = err.path.join('.');
           errors[path] = err.message;
         });
-        setValidationErrors(errors);
-        return false;
       }
       
       // Validar preguntas individuales
-      const questionErrors: Record<string, string> = {};
       if (data.questions && data.questions.length > 0) {
         data.questions.forEach((question, index) => {
           if (!question.text || question.text.trim().length === 0) {
-            questionErrors[`question_${index}_text`] = 'El texto de la pregunta es obligatorio';
+            errors[`question_${index}_text`] = 'El texto de la pregunta es obligatorio';
           }
           if ((question.type === 'SingleChoice' || question.type === 'MultipleChoice')) {
             if (!question.options || question.options.length === 0) {
-              questionErrors[`question_${index}_options`] = 'Las preguntas de opción múltiple deben tener al menos una opción';
+              errors[`question_${index}_options`] = 'Las preguntas de opción múltiple deben tener al menos una opción';
             }
           }
         });
       }
       
-      if (Object.keys(questionErrors).length > 0) {
-        setValidationErrors({ ...validationErrors, ...questionErrors });
-        return false;
-      }
-      
-      setValidationErrors({});
-      return true;
+      return {
+        isValid: Object.keys(errors).length === 0,
+        errors
+      };
     } catch {
-      return false;
+      return { isValid: false, errors: {} };
     }
   }, []);
 
-  const canProceed = useCallback((): boolean => {
+  // Validar paso 0 y actualizar errores (solo se llama cuando es necesario)
+  const validateStep0AndSetErrors = useCallback((data: SurveyTemplateForm): boolean => {
+    const { isValid, errors } = validateStep0(data);
+    setValidationErrors(errors);
+    return isValid;
+  }, [validateStep0]);
+
+  const canProceed = useMemo((): boolean => {
     switch (currentStep) {
       case 0:
-        return validateStep0(form);
+        const { isValid } = validateStep0(form);
+        return isValid;
       case 1:
         return true; // Paso de configuración siempre puede avanzar
       case 2:
@@ -124,12 +126,12 @@ export function TemplateWizard({ onSubmit, isSubmitting = false, initialData }: 
   const goNext = useCallback(() => {
     // Validar antes de avanzar
     if (currentStep === 0) {
-      if (!validateStep0(form)) {
+      if (!validateStep0AndSetErrors(form)) {
         return; // No avanzar si hay errores
       }
     }
     setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
-  }, [currentStep, form, validateStep0]);
+  }, [currentStep, form, validateStep0AndSetErrors, steps.length]);
 
   const goPrev = () => setCurrentStep((s) => Math.max(s - 1, 0));
 
@@ -268,7 +270,7 @@ export function TemplateWizard({ onSubmit, isSubmitting = false, initialData }: 
         <WizardNavigation
           currentStep={currentStep + 1}
           totalSteps={steps.length}
-          canProceed={canProceed()}
+          canProceed={canProceed}
           onPrevious={goPrev}
           onNext={async () => {
             if (currentStep < steps.length - 1) return goNext();

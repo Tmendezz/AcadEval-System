@@ -24,10 +24,13 @@ public class AcademicSurveyResponseRepository(ApplicationDbContext db) : IAcadem
             return Enumerable.Empty<(AcademicSurvey, bool, DateTime?)>();
 
 
+        var now = DateTime.UtcNow;
         var query = db.AcademicSurveys
             .Include(s => s.Subjects)
             .Where(s => 
                 s.Status == SurveyStatus.Published && 
+                s.PublishAt.HasValue &&
+                s.PublishAt.Value <= now &&
                 (s.SurveyType == SurveyType.Student || s.SurveyType == SurveyType.All) &&
                 s.Subjects.Any(ass => studentSubjectIds.Contains(ass.SubjectId!.Value)));
 
@@ -68,10 +71,13 @@ public class AcademicSurveyResponseRepository(ApplicationDbContext db) : IAcadem
 
         var professorSubjectIds = professor.Subjects?.Select(s => s.Id).ToList() ?? new List<Guid>();
 
+        var now = DateTime.UtcNow;
         var query = db.AcademicSurveys
             .Include(s => s.Subjects)
             .Where(s => 
                 s.Status == SurveyStatus.Published && 
+                s.PublishAt.HasValue &&
+                s.PublishAt.Value <= now &&
                 (s.SurveyType == SurveyType.Professor || s.SurveyType == SurveyType.All) &&
                 s.Subjects.Any(ass => professorSubjectIds.Contains(ass.SubjectId!.Value)));
 

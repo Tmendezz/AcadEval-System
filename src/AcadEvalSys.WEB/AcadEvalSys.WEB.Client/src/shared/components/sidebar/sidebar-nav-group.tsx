@@ -1,4 +1,4 @@
-import { NavItem } from "@/shared/types";
+import { NavItem } from "@/shared/types/ui";
 import { NavMenuItem } from "./nav-menu-item";
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu } from "../ui/sidebar";
 

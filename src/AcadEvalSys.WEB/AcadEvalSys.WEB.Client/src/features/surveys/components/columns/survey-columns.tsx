@@ -1,7 +1,7 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
-import { Edit, BarChart } from 'lucide-react';
+import { Edit, BarChart, Send } from 'lucide-react';
 import { SurveyListItem } from '../../models/survey-types';
 import { getSurveyStatusLabel } from '../../utils/survey-formatters';
 import { TruncatedText } from '@/shared/components/ui/truncated-text';
@@ -72,6 +72,7 @@ export interface SurveyColumnsDeps {
   onDelete?: (survey: SurveyListItem) => void;
   onViewProgress?: (survey: SurveyListItem) => void;
   onViewResults?: (survey: SurveyListItem) => void;
+  onPublish?: (survey: SurveyListItem) => void;
 }
 
 export function createSurveyColumns({
@@ -79,6 +80,7 @@ export function createSurveyColumns({
   onDelete,
   onViewProgress,
   onViewResults,
+  onPublish,
 }: SurveyColumnsDeps): ColumnDef<SurveyListItem>[] {
   return [
     {
@@ -127,10 +129,31 @@ export function createSurveyColumns({
         const canDelete = isDraft || isScheduled;
         // Se puede ver progreso solo si está publicada o cerrada
         const canViewProgress = isPublished || isClosed;
+        // Se puede publicar solo si está en borrador o programada
+        const canPublish = isDraft || isScheduled;
         
         return (
           <div className="flex items-center gap-1">
             <TooltipProvider>
+              {/* Botón Publicar - solo si se puede publicar */}
+              {canPublish && onPublish && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="default"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={() => onPublish(survey)}
+                    >
+                      <Send className="h-3.5 w-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Publicar</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              
               {/* Botón Editar - solo si se puede editar */}
               {canEdit && onEdit && (
                 <Tooltip>

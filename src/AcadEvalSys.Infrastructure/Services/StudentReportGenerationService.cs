@@ -104,8 +104,9 @@ public class StudentReportGenerationService(
             using var pdfStream = await reportService.GenerateStudentEvaluationSummaryReportAsync(reportData);
 
             // 6. Construir la estructura de carpetas según el formato especificado:
-            // EvaluacionPorCompetencias/Evaluacion_Competencia_{FechaFin}/{Tecnicatura}/{Año}/reporte-{studentId}.pdf
-            var evaluationFolderName = $"Evaluacion_Competencia_{evaluationInstance.PeriodTo:dd-MM-yyyy}";
+            // EvaluacionPorCompetencias/Evaluacion_Competencia_{FechaGeneracion}/{Tecnicatura}/{Año}/reporte-{studentId}.pdf
+            // Usar la fecha actual cuando se genera el reporte, no la fecha de fin del período
+            var evaluationFolderName = $"Evaluacion_Competencia_{DateTime.UtcNow:dd-MM-yyyy}";
             var careerName = SanitizeFolderName(studentData.TechnicalCareer.Name ?? "Unknown");
             var yearFolder = studentData.CurrentYear.HasValue 
                 ? $"Anio_{(int)studentData.CurrentYear.Value}" 

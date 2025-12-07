@@ -15,7 +15,9 @@ public class AcademicSurveyRepository(ApplicationDbContext db, ISubjectRepositor
         survey.CreatedAt = DateTime.UtcNow;
         survey.IsActive = true;
 
-        survey.Status = survey.PublishAt.HasValue && survey.PublishAt.Value <= DateTime.Now
+        // Las encuestas se crean como Published por defecto si tienen PublishAt
+        // Los usuarios solo las verán cuando PublishAt <= DateTime.UtcNow
+        survey.Status = survey.PublishAt.HasValue
             ? SurveyStatus.Published
             : SurveyStatus.Draft;
 

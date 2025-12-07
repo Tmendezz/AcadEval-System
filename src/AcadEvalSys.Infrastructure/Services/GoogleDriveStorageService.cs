@@ -4,6 +4,7 @@ using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Drive.v3.Data;
 using Google.Apis.Services;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -21,13 +22,41 @@ public class GoogleDriveStorageService : IStorageService
 
 	public GoogleDriveStorageService(
 		IOptions<GoogleDriveStorageConfiguration> config,
-		ILogger<GoogleDriveStorageService> logger)
+		ILogger<GoogleDriveStorageService> logger,
+		IHostEnvironment environment)
 	{
 		_config = config.Value;
 		_logger = logger;
 
+		// Prioridad: 1. Variable de entorno, 2. Configuración de appsettings.json
+		var envPath = Environment.GetEnvironmentVariable("GOOGLE_DRIVE_CREDENTIALS_PATH");
+		var configuredPath = envPath ?? _config.ServiceAccountCredentialsPath;
+		var source = envPath != null ? "variable de entorno GOOGLE_DRIVE_CREDENTIALS_PATH" : "appsettings.json";
+
+		if (string.IsNullOrWhiteSpace(configuredPath))
+		{
+			throw new InvalidOperationException(
+				"La ruta de credenciales de Google Drive no está configurada. " +
+				"Configure la variable de entorno 'GOOGLE_DRIVE_CREDENTIALS_PATH' o " +
+				"la propiedad 'Storage:Google:ServiceAccountCredentialsPath' en appsettings.json");
+		}
+
+		// Resolver la ruta del archivo de credenciales de forma robusta
+		var credentialsPath = ResolveCredentialsPath(configuredPath, environment);
+		
+		if (!System.IO.File.Exists(credentialsPath))
+		{
+			throw new FileNotFoundException(
+				$"No se encontró el archivo de credenciales de Google Drive en: {credentialsPath}. " +
+				$"Ruta configurada desde: {source}");
+		}
+
+		_logger.LogInformation(
+			"Cargando credenciales de Google Drive desde: {CredentialsPath} (fuente: {Source})", 
+			credentialsPath, source);
+
 		GoogleCredential credential = GoogleCredential
-			.FromFile(_config.ServiceAccountCredentialsPath)
+			.FromFile(credentialsPath)
 			.CreateScoped(DriveService.ScopeConstants.Drive);
 
 		_drive = new DriveService(new BaseClientService.Initializer
@@ -211,6 +240,92 @@ public class GoogleDriveStorageService : IStorageService
 			".pdf" => "application/pdf",
 			_ => "application/octet-stream"
 		};
+	}
+
+	/// <summary>
+	/// Resuelve la ruta del archivo de credenciales buscando en múltiples ubicaciones posibles.
+	/// </summary>
+	private static string ResolveCredentialsPath(string configuredPath, IHostEnvironment environment)
+	{
+		// Si la ruta es absoluta y existe, usarla directamente
+		if (Path.IsPathRooted(configuredPath) && System.IO.File.Exists(configuredPath))
+		{
+			return configuredPath;
+		}
+
+		var pathsToTry = new List<string>();
+		var fileName = Path.GetFileName(configuredPath);
+
+		// 1. Buscar en la raíz del proyecto (donde está el .sln)
+		// Buscar hacia arriba desde el assembly hasta encontrar el directorio con el .sln
+		var assemblyPath = Path.GetDirectoryName(typeof(GoogleDriveStorageService).Assembly.Location);
+		if (assemblyPath != null)
+		{
+			var currentDir = new DirectoryInfo(assemblyPath);
+			while (currentDir != null)
+			{
+				var slnFiles = currentDir.GetFiles("*.sln");
+				if (slnFiles.Length > 0)
+				{
+					// Encontramos la raíz del proyecto
+					var projectRootPath = Path.Combine(currentDir.FullName, fileName);
+					pathsToTry.Add(projectRootPath);
+					break;
+				}
+				currentDir = currentDir.Parent;
+			}
+		}
+
+		// 2. Buscar desde ContentRootPath
+		var contentRootPath = environment.ContentRootPath;
+		if (!string.IsNullOrEmpty(contentRootPath))
+		{
+			// Ruta relativa desde ContentRootPath
+			pathsToTry.Add(Path.Combine(contentRootPath, configuredPath));
+			
+			// Si contiene "..", resolverla
+			if (configuredPath.Contains(".."))
+			{
+				var resolvedPath = Path.GetFullPath(Path.Combine(contentRootPath, configuredPath));
+				pathsToTry.Add(resolvedPath);
+			}
+		}
+
+		// 3. Buscar desde el directorio de trabajo actual
+		var currentDirectory = Directory.GetCurrentDirectory();
+		pathsToTry.Add(Path.Combine(currentDirectory, configuredPath));
+		if (configuredPath.Contains(".."))
+		{
+			var resolvedPath = Path.GetFullPath(Path.Combine(currentDirectory, configuredPath));
+			pathsToTry.Add(resolvedPath);
+		}
+
+		// 4. Buscar en ubicaciones comunes relativas al servidor
+		if (assemblyPath != null)
+		{
+			// 4 niveles arriba (desde bin/Debug/net8.0 hasta la raíz)
+			var fourLevelsUp = Path.GetFullPath(Path.Combine(assemblyPath, "..", "..", "..", "..", fileName));
+			pathsToTry.Add(fourLevelsUp);
+			
+			// 3 niveles arriba (alternativa)
+			var threeLevelsUp = Path.GetFullPath(Path.Combine(assemblyPath, "..", "..", "..", fileName));
+			pathsToTry.Add(threeLevelsUp);
+		}
+
+		// 5. Ruta tal como está configurada (por si es absoluta)
+		pathsToTry.Add(configuredPath);
+
+		// Intentar cada ruta hasta encontrar el archivo
+		foreach (var path in pathsToTry)
+		{
+			if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
+			{
+				return Path.GetFullPath(path);
+			}
+		}
+
+		// Si no se encuentra, devolver la primera ruta intentada (para que el error sea claro)
+		return pathsToTry.FirstOrDefault() ?? configuredPath;
 	}
 }
 

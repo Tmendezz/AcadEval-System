@@ -51,12 +51,12 @@ public class GetSurveyDetailQueryHandler(
         }
 
         // Verificar que la encuesta esté dentro del período válido
-/*         var now = DateTime.UtcNow;
+        var now = DateTime.UtcNow;
         if (survey.PublishAt.HasValue && survey.PublishAt > now)
         {
             logger.LogWarning("La encuesta {SurveyId} aún no está disponible", request.SurveyId);
             throw new ForbidException("La encuesta aún no está disponible");
-        } */
+        }
 
         if (survey.CloseAt.HasValue && survey.CloseAt < DateTime.UtcNow)
         {

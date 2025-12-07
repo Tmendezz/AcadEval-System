@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import {
   PageLayout,
   PageContent,
@@ -10,13 +10,29 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui
 import ProfessorAssignmentsTable from "@/features/professor-evaluations/components/professor-assignments-table";
 
 export default function ProfessorAllEvaluationsPage() {
-  const { data: assignments = [] } = useProfessorAssignments();
+  const { data: assignments = [], refetch } = useProfessorAssignments();
+  
+  // Refetch al montar el componente para asegurar datos actualizados
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   // Memoizar filtrado de asignaciones
-  const { pending, completed } = useMemo(() => ({
-    pending: assignments.filter((a) => a.status !== "Completed"),
-    completed: assignments.filter((a) => a.status === "Completed"),
-  }), [assignments]);
+  // Normalizar el status para comparar correctamente (puede venir como string o número)
+  const { pending, completed } = useMemo(() => {
+    const normalizeStatus = (status: string | number | undefined): string => {
+      if (status === undefined) return "Pending";
+      if (typeof status === "number") {
+        return status === 1 ? "Completed" : "Pending";
+      }
+      return String(status);
+    };
+    
+    return {
+      pending: assignments.filter((a) => normalizeStatus(a.status) !== "Completed"),
+      completed: assignments.filter((a) => normalizeStatus(a.status) === "Completed"),
+    };
+  }, [assignments]);
 
   return (
     <PageLayout>

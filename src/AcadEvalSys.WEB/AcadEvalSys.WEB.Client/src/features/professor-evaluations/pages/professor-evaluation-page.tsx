@@ -93,7 +93,8 @@ export function ProfessorEvaluationPage() {
       setLastSavedAt(Date.now());
       clearPendingSaves();
       toast.success("Evaluaciones guardadas exitosamente");
-      // Invalidar y refetch todas las queries relacionadas
+      
+      // Invalidar todas las queries relacionadas primero
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: ["assignment-students", assignmentId],
@@ -105,11 +106,27 @@ export function ProfessorEvaluationPage() {
           queryKey: professorAssignmentsKeys.all,
         }),
       ]);
-      // Forzar refetch de la lista de asignaciones para actualizar el estado inmediatamente
-      // Usamos la misma key que se usa en professor-all-evaluations-page (sin evaluationInstanceId)
-      await queryClient.refetchQueries({
-        queryKey: professorAssignmentsKeys.list(),
-      });
+      
+      // Pequeño delay para asegurar que el backend haya terminado de procesar todas las actualizaciones
+      // Esto es especialmente importante cuando se guardan múltiples evaluaciones en paralelo
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Forzar refetch inmediato de todas las queries de asignaciones para actualizar el estado
+      // Esto asegura que se obtengan los datos más recientes del backend
+      await Promise.all([
+        queryClient.refetchQueries({
+          queryKey: professorAssignmentsKeys.list(),
+          type: 'active', // Solo refetch queries activas
+        }),
+        queryClient.refetchQueries({
+          queryKey: ["professor-assignment", assignmentId],
+          type: 'active',
+        }),
+        queryClient.refetchQueries({
+          queryKey: ["assignment-students", assignmentId],
+          type: 'active',
+        }),
+      ]);
     },
     onError: () => {
       toast.error("Error al guardar las evaluaciones");
@@ -283,7 +300,7 @@ export function ProfessorEvaluationPage() {
             disabled={pendingSavesCount === 0 || mutation.isPending}
           >
             <Save className="h-4 w-4 mr-2" />
-            "Completar Evaluaciones"
+            Completar Evaluaciones
           </Button>
         </div>
         </PageSection>

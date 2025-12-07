@@ -7,9 +7,10 @@ public class GoogleDriveStorageConfiguration
 	public const string Section = "GoogleDriveStorage";
 
 	/// <summary>
-	/// Ruta absoluta al archivo JSON de credenciales del Service Account de Google.
+	/// Ruta al archivo JSON de credenciales del Service Account de Google.
+	/// Puede ser una ruta relativa o absoluta. Si se define la variable de entorno
+	/// GOOGLE_DRIVE_CREDENTIALS_PATH, esta propiedad será ignorada.
 	/// </summary>
-	[Required(ErrorMessage = "Google service account credentials path is required")]
 	public string ServiceAccountCredentialsPath { get; set; } = string.Empty;
 
 	/// <summary>

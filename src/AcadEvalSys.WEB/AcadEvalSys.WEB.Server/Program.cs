@@ -6,9 +6,29 @@ using AcadEvalSys.WEB.Server.Extensions;
 using AcadEvalSys.WEB.Server.Middlewares;
 using Hangfire;
 using Serilog;
+using DotNetEnv;
 
 try
 {
+    // Cargar variables de entorno desde archivo .env si existe
+    // Busca .env en la raíz del proyecto (3 niveles arriba desde el servidor)
+    var envPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", ".env");
+    if (System.IO.File.Exists(envPath))
+    {
+        Env.Load(envPath);
+        Log.Information("Variables de entorno cargadas desde: {EnvPath}", envPath);
+    }
+    else
+    {
+        // Intentar cargar desde la raíz del proyecto (desde donde se ejecuta)
+        var rootEnvPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+        if (System.IO.File.Exists(rootEnvPath))
+        {
+            Env.Load(rootEnvPath);
+            Log.Information("Variables de entorno cargadas desde: {EnvPath}", rootEnvPath);
+        }
+    }
+
     var builder = WebApplication.CreateBuilder(args);
 
     builder.AddPresentation();

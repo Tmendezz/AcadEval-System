@@ -6,7 +6,7 @@ import { PageContent, PageHeader, PageLayout } from '@/shared/components/layout/
 
 // Componentes
 import { SurveyList } from '../components/SurveyList';
-import { useSurveys, useDeleteSurvey } from '../hooks/use-surveys';
+import { useSurveys, useDeleteSurvey, usePublishSurvey } from '../hooks/use-surveys';
 import { SurveyStatus } from '../models/survey-types';
 import { useSurveysStore } from '../store/use-surveys-store';
 import { SurveyListItem } from '../services/survey-service';
@@ -24,6 +24,7 @@ export default function SurveysPage() {
   const [, setLocation] = useLocation();
   const { data: surveys = [], isLoading, error } = useSurveys(filters);
   const deleteSurveyMutation = useDeleteSurvey();
+  const publishSurveyMutation = usePublishSurvey();
   
   const [surveyToDelete, setSurveyToDelete] = useState<SurveyListItem | null>(null);
 
@@ -42,6 +43,17 @@ export default function SurveysPage() {
   const handleDeleteSurvey = useCallback((survey: SurveyListItem) => {
     setSurveyToDelete(survey);
   }, []);
+
+  const handlePublishSurvey = useCallback(async (survey: SurveyListItem) => {
+    try {
+      await publishSurveyMutation.mutateAsync({ 
+        id: survey.id,
+        command: {} // Publicar sin fecha de cierre específica
+      });
+    } catch {
+      // El error ya se maneja en el hook con toast
+    }
+  }, [publishSurveyMutation]);
 
   const confirmDeleteSurvey = useCallback(async () => {
     if (!surveyToDelete) return;
@@ -75,8 +87,9 @@ export default function SurveysPage() {
         onViewProgress: handleViewProgress,
         onViewResults: handleViewResults,
         onDelete: handleDeleteSurvey,
+        onPublish: handlePublishSurvey,
       }),
-    [handleEditSurvey, handleViewProgress, handleViewResults, handleDeleteSurvey]
+    [handleEditSurvey, handleViewProgress, handleViewResults, handleDeleteSurvey, handlePublishSurvey]
   );
 
   return (
