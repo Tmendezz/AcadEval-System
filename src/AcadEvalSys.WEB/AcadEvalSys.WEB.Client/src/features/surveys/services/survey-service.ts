@@ -24,6 +24,42 @@ export interface SurveySubjectDto {
   subjectName?: string;
   academicSurveyId: string;
 }
+
+// DTO que devuelve el endpoint /analytics/summary
+export interface SurveyAnalyticsDto {
+  id: string;
+  title: string;
+  description?: string;
+  status: number;
+  publishAt?: string;
+  closeAt?: string;
+  createdAt: string;
+  createdByUserName: string;
+  totalQuestions: number;
+  totalAudiences: number;
+  totalResponses: number;
+  surveyType: number;
+  responseRate: number;
+  careerAnalytics: CareerAnalyticsDto[];
+}
+
+export interface CareerAnalyticsDto {
+  technicalCareerId: string;
+  careerName: string;
+  careerYear: YearAnalyticsDto[];
+}
+
+export interface YearAnalyticsDto {
+  year: number;
+  yearName: string;
+  subjectsCount: number;
+  studentsCount: number;
+  professorsCount: number;
+  responsesCount: number;
+  responseRate: number;
+}
+
+// Mantener el DTO antiguo para compatibilidad con otros endpoints
 export interface SurveyResponsesOverviewDto {
   surveyId: string;
   title: string;
@@ -79,7 +115,7 @@ export const surveyService = {
   // Obtener lista de encuestas
   async getSurveys(filters?: SurveyFilters): Promise<SurveyListItem[]> {
     const params = new URLSearchParams();
-    
+
     if (filters?.status !== undefined) {
       params.append('status', filters.status.toString());
     }
@@ -92,7 +128,7 @@ export const surveyService = {
 
     const queryString = params.toString();
     const url = queryString ? `${baseUrl}?${queryString}` : baseUrl;
-    
+
     const response = await api.get(url);
     return response.data;
   },
@@ -155,10 +191,10 @@ export const surveyService = {
     if (filters?.status) {
       params.append('status', filters.status);
     }
-    
+
     const queryString = params.toString();
     const url = queryString ? `${baseUrl}/my-surveys?${queryString}` : `${baseUrl}/my-surveys`;
-    
+
     const response = await api.get(url);
     return response.data;
   },
@@ -169,9 +205,9 @@ export const surveyService = {
     return response.data;
   },
 
-  // Obtener respuestas de una encuesta (solo admin)
-  async getSurveyResponses(surveyId: string): Promise<SurveyResponsesOverviewDto> {
-    const response = await api.get(`${baseUrl}/${surveyId}/responses`);
+  // Obtener analytics/resumen de una encuesta (solo admin)
+  async getSurveyResponses(surveyId: string): Promise<SurveyAnalyticsDto> {
+    const response = await api.get(`${baseUrl}/${surveyId}/analytics/summary`);
     return response.data;
   },
 
