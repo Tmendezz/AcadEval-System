@@ -22,6 +22,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\AcadEvalSys.Application\AcadEvalSys.Application.csproj" />
+      <ProjectReference Include="..\AcadEvalSys.Domain\AcadEvalSys.Domain.csproj" />
     </ItemGroup>
 
     <ItemGroup>
