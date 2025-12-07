@@ -19,7 +19,7 @@ public static class ServiceCollectionExtensions
         services.AddValidatorsFromAssembly(applicationAssembly)
             .AddFluentValidationAutoValidation(); //Registra automaticamente los validadores de cada entidad
         services.AddScoped<IUserContext, UserContext>();
-        services.AddHttpContextAccessor();
+        // Nota: AddHttpContextAccessor se registra en Infrastructure para evitar duplicación
 
     // Application services
     services.AddScoped<IStudentExcelParser, StudentExcelParser>();

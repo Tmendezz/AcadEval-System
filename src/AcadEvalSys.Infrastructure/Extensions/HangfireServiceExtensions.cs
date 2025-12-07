@@ -39,8 +39,8 @@ public static class HangfireServiceExtensions
 
         // Servicios propios
         services.AddScoped<IReportGenerationBackgroundService, ReportGenerationBackgroundService>();
-        // Asegúrate de registrar tu servicio de expiración
-        services.AddScoped<IEnrollmentExpirationService, EnrollmentExpirationService>();
+        // Nota: IEnrollmentExpirationService se registra en ServiceCollectionExtensions.AddInfrastructure
+        // para evitar duplicación
 
         return services;
     }
