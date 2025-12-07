@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
-import { ChevronDown, ChevronRight, Plus, CheckCircle2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus, CheckCircle2, Trash2 } from "lucide-react";
 import { getYearName, formatSubjectCount } from "../../../utils/wizard-utils";
 
 interface YearSectionProps {
@@ -15,6 +15,8 @@ interface YearSectionProps {
   children: React.ReactNode;
   isCompleted?: boolean;
   showAddButton?: boolean;
+  onRemove?: () => void;
+  onAdd?: () => void;
 }
 
 export function YearSection({
@@ -27,6 +29,8 @@ export function YearSection({
   children,
   isCompleted = false,
   showAddButton = true,
+  onRemove,
+  onAdd,
 }: YearSectionProps) {
   return (
     <div className="border rounded-lg">
@@ -50,6 +54,35 @@ export function YearSection({
             <Badge variant="secondary">
               {assignmentCount} asignación{assignmentCount !== 1 ? "es" : ""}
             </Badge>
+          )}
+          {onRemove && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemove();
+              }}
+              title="Remover año completo"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          )}
+          {onAdd && assignmentCount === 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 px-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAdd();
+              }}
+              title="Agregar año"
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              Agregar
+            </Button>
           )}
           {isExpanded ? (
             <ChevronDown className="h-4 w-4" />

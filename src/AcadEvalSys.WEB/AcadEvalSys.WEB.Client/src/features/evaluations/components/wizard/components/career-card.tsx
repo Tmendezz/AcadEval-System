@@ -39,11 +39,13 @@ export function CareerCard({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CardTitle className="text-lg">{career.name}</CardTitle>
-            <Badge
-              variant={completedYears === totalYears ? "default" : "secondary"}
-            >
-              {completedYears}/{totalYears}
-            </Badge>
+            {totalYears > 0 && (
+              <Badge
+                variant={completedYears === totalYears ? "default" : "secondary"}
+              >
+                {completedYears} año{completedYears !== 1 ? "s" : ""} completado{completedYears !== 1 ? "s" : ""}
+              </Badge>
+            )}
           </div>
           <div className="flex items-center gap-2">
             {onRemove && (

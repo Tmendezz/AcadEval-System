@@ -10,6 +10,7 @@ import {
   Subject,
 } from "../../../models/evaluation-form";
 import { SmartSelect } from "@/shared/components/ui/smart-select";
+import { TruncatedText } from "@/shared/components/ui/truncated-text";
 
 interface AssignmentFormProps {
   assignment: Assignment;
@@ -56,16 +57,52 @@ export function AssignmentForm({
               placeholder="Asignar profesor/asignatura"
               options={subjects}
               renderOption={(subject) => (
-                <div className=" flex items-center gap-2">
-                  <span className="font-medium">{subject.name}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {subject.professorName
-                      ? `Prof. ${subject.professorName}`
-                      : "Sin profesor asignado"}
+                <div className="flex items-center gap-2 min-w-0">
+                  <TruncatedText 
+                    text={subject.name} 
+                    maxLength={30} 
+                    className="font-medium flex-shrink-0"
+                  />
+                  <span className="text-xs text-muted-foreground flex-shrink-0">
+                    {subject.professorName ? "Prof. " : ""}
                   </span>
+                  {subject.professorName && (
+                    <TruncatedText 
+                      text={subject.professorName} 
+                      maxLength={25} 
+                      className="text-xs text-muted-foreground"
+                    />
+                  )}
+                  {!subject.professorName && (
+                    <span className="text-xs text-muted-foreground">
+                      Sin profesor asignado
+                    </span>
+                  )}
                 </div>
               )}
-              triggerClassName=" min-w-[360px]"
+              renderValue={(subject) => {
+                if (!subject) return null;
+                return (
+                  <div className="flex items-center gap-2 min-w-0 max-w-full">
+                    <TruncatedText 
+                      text={subject.name} 
+                      maxLength={20} 
+                      className="font-medium"
+                    />
+                    {subject.professorName && (
+                      <>
+                        <span className="text-xs text-muted-foreground">•</span>
+                        <TruncatedText 
+                          text={subject.professorName} 
+                          maxLength={15} 
+                          className="text-xs text-muted-foreground"
+                        />
+                      </>
+                    )}
+                  </div>
+                );
+              }}
+              triggerClassName="min-w-[360px]"
             />
           </div>
 

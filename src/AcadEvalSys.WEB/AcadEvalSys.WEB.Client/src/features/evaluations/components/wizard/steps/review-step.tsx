@@ -9,6 +9,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import type { EvaluationFormData, Assignment } from "@/features/evaluations/models/evaluation-form";
 import { useTechnicalCareers } from "@/shared/hooks/use-technical-careers";
 import { useCompetencies } from "@/features/competencies/hooks/use-competencies";
+import { useSubjectsByCareer } from "@/shared/hooks/use-subjects";
 import {
   getYearName,
   groupAssignmentsByCareer,
@@ -17,6 +18,68 @@ import {
 interface ReviewStepProps {
   formData: EvaluationFormData;
   assignments: Assignment[];
+}
+
+// Componente interno para obtener asignaturas por carrera y año
+function CareerYearSubjects({
+  careerId,
+  year,
+  assignments,
+  competencyMap,
+}: {
+  careerId: string;
+  year: number;
+  assignments: Assignment[];
+  competencyMap: Map<string, { name: string; type: "Soft" | "Technical" }>;
+}) {
+  const { data: subjects = [] } = useSubjectsByCareer(careerId, year.toString(), false);
+  const subjectMap = useMemo(
+    () => new Map(subjects.map((s) => [s.id, s.name])),
+    [subjects]
+  );
+
+  return (
+    <div className="ml-4">
+      <div className="flex items-center gap-2 mb-3">
+        <Badge variant="outline">
+          {getYearName(year)}
+        </Badge>
+        <span className="text-sm text-muted-foreground">
+          {assignments.length} asignación
+          {assignments.length !== 1 ? "es" : ""}
+        </span>
+      </div>
+      <div className="space-y-2 ml-4">
+        {assignments.map((assignment, index) => {
+          const competency = competencyMap.get(assignment.competencyId);
+          const subjectName = subjectMap.get(assignment.subjectId) || assignment.subjectId;
+          return (
+            <div
+              key={`${assignment.competencyId}-${assignment.subjectId}-${index}`}
+              className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
+            >
+              <div className="flex items-center gap-3">
+                <Badge variant="outline">#{index + 1}</Badge>
+                <div>
+                  <p className="font-medium">
+                    {competency?.name || "Competencia no seleccionada"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Asignatura: {subjectName}
+                  </p>
+                </div>
+              </div>
+              <Badge
+                variant={competency?.type === "Soft" ? "secondary" : "default"}
+              >
+                {competency?.type === "Soft" ? "Blanda" : "Técnica"}
+              </Badge>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 export const ReviewStep = memo(function ReviewStep({
@@ -116,45 +179,13 @@ export const ReviewStep = memo(function ReviewStep({
                         ([yearStr, yearAssignments]) => {
                           const year = parseInt(yearStr);
                           return (
-                            <div key={year} className="ml-4">
-                              <div className="flex items-center gap-2 mb-3">
-                                <Badge variant="outline">
-                                  {getYearName(year)}
-                                </Badge>
-                                <span className="text-sm text-muted-foreground">
-                                  {yearAssignments.length} asignación
-                                  {yearAssignments.length !== 1 ? "es" : ""}
-                                </span>
-                              </div>
-                              <div className="space-y-2 ml-4">
-                                {yearAssignments.map((assignment, index) => {
-                                  const competency = competencyMap.get(assignment.competencyId);
-                                  return (
-                                    <div
-                                      key={`${assignment.competencyId}-${assignment.subjectId}-${index}`}
-                                      className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
-                                    >
-                                      <div className="flex items-center gap-3">
-                                        <Badge variant="outline">#{index + 1}</Badge>
-                                        <div>
-                                          <p className="font-medium">
-                                            {competency?.name || "Competencia no seleccionada"}
-                                          </p>
-                                          <p className="text-sm text-muted-foreground">
-                                            Asignatura: {assignment.subjectId}
-                                          </p>
-                                        </div>
-                                      </div>
-                                      <Badge
-                                        variant={competency?.type === "Soft" ? "secondary" : "default"}
-                                      >
-                                        {competency?.type === "Soft" ? "Blanda" : "Técnica"}
-                                      </Badge>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
+                            <CareerYearSubjects
+                              key={year}
+                              careerId={careerId}
+                              year={year}
+                              assignments={yearAssignments}
+                              competencyMap={competencyMap}
+                            />
                           );
                         }
                       )}

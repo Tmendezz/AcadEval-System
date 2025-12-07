@@ -27,6 +27,12 @@ export const EvaluationWizard = memo(function EvaluationWizard({
     nextStep,
     prevStep,
     updateAssignments,
+    selectedCareers,
+    expandedCareers,
+    expandedYears,
+    setSelectedCareers,
+    setExpandedCareers,
+    setExpandedYears,
   } = useEvaluationWizard();
 
   const handleFinalSubmit = useCallback(() => {
@@ -49,6 +55,12 @@ export const EvaluationWizard = memo(function EvaluationWizard({
           <CareerCompetencyAssignmentsStep
             assignments={assignments}
             onAssignmentsChange={updateAssignments}
+            selectedCareers={selectedCareers}
+            expandedCareers={expandedCareers}
+            expandedYears={expandedYears}
+            onSelectedCareersChange={setSelectedCareers}
+            onExpandedCareersChange={setExpandedCareers}
+            onExpandedYearsChange={setExpandedYears}
           />
         );
       case 3:

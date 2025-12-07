@@ -43,6 +43,10 @@ const validateStep2 = (assignments: Assignment[]): boolean => {
 export function useEvaluationWizard() {
   const [currentStep, setCurrentStep] = useState(1);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+  // Persistir carreras seleccionadas y estados expandidos entre pasos
+  const [selectedCareers, setSelectedCareers] = useState<Set<string>>(new Set());
+  const [expandedCareers, setExpandedCareers] = useState<Set<string>>(new Set());
+  const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
 
   const form = useForm<EvaluationFormSchema>({
     resolver: zodResolver(evaluationFormSchema),
@@ -116,6 +120,9 @@ export function useEvaluationWizard() {
   const resetWizard = useCallback(() => {
     setCurrentStep(1);
     setAssignments([]);
+    setSelectedCareers(new Set());
+    setExpandedCareers(new Set());
+    setExpandedYears(new Set());
     form.reset();
   }, [form]);
 
@@ -136,6 +143,9 @@ export function useEvaluationWizard() {
     form,
     watchedValues,
     errors,
+    selectedCareers,
+    expandedCareers,
+    expandedYears,
 
     // Acciones
     nextStep,
@@ -143,6 +153,9 @@ export function useEvaluationWizard() {
     goToStep,
     updateAssignments,
     resetWizard,
+    setSelectedCareers,
+    setExpandedCareers,
+    setExpandedYears,
 
     // Validaciones
     canProceed,

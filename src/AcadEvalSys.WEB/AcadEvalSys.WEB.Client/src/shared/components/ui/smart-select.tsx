@@ -13,6 +13,7 @@ interface SmartSelectProps<T extends { id: string }> {
   placeholder: string;
   options: T[];
   renderOption: (option: T) => ReactNode;
+  renderValue?: (option: T | undefined) => ReactNode;
   emptyMessage?: string;
   triggerClassName?: string;
 }
@@ -23,13 +24,23 @@ export function SmartSelect<T extends { id: string }>({
   placeholder,
   options,
   renderOption,
+  renderValue,
   emptyMessage = "No hay opciones disponibles",
   triggerClassName,
 }: SmartSelectProps<T>) {
+  const selectedOption = options.find((opt) => opt.id === value);
+  const displayValue = renderValue 
+    ? renderValue(selectedOption)
+    : selectedOption 
+    ? renderOption(selectedOption)
+    : null;
+
   return (
     <Select value={value} onValueChange={onValueChange}>
       <SelectTrigger className={triggerClassName}>
-        <SelectValue placeholder={placeholder} />
+        <SelectValue placeholder={placeholder}>
+          {displayValue}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent>
         {options.length === 0 ? (
