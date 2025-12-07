@@ -12,8 +12,7 @@ import { useSurveysStore } from '../store/use-surveys-store';
 import { SurveyListItem } from '../services/survey-service';
 import { createSurveyColumns } from '../components/columns/survey-columns';
 import { DataSection } from '@/shared/components/ui/data-section';
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@radix-ui/react-dialog';
-import { DialogFooter, DialogHeader } from '@/shared/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogFooter, DialogHeader } from '@/shared/components/ui/dialog';
 
 export default function SurveysPage() {
   const [filters] = useState({
