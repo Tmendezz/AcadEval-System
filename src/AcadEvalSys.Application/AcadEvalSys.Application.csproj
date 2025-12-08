@@ -14,7 +14,7 @@
       <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.1" />
       <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
       <PackageReference Include="Handlebars.Net" Version="2.1.6" />
-      <PackageReference Include="MediatR" Version="12.5.0" />
+      <PackageReference Include="MediatR" Version="14.0.0" />
       <PackageReference Include="PuppeteerSharp" Version="20.2.2" />
       <PackageReference Include="System.Text.Encoding.CodePages" Version="10.0.0-preview.7.25380.108" />
     </ItemGroup>
