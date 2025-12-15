@@ -12,7 +12,7 @@
       <PackageReference Include="ExcelDataReader" Version="3.8.0-develop00498" />
       <PackageReference Include="ExcelDataReader.DataSet" Version="3.8.0-develop00498" />
       <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.1" />
-      <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
+      <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
       <PackageReference Include="Handlebars.Net" Version="2.1.6" />
       <PackageReference Include="MediatR" Version="12.5.0" />
       <PackageReference Include="PuppeteerSharp" Version="20.2.2" />
