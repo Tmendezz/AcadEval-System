@@ -10,7 +10,7 @@
       <!-- <Reference Include="Microsoft.Extensions.Identity.Stores">
         <HintPath>..\..\..\..\.nuget\packages\microsoft.aspnetcore.app.ref\8.0.15\ref\net8.0\Microsoft.Extensions.Identity.Stores.dll</HintPath>
       </Reference> -->
-      <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.17" />
+      <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.23" />
     </ItemGroup>
 
 </Project>
