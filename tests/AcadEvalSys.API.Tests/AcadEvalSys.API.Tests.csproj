@@ -31,6 +31,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="System.Net.Http" Version="4.3.4" />
+      <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
       <ProjectReference Include="..\..\src\AcadEvalSys.Application\AcadEvalSys.Application.csproj" />
       <ProjectReference Include="..\..\src\AcadEvalSys.WEB\AcadEvalSys.WEB.Server\AcadEvalSys.API.csproj" />
     </ItemGroup>

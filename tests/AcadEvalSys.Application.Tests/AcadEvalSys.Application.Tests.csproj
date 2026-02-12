@@ -30,6 +30,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="System.Net.Http" Version="4.3.4" />
+      <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
       <Folder Include="Competencies\Commands\" />
       <Folder Include="ProfessorCompetencyAssignments\" />
       <Folder Include="StudentCompetencyAssessments\" />
