@@ -26,6 +26,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="System.Security.Cryptography.Xml" Version="8.0.3" />
         <EmbeddedResource Include="Resources\Images\**\*" />
     </ItemGroup>
 
